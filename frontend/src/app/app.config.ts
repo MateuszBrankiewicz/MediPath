@@ -5,6 +5,7 @@ import { routes } from './app.routes';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { provideHttpClient } from '@angular/common/http';
+import { MyPreset } from './themes/primeng-preset';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -12,9 +13,13 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(),
     providePrimeNG({
-      theme: {
-        preset: Aura
-      }
-    })
+  theme: {
+    preset: MyPreset,
+    options: {
+      darkModeSelector: '.my-app-dark'
+    }
+  }
+})
+
   ]
 };
