@@ -1,4 +1,4 @@
-import { Component, input, signal } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -8,13 +8,19 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
   styleUrl: './input-for-auth.scss'
 })
 export class InputForAuth {
-  protected readonly label = input("");
+  public readonly label = input("");
 
-  protected readonly formControll = input('');
+  public control = input.required<FormControl>();
   
-  protected readonly type = signal<'text'|'password'|'email'|number>('text');
+  public width = input<number>(100);
+
+  public readonly type = signal<'text'|'password'|'email'|number>('text');
   
-  protected readonly placeholder = signal('');
+  public readonly placeholder = signal('');
   
-  protected readonly name = signal('')
+  public readonly name = signal('')
+
+  calculatedWidth = computed(() => ({
+  width: `${this.width()}%`
+}));
 }

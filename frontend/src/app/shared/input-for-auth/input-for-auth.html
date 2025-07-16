@@ -1,4 +1,11 @@
-<div>
-    <label for={{name()}}>{{label()}}</label>
-    <input [name]="name()" [type]="type()" [placeholder]="placeholder()" [formControlName]="formControll()">
+<div class="input-component">
+  <label for="{{ name() }}">{{ label() }}</label>
+  <input
+    [name]="name()"
+    [type]="type()"
+    [placeholder]="placeholder()"
+    [formControl]="control()"
+    class="input-form"
+    [style]= " calculatedWidth()"
+  />
 </div>

@@ -1,0 +1,9 @@
+.input-component{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem
+}
+.input-form{
+    border: none;
+    border-bottom: 0.1rem solid var(--p-primary-color);
+}

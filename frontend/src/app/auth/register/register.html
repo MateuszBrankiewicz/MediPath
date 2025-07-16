@@ -1,9 +1,114 @@
-<p-card>
-    <ng-template #header>
-        <h2>Register</h2>
-    </ng-template>
-    <form>
+<div class="card">
+<div class="flex-content">
+<div class="form-content">
+  <h2>Register</h2>
+  
+    <div class="form-content">
+      <form
+        [formGroup]="registerFormGroup"
+        class="form"
+        (ngSubmit)="onRegisterFormSubmit()"
+        class="parent"
+      >
+        <app-input-for-auth
+          label="Name"
+          type="text"
+          [control]="name"
+          class="div1"
+        />
+        <app-input-for-auth
+          label="Surname"
+          type="text"
+          [control]="surname"
+          class="div2"
+        />
 
-        
-    </form>
-</p-card>
+        <app-input-for-auth
+          label="Goverment ID"
+          type="text"
+          class="govId"
+          [control]="govermentId"
+          class="div7"
+        />
+        <app-input-for-auth
+          label="Birh Date"
+          class="date"
+          type="text"
+          placeholder="DD-MM-YYYY"
+          [control]="birhDate"
+          class="div3"
+        />
+
+        <app-input-for-auth
+          label="province"
+          type="text"
+          [control]="province"
+          class="div4"
+        />
+        <app-input-for-auth
+          label="Postal code"
+          type="text"
+          placeholder="XX-XXX"
+          [control]="postalCode"
+          class="div5"
+        />
+
+        <app-input-for-auth
+          label="City"
+          type="text"
+          [control]="city"
+          class="div6"
+        />
+
+        <app-input-for-auth
+          class="div8"
+          label="Number"
+          type="text"
+          [control]="number"
+        />
+
+        <app-input-for-auth
+          class="div9"
+          label="street"
+          type="text"
+          [control]="street"
+        />
+
+        <app-input-for-auth
+          label="Phone Number"
+          type="text"
+          placeholder="XXXXXXXXX"
+          [control]="phoneNumber"
+          class="div10"
+        />
+        <app-input-for-auth
+          class="div11"
+          label="Email"
+          type="email"
+          [control]="email"
+        />
+
+        <app-input-for-auth
+          class="div12"
+          label="Password"
+          type="password"
+          [control]="password"
+        />
+        <app-input-for-auth
+          label="Confirm password"
+          type="password"
+          [control]="confirmPassword"
+          class="div13"
+        />
+        <div class="div14">
+          <p-button size="large" class="button" type="submit" label="SIGN UP"></p-button>
+        </div>
+      </form>
+      </div>
+    </div>
+    <div class="image-content">
+      <img [src]="'assets/imageDoctor.png'" alt="DoctorBackground image" />
+    </div>
+  
+</div>
+</div>
