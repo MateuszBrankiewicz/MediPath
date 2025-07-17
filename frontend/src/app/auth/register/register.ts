@@ -6,11 +6,11 @@ import { ButtonModule } from 'primeng/button';
 import {  DatePickerModule } from 'primeng/datepicker';
 import { LanguageSwitcher } from '../../shared/language-switcher/language-switcher';
 import { TranslationService } from '../../services/translation.service';
-
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-register',
-  imports: [CardModule, InputForAuth,ReactiveFormsModule,ButtonModule, DatePickerModule,FormsModule, LanguageSwitcher],
+  imports: [CardModule, InputForAuth,ReactiveFormsModule,ButtonModule, DatePickerModule,FormsModule, LanguageSwitcher, ProgressSpinnerModule],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })
