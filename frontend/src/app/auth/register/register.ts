@@ -1,17 +1,21 @@
 import { Component, signal } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { InputForAuth } from "../../shared/input-for-auth/input-for-auth";
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import {  DatePickerModule } from 'primeng/datepicker';
 
 
 @Component({
   selector: 'app-register',
-  imports: [CardModule, InputForAuth,ReactiveFormsModule,ButtonModule],
+  imports: [CardModule, InputForAuth,ReactiveFormsModule,ButtonModule, DatePickerModule,FormsModule],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })
 export class Register {
+selectDate() {
+throw new Error('Method not implemented.');
+}
 
   protected readonly hasError = signal({
     haveError: false,
@@ -34,6 +38,8 @@ export class Register {
     confirmPassword: new FormControl('', [Validators.required])   
 
   })
+
+  protected readonly date = signal<Date | null>(null);
 
 
   onRegisterFormSubmit() {
