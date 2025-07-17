@@ -4,6 +4,9 @@
   <h2>Register</h2>
   
     <div class="form-content">
+      <!-- @if(hasError().haveError){
+        <p>{{hasError().errorMessage}}</p>
+      } -->
       <form
         [formGroup]="registerFormGroup"
         class="form"
@@ -13,13 +16,13 @@
         <app-input-for-auth
           label="Name"
           type="text"
-          [control]="name"
+          [control]="registerFormGroup.controls.name"
           class="div1"
         />
         <app-input-for-auth
           label="Surname"
           type="text"
-          [control]="surname"
+          [control]="registerFormGroup.controls.surname"
           class="div2"
         />
 
@@ -27,7 +30,7 @@
           label="Goverment ID"
           type="text"
           class="govId"
-          [control]="govermentId"
+          [control]="registerFormGroup.controls.govermentId"
           class="div7"
         />
         <app-input-for-auth
@@ -35,28 +38,28 @@
           class="date"
           type="text"
           placeholder="DD-MM-YYYY"
-          [control]="birhDate"
+          [control]="registerFormGroup.controls.birhDate"
           class="div3"
         />
 
         <app-input-for-auth
-          label="province"
+          label="Province"
           type="text"
-          [control]="province"
+          [control]="registerFormGroup.controls.province"
           class="div4"
         />
         <app-input-for-auth
           label="Postal code"
           type="text"
           placeholder="XX-XXX"
-          [control]="postalCode"
+          [control]="registerFormGroup.controls.postalCode"
           class="div5"
         />
 
         <app-input-for-auth
           label="City"
           type="text"
-          [control]="city"
+          [control]="registerFormGroup.controls.city"
           class="div6"
         />
 
@@ -64,40 +67,40 @@
           class="div8"
           label="Number"
           type="text"
-          [control]="number"
+          [control]="registerFormGroup.controls.number"
         />
 
         <app-input-for-auth
           class="div9"
           label="street"
           type="text"
-          [control]="street"
+          [control]="registerFormGroup.controls.street"
         />
 
         <app-input-for-auth
           label="Phone Number"
           type="text"
           placeholder="XXXXXXXXX"
-          [control]="phoneNumber"
+          [control]="registerFormGroup.controls.phoneNumber"
           class="div10"
         />
         <app-input-for-auth
           class="div11"
           label="Email"
           type="email"
-          [control]="email"
+          [control]="registerFormGroup.controls.email"
         />
 
         <app-input-for-auth
           class="div12"
           label="Password"
           type="password"
-          [control]="password"
+          [control]="registerFormGroup.controls.password"
         />
         <app-input-for-auth
           label="Confirm password"
           type="password"
-          [control]="confirmPassword"
+          [control]="registerFormGroup.controls.confirmPassword"
           class="div13"
         />
         <div class="div14">

@@ -1,18 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { InputForAuth } from "../../shared/input-for-auth/input-for-auth";
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { NgOptimizedImage } from '@angular/common';
+
 
 @Component({
   selector: 'app-register',
-  imports: [CardModule, InputForAuth,ReactiveFormsModule,ButtonModule,NgOptimizedImage],
+  imports: [CardModule, InputForAuth,ReactiveFormsModule,ButtonModule],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })
 export class Register {
 
+  protected readonly hasError = signal({
+    haveError: false,
+    errorMessage: ""
+  });
 
   public registerFormGroup = new FormGroup({
     name : new FormControl('',Validators.required),
@@ -31,22 +35,24 @@ export class Register {
 
   })
 
-  get name() { return this.registerFormGroup.get('name') as FormControl; }
-get surname() { return this.registerFormGroup.get('surname') as FormControl; }
-get govermentId() { return this.registerFormGroup.get('govermentId') as FormControl; }
-get birhDate() { return this.registerFormGroup.get('birhDate') as FormControl; }
-get province() { return this.registerFormGroup.get('province') as FormControl; }
-get postalCode() { return this.registerFormGroup.get('postalCode') as FormControl; }
-get city() { return this.registerFormGroup.get('city') as FormControl; }
-get number() { return this.registerFormGroup.get('number') as FormControl; }
-get street() { return this.registerFormGroup.get('street') as FormControl; }
-get phoneNumber() { return this.registerFormGroup.get('phoneNumber') as FormControl; }
-get email() { return this.registerFormGroup.get('email') as FormControl; }
-get password() { return this.registerFormGroup.get('password') as FormControl; }
-get confirmPassword() { return this.registerFormGroup.get('confirmPassword') as FormControl; }
-
 
   onRegisterFormSubmit() {
-    console.log(this.registerFormGroup.value)
-}
+
+    this.registerFormGroup.markAllAsTouched();
+ 
+    
+    if (this.registerFormGroup.valid) {
+      console.log('Form is valid:', this.registerFormGroup.value);
+      
+      //TODO backend connect implementation
+
+    } else {
+      console.log('Form is invalid');
+      this.hasError.set({
+        haveError: true,
+        errorMessage: "Form invalid"
+      })
+      
+    }
+  }
 }

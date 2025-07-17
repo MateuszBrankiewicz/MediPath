@@ -1,11 +1,14 @@
 <div class="input-component">
-  <label for="{{ name() }}">{{ label() }}</label>
+  <label >{{ label() }}</label>
   <input
     [name]="name()"
     [type]="type()"
     [placeholder]="placeholder()"
     [formControl]="control()"
     class="input-form"
-    [style]= " calculatedWidth()"
+    [class.error]="hasError"
   />
+  @if (hasError) {
+    <span class="error-message">{{ getErrorMessage() }}</span>
+  }
 </div>

@@ -24,7 +24,7 @@ display: grid;
 grid-template-columns: repeat(12, 1fr);
 grid-template-rows: repeat(6, 1fr);
 grid-column-gap: 0px;
-grid-row-gap: 20px;
+grid-row-gap: 15px;
 margin-left: 50px;
 margin-right: 50px;
 }
@@ -54,7 +54,9 @@ margin-right: 50px;
      white-space: nowrap;
 
 }
-
+.image-content{
+    visibility: hidden;
+}
 @media screen and (min-width: 768px) {
     .flex-content{
         display: flex;
@@ -62,5 +64,7 @@ margin-right: 50px;
         justify-items: center;
         align-items: center;
     }
-    
+    .image-content{
+        visibility: visible;
+    }
 }
