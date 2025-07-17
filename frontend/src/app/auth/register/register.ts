@@ -1,14 +1,16 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { InputForAuth } from "../../shared/input-for-auth/input-for-auth";
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import {  DatePickerModule } from 'primeng/datepicker';
+import { LanguageSwitcher } from '../../shared/language-switcher/language-switcher';
+import { TranslationService } from '../../services/translation.service';
 
 
 @Component({
   selector: 'app-register',
-  imports: [CardModule, InputForAuth,ReactiveFormsModule,ButtonModule, DatePickerModule,FormsModule],
+  imports: [CardModule, InputForAuth,ReactiveFormsModule,ButtonModule, DatePickerModule,FormsModule, LanguageSwitcher],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })
@@ -16,6 +18,8 @@ export class Register {
 selectDate() {
 throw new Error('Method not implemented.');
 }
+
+  public translationService = inject(TranslationService);
 
   protected readonly hasError = signal({
     haveError: false,
@@ -56,8 +60,8 @@ throw new Error('Method not implemented.');
       console.log('Form is invalid');
       this.hasError.set({
         haveError: true,
-        errorMessage: "Form invalid"
-      })
+        errorMessage: this.translationService.translate('form.invalid')
+      });
       
     }
   }
