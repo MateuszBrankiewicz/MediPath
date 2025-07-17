@@ -1,0 +1,144 @@
+<div class="card">
+  <div class="language-switcher-container">
+    <app-language-switcher></app-language-switcher>
+  </div>
+  <div class="flex-content">
+    <div class="form-content">
+      <h2>{{ translationService.translate('register.title') }}</h2>
+
+      <div class="form-content">
+        <!-- @if(hasError().haveError){
+        <p>{{hasError().errorMessage}}</p>
+      } -->
+        <form
+          [formGroup]="registerFormGroup"
+          class="form"
+          (ngSubmit)="onRegisterFormSubmit()"
+          class="parent"
+        >
+          <app-input-for-auth
+            label="Name"
+            labelKey="register.form.name"
+            type="text"
+            [control]="registerFormGroup.controls.name"
+            class="div1"
+          />
+          <app-input-for-auth
+            label="Surname"
+            labelKey="register.form.surname"
+            type="text"
+            [control]="registerFormGroup.controls.surname"
+            class="div2"
+          />
+
+          <app-input-for-auth
+            label="Goverment ID"
+            labelKey="register.form.govermentId"
+            type="text"
+            class="govId"
+            [control]="registerFormGroup.controls.govermentId"
+            class="div7"
+          />
+          <app-input-for-auth
+          label="Birth Date"
+          labelKey="register.form.birthDate"
+          class="date"
+          type="text"
+          placeholder="DD-MM-YYYY"
+          placeholderKey="register.placeholders.birthDate"
+          [control]="registerFormGroup.controls.birhDate"
+          class="div3"
+        />
+
+       
+
+          <app-input-for-auth
+            label="Province"
+            labelKey="register.form.province"
+            type="text"
+            [control]="registerFormGroup.controls.province"
+            class="div4"
+          />
+          <app-input-for-auth
+            label="Postal code"
+            labelKey="register.form.postalCode"
+            type="text"
+            placeholder="XX-XXX"
+            placeholderKey="register.placeholders.postalCode"
+            [control]="registerFormGroup.controls.postalCode"
+            class="div5"
+          />
+
+          <app-input-for-auth
+            label="City"
+            labelKey="register.form.city"
+            type="text"
+            [control]="registerFormGroup.controls.city"
+            class="div6"
+          />
+
+          <app-input-for-auth
+            class="div8"
+            label="Number"
+            labelKey="register.form.number"
+            type="text"
+            [control]="registerFormGroup.controls.number"
+          />
+
+          <app-input-for-auth
+            class="div9"
+            label="street"
+            labelKey="register.form.street"
+            type="text"
+            [control]="registerFormGroup.controls.street"
+          />
+
+          <app-input-for-auth
+            label="Phone Number"
+            labelKey="register.form.phoneNumber"
+            type="text"
+            placeholder="XXXXXXXXX"
+            placeholderKey="register.placeholders.phoneNumber"
+            [control]="registerFormGroup.controls.phoneNumber"
+            class="div10"
+          />
+          <app-input-for-auth
+            class="div11"
+            label="Email"
+            labelKey="register.form.email"
+            type="email"
+            [control]="registerFormGroup.controls.email"
+          />
+
+          <app-input-for-auth
+            class="div12"
+            label="Password"
+            labelKey="register.form.password"
+            type="password"
+            [control]="registerFormGroup.controls.password"
+          />
+          <app-input-for-auth
+            label="Confirm password"
+            labelKey="register.form.confirmPassword"
+            type="password"
+            [control]="registerFormGroup.controls.confirmPassword"
+            class="div13"
+          />
+          <div class="div14">
+           <div class="checkbox"><input type="checkbox" name="checkbox" id="checkbox"> <label for="checkbox">{{ translationService.translate('register.form.acceptTerms') }}</label></div> 
+            <p-button
+              size="large"
+              class="button"
+              type="submit"
+              [label]="translationService.translate('register.form.signUp')"
+            ></p-button>
+            <span class="login-link"><span>{{ translationService.translate('register.form.alreadyHaveAccount') }}</span> <a routerLink="/auth/login">{{ translationService.translate('register.form.signIn') }}</a></span>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="image-content">
+      <img [src]="'assets/imageDoctor.png'" alt="DoctorBackground image" />
+    </div>
+  </div>
+</div>

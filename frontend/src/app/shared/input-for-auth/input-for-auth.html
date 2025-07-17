@@ -1,0 +1,14 @@
+<div class="input-component">
+  <label>{{ getTranslatedLabel() }}</label>
+  <input
+    [name]="name()"
+    [type]="type()"
+    [placeholder]="getTranslatedPlaceholder()"
+    [formControl]="control()"
+    class="input-form"
+    [class.error]="hasError"
+  />
+  @if (hasError) {
+    <span class="error-message">{{ getErrorMessage() }}</span>
+  }
+</div>
