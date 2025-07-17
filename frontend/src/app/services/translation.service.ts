@@ -10,6 +10,7 @@ export type SupportedLanguage = 'en' | 'pl';
 export class TranslationService {
   private currentLanguage = signal<SupportedLanguage>('pl');
   private translations = signal<Record<string, string>>({});
+  public readonly isLoading = signal(false);
 
   constructor(private http: HttpClient) {
     const currentLanguageLs : SupportedLanguage = localStorage.getItem("LANGUAGE_KEY") as SupportedLanguage;
@@ -33,7 +34,9 @@ export class TranslationService {
   }
 
   private async loadTranslations(lang: SupportedLanguage) {
+    this.isLoading.set(true);
     try {
+     
       const translations = await firstValueFrom(
         this.http.get<Record<string, string>>(`/assets/locale/messages.${lang}.json`)
       );
@@ -41,6 +44,11 @@ export class TranslationService {
     } catch (error) {
       console.error('Failed to load translations:', error);
       this.translations.set({});
+    }finally{
+      
+      this.isLoading.set(false);
+
+      
     }
   }
 

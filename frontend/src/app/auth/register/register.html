@@ -4,18 +4,25 @@
   </div>
   <div class="flex-content">
     <div class="form-content">
+        @if(translationService.isLoading()){
+          <div class="spinner">
+            <p-progress-spinner ariaLabel="loading" />
+            </div>
+        }@else{
       <h2>{{ translationService.translate('register.title') }}</h2>
 
-      <div class="form-content">
         <!-- @if(hasError().haveError){
         <p>{{hasError().errorMessage}}</p>
       } -->
+        
+
         <form
           [formGroup]="registerFormGroup"
           class="form"
           (ngSubmit)="onRegisterFormSubmit()"
           class="parent"
         >
+      
           <app-input-for-auth
             label="Name"
             labelKey="register.form.name"
@@ -135,7 +142,8 @@
             <span class="login-link"><span>{{ translationService.translate('register.form.alreadyHaveAccount') }}</span> <a routerLink="/auth/login">{{ translationService.translate('register.form.signIn') }}</a></span>
           </div>
         </form>
-      </div>
+      
+    }
     </div>
     <div class="image-content">
       <img [src]="'assets/imageDoctor.png'" alt="DoctorBackground image" />
