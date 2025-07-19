@@ -4,16 +4,17 @@
   </div>
   <div class="flex-content">
     <div class="form-content">
-        @if(translationService.isLoading()){
+        @if(isLoading()){
           <div class="spinner">
             <p-progress-spinner ariaLabel="loading" />
             </div>
         }@else{
       <h2>{{ translationService.translate('register.title') }}</h2>
-
-        <!-- @if(hasError().haveError){
+       @if(hasError().haveError){ 
+      <div class="error-content">
+       
         <p>{{hasError().errorMessage}}</p>
-      } -->
+    </div>  }
         
 
         <form
