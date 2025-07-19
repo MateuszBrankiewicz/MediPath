@@ -7,6 +7,7 @@ import {  DatePickerModule } from 'primeng/datepicker';
 import { LanguageSwitcher } from '../../shared/language-switcher/language-switcher';
 import { TranslationService } from '../../services/translation.service';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { AuthenticationService } from '../services/authentication/authentication';
 
 @Component({
   selector: 'app-register',
@@ -21,9 +22,12 @@ throw new Error('Method not implemented.');
 
   public translationService = inject(TranslationService);
 
+  protected readonly isLoading = this.translationService.isLoading;
+  private readonly authService = inject(AuthenticationService)
+
   protected readonly hasError = signal({
     haveError: false,
-    errorMessage: ""
+    errorMessage: "asdzxc"
   });
 
   public registerFormGroup = new FormGroup({
@@ -53,8 +57,24 @@ throw new Error('Method not implemented.');
     
     if (this.registerFormGroup.valid) {
       console.log('Form is valid:', this.registerFormGroup.value);
+      this.isLoading.set(true);
+      this.authService.registerUser(this.registerFormGroup.value as RegisterUser).subscribe({
+        next: (res) => {console.log(res)
+          this.isLoading.set(false)
+        },
+        error: (err) => {
+          this.hasError.set({
+            haveError: true,
+            errorMessage: "Nieoczekiwany blad"
+          })
+          this.isLoading.set(false)
+
+        },
+        complete :() => {
+          this.isLoading.set(false)
+        },
+      });
       
-      //TODO backend connect implementation
 
     } else {
       console.log('Form is invalid');
