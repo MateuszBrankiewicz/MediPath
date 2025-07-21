@@ -15,15 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 @SpringBootApplication
-@RestController
-@RequestMapping("/api")
 @EnableMongoRepositories
 public class MedipathbackendApplication {
-
-	@GetMapping("/")
-  	public String home() {
-		return "API OK";
-  	}
 
 	public static void main(String[] args) {
 
