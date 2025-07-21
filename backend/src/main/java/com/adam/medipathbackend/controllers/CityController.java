@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/api")
 public class CityController {
@@ -24,7 +23,7 @@ public class CityController {
         return "API OK";
     }
 
-    @GetMapping(value = {"/cities", "/cities/{name}"})
+    @GetMapping(value = {"/cities","/cities/", "/cities/{name}"})
     public ResponseEntity<List<City>> getCities(@PathVariable(required = false) String name) {
         List<City> returnedCities;
         if (name == null) {
