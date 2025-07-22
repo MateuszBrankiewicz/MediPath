@@ -1,1 +1,21 @@
-<p>login works!</p>
+<div class="card">
+  <div class="flex-content">
+     <div class="image-content">
+        <img src="assets/imageDoctor.png">
+    </div>
+    <div class="form-content">
+    <form>
+      <app-input-for-auth
+        type="email"
+        [control]="loginFormGroup.controls.email"
+      />
+      <app-input-for-auth
+        type="password"
+        [control]="loginFormGroup.controls.Password"
+      />
+      <p-button type="submit" label="Zaloguj" />
+    </form>
+    </div>
+   
+  </div>
+</div>
