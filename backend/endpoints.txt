@@ -1,0 +1,42 @@
+Backend Endpoint List
+
+Generic endpoints
+
+/api/cities/{name}
+
+Method: GET
+Parameters: none
+Path Variables:
+    name: Optional parameter. If left blank, a list of all cities in the database will be returned. Otherwise,
+            all entries containing the value will be returned, for example /api/cities/Lub will return Lublin and Lubin.
+
+Returns: Array of cities matching the query. Can be empty.
+
+
+
+User endpoints  - /api/users/
+
+/register
+
+Method: POST
+Path Variables: none
+Body:
+{
+    "name" //First name
+    "surname" //Last name
+    "email" //Email
+    "govID" //Government ID number
+    "birthDate" //Date of birth. Format "dd-MM-yyyy"
+    "province" //Province
+    "city": //City
+    "postalCode" //Postal Code,
+    "phoneNumber": //Phone number. Saved as a String to ensure compatibility with international formats
+    "street": //Street name
+    "number": //Street number. Saved as a String to ensure compatibility with all formats, such as "street_number/flat_number"
+    "password" //plain-text password
+}
+
+
+
+
+
