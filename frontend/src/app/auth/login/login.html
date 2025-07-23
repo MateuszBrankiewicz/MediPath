@@ -1,1 +1,32 @@
-<p>login works!</p>
+<div class="card">
+  <div class="flex-content">
+    <div class="image-content">
+      <img src="assets/imageDoctor.png" />
+    </div>
+    <div class="form-content">
+      <h2>Zaloguj</h2>
+      <form class="form-content--without-heder">
+        <app-input-for-auth
+          type="email"
+          [label]="'Email'"
+          [control]="loginFormGroup.controls.email"
+        />
+        <div class="password-with-forgot-password">
+          <app-input-for-auth
+            type="password"
+            [label]="'Password'"
+            [control]="loginFormGroup.controls.Password"
+          />
+          <a routerLink="/auth/login"> Forgot Password? </a>
+        </div>
+        <div class="button-content">
+          <p-button size="large" class="button" type="submit" label="Zaloguj" />
+          <span class="login-link"
+            ><span>Nie masz konta? </span>
+            <a routerLink="/auth/login"> Zarejestruj sie </a></span
+          >
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
