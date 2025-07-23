@@ -25,5 +25,6 @@
   "validation.minLength": "Hasło musi mieć co najmniej {length} znaków",
   "validation.postalCodeFormat": "Kod pocztowy musi być w formacie XX-XXX",
   "validation.phoneFormat": "Numer telefonu musi mieć 9 cyfr",
-  "form.invalid": "Formularz jest nieprawidłowy"
+  "form.invalid": "Formularz jest nieprawidłowy",
+  "form.passwordNotMatch": "Hasla nie sa takie same"
 }

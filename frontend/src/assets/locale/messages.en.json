@@ -25,5 +25,7 @@
   "validation.minLength": "Password must be at least {length} characters long",
   "validation.postalCodeFormat": "Postal code must be in format XX-XXX",
   "validation.phoneFormat": "Phone number must be 9 digits",
-  "form.invalid": "Form invalid"
+  "form.invalid": "Form invalid",
+  "form.passwordNotMatch": "Password not match"
+
 }
