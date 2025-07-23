@@ -52,7 +52,9 @@ public class UserController {
                 registrationForm.getPhoneNumber(),
                 passwordHash
         ));
-        return new ResponseEntity<>(new HashMap<>(), HttpStatus.CREATED);
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("message", "Success");
+        return new ResponseEntity<>(message, HttpStatus.CREATED);
     }
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {
