@@ -27,15 +27,19 @@ services:
       - 'MONGO_INITDB_ROOT_USERNAME=root'
     ports:
       - '27017:27017'
+
     volumes:
         - type: volume
           source: medipath_data
           target: /data/db
+
     networks:
       - web-network
 networks:
   web-network:
     driver: bridge
 
+
 volumes:
     medipath_data:
+
