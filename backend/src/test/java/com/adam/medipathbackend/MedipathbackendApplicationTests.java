@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -133,17 +134,17 @@ class MedipathbackendApplicationTests {
     }
 
     @Test
-    public void tryRegisterUserMissingStreet() throws Exception {
+    public void tryRegisterUserMissingName() throws Exception {
 
         when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.empty());
         String exampleUser = "{" +
                 "\"name\": \"TestName\"," +
-                "\"surname\": \"TestSurname\"," +
                 "\"email\": \"test@mail.com\"," +
                 "\"govID\": \"90010112340\"," +
                 "\"birthDate\": \"01-01-1990\"," +
                 "\"province\": \"Abcd\"," +
                 "\"city\": \"citycity\"," +
+                "\"street\": \"aaa st.\"," +
                 "\"postalCode\": \"01-001\"," +
                 "\"phoneNumber\": \"123456789\"," +
                 "\"number\": \"5a\"," +
@@ -152,8 +153,8 @@ class MedipathbackendApplicationTests {
 
         mvc.perform(post("/api/users/register").contentType("application/json").content(exampleUser))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Invalid fields in request body"))
-                .andExpect(jsonPath("$.fields[0]").value("Street"));
+                .andExpect(jsonPath("$.message").value("missing fields in request body"))
+                .andExpect(jsonPath("$.fields[0]").value("surname"));
     }
     @Test
     public void tryRegisterUserMissingData() throws Exception {
@@ -163,19 +164,19 @@ class MedipathbackendApplicationTests {
 
         mvc.perform(post("/api/users/register").contentType("application/json").content(exampleUser))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Invalid fields in request body"))
-                .andExpect(jsonPath("$.fields[0]").value("Name"))
-                .andExpect(jsonPath("$.fields[1]").value("Surname"))
-                .andExpect(jsonPath("$.fields[2]").value("Email"))
-                .andExpect(jsonPath("$.fields[3]").value("City"))
-                .andExpect(jsonPath("$.fields[4]").value("Province"))
-                .andExpect(jsonPath("$.fields[5]").value("Street"))
-                .andExpect(jsonPath("$.fields[6]").value("Number"))
-                .andExpect(jsonPath("$.fields[7]").value("PostalCode"))
-                .andExpect(jsonPath("$.fields[8]").value("BirthDate"))
-                .andExpect(jsonPath("$.fields[9]").value("GovID"))
-                .andExpect(jsonPath("$.fields[10]").value("Phone"))
-                .andExpect(jsonPath("$.fields[11]").value("Password"));
+                .andExpect(jsonPath("$.message").value("missing fields in request body"))
+                .andExpect(jsonPath("$.fields[0]").value("name"))
+                .andExpect(jsonPath("$.fields[1]").value("surname"))
+                .andExpect(jsonPath("$.fields[2]").value("email"))
+                .andExpect(jsonPath("$.fields[3]").value("city"))
+                .andExpect(jsonPath("$.fields[4]").value("province"))
+                .andExpect(jsonPath("$.fields[5]").value("street"))
+                .andExpect(jsonPath("$.fields[6]").value("number"))
+                .andExpect(jsonPath("$.fields[7]").value("postalCode"))
+                .andExpect(jsonPath("$.fields[8]").value("birthDate"))
+                .andExpect(jsonPath("$.fields[9]").value("govID"))
+                .andExpect(jsonPath("$.fields[10]").value("phoneNumber"))
+                .andExpect(jsonPath("$.fields[11]").value("password"));
     }
     @Test
     public void tryRegisterUserWithDuplicateGovID() throws Exception {
@@ -200,6 +201,71 @@ class MedipathbackendApplicationTests {
 
         mvc.perform(post("/api/users/register").contentType("application/json").content(exampleUser))
                 .andExpect(status().isConflict());
+    }
+    @Test
+    public void tryLogInSuccess() throws Exception {
+        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.of(new User("test@mail.com", "A", "B", "1234567890", LocalDate.of(1900, 12, 12), "A", "A", "A", "A", "A", "A", "$argon2id$v=19$m=60000,t=10,p=1$MOrLn9JdvWpJyJDMZ4Z9qg$zgHTASZaQH9zoTUO0bd0re+6G523ZUreKFmWQSu+f24")));
+
+        String exampleLogin = "{" +
+                "\"email\": \"test@mail.com\"," +
+                "\"password\": \"passwordpassword\"" +
+                "}";
+
+        mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void tryLogInInvalidEmail() throws Exception {
+
+        when(userRepository.findByEmail("badtest@mail.com")).thenReturn(Optional.empty());
+
+        String exampleLogin = "{" +
+                "\"email\": \"badtest@mail.com\"," +
+                "\"password\": \"passwordpassword\"" +
+                "}";
+
+        mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("invalid email or password"));
+    }
+    @Test
+    public void tryLogInValidEmailInvalidPassword() throws Exception {
+
+        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.of(new User("test@mail.com", "A", "B", "1234567890", LocalDate.of(1900, 12, 12), "A", "A", "A", "A", "A", "A", "$argon2id$v=19$m=60000,t=10,p=1$MOrLn9JdvWpJyJDMZ4Z9qg$zgHTASZaQH9zoTUO0bd0re+6G523ZUreKFmWQSu+f24")));
+
+        String exampleLogin = "{" +
+                "\"email\": \"test@mail.com\"," +
+                "\"password\": \"invalid\"" +
+                "}";
+
+        mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("invalid email or password"));
+    }
+    @Test
+    public void tryLogInNoPassword() throws Exception {
+
+        String exampleLogin = "{" +
+                "\"email\": \"test@mail.com\"" +
+                "}";
+
+        mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("missing fields in request body"))
+                .andExpect(jsonPath("$.fields[0]").value("password"));
+    }
+
+    @Test
+    public void tryLogInNoData() throws Exception {
+
+        String exampleLogin = "{}";
+
+        mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("missing fields in request body"))
+                .andExpect(jsonPath("$.fields[0]").value("email"))
+                .andExpect(jsonPath("$.fields[1]").value("password"));
     }
 
 
