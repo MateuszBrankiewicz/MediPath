@@ -1,8 +1,10 @@
 package com.adam.medipathbackend.controllers;
 
+import com.adam.medipathbackend.models.LoginForm;
 import com.adam.medipathbackend.models.RegistrationForm;
 import com.adam.medipathbackend.models.User;
 import com.adam.medipathbackend.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -27,13 +30,13 @@ public class UserController {
         ArrayList<String> missingFields = getMissingFields(registrationForm);
         if(!missingFields.isEmpty()) {
             HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "Invalid fields in request body");
+            invalid.put("message", "missing fields in request body");
             invalid.put("fields", missingFields);
             return new ResponseEntity<>(invalid, HttpStatus.BAD_REQUEST);
         }
         if(userRepository.findByEmail(registrationForm.getEmail()).isPresent() || userRepository.findByGovID(registrationForm.getGovID()).isPresent()) {
             HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "This email or person is already registered");
+            invalid.put("message", "this email or person is already registered");
             return new ResponseEntity<>(invalid, HttpStatus.CONFLICT);
         }
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
@@ -52,46 +55,78 @@ public class UserController {
                 registrationForm.getPhoneNumber(),
                 passwordHash
         ));
-        return new ResponseEntity<>(new HashMap<>(), HttpStatus.CREATED);
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("message", "Success");
+        return new ResponseEntity<>(message, HttpStatus.CREATED);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<HashMap<String, Object>> loginUser(HttpSession session, @RequestBody LoginForm loginForm) {
+        ArrayList<String> missingFields = new ArrayList<>();
+        if(loginForm.getEmail() == null || loginForm.getEmail().isBlank()) {
+            missingFields.add("email");
+        }
+        if(loginForm.getPassword() == null || loginForm.getPassword().isBlank()) {
+            missingFields.add("password");
+        }
+        if(!missingFields.isEmpty()) {
+            HashMap<String, Object> invalid = new HashMap<>();
+            invalid.put("message", "missing fields in request body");
+            invalid.put("fields", missingFields);
+            return new ResponseEntity<>(invalid, HttpStatus.BAD_REQUEST);
+        }
+        Optional<User> user = userRepository.findByEmail(loginForm.getEmail());
+        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+        if(user.isEmpty() || !argon2PasswordEncoder.matches(loginForm.getPassword(), user.get().getPasswordHash())) {
+            HashMap<String, Object> invalid = new HashMap<>();
+            invalid.put("message", "invalid email or password");
+            return new ResponseEntity<>(invalid, HttpStatus.UNAUTHORIZED);
+        }
+        User u = user.get();
+        session.setAttribute("id", u.getId());
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("message", "success");
+        return new ResponseEntity<>(message, HttpStatus.OK);
+    }
+
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {
         ArrayList<String> missingFields = new ArrayList<>();
         if(registrationForm.getName() == null || registrationForm.getName().isBlank()) {
-            missingFields.add("Name");
+            missingFields.add("name");
         }
         if(registrationForm.getSurname() == null || registrationForm.getSurname().isBlank()) {
-            missingFields.add("Surname");
+            missingFields.add("surname");
         }
         if(registrationForm.getEmail() == null || registrationForm.getEmail().isBlank()) {
-            missingFields.add("Email");
+            missingFields.add("email");
         }
         if(registrationForm.getCity() == null || registrationForm.getCity().isBlank()) {
-            missingFields.add("City");
+            missingFields.add("city");
         }
         if(registrationForm.getProvince() == null || registrationForm.getProvince().isBlank()) {
-            missingFields.add("Province");
+            missingFields.add("province");
         }
         if(registrationForm.getStreet() == null || registrationForm.getStreet().isBlank()) {
-            missingFields.add("Street");
+            missingFields.add("street");
         }
         if(registrationForm.getNumber() == null || registrationForm.getNumber().isBlank()) {
-            missingFields.add("Number");
+            missingFields.add("number");
         }
         if(registrationForm.getPostalCode() == null || registrationForm.getPostalCode().isBlank()) {
-            missingFields.add("PostalCode");
+            missingFields.add("postalCode");
         }
         if(registrationForm.getBirthDate() == null || registrationForm.getBirthDate().isBlank()) {
-            missingFields.add("BirthDate");
+            missingFields.add("birthDate");
         }
         if(registrationForm.getGovID() == null || registrationForm.getGovID().isBlank()) {
-            missingFields.add("GovID");
+            missingFields.add("govID");
         }
         if(registrationForm.getPhoneNumber() == null || registrationForm.getPhoneNumber().isBlank()) {
-            missingFields.add("Phone");
+            missingFields.add("phoneNumber");
         }
         if(registrationForm.getPassword() == null || registrationForm.getPassword().isBlank()) {
-            missingFields.add("Password");
+            missingFields.add("password");
         }
         return missingFields;
     }
