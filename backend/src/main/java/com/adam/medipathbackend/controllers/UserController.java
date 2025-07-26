@@ -2,20 +2,29 @@ package com.adam.medipathbackend.controllers;
 
 import com.adam.medipathbackend.models.LoginForm;
 import com.adam.medipathbackend.models.RegistrationForm;
+import com.adam.medipathbackend.models.ResetForm;
 import com.adam.medipathbackend.models.User;
 import com.adam.medipathbackend.repository.UserRepository;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
@@ -89,6 +98,40 @@ public class UserController {
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
+    @PostMapping("/resetpassword")
+    public ResponseEntity<HashMap<String, Object>> resetPassword(@RequestBody ResetForm resetForm) {
+        if(resetForm.getEmail() == null || resetForm.getEmail().isBlank()) {
+            HashMap<String, Object> invalid = new HashMap<>();
+            invalid.put("message", "missing email in request body");
+            return new ResponseEntity<>(invalid, HttpStatus.BAD_REQUEST);
+        }
+        Optional<User> u = userRepository.findByEmail(resetForm.getEmail());
+        if(u.isPresent()) {
+            try {
+                JavaMailSenderImpl sender = new JavaMailSenderImpl();
+                sender.setHost("127.0.0.1");
+                sender.setPort(1025);
+
+                MimeMessage message = sender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message);
+                helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
+                helper.setSubject("Hello, world!");
+                helper.setTo(resetForm.getEmail());
+                helper.setText("Thank you for ordering!");
+
+                sender.send(message);
+            } catch (MailException | MessagingException | UnsupportedEncodingException e) {
+                HashMap<String, Object> invalid = new HashMap<>();
+                invalid.put("message", "the mail service threw an error");
+                invalid.put("error", e.getMessage());
+                return new ResponseEntity<>(invalid, HttpStatus.SERVICE_UNAVAILABLE);
+            }
+        }
+        HashMap<String, Object> valid = new HashMap<>();
+        valid.put("message", "password reset mail has been sent");
+        return new ResponseEntity<>(valid, HttpStatus.OK);
+
+    }
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {
         ArrayList<String> missingFields = new ArrayList<>();
