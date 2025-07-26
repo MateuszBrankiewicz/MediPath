@@ -1,0 +1,61 @@
+<div class="select-component">
+  <label>{{ getTranslatedLabel() }}</label>
+  
+  <div class="select-wrapper">
+    <input
+      [name]="name()"
+      type="text"
+      [placeholder]="getTranslatedPlaceholder()"
+      [value]="searchTerm()"
+      (input)="onInputChange($event)"
+      (focus)="onInputFocus()"
+      (blur)="onInputBlur()"
+      (keydown)="onKeyDown($event)"
+      class="select-input"
+      [class.error]="hasError()"
+      autocomplete="off"
+    />
+    
+    <div class="dropdown-icon" [class.rotated]="isDropdownOpen()">
+      @if (isLoading()) {
+        ⟳
+      } @else {
+        ▼
+      }
+    </div>
+    
+    @if (isDropdownOpen() && filteredOptions().length > 0) {
+      <div class="dropdown-menu">
+        @for (option of filteredOptions(); track option.name) {
+          <div 
+            class="dropdown-option"
+            [class.selected]="selectedOption()?.name === option.name"
+            (mousedown)="onOptionSelect(option)"
+          >
+            {{ option.name }}
+          </div>
+        }
+      </div>
+    }
+    
+    @if (isDropdownOpen() && filteredOptions().length === 0 && searchTerm() && !isLoading()) {
+      <div class="dropdown-menu">
+        <div class="dropdown-option disabled">
+          No results found
+        </div>
+      </div>
+    }
+    
+    @if (isLoading()) {
+      <div class="dropdown-menu">
+        <div class="dropdown-option disabled">
+          Loading...
+        </div>
+      </div>
+    }
+  </div>
+  
+  @if (hasError()) {
+    <span class="error-message">{{ getErrorMessage() }}</span>
+  }
+</div>

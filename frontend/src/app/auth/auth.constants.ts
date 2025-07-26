@@ -1,7 +1,7 @@
 interface RegisterUser{
     name: string,
     surname: string,
-    govermentId: string,
+    govID: string,
     birthDate: string | null,
     province: string,
     postalCode : string,
@@ -11,5 +11,4 @@ interface RegisterUser{
     phoneNumber: string,
     email: string,
     password: string,
-    confirmPassword: string
 }
