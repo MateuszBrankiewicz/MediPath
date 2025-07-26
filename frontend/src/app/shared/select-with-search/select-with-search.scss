@@ -16,7 +16,6 @@
   border-bottom: 0.15rem solid var(--p-primary-color);
   font-size: 1.2rem;
   width: 100%;
-  padding-right: 2rem;
   background: transparent;
   
   &:active {
@@ -44,6 +43,7 @@
   transition: transform 0.2s ease;
   font-size: 0.8rem;
   color: var(--p-primary-color);
+  display: none; /* Ukryj strzałkę dla miast */
   
   &.rotated {
     transform: rotate(180deg);
@@ -91,9 +91,12 @@
 }
 
 .error-message {
-  color: #e74c3c;
-  font-size: 0.8rem;
-  position: absolute;
-  bottom: 0;
-  left: 0;
+   color: #e74c3c;
+    font-size: 0.8rem;
+    position: absolute;
+    bottom: 0.1em;
+    left: 0;
+     max-width: 100%;
+   
+    z-index: 10;
 }

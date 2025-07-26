@@ -50,7 +50,21 @@ export class Register {
   });
 
   protected readonly passwordMismatchError = signal<boolean>(false);
-  protected readonly checkBoxNotChecked = signal(false);
+  protected readonly checkBoxNotChecked = signal<boolean>(false);
+
+  protected readonly confirmPasswordHasError = computed(() => {
+    return this.passwordMismatchError() || 
+           (this.registerFormGroup.controls.confirmPassword.invalid && 
+            (this.registerFormGroup.controls.confirmPassword.dirty || 
+             this.registerFormGroup.controls.confirmPassword.touched));
+  });
+
+  protected readonly checkboxHasError = computed(() => {
+    return this.checkBoxNotChecked() ||
+           (this.registerFormGroup.controls.termsChecked.invalid &&
+            (this.registerFormGroup.controls.termsChecked.dirty ||
+             this.registerFormGroup.controls.termsChecked.touched));
+  });
   public registerFormGroup = new FormGroup({
     name: new FormControl('', [Validators.required]),
     surname: new FormControl('', [Validators.required]),
@@ -80,35 +94,31 @@ export class Register {
     termsChecked: new FormControl(false, [Validators.requiredTrue])
   });
 
-  protected readonly date = signal<Date | null>(null);
   constructor(){
     this.authService.getCities('').subscribe(val => {
       this.citiesOptions.set(val as SelectOption[])
     })
   }
- protected readonly confirmPasswordHasError = computed(() => {
-    return this.passwordMismatchError() || 
-           (this.registerFormGroup.controls.confirmPassword.invalid && 
-            (this.registerFormGroup.controls.confirmPassword.dirty || 
-             this.registerFormGroup.controls.confirmPassword.touched));
-  });
   
   onRegisterFormSubmit() {
     this.registerFormGroup.markAllAsTouched();
-          this.passwordMismatchError.set(false);
-
+    
     this.passwordMismatchError.set(false);
+    this.checkBoxNotChecked.set(false);
     this.hasError.set({ haveError: false, errorMessage: '' });
 
     const formValue = { ...this.registerFormGroup.value };
+    
     if (formValue.password !== formValue.confirmPassword) {
       this.passwordMismatchError.set(true);
       return;
     }
-    if(formValue.termsChecked === false){
+    
+    if (formValue.termsChecked === false) {
       this.checkBoxNotChecked.set(true);
-      return
+      return;
     }
+    
     if (this.registerFormGroup.valid) {
       delete formValue.confirmPassword;
       delete formValue.termsChecked;
@@ -124,9 +134,15 @@ export class Register {
           },
           error: (err) => {
             console.error(err);
+            let errorMessage = 'register.error.backendError';
+            
+            if (err.status === 409 || err.message?.includes('already exists')) {
+              errorMessage = 'register.error.userExists';
+            }
+            
             this.hasError.set({
               haveError: true,
-              errorMessage: 'Wystąpił błąd podczas rejestracji. Spróbuj ponownie.',
+              errorMessage: this.translationService.translate(errorMessage),
             });
             this.isLoading.set(false);
           },

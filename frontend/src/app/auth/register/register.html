@@ -144,19 +144,22 @@
               name="checkbox"
               id="checkbox"
               formControlName="termsChecked"
+              (change)="checkBoxNotChecked.set(false)"
             />
-            <label for="checkbox">{{
-              translationService.translate("register.form.acceptTerms")
-            }}</label>
-            @if(checkBoxNotChecked()){
-            <div class="error-message-standalone">
-              {{
-                translationService.translate("register.form.acceptTerms.error")
-              }}
-            </div>
-
-            }
+            <label for="checkbox">
+              {{ translationService.translate("register.form.acceptTerms") }}
+              <a href="/terms" target="_blank" class="terms-link">
+                {{ translationService.translate("register.form.termsLink") }}
+              </a>
+            </label>
           </div>
+          
+          @if (checkboxHasError()) {
+            <div class="error-message-checkbox">
+              {{ translationService.translate('validation.termsRequired') }}
+            </div>
+          }
+          
           <p-button
             size="large"
             class="button"
@@ -167,7 +170,7 @@
             ><span>{{
               translationService.translate("register.form.alreadyHaveAccount")
             }}</span>
-            <a routerLink="/auth/login">{{
+            <a href="/auth/login">{{
               translationService.translate("register.form.signIn")
             }}</a></span
           >
@@ -177,7 +180,7 @@
       }
     </div>
     <div class="image-content">
-      <img [src]="'assets/imageDoctor.png'" alt="DoctorBackground image" />
+      <img [src]="'assets/imageDoctor.png'"  alt="DoctorBackground image" />
     </div>
   </div>
 </div>

@@ -82,11 +82,20 @@ export class SelectWithSearch {
 
     effect(() => {
       const controlValue = this.control().value;
+      if (!controlValue) return; 
+      
       const allOptions = this.loadDataFunction() ? this.dynamicOptions() : this.options();
       const option = allOptions.find(opt => opt.name === controlValue);
-      this.selectedOption.set(option || null);
+      
       if (option) {
+        this.selectedOption.set(option);
         this.searchTerm.set(option.name);
+      } else if (controlValue && !this.loadDataFunction()) {
+        this.searchTerm.set(controlValue);
+        this.selectedOption.set({ name: controlValue });
+      } else if (controlValue && this.loadDataFunction()) {
+        this.searchTerm.set(controlValue);
+        this.selectedOption.set(null);
       }
     });
   }
@@ -134,8 +143,12 @@ export class SelectWithSearch {
     
     const allOptions = this.loadDataFunction() ? this.dynamicOptions() : this.options();
     const exactMatch = allOptions.find(opt => opt.name === value);
-    if (!exactMatch) {
-      this.control().setValue(null);
+    
+    if (exactMatch) {
+      this.control().setValue(value);
+      this.selectedOption.set(exactMatch);
+    } else {
+      this.control().setValue(value);
       this.selectedOption.set(null);
     }
     
@@ -165,7 +178,7 @@ export class SelectWithSearch {
     setTimeout(() => {
       this.isDropdownOpen.set(false);
       
-      if (!this.selectedOption()) {
+      if (!this.selectedOption() && !this.control().value) {
         this.searchTerm.set('');
         this.control().setValue(null);
         this.updateErrorState(); 
