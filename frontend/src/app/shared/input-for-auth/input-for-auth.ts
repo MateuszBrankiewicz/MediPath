@@ -12,6 +12,9 @@ import { TranslationService } from '../../services/translation.service';
 export class InputForAuth {
   private translationService = inject(TranslationService);
   
+  public hasCustomError = input<boolean>(false);
+  public customErrorMessage = input<string>('');
+
   public readonly label = input("");
   public readonly labelKey = input("");
 
@@ -24,14 +27,13 @@ export class InputForAuth {
   
   public readonly name = input('')
 
-  // Get the translated label
+ 
   getTranslatedLabel = computed(() => {
     const key = this.labelKey();
     const fallback = this.label();
     return key ? this.translationService.translate(key) : fallback;
   });
 
-  // Get the translated placeholder
   getTranslatedPlaceholder = computed(() => {
     const key = this.placeholderKey();
     const fallback = this.placeholder();
@@ -39,6 +41,9 @@ export class InputForAuth {
   });
 
   getErrorMessage = computed(() => {
+    if (this.hasCustomError() && this.customErrorMessage()) {
+      return this.customErrorMessage();
+    }
     const control = this.control();
     if (control && control.errors && (control.touched || control.dirty)) {
       if (control.errors['required']) {
@@ -60,12 +65,18 @@ export class InputForAuth {
         if (label.includes('phone') || label.includes('telefon')) {
           return this.translationService.translate('validation.phoneFormat');
         }
+        if (label.includes('birth') || label.includes('urodzenia')) {
+          return this.translationService.translate('validation.birthDateFormat');
+        }
       }
     }
     return '';
   });
 
    get hasError(): boolean {
+    if(this.hasCustomError()){
+      return true;
+    }
     const control = this.control();
     return !!(control && control.errors && (control.touched || control.dirty));
   }

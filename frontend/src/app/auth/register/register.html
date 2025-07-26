@@ -122,19 +122,40 @@
           type="password"
           [control]="registerFormGroup.controls.password"
         />
-        <app-input-for-auth
-          label="Confirm password"
-          labelKey="register.form.confirmPassword"
-          type="password"
-          [control]="registerFormGroup.controls.confirmPassword"
-          class="div13"
-        />
+        
+          <app-input-for-auth
+            label="Confirm password"
+            labelKey="register.form.confirmPassword"
+            type="password"
+            [control]="registerFormGroup.controls.confirmPassword"
+            [hasCustomError]="confirmPasswordHasError()"
+            [customErrorMessage]="
+              passwordMismatchError()
+                ? translationService.translate('validation.passwordMismatch')
+                : ''
+            "
+            class="div13"
+          />  
+        
         <div class="div14">
           <div class="checkbox">
-            <input type="checkbox" name="checkbox" id="checkbox" />
+            <input
+              type="checkbox"
+              name="checkbox"
+              id="checkbox"
+              formControlName="termsChecked"
+            />
             <label for="checkbox">{{
               translationService.translate("register.form.acceptTerms")
             }}</label>
+            @if(checkBoxNotChecked()){
+            <div class="error-message-standalone">
+              {{
+                translationService.translate("register.form.acceptTerms.error")
+              }}
+            </div>
+
+            }
           </div>
           <p-button
             size="large"
