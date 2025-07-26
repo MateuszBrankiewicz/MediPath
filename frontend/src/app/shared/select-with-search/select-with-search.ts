@@ -6,7 +6,6 @@ import { debounceTime, distinctUntilChanged, of, Subject, switchMap } from 'rxjs
 
 export interface SelectOption {
   name: string;
-  
 }
 
 @Component({
@@ -45,10 +44,7 @@ export class SelectWithSearch {
     );
   });
 
-  public hasError = computed(() => {
-    const control = this.control();
-    return !!(control.invalid && (control.dirty || control.touched));
-  });
+  public hasError = signal<boolean>(false);
 
   constructor() {
 
@@ -65,7 +61,6 @@ export class SelectWithSearch {
       })
     ).subscribe({
       next: (options) => {
-        console.log(options)
         this.dynamicOptions.set(options as SelectOption[] || []);
         this.isLoading.set(false);
       },
@@ -74,6 +69,17 @@ export class SelectWithSearch {
         this.isLoading.set(false)
       }
     })
+
+    effect(() => {
+      const control = this.control();
+      
+     
+      const hasErrorValue = !!(control.invalid && (control.dirty || control.touched));
+    
+      
+      this.hasError.set(hasErrorValue);
+    });
+
     effect(() => {
       const controlValue = this.control().value;
       const allOptions = this.loadDataFunction() ? this.dynamicOptions() : this.options();
@@ -83,6 +89,12 @@ export class SelectWithSearch {
         this.searchTerm.set(option.name);
       }
     });
+  }
+
+  private updateErrorState(): void {
+    const control = this.control();
+    const hasErrorValue = !!(control.invalid && (control.dirty || control.touched));
+    this.hasError.set(hasErrorValue);
   }
 
   public getTranslatedLabel(): string {
@@ -101,9 +113,9 @@ export class SelectWithSearch {
 
   public getErrorMessage(): string {
     const control = this.control();
-    
+      
     if (control.hasError('required')) {
-      return this.translationService.translate('validation.required')
+         return this.translationService.translate('validation.required')
         .replace('{field}', this.getTranslatedLabel());
     }
     
@@ -114,6 +126,7 @@ export class SelectWithSearch {
     const target = event.target as HTMLInputElement;
     const value = target.value;
     this.searchTerm.set(value);
+    this.control().markAsDirty();
     
     if (this.loadDataFunction()) {
       this.searchSubject.next(value);
@@ -126,28 +139,49 @@ export class SelectWithSearch {
       this.selectedOption.set(null);
     }
     
+    this.updateErrorState();
+    
     this.isDropdownOpen.set(true);
   }
 
   public onInputFocus(): void {
+    this.control().markAsDirty();
+    this.control().markAsTouched();
+    this.control().updateValueAndValidity();
+    
+    this.updateErrorState();
+    
     this.isDropdownOpen.set(true);
+    if (this.loadDataFunction() && !this.searchTerm()) {
+      this.searchSubject.next('');
+    }
   }
 
   public onInputBlur(): void {
+    this.control().markAsTouched();
+    
+    this.updateErrorState();
+    
     setTimeout(() => {
       this.isDropdownOpen.set(false);
       
       if (!this.selectedOption()) {
         this.searchTerm.set('');
+        this.control().setValue(null);
+        this.updateErrorState(); 
       }
     }, 200);
   }
 
   public onOptionSelect(option: SelectOption): void {
-    
     this.selectedOption.set(option);
     this.searchTerm.set(option.name);
     this.control().setValue(option.name);
+    this.control().markAsDirty();
+    this.control().markAsTouched();
+    
+    this.updateErrorState();
+    
     this.isDropdownOpen.set(false);
   }
 

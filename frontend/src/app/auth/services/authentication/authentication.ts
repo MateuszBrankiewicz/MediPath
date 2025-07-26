@@ -10,14 +10,12 @@ import { SelectOption } from '../../../shared/select-with-search/select-with-sea
 export class AuthenticationService {
   private http = inject(HttpClient);
   public registerUser(userToRegister : RegisterUser){
-    console.log(userToRegister)
     return this.http.post(API_URL+'/users/register', userToRegister)
   }
   public getCities(searchTerm: string){
     if (!searchTerm || searchTerm.trim().length < 2) {
       return of([]);
     }
-    console.log(searchTerm)
     return this.http.get<SelectOption[]>(API_URL+`/cities/${searchTerm}`)
   }
 }

@@ -83,7 +83,6 @@ export class Register {
   protected readonly date = signal<Date | null>(null);
   constructor(){
     this.authService.getCities('').subscribe(val => {
-      console.log(val);
       this.citiesOptions.set(val as SelectOption[])
     })
   }
@@ -120,7 +119,6 @@ export class Register {
         .registerUser(formValue as RegisterUser)
         .subscribe({
           next: (res) => {
-            console.log(res);
             this.router.navigate(['/auth/login']);
             this.isLoading.set(false);
           },
