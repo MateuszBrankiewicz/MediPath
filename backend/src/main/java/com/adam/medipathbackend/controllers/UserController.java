@@ -103,14 +103,14 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/resetpassword")
-    public ResponseEntity<HashMap<String, Object>> resetPassword(@RequestBody ResetForm resetForm) {
-        if(resetForm.getEmail() == null || resetForm.getEmail().isBlank()) {
+    @GetMapping("/resetpassword")
+    public ResponseEntity<HashMap<String, Object>> resetPassword(@RequestParam("address") String address) {
+        if(address == null || address.isBlank()) {
             HashMap<String, Object> invalid = new HashMap<>();
             invalid.put("message", "missing email in request body");
             return new ResponseEntity<>(invalid, HttpStatus.BAD_REQUEST);
         }
-        Optional<User> u = userRepository.findByEmail(resetForm.getEmail());
+        Optional<User> u = userRepository.findByEmail(address);
         if(u.isPresent()) {
             try {
                 JavaMailSenderImpl sender = new JavaMailSenderImpl();
@@ -121,7 +121,7 @@ public class UserController {
                 MimeMessageHelper helper = new MimeMessageHelper(message);
                 helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
                 helper.setSubject("Hello, world!");
-                helper.setTo(resetForm.getEmail());
+                helper.setTo(address);
                 helper.setText("Thank you for ordering!");
 
                 sender.send(message);
