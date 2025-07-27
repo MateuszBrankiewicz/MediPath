@@ -97,6 +97,11 @@ public class UserController {
         message.put("message", "success");
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
+    @GetMapping("/logout")
+    public ResponseEntity<HashMap<String, Object>> logoutUser(HttpSession session) {
+        session.invalidate();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     @PostMapping("/resetpassword")
     public ResponseEntity<HashMap<String, Object>> resetPassword(@RequestBody ResetForm resetForm) {
