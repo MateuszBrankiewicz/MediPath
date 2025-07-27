@@ -13,7 +13,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     @Query("{'email': ?0}")
     Optional<User> findByEmail(String email);
 
-    @Query("{'govID': ?0}")
+    @Query("{'govId': ?0}")
     Optional<User> findByGovID(String id);
 
     long count();
