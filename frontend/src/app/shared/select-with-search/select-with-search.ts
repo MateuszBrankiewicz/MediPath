@@ -1,8 +1,22 @@
-import { Component, input, computed, signal, effect, inject } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  from,
+  of,
+  Subject,
+  switchMap,
+} from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
-import { debounceTime, distinctUntilChanged, of, Subject, switchMap } from 'rxjs';
 
 export interface SelectOption {
   name: string;
@@ -12,7 +26,7 @@ export interface SelectOption {
   selector: 'app-select-with-search',
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './select-with-search.html',
-  styleUrl: './select-with-search.scss'
+  styleUrl: './select-with-search.scss',
 })
 export class SelectWithSearch {
   public control = input.required<FormControl>();
@@ -22,8 +36,9 @@ export class SelectWithSearch {
   public placeholder = input<string>('');
   public placeholderKey = input<string>('');
   public name = input<string>('');
-  public loadDataFunction = input<((searchTerm: string) => any) | null>(null);
-
+  public loadDataFunction = input<((searchTerm: string) => unknown) | null>(
+    null,
+  );
 
   public searchTerm = signal<string>('');
   public isDropdownOpen = signal<boolean>(false);
@@ -33,60 +48,69 @@ export class SelectWithSearch {
 
   private searchSubject = new Subject<string>();
 
-
   private translationService = inject(TranslationService);
 
   public filteredOptions = computed(() => {
-    const allOptions = this.loadDataFunction() ? this.dynamicOptions() : this.options();
+    const allOptions = this.loadDataFunction()
+      ? this.dynamicOptions()
+      : this.options();
+    if (!Array.isArray(allOptions)) {
+      return [];
+    }
     const term = this.searchTerm().toLowerCase();
-    return allOptions.filter(option => 
-      option.name.toLowerCase().includes(term)
+    return allOptions.filter((option) =>
+      option.name.toLowerCase().includes(term),
     );
   });
 
   public hasError = signal<boolean>(false);
 
   constructor() {
-
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(term => {
-        const loadFn = this.loadDataFunction();
-        if(loadFn && term.length >= 0){
-          this.isLoading.set(true);
-          return loadFn(term);
-        }
-        return of([])
-      })
-    ).subscribe({
-      next: (options) => {
-        this.dynamicOptions.set(options as SelectOption[] || []);
-        this.isLoading.set(false);
-      },
-      error:() => {
-        this.dynamicOptions.set([]);
-        this.isLoading.set(false)
-      }
-    })
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((term) => {
+          const loadFn = this.loadDataFunction();
+          if (loadFn && term.length >= 0) {
+            this.isLoading.set(true);
+            return from(loadFn(term) as Promise<SelectOption[]>);
+          }
+          return of([]);
+        }),
+      )
+      .subscribe({
+        next: (options) => {
+          console.log(options as SelectOption[]);
+          this.dynamicOptions.set((options as SelectOption[]) || []);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.dynamicOptions.set([]);
+          this.isLoading.set(false);
+        },
+      });
 
     effect(() => {
       const control = this.control();
-      
-     
-      const hasErrorValue = !!(control.invalid && (control.dirty || control.touched));
-    
-      
+
+      const hasErrorValue = !!(
+        control.invalid &&
+        (control.dirty || control.touched)
+      );
+
       this.hasError.set(hasErrorValue);
     });
 
     effect(() => {
       const controlValue = this.control().value;
-      if (!controlValue) return; 
-      
-      const allOptions = this.loadDataFunction() ? this.dynamicOptions() : this.options();
-      const option = allOptions.find(opt => opt.name === controlValue);
-      
+      if (!controlValue) return;
+
+      const allOptions = this.loadDataFunction()
+        ? this.dynamicOptions()
+        : this.options();
+      const option = allOptions.find((opt) => opt.name === controlValue);
+
       if (option) {
         this.selectedOption.set(option);
         this.searchTerm.set(option.name);
@@ -102,7 +126,10 @@ export class SelectWithSearch {
 
   private updateErrorState(): void {
     const control = this.control();
-    const hasErrorValue = !!(control.invalid && (control.dirty || control.touched));
+    const hasErrorValue = !!(
+      control.invalid &&
+      (control.dirty || control.touched)
+    );
     this.hasError.set(hasErrorValue);
   }
 
@@ -122,12 +149,13 @@ export class SelectWithSearch {
 
   public getErrorMessage(): string {
     const control = this.control();
-      
+
     if (control.hasError('required')) {
-         return this.translationService.translate('validation.required')
+      return this.translationService
+        .translate('validation.required')
         .replace('{field}', this.getTranslatedLabel());
     }
-    
+
     return '';
   }
 
@@ -136,14 +164,19 @@ export class SelectWithSearch {
     const value = target.value;
     this.searchTerm.set(value);
     this.control().markAsDirty();
-    
+
     if (this.loadDataFunction()) {
       this.searchSubject.next(value);
     }
-    
-    const allOptions = this.loadDataFunction() ? this.dynamicOptions() : this.options();
-    const exactMatch = allOptions.find(opt => opt.name === value);
-    
+
+    const allOptions = this.loadDataFunction()
+      ? this.dynamicOptions()
+      : this.options();
+    if (!Array.isArray(allOptions)) {
+      return;
+    }
+    const exactMatch = allOptions.find((opt) => opt.name === value);
+
     if (exactMatch) {
       this.control().setValue(value);
       this.selectedOption.set(exactMatch);
@@ -151,9 +184,9 @@ export class SelectWithSearch {
       this.control().setValue(value);
       this.selectedOption.set(null);
     }
-    
+
     this.updateErrorState();
-    
+
     this.isDropdownOpen.set(true);
   }
 
@@ -161,9 +194,9 @@ export class SelectWithSearch {
     this.control().markAsDirty();
     this.control().markAsTouched();
     this.control().updateValueAndValidity();
-    
+
     this.updateErrorState();
-    
+
     this.isDropdownOpen.set(true);
     if (this.loadDataFunction() && !this.searchTerm()) {
       this.searchSubject.next('');
@@ -172,16 +205,16 @@ export class SelectWithSearch {
 
   public onInputBlur(): void {
     this.control().markAsTouched();
-    
+
     this.updateErrorState();
-    
+
     setTimeout(() => {
       this.isDropdownOpen.set(false);
-      
+
       if (!this.selectedOption() && !this.control().value) {
         this.searchTerm.set('');
         this.control().setValue(null);
-        this.updateErrorState(); 
+        this.updateErrorState();
       }
     }, 200);
   }
@@ -192,9 +225,9 @@ export class SelectWithSearch {
     this.control().setValue(option.name);
     this.control().markAsDirty();
     this.control().markAsTouched();
-    
+
     this.updateErrorState();
-    
+
     this.isDropdownOpen.set(false);
   }
 

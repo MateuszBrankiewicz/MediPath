@@ -24,7 +24,7 @@
   "validation.required": "Pole {field} jest wymagane",
   "validation.email": "Wprowadź prawidłowy adres e-mail",
   "validation.minLength": "Hasło musi mieć co najmniej {length} znaków",
-  "validation.postalCodeFormat": "Kod pocztowy musi być w formacie XX-XXX",
+  "validation.postalCodeFormat": "Kod pocztowy musi mieć format XX-XXX",
   "validation.phoneFormat": "Numer telefonu musi mieć 9 cyfr",
   "validation.birthDateFormat": "Data urodzenia musi być w formacie DD-MM-RRRR",
   "validation.passwordMismatch": "Hasła nie są takie same",

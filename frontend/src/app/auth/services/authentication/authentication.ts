@@ -1,21 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { API_URL } from '../../../utils/constants';
 import { of } from 'rxjs';
 import { SelectOption } from '../../../shared/select-with-search/select-with-search';
+import { API_URL } from '../../../utils/constants';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthenticationService {
   private http = inject(HttpClient);
-  public registerUser(userToRegister : RegisterUser){
-    return this.http.post(API_URL+'/users/register', userToRegister)
+  public registerUser(userToRegister: RegisterUser) {
+    return this.http.post(API_URL + '/users/register', userToRegister);
   }
-  public getCities(searchTerm: string){
+  public getCities(searchTerm: string) {
     if (!searchTerm || searchTerm.trim().length < 2) {
       return of([]);
     }
-    return this.http.get<SelectOption[]>(API_URL+`/cities/${searchTerm}`)
+    return this.http.get<SelectOption[]>(API_URL + `/cities/${searchTerm}`);
   }
 }
