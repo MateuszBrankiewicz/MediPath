@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DatePickerModule } from 'primeng/datepicker';
+import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TranslationService } from '../../services/translation.service';
 import { InputForAuth } from '../../shared/input-for-auth/input-for-auth';
@@ -32,6 +33,7 @@ import { AuthenticationService } from '../services/authentication/authentication
     LanguageSwitcher,
     ProgressSpinnerModule,
     SelectWithSearch,
+    DialogModule,
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss',
@@ -48,6 +50,7 @@ export class Register {
     haveError: false,
     errorMessage: '',
   });
+  protected readonly visible = signal(false);
 
   protected readonly passwordMismatchError = signal<boolean>(false);
   protected readonly checkBoxNotChecked = signal<boolean>(false);
@@ -131,7 +134,7 @@ export class Register {
 
       this.authService.registerUser(formValue as RegisterUser).subscribe({
         next: () => {
-          this.router.navigate(['/auth/login']);
+          this.visible.set(true);
           this.isLoading.set(false);
         },
         error: (err) => {
@@ -157,4 +160,8 @@ export class Register {
   public loadCities = (searchTerm: string) => {
     return this.authService.getCities(searchTerm);
   };
+  protected redirectToLoginPage() {
+    this.visible.set(false);
+    this.router.navigate(['/auth/login']);
+  }
 }

@@ -1,7 +1,7 @@
 {
   "register.title": "Register",
   "register.form.name": "Name",
-  "register.form.surname": "Surname", 
+  "register.form.surname": "Surname",
   "register.form.govermentId": "Government ID",
   "register.form.birthDate": "Birth Date",
   "register.form.province": "Province",
@@ -13,7 +13,7 @@
   "register.form.email": "Email",
   "register.form.password": "Password",
   "register.form.confirmPassword": "Confirm password",
-    "register.form.acceptTerms": "I accept the",
+  "register.form.acceptTerms": "I accept the",
   "register.form.termsLink": "terms and conditions",
   "register.form.signUp": "SIGN UP",
   "register.form.alreadyHaveAccount": "Already have an account?",
@@ -33,6 +33,9 @@
   "register.error.userExists": "User with this email or govermentId already exists.",
   "form.invalid": "Form invalid",
   "form.passwordNotMatch": "Password not match",
-  "register.form.acceptTerms.error": "Accept the terms is required"
-
+  "register.form.acceptTerms.error": "Accept the terms is required",
+  "register.dialog.success": "Success",
+  "register.dialog.registered": "Registered successfully",
+  "register.dialog.goToLogin": "Go to login page",
+  "register.dialog.signIn": "Sign in"
 }
