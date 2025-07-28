@@ -4,18 +4,17 @@
   </div>
   <div class="flex-content">
     <div class="form-content">
-        @if(isLoading()){
-          <div class="spinner">
-            <p-progress-spinner ariaLabel="loading" />
-            </div>
-        }@else{
-      <h2>{{ translationService.translate('register.title') }}</h2>
-       @if(hasError().haveError){ 
-      <div class="error-content">
-       
-        <p>{{hasError().errorMessage}}</p>
-    </div>  }
-        
+      @if (isLoading()) {
+        <div class="spinner">
+          <p-progress-spinner ariaLabel="loading" />
+        </div>
+      } @else {
+        <h2>{{ translationService.translate("register.title") }}</h2>
+        @if (hasError().haveError) {
+          <div class="error-content">
+            <p>{{ hasError().errorMessage }}</p>
+          </div>
+        }
 
         <form
           [formGroup]="registerFormGroup"
@@ -23,7 +22,6 @@
           (ngSubmit)="onRegisterFormSubmit()"
           class="parent"
         >
-      
           <app-input-for-auth
             label="Name"
             labelKey="register.form.name"
@@ -44,21 +42,19 @@
             labelKey="register.form.govermentId"
             type="text"
             class="govId"
-            [control]="registerFormGroup.controls.govermentId"
+            [control]="registerFormGroup.controls.govID"
             class="div7"
           />
           <app-input-for-auth
-          label="Birth Date"
-          labelKey="register.form.birthDate"
-          class="date"
-          type="text"
-          placeholder="DD-MM-YYYY"
-          placeholderKey="register.placeholders.birthDate"
-          [control]="registerFormGroup.controls.birhDate"
-          class="div3"
-        />
-
-       
+            label="Birth Date"
+            labelKey="register.form.birthDate"
+            class="date"
+            type="text"
+            placeholder="DD-MM-YYYY"
+            placeholderKey="register.placeholders.birthDate"
+            [control]="registerFormGroup.controls.birthDate"
+            class="div3"
+          />
 
           <app-input-for-auth
             label="Province"
@@ -77,11 +73,12 @@
             class="div5"
           />
 
-          <app-input-for-auth
-            label="City"
+          <app-select-with-search
+            label="city"
             labelKey="register.form.city"
-            type="text"
             [control]="registerFormGroup.controls.city"
+            [loadDataFunction]="loadCities"
+            placeholder="Select city..."
             class="div6"
           />
 
@@ -125,29 +122,93 @@
             type="password"
             [control]="registerFormGroup.controls.password"
           />
+
           <app-input-for-auth
             label="Confirm password"
             labelKey="register.form.confirmPassword"
             type="password"
             [control]="registerFormGroup.controls.confirmPassword"
+            [hasCustomError]="confirmPasswordHasError()"
+            [customErrorMessage]="
+              passwordMismatchError()
+                ? translationService.translate('validation.passwordMismatch')
+                : ''
+            "
             class="div13"
           />
+
           <div class="div14">
-           <div class="checkbox"><input type="checkbox" name="checkbox" id="checkbox"> <label for="checkbox">{{ translationService.translate('register.form.acceptTerms') }}</label></div> 
+            <div class="checkbox">
+              <input
+                type="checkbox"
+                name="checkbox"
+                id="checkbox"
+                formControlName="termsChecked"
+                (change)="checkBoxNotChecked.set(false)"
+              />
+              <label for="checkbox">
+                {{ translationService.translate("register.form.acceptTerms") }}
+                <a href="/terms" target="_blank" class="terms-link">
+                  {{ translationService.translate("register.form.termsLink") }}
+                </a>
+              </label>
+            </div>
+
+            @if (checkboxHasError()) {
+              <div class="error-message-checkbox">
+                {{ translationService.translate("validation.termsRequired") }}
+              </div>
+            }
+
             <p-button
               size="large"
               class="button"
               type="submit"
               [label]="translationService.translate('register.form.signUp')"
             ></p-button>
-            <span class="login-link"><span>{{ translationService.translate('register.form.alreadyHaveAccount') }}</span> <a routerLink="/auth/login">{{ translationService.translate('register.form.signIn') }}</a></span>
+            <span class="login-link"
+              ><span>{{
+                translationService.translate("register.form.alreadyHaveAccount")
+              }}</span>
+              <a href="/auth/login">{{
+                translationService.translate("register.form.signIn")
+              }}</a></span
+            >
           </div>
         </form>
-      
-    }
+      }
     </div>
     <div class="image-content">
       <img [src]="'assets/imageDoctor.png'" alt="DoctorBackground image" />
     </div>
   </div>
 </div>
+<p-dialog
+  [modal]="true"
+  [(visible)]="visible"
+  [style]="{ width: '30rem', height: '20rem' }"
+>
+  <ng-template #headless>
+    <div class="dialog-content">
+      <i class="pi pi-check" [style]="{ fontSize: '5rem' }"></i>
+      <span class="modal-success">{{
+        translationService.translate("register.dialog.success")
+      }}</span>
+      <div>
+        <span class="modal-text">{{
+          translationService.translate("register.dialog.registered")
+        }}</span>
+        <span class="modal-text">{{
+          translationService.translate("register.dialog.goToLogin")
+        }}</span>
+      </div>
+
+      <p-button
+        [label]="translationService.translate('register.dialog.signIn')"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        (click)="redirectToLoginPage()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

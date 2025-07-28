@@ -1,7 +1,7 @@
 {
   "register.title": "Register",
   "register.form.name": "Name",
-  "register.form.surname": "Surname", 
+  "register.form.surname": "Surname",
   "register.form.govermentId": "Government ID",
   "register.form.birthDate": "Birth Date",
   "register.form.province": "Province",
@@ -13,7 +13,8 @@
   "register.form.email": "Email",
   "register.form.password": "Password",
   "register.form.confirmPassword": "Confirm password",
-  "register.form.acceptTerms": "Accept Terms & Condition",
+  "register.form.acceptTerms": "I accept the",
+  "register.form.termsLink": "terms and conditions",
   "register.form.signUp": "SIGN UP",
   "register.form.alreadyHaveAccount": "Already have an account?",
   "register.form.signIn": "Sign In",
@@ -25,5 +26,16 @@
   "validation.minLength": "Password must be at least {length} characters long",
   "validation.postalCodeFormat": "Postal code must be in format XX-XXX",
   "validation.phoneFormat": "Phone number must be 9 digits",
-  "form.invalid": "Form invalid"
+  "validation.birthDateFormat": "Birth date must be in format DD-MM-YYYY",
+  "validation.passwordMismatch": "Passwords do not match",
+  "validation.termsRequired": "You must accept terms and conditions",
+  "register.error.backendError": "Registration failed. Please try again.",
+  "register.error.userExists": "User with this email or govermentId already exists.",
+  "form.invalid": "Form invalid",
+  "form.passwordNotMatch": "Password not match",
+  "register.form.acceptTerms.error": "Accept the terms is required",
+  "register.dialog.success": "Success",
+  "register.dialog.registered": "Registered successfully",
+  "register.dialog.goToLogin": "Go to login page",
+  "register.dialog.signIn": "Sign in"
 }
