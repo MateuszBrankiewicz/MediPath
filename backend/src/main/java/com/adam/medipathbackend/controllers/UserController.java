@@ -222,9 +222,6 @@ public class UserController {
         if(registrationForm.getProvince() == null || registrationForm.getProvince().isBlank()) {
             missingFields.add("province");
         }
-        if(registrationForm.getStreet() == null || registrationForm.getStreet().isBlank()) {
-            missingFields.add("street");
-        }
         if(registrationForm.getNumber() == null || registrationForm.getNumber().isBlank()) {
             missingFields.add("number");
         }
