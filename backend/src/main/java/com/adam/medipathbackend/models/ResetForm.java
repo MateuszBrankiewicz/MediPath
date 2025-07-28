@@ -1,14 +1,19 @@
 package com.adam.medipathbackend.models;
 
 public class ResetForm {
-    private String email;
+    private final String token;
+    private final String password;
 
-    public ResetForm(String email, String password) {
-        this.email = email;
+    public ResetForm(String token, String password) {
+        this.token = token;
+        this.password = password;
     }
 
-    public String getEmail() {
-        return email;
+    public String getToken() {
+        return token;
     }
 
+    public String getPassword() {
+        return password;
+    }
 }
