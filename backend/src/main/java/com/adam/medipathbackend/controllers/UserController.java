@@ -7,7 +7,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
-import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +19,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -38,19 +38,14 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<HashMap<String, Object>> registerUser(@RequestBody RegistrationForm registrationForm) {
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody RegistrationForm registrationForm) {
 
         ArrayList<String> missingFields = getMissingFields(registrationForm);
         if(!missingFields.isEmpty()) {
-            HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "missing fields in request body");
-            invalid.put("fields", missingFields);
-            return new ResponseEntity<>(invalid, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
         if(userRepository.findByEmail(registrationForm.getEmail()).isPresent() || userRepository.findByGovID(registrationForm.getGovID()).isPresent()) {
-            HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "this email or person is already registered");
-            return new ResponseEntity<>(invalid, HttpStatus.CONFLICT);
+            return new ResponseEntity<>(Map.of("message", "this email or person is already registered"), HttpStatus.CONFLICT);
         }
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(registrationForm.getPassword());
@@ -68,13 +63,11 @@ public class UserController {
                 registrationForm.getPhoneNumber(),
                 passwordHash
         ));
-        HashMap<String, Object> message = new HashMap<>();
-        message.put("message", "Success");
-        return new ResponseEntity<>(message, HttpStatus.CREATED);
+        return new ResponseEntity<>(Map.of("message", "Success"), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<HashMap<String, Object>> loginUser(HttpSession session, @RequestBody LoginForm loginForm) {
+    public ResponseEntity<Map<String, Object>> loginUser(HttpSession session, @RequestBody LoginForm loginForm) {
         ArrayList<String> missingFields = new ArrayList<>();
         if(loginForm.getEmail() == null || loginForm.getEmail().isBlank()) {
             missingFields.add("email");
@@ -83,40 +76,31 @@ public class UserController {
             missingFields.add("password");
         }
         if(!missingFields.isEmpty()) {
-            HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "missing fields in request body");
-            invalid.put("fields", missingFields);
-            return new ResponseEntity<>(invalid, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
         Optional<User> user = userRepository.findByEmail(loginForm.getEmail());
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         if(user.isEmpty() || !argon2PasswordEncoder.matches(loginForm.getPassword(), user.get().getPasswordHash())) {
-            HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "invalid email or password");
-            return new ResponseEntity<>(invalid, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(Map.of("message", "invalid email or password"), HttpStatus.UNAUTHORIZED);
         }
         User u = user.get();
         session.setAttribute("id", u.getId());
-        HashMap<String, Object> message = new HashMap<>();
-        message.put("message", "success");
-        return new ResponseEntity<>(message, HttpStatus.OK);
+        return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.OK);
     }
     @GetMapping("/logout")
-    public ResponseEntity<HashMap<String, Object>> logoutUser(HttpSession session) {
+    public ResponseEntity<Map<String, Object>> logoutUser(HttpSession session) {
         session.invalidate();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/resetpassword")
-    public ResponseEntity<HashMap<String, Object>> resetPassword(@RequestParam("address") String address) {
+    public ResponseEntity<Map<String, Object>> resetPassword(@RequestParam("address") String address) {
         if(address == null || address.isBlank()) {
-            HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "missing email in request body");
-            return new ResponseEntity<>(invalid, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("message", "missing email in request body"), HttpStatus.BAD_REQUEST);
         }
         Optional<User> u = userRepository.findByEmail(address);
         if(u.isPresent()) {
-            PasswordResetEntry p = null;
+            PasswordResetEntry passwordResetEntry = null;
             try {
 
                 JavaMailSenderImpl sender = new JavaMailSenderImpl();
@@ -128,8 +112,8 @@ public class UserController {
                 helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
                 helper.setSubject("Password reset request");
                 helper.setTo(address);
-                SecureRandom r = new SecureRandom();
-                String token = Long.toHexString(r.nextLong());
+                SecureRandom secureRandom = new SecureRandom();
+                String token = Long.toHexString(secureRandom.nextLong());
                 String content = "<!DOCTYPE html>\n" +
                         "<html>\n" +
                         "<head>\n" +
@@ -147,29 +131,24 @@ public class UserController {
                         "    \n" +
                         "</body>\n" +
                         "</html>";
-                p = preRepository.save(new PasswordResetEntry(address, token));
+                passwordResetEntry = preRepository.save(new PasswordResetEntry(address, token));
 
                 helper.setText(content);
                 sender.send(message);
 
             } catch (MailException | MessagingException | UnsupportedEncodingException e) {
-                if(p != null) {
-                    preRepository.delete(p);
+                if(passwordResetEntry != null) {
+                    preRepository.delete(passwordResetEntry);
                 }
-                HashMap<String, Object> invalid = new HashMap<>();
-                invalid.put("message", "the mail service threw an error");
-                invalid.put("error", e.getMessage());
-                return new ResponseEntity<>(invalid, HttpStatus.SERVICE_UNAVAILABLE);
+                return new ResponseEntity<>(Map.of("message", "the mail service threw an error", "error", e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
             }
         }
-        HashMap<String, Object> valid = new HashMap<>();
-        valid.put("message", "password reset mail has been sent");
-        return new ResponseEntity<>(valid, HttpStatus.OK);
+        return new ResponseEntity<>(Map.of("message", "password reset mail has been sent, if the account exists"), HttpStatus.OK);
 
     }
 
     @PostMapping("/resetpassword")
-    public ResponseEntity<HashMap<String, Object>> resetPasswordWithToken(@RequestBody ResetForm resetForm) {
+    public ResponseEntity<Map<String, Object>> resetPasswordWithToken(@RequestBody ResetForm resetForm) {
         ArrayList<String> missingFields = new ArrayList<>();
         if(resetForm.getToken() == null || resetForm.getToken().isBlank()) {
             missingFields.add("token");
@@ -178,31 +157,23 @@ public class UserController {
             missingFields.add("password");
         }
         if(!missingFields.isEmpty()) {
-            HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "missing fields in request body");
-            invalid.put("fields", missingFields);
-            return new ResponseEntity<>(invalid, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
         Optional<PasswordResetEntry> p = preRepository.findValidToken(resetForm.getToken());
         if(p.isEmpty()) {
-            HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "token invalid or expired");
-            return new ResponseEntity<>(invalid, HttpStatus.GONE);
+            return new ResponseEntity<>(Map.of("message", "token invalid or expired"), HttpStatus.GONE);
         }
+
         Optional<User> u = userRepository.findByEmail(p.get().getEmail());
         if(u.isEmpty()) {
-            HashMap<String, Object> invalid = new HashMap<>();
-            invalid.put("message", "invalid user referenced by token");
-            return new ResponseEntity<>(invalid, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(Map.of("message", "invalid user referenced by token"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         User user = u.get();
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(resetForm.getPassword());
         user.setPasswordHash(passwordHash);
         userRepository.save(user);
-        HashMap<String, Object> valid = new HashMap<>();
-        valid.put("message", "password reset successfully");
-        return new ResponseEntity<>(valid, HttpStatus.OK);
+        return new ResponseEntity<>(Map.of("message", "password reset successfully"), HttpStatus.OK);
     }
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {
