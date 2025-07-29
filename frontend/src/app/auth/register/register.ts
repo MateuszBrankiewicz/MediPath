@@ -19,6 +19,7 @@ import {
   SelectOption,
   SelectWithSearch,
 } from '../../shared/select-with-search/select-with-search';
+import { RegisterUser } from '../auth.constants';
 import { AuthenticationService } from '../services/authentication/authentication';
 
 @Component({
