@@ -170,13 +170,12 @@ class MedipathbackendApplicationTests {
                 .andExpect(jsonPath("$.fields[2]").value("email"))
                 .andExpect(jsonPath("$.fields[3]").value("city"))
                 .andExpect(jsonPath("$.fields[4]").value("province"))
-                .andExpect(jsonPath("$.fields[5]").value("street"))
-                .andExpect(jsonPath("$.fields[6]").value("number"))
-                .andExpect(jsonPath("$.fields[7]").value("postalCode"))
-                .andExpect(jsonPath("$.fields[8]").value("birthDate"))
-                .andExpect(jsonPath("$.fields[9]").value("govID"))
-                .andExpect(jsonPath("$.fields[10]").value("phoneNumber"))
-                .andExpect(jsonPath("$.fields[11]").value("password"));
+                .andExpect(jsonPath("$.fields[5]").value("number"))
+                .andExpect(jsonPath("$.fields[6]").value("postalCode"))
+                .andExpect(jsonPath("$.fields[7]").value("birthDate"))
+                .andExpect(jsonPath("$.fields[8]").value("govID"))
+                .andExpect(jsonPath("$.fields[9]").value("phoneNumber"))
+                .andExpect(jsonPath("$.fields[10]").value("password"));
     }
     @Test
     public void tryRegisterUserWithDuplicateGovID() throws Exception {
