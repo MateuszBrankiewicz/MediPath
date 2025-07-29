@@ -12,6 +12,7 @@ import { CardModule } from 'primeng/card';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { map } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
 import { InputForAuth } from '../../shared/input-for-auth/input-for-auth';
 import { LanguageSwitcher } from '../../shared/language-switcher/language-switcher';
@@ -41,6 +42,7 @@ import { AuthenticationService } from '../services/authentication/authentication
 })
 export class Register {
   protected readonly citiesOptions = signal<SelectOption[]>([]);
+  protected readonly proviceOptions = signal<SelectOption[]>([]);
 
   public translationService = inject(TranslationService);
   private readonly router = inject(Router);
@@ -76,7 +78,10 @@ export class Register {
   public registerFormGroup = new FormGroup({
     name: new FormControl('', [Validators.required]),
     surname: new FormControl('', [Validators.required]),
-    govID: new FormControl('', [Validators.required]),
+    govID: new FormControl('', [
+      Validators.required,
+      Validators.pattern(/^[0-9]{11}$/),
+    ]),
     birthDate: new FormControl('', [
       Validators.required,
       Validators.pattern(/^\d{2}-\d{2}-\d{4}$/),
@@ -106,6 +111,18 @@ export class Register {
     this.authService.getCities('').subscribe((val) => {
       this.citiesOptions.set(val as SelectOption[]);
     });
+    this.authService
+      .getProvinces()
+      .pipe(
+        map((provinceArray) => {
+          return provinceArray.map((provinceValue) => {
+            return { name: provinceValue };
+          });
+        }),
+      )
+      .subscribe((provinceValue) => {
+        this.proviceOptions.set(provinceValue);
+      });
   }
 
   onRegisterFormSubmit() {
@@ -139,10 +156,9 @@ export class Register {
           this.isLoading.set(false);
         },
         error: (err) => {
-          console.error(err);
           let errorMessage = 'register.error.backendError';
 
-          if (err.status === 409 || err.message?.includes('already exists')) {
+          if (err.status === 409) {
             errorMessage = 'register.error.userExists';
           }
 

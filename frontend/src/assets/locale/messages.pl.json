@@ -33,7 +33,7 @@
   "register.error.userExists": "Użytkownik z tym adresem email lub peselem już istnieje.",
   "form.invalid": "Formularz jest nieprawidłowy",
   "form.passwordNotMatch": "Hasla nie sa takie same",
-  "register.form.acceptTerms.error": "Accept the terms is required",
+  "register.form.acceptTerms.error": "Zaakceptiowanie regulaminu jest wymagane",
   "register.dialog.success": "Sukces",
   "register.dialog.registered": "Zarejestrowano pomyślnie",
   "register.dialog.goToLogin": "Przejdź na stronę logowania",

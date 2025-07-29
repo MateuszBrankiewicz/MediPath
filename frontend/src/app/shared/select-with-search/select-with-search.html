@@ -1,8 +1,9 @@
 <div class="select-component">
-  <label>{{ getTranslatedLabel() }}</label>
-  
+  <label [for]="name() || 'select-input'">{{ getTranslatedLabel() }}</label>
+
   <div class="select-wrapper">
     <input
+      [id]="name() || 'select-input'"
       [name]="name()"
       type="text"
       [placeholder]="getTranslatedPlaceholder()"
@@ -15,46 +16,56 @@
       [class.error]="hasError()"
       autocomplete="off"
     />
-    
-    <div class="dropdown-icon" [class.rotated]="isDropdownOpen()">
-      @if (isLoading()) {
-        ⟳
-      } @else {
-        ▼
-      }
-    </div>
-    
+
+    @if (showDropdownButton()) {
+      <button
+        type="button"
+        class="dropdown-button"
+        (mousedown)="onDropdownButtonClick()"
+        [class.rotated]="isDropdownOpen()"
+      >
+        @if (isLoading()) {
+          <span class="loading-icon">⟳</span>
+        } @else {
+          <span class="chevron-icon">▼</span>
+        }
+      </button>
+    }
+
     @if (isDropdownOpen() && filteredOptions().length > 0) {
       <div class="dropdown-menu">
-        @for (option of filteredOptions(); track option.name) {
-          <div 
+        @for (option of filteredOptions(); track option.name; let i = $index) {
+          <div
             class="dropdown-option"
             [class.selected]="selectedOption()?.name === option.name"
+            [class.highlighted]="highlightedIndex() === i"
             (mousedown)="onOptionSelect(option)"
+            (mouseenter)="highlightedIndex.set(i)"
           >
             {{ option.name }}
           </div>
         }
       </div>
     }
-    
-    @if (isDropdownOpen() && filteredOptions().length === 0 && searchTerm() && !isLoading()) {
+
+    @if (
+      isDropdownOpen() &&
+      filteredOptions().length === 0 &&
+      searchTerm() &&
+      !isLoading()
+    ) {
       <div class="dropdown-menu">
-        <div class="dropdown-option disabled">
-          No results found
-        </div>
+        <div class="dropdown-option disabled">No results found</div>
       </div>
     }
-    
+
     @if (isLoading()) {
       <div class="dropdown-menu">
-        <div class="dropdown-option disabled">
-          Loading...
-        </div>
+        <div class="dropdown-option disabled">Loading...</div>
       </div>
     }
   </div>
-  
+
   @if (hasError()) {
     <span class="error-message">{{ getErrorMessage() }}</span>
   }
