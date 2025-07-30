@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { of } from 'rxjs';
 import { SelectOption } from '../../../shared/select-with-search/select-with-search';
 import { API_URL } from '../../../utils/constants';
+import { RegisterUser } from '../../auth.constants';
 
 @Injectable({
   providedIn: 'root',
@@ -17,5 +18,8 @@ export class AuthenticationService {
       return of([]);
     }
     return this.http.get<SelectOption[]>(API_URL + `/cities/${searchTerm}`);
+  }
+  public getProvinces() {
+    return this.http.get<string[]>(API_URL + '/provinces');
   }
 }

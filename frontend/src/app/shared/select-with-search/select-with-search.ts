@@ -39,12 +39,14 @@ export class SelectWithSearch {
   public loadDataFunction = input<((searchTerm: string) => unknown) | null>(
     null,
   );
+  public showDropdownButton = input<boolean>(true);
 
   public searchTerm = signal<string>('');
   public isDropdownOpen = signal<boolean>(false);
   public selectedOption = signal<SelectOption | null>(null);
   public dynamicOptions = signal<SelectOption[]>([]);
   public isLoading = signal<boolean>(false);
+  public highlightedIndex = signal<number>(-1);
 
   private searchSubject = new Subject<string>();
 
@@ -164,6 +166,7 @@ export class SelectWithSearch {
     const value = target.value;
     this.searchTerm.set(value);
     this.control().markAsDirty();
+    this.highlightedIndex.set(-1);
 
     if (this.loadDataFunction()) {
       this.searchSubject.next(value);
@@ -198,6 +201,7 @@ export class SelectWithSearch {
     this.updateErrorState();
 
     this.isDropdownOpen.set(true);
+    this.highlightedIndex.set(-1);
     if (this.loadDataFunction() && !this.searchTerm()) {
       this.searchSubject.next('');
     }
@@ -229,11 +233,77 @@ export class SelectWithSearch {
     this.updateErrorState();
 
     this.isDropdownOpen.set(false);
+    this.highlightedIndex.set(-1);
+  }
+
+  public onDropdownButtonClick(): void {
+    if (this.isDropdownOpen()) {
+      this.isDropdownOpen.set(false);
+      this.highlightedIndex.set(-1);
+    } else {
+      this.isDropdownOpen.set(true);
+      this.highlightedIndex.set(-1);
+      if (this.loadDataFunction() && !this.searchTerm()) {
+        this.searchSubject.next('');
+      }
+    }
   }
 
   public onKeyDown(event: KeyboardEvent): void {
+    const options = this.filteredOptions();
+
     if (event.key === 'Escape') {
       this.isDropdownOpen.set(false);
+      this.highlightedIndex.set(-1);
+      return;
+    }
+
+    if (!this.isDropdownOpen()) {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        this.isDropdownOpen.set(true);
+        this.highlightedIndex.set(-1);
+        if (this.loadDataFunction() && !this.searchTerm()) {
+          this.searchSubject.next('');
+        }
+      }
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowDown': {
+        event.preventDefault();
+        const nextIndex =
+          this.highlightedIndex() < options.length - 1
+            ? this.highlightedIndex() + 1
+            : 0;
+        this.highlightedIndex.set(nextIndex);
+        break;
+      }
+
+      case 'ArrowUp': {
+        event.preventDefault();
+        const prevIndex =
+          this.highlightedIndex() > 0
+            ? this.highlightedIndex() - 1
+            : options.length - 1;
+        this.highlightedIndex.set(prevIndex);
+        break;
+      }
+
+      case 'Enter': {
+        event.preventDefault();
+        const highlightedOption = options[this.highlightedIndex()];
+        if (highlightedOption) {
+          this.onOptionSelect(highlightedOption);
+        }
+        break;
+      }
+
+      case 'Tab':
+        this.isDropdownOpen.set(false);
+        this.highlightedIndex.set(-1);
+        break;
     }
   }
 }
