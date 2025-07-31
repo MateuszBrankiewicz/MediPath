@@ -37,5 +37,18 @@
   "register.dialog.success": "Sukces",
   "register.dialog.registered": "Zarejestrowano pomyślnie",
   "register.dialog.goToLogin": "Przejdź na stronę logowania",
-  "register.dialog.signIn": "Zaloguj się"
+  "register.dialog.signIn": "Zaloguj się",
+  "login.title": "Logowanie",
+  "login.form.email": "Email",
+  "login.form.password": "Hasło",
+  "login.form.forgotPassword": "Zapomniałeś hasła?",
+  "login.form.loginButton": "Zaloguj się",
+  "login.form.noAccount": "Nie masz konta?",
+  "login.form.registerLink": "Zarejestruj się",
+  "login.error.backendError": "Wystąpił błąd serwera. Spróbuj ponownie później.",
+  "login.error.invalidCredentials": "Nieprawidłowy email lub hasło.",
+  "login.loginButton": "Zaloguj się",
+  "login.registerLink": "Nie masz konta?",
+  "login.forgotPassword": "Zapomniałeś hasła?",
+  "login.noAccount": "Nie masz konta?"
 }

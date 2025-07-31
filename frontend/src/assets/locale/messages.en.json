@@ -37,5 +37,18 @@
   "register.dialog.success": "Success",
   "register.dialog.registered": "Registered successfully",
   "register.dialog.goToLogin": "Go to login page",
-  "register.dialog.signIn": "Sign in"
+  "register.dialog.signIn": "Sign in",
+  "login.title": "Login",
+  "login.form.email": "Email",
+  "login.form.password": "Password",
+  "login.form.forgotPassword": "Forgot password?",
+  "login.form.loginButton": "Log in",
+  "login.form.noAccount": "Don't have an account?",
+  "login.form.registerLink": "Sign up",
+  "login.error.backendError": "Server error. Please try again later.",
+  "login.error.invalidCredentials": "Invalid email or password.",
+  "login.loginButton": "Log in",
+  "login.registerLink": "Don't have an account?",
+  "login.forgotPassword": "Forgot password?",
+  "login.noAccount": "Don't have an account?"
 }
