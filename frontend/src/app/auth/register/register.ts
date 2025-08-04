@@ -16,6 +16,7 @@ import { map } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
 import { InputForAuth } from '../../shared/input-for-auth/input-for-auth';
 import { LanguageSwitcher } from '../../shared/language-switcher/language-switcher';
+import { ModalDialogComponent } from '../../shared/modal-dialog/modal-dialog';
 import {
   SelectOption,
   SelectWithSearch,
@@ -35,6 +36,7 @@ import { AuthenticationService } from '../services/authentication/authentication
     LanguageSwitcher,
     ProgressSpinnerModule,
     SelectWithSearch,
+    ModalDialogComponent,
     DialogModule,
   ],
   templateUrl: './register.html',

@@ -76,7 +76,15 @@
 .image-content {
   display: none;
   @media screen and (min-width: 1024px) {
+    margin: 0px;
+    padding: 0px;
     display: block;
+    img {
+      object-fit: cover;
+
+      width: 100%;
+      margin-top: 20px;
+    }
   }
 }
 
@@ -87,5 +95,14 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
+  }
+}
+a {
+  color: var(--p-primary-color);
+  text-decoration: none;
+  font-weight: bold;
+
+  &:hover {
+    text-decoration: none;
   }
 }

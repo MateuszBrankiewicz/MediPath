@@ -196,35 +196,4 @@ h2 {
     margin-right: 50px;
   }
 }
-.dialog-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  gap: 0.9rem;
-  margin-top: 0.5rem;
-  .modal-success {
-    text-align: center;
-    font-size: 3rem;
-  }
-  div {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.3rem;
-  }
 
-  p-button {
-    --p-button-padding-x: 7rem;
-    --p-button-padding-y: 0.8rem;
-    --p-button-border-radius: 2rem;
-    --p-button-bg-color: var(--p-primary-color);
-    --p-button-text-color: white;
-    font-size: 1.2rem;
-    font-weight: bold;
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
-  }
-}

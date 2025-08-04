@@ -5,12 +5,13 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Button } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TranslationService } from '../../services/translation.service';
 import { InputForAuth } from '../../shared/input-for-auth/input-for-auth';
+import { ModalDialogComponent } from '../../shared/modal-dialog/modal-dialog';
 import { AuthenticationService } from '../services/authentication/authentication';
 
 @Component({
@@ -18,7 +19,9 @@ import { AuthenticationService } from '../services/authentication/authentication
   imports: [
     InputForAuth,
     Button,
+    ModalDialogComponent,
     DialogModule,
+    RouterModule,
     ProgressSpinnerModule,
     ReactiveFormsModule,
   ],
@@ -39,6 +42,7 @@ export class Login {
     haveError: false,
     errorMessage: '',
   });
+  protected readonly visible = signal(false);
   protected loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [
@@ -56,9 +60,8 @@ export class Login {
         return;
       }
       this.authService.login(email, password).subscribe({
-        next: (response) => {
-          console.log('Login successful', response);
-          this.router.navigate(['/dashboard']);
+        next: () => {
+          this.visible.set(true);
         },
         error: (error) => {
           console.error('Login failed', error);
@@ -71,5 +74,12 @@ export class Login {
     } else {
       console.error('Form is invalid');
     }
+  }
+
+  protected redirectToLoginPage() {
+    this.visible.set(false);
+  }
+  protected redirectToHomePage() {
+    this.router.navigate(['/']);
   }
 }

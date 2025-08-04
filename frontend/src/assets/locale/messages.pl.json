@@ -48,7 +48,11 @@
   "login.error.backendError": "Wystąpił błąd serwera. Spróbuj ponownie później.",
   "login.error.invalidCredentials": "Nieprawidłowy email lub hasło.",
   "login.loginButton": "Zaloguj się",
-  "login.registerLink": "Nie masz konta?",
+  "login.registerLink": "Zarejestruj się?",
   "login.forgotPassword": "Zapomniałeś hasła?",
-  "login.noAccount": "Nie masz konta?"
+  "login.noAccount": "Nie masz konta?",
+  "login.redirectToHome": "Przejdź do strony głównej",
+  "login.error": "Niepoprawny email lub hasło.",
+  "login.success": "Zalogowano pomyślnie"
+
 }
