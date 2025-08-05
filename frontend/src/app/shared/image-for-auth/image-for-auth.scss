@@ -1,0 +1,54 @@
+.image-content {
+  position: relative;
+}
+
+.image-nav {
+  position: absolute;
+  height: 70%;
+  top: 70px;
+  right: 90px;
+  z-index: 10;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.image-nav-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 400;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+.image-nav-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.image-overlay-text {
+  position: absolute;
+  top: 40%;
+  left: 10%;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+.image-overlay-text h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 0 1rem 0;
+}
+
+.image-overlay-text p {
+  margin-top: 20px;
+  font-size: 1.1rem;
+  margin: 0;
+}
+.language-switcher-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}

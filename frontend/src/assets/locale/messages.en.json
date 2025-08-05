@@ -21,6 +21,8 @@
   "register.placeholders.birthDate": "DD-MM-YYYY",
   "register.placeholders.postalCode": "XX-XXX",
   "register.placeholders.phoneNumber": "XXXXXXXXX",
+  "register.hero.title": "Create your account",
+  "register.hero.subtitle": "Take care of your health.",
   "validation.required": "{field} is required",
   "validation.email": "Please enter a valid email address",
   "validation.minLength": "Password must be at least {length} characters long",
@@ -53,6 +55,8 @@
   "login.noAccount": "Don't have an account?",
   "login.redirectToHome": "Go to home page",
   "login.error": "Invalid email or password.",
-  "login.success": "Logged in successfully"
+  "login.success": "Logged in successfully",
+  "home": "Home",
+"aboutUs": "About us"
 
 }

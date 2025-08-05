@@ -23,6 +23,7 @@ import {
 } from '../../shared/select-with-search/select-with-search';
 import { RegisterUser } from '../auth.constants';
 import { AuthenticationService } from '../services/authentication/authentication';
+import { ImageForAuth } from "../../shared/image-for-auth/image-for-auth";
 
 @Component({
   selector: 'app-register',
@@ -38,7 +39,8 @@ import { AuthenticationService } from '../services/authentication/authentication
     SelectWithSearch,
     ModalDialogComponent,
     DialogModule,
-  ],
+    ImageForAuth
+],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
