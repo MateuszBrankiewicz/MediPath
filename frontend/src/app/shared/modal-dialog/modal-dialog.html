@@ -1,0 +1,38 @@
+<p-dialog
+  [modal]="true"
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  [style]="dialogStyle()"
+>
+  <ng-template #headless>
+    <div class="dialog-content">
+      <i
+        class="pi"
+        [class.pi-check]="type() === 'success'"
+        [class.pi-times]="type() === 'error'"
+        [style.fontSize]="'5rem'"
+        [style.color]="type() === 'error' ? 'red' : undefined"
+      ></i>
+
+      @if (type() === "success") {
+        <span class="modal-success">{{ title() }}</span>
+        @if (messages().length > 0) {
+          <div>
+            @for (message of messages(); track $index) {
+              <span class="modal-text">{{ message }}</span>
+            }
+          </div>
+        }
+      } @else {
+        <p class="error-message-dialog">{{ errorMessage() }}</p>
+      }
+
+      <p-button
+        [label]="buttonLabel()"
+        [icon]="buttonIcon()"
+        [iconPos]="buttonIconPos()"
+        (click)="onButtonClick()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
