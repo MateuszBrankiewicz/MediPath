@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/screen/register_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -52,7 +53,14 @@ class WelcomeScreen extends StatelessWidget {
                 SizedBox(
                   width: 400,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RegisterScreen(),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
