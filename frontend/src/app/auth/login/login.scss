@@ -73,9 +73,13 @@
     cursor: pointer;
   }
 }
-.image-content {
+app-image-for-auth {
+  margin-top: 10px;
+  height: 80%;
+  margin-top: 10px;
   display: none;
   @media screen and (min-width: 1024px) {
+    display: block;
     margin: 0px;
     padding: 0px;
     display: block;

@@ -45,18 +45,18 @@
   "login.form.password": "Password",
   "login.form.forgotPassword": "Forgot password?",
   "login.form.loginButton": "Log in",
-  "login.form.noAccount": "Don't have an account?",
   "login.form.registerLink": "Sign up",
   "login.error.backendError": "Server error. Please try again later.",
   "login.error.invalidCredentials": "Invalid email or password.",
   "login.loginButton": "Log in",
-  "login.registerLink": "Don't have an account?",
+  "login.registerLink": "Register now",
   "login.forgotPassword": "Forgot password?",
   "login.noAccount": "Don't have an account?",
   "login.redirectToHome": "Go to home page",
   "login.error": "Invalid email or password.",
   "login.success": "Logged in successfully",
   "home": "Home",
-"aboutUs": "About us"
-
+  "aboutUs": "About us",
+  "welcomeBack": "Welcome back!",
+  "takeCareOfYourHealth": "Continue taking care of your health."
 }

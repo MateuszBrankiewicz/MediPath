@@ -1,16 +1,18 @@
 <div class="image-content">
-      <nav class="image-nav">
-        <a routerLink="/" class="image-nav-link">{{ homeLabel() }}</a>
-        <a routerLink="/about" class="image-nav-link">{{ aboutLabel() }}</a>
-      </nav>
-      <img
-        [ngSrc]="imageSrc()"
-        alt="DoctorBackground image"
-        width="100%"
-        height="auto"
-      />
-      <div class="image-overlay-text">
-        <h1>{{ title() }}</h1>
-        <p>{{ subtitle() }}</p>
-      </div>
-    </div>
+  <nav class="image-nav">
+    <a routerLink="/" class="image-nav-link">{{ homeLabel() }}</a>
+    <a routerLink="/about" class="image-nav-link">{{ aboutLabel() }}</a>
+
+    <app-language-switcher></app-language-switcher>
+  </nav>
+  <img
+    [src]="imageSrc()"
+    alt="DoctorBackground image"
+    width="100%"
+    height="auto"
+  />
+  <div class="image-overlay-text">
+    <h1>{{ title() }}</h1>
+    <p>{{ subtitle() }}</p>
+  </div>
+</div>

@@ -5,9 +5,9 @@
   padding: 2rem;
 }
 
-
 .flex-content {
   width: 80%;
+  height: 100%;
 }
 .card {
   position: relative;
@@ -36,8 +36,11 @@
 h2 {
   text-align: center;
 }
-.image-content {
-  display: none;
+
+app-image-for-auth {
+  margin-top: 10px;
+  height: 100%;
+  width: 70%;
 }
 
 .parent {

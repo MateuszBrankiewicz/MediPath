@@ -1,7 +1,4 @@
 <div class="card">
-  <div class="language-switcher-container">
-    <app-language-switcher></app-language-switcher>
-  </div>
   <div class="flex-content">
     <div class="form-content">
       @if (isLoading()) {
@@ -183,30 +180,31 @@
       [subtitle]="translationService.translate('register.hero.subtitle')"
       [homeLabel]="translationService.translate('home')"
       [aboutLabel]="translationService.translate('aboutUs')"
-    ></app-image-for-auth>
-</div>
-<app-modal-dialog
-  [visible]="visible()"
-  (visibleChange)="visible.set($event)"
-  type="success"
-  [title]="translationService.translate('register.dialog.success')"
-  [messages]="[
-    translationService.translate('register.dialog.registered'),
-    translationService.translate('register.dialog.goToLogin'),
-  ]"
-  [buttonLabel]="translationService.translate('register.dialog.signIn')"
-  buttonIcon="pi pi-arrow-right"
-  buttonIconPos="right"
-  (buttonClick)="redirectToLoginPage()"
-/>
+    />
+  </div>
+  <app-modal-dialog
+    [visible]="visible()"
+    (visibleChange)="visible.set($event)"
+    type="success"
+    [title]="translationService.translate('register.dialog.success')"
+    [messages]="[
+      translationService.translate('register.dialog.registered'),
+      translationService.translate('register.dialog.goToLogin'),
+    ]"
+    [buttonLabel]="translationService.translate('register.dialog.signIn')"
+    buttonIcon="pi pi-arrow-right"
+    buttonIconPos="right"
+    (buttonClick)="redirectToLoginPage()"
+  />
 
-<app-modal-dialog
-  [visible]="hasError().haveError"
-  (visibleChange)="
-    hasError.set({ haveError: $event, errorMessage: hasError().errorMessage })
-  "
-  type="error"
-  [errorMessage]="hasError().errorMessage"
-  buttonLabel="Ok"
-  (buttonClick)="hasError.set({ haveError: false, errorMessage: '' })"
-/>
+  <app-modal-dialog
+    [visible]="hasError().haveError"
+    (visibleChange)="
+      hasError.set({ haveError: $event, errorMessage: hasError().errorMessage })
+    "
+    type="error"
+    [errorMessage]="hasError().errorMessage"
+    buttonLabel="Ok"
+    (buttonClick)="hasError.set({ haveError: false, errorMessage: '' })"
+  />
+</div>

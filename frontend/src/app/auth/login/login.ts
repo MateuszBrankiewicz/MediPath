@@ -10,6 +10,7 @@ import { Button } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TranslationService } from '../../services/translation.service';
+import { ImageForAuth } from '../../shared/image-for-auth/image-for-auth';
 import { InputForAuth } from '../../shared/input-for-auth/input-for-auth';
 import { ModalDialogComponent } from '../../shared/modal-dialog/modal-dialog';
 import { AuthenticationService } from '../services/authentication/authentication';
@@ -24,6 +25,7 @@ import { AuthenticationService } from '../services/authentication/authentication
     RouterModule,
     ProgressSpinnerModule,
     ReactiveFormsModule,
+    ImageForAuth,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',

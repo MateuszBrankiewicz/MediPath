@@ -1,8 +1,9 @@
 import { Component, input } from '@angular/core';
+import { LanguageSwitcher } from '../language-switcher/language-switcher';
 
 @Component({
   selector: 'app-image-for-auth',
-  imports: [],
+  imports: [LanguageSwitcher],
   templateUrl: './image-for-auth.html',
   styleUrl: './image-for-auth.scss',
 })

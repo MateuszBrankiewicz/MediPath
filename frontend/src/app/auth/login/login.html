@@ -1,8 +1,12 @@
 <div class="card">
   <div class="flex-content">
-    <div class="image-content">
-      <img src="assets/imageDoctor.png" alt="doctor" />
-    </div>
+    <app-image-for-auth
+      [imageSrc]="'assets/imageDoctor.png'"
+      [title]="translationService.translate('welcomeBack')"
+      [subtitle]="translationService.translate('takeCareOfYourHealth')"
+      [homeLabel]="translationService.translate('home')"
+      [aboutLabel]="translationService.translate('aboutUs')"
+    />
     <div class="form-content">
       @if (isLoading()) {
         <div class="spinner">
@@ -17,13 +21,13 @@
         >
           <app-input-for-auth
             type="email"
-            [label]="translationService.translate('login.email')"
+            [label]="translationService.translate('register.form.email')"
             [control]="loginFormGroup.controls.email"
           />
           <div class="password-with-forgot-password">
             <app-input-for-auth
               type="password"
-              [label]="translationService.translate('login.password')"
+              [label]="translationService.translate('register.form.password')"
               [control]="loginFormGroup.controls.password"
             />
             <a routerLink="/auth/forgot-password">{{

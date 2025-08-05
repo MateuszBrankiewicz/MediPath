@@ -57,5 +57,7 @@
   "login.error": "Niepoprawny email lub hasło.",
   "login.success": "Zalogowano pomyślnie",
   "home": "Strona główna",
-  "aboutUs": "O nas"
+  "aboutUs": "O nas",
+  "welcomeBack": "Witaj ponownie",
+  "takeCareOfYourHealth": "Dbaj o swoje zdrowie"
 }
