@@ -49,19 +49,17 @@ public class UserController {
         }
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(registrationForm.getPassword());
+        UserSettings userSettings = new UserSettings("PL", true, true);
         userRepository.save(new User(
                 registrationForm.getEmail(),
                 registrationForm.getName(),
                 registrationForm.getSurname(),
                 registrationForm.getGovID(),
                 LocalDate.parse(registrationForm.getBirthDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy")),
-                registrationForm.getProvince(),
-                registrationForm.getCity(),
-                registrationForm.getPostalCode(),
-                registrationForm.getNumber(),
-                registrationForm.getStreet(),
+                new Address(registrationForm.getProvince(), registrationForm.getCity(), registrationForm.getStreet(), registrationForm.getNumber(), registrationForm.getPostalCode()),
                 registrationForm.getPhoneNumber(),
-                passwordHash
+                passwordHash,
+                userSettings
         ));
         return new ResponseEntity<>(Map.of("message", "Success"), HttpStatus.CREATED);
     }
@@ -92,6 +90,8 @@ public class UserController {
         session.invalidate();
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+
 
     @GetMapping("/resetpassword")
     public ResponseEntity<Map<String, Object>> resetPassword(@RequestParam(value = "address", required = false) String address) {
