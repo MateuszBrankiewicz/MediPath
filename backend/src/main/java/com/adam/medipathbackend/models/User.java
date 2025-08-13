@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 @Document("User")
 
@@ -26,46 +28,58 @@ public class User {
 
     private LocalDate birthDate;
 
-    private String province;
-
-    private String postalCode;
-
-    private String city;
-
-    private String number;
-
-    private String street;
+    private Address address;
 
     private String phoneNumber;
 
     private String passwordHash;
+
+    private String licenceNumber;
+
+    private ArrayList<String> specialisations;
+
+    private LinkedList<MedicalHistory> latestMedicalHistory;
+
+    private int roleCode;
+
+    private ArrayList<Notification> notifications;
+
+    private float rating;
+
+    private boolean isActive;
+
+    private ArrayList<InstitutionDigest> employers;
+
+    private UserSettings userSettings;
+
+
 
     @Override
     public String toString() {
         return email + " : " + name + " " + surname;
     }
 
-    public User(String email, String name, String surname, String govId, LocalDate birthDate, String province, String city, String postalCode, String number, String street, String phoneNumber, String passwordHash) {
+    public User(String email, String name, String surname, String govId, LocalDate birthDate, Address address, String phoneNumber, String passwordHash, UserSettings userSettings) {
         this.email = email;
         this.name = name;
         this.surname = surname;
         this.govId = govId;
         this.birthDate = birthDate;
-        this.province = province;
-        this.city = city;
-        this.postalCode = postalCode;
-        this.number = number;
-        this.street = street;
+        this.address = address;
         this.phoneNumber = phoneNumber;
         this.passwordHash = passwordHash;
+        this.employers = new ArrayList<>();
+        this.userSettings = userSettings;
+        this.employers = new ArrayList<>();
+
     }
 
-    public String getId() {
-        return id;
+    public UserSettings getUserSettings() {
+        return userSettings;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setUserSettings(UserSettings userSettings) {
+        this.userSettings = userSettings;
     }
 
     public String getEmail() {
@@ -108,44 +122,12 @@ public class User {
         this.birthDate = birthDate;
     }
 
-    public String getProvince() {
-        return province;
+    public Address getAddress() {
+        return address;
     }
 
-    public void setProvince(String province) {
-        this.province = province;
-    }
-
-    public String getPostalCode() {
-        return postalCode;
-    }
-
-    public void setPostalCode(String postalCode) {
-        this.postalCode = postalCode;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
-
-    public String getStreet() {
-        return street;
-    }
-
-    public void setStreet(String street) {
-        this.street = street;
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
     public String getPhoneNumber() {
@@ -162,5 +144,73 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public String getLicenceNumber() {
+        return licenceNumber;
+    }
+
+    public void setLicenceNumber(String licenceNumber) {
+        this.licenceNumber = licenceNumber;
+    }
+
+    public ArrayList<String> getSpecialisations() {
+        return specialisations;
+    }
+
+    public void setSpecialisations(ArrayList<String> specialisations) {
+        this.specialisations = specialisations;
+    }
+
+    public LinkedList<MedicalHistory> getLatestMedicalHistory() {
+        return latestMedicalHistory;
+    }
+
+    public void setLatestMedicalHistory(LinkedList<MedicalHistory> latestMedicalHistory) {
+        this.latestMedicalHistory = latestMedicalHistory;
+    }
+
+    public int getRoleCode() {
+        return roleCode;
+    }
+
+    public void setRoleCode(int roleCode) {
+        this.roleCode = roleCode;
+    }
+
+    public ArrayList<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(ArrayList<Notification> notifications) {
+        this.notifications = notifications;
+    }
+
+    public float getRating() {
+        return rating;
+    }
+
+    public void setRating(float rating) {
+        this.rating = rating;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public ArrayList<InstitutionDigest> getEmployers() {
+        return employers;
+    }
+
+    public void setEmployers(ArrayList<InstitutionDigest> employers) {
+        this.employers = employers;
+    }
+
+    public String getId() {
+        return id;
     }
 }
