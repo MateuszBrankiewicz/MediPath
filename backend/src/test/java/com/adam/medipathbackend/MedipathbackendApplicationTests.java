@@ -75,6 +75,12 @@ class MedipathbackendApplicationTests {
 
     private List<City> cityList;
 
+    private final String EXAMPLE_MAIL = "test@mail.com";
+
+    private final String EXAMPLE_TOKEN = "1234567890abcdef";
+
+    private final User exampleValidUser = new User(EXAMPLE_MAIL, "Name", "Surname", "1234567890", LocalDate.of(1900, 12, 12), new Address("Province", "City", "Street", "Number", "PostalCode"), "123456789", "$argon2id$v=19$m=60000,t=10,p=1$MOrLn9JdvWpJyJDMZ4Z9qg$zgHTASZaQH9zoTUO0bd0re+6G523ZUreKFmWQSu+f24", new UserSettings("PL", true, true));
+
     @BeforeEach
     public void createTestData() {
         this.cityList = new ArrayList<>();
@@ -120,12 +126,12 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryRegisterUser() throws Exception {
 
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.empty());
 
         String exampleUser = "{" +
                 "\"name\": \"TestName\"," +
                 "\"surname\": \"TestSurname\"," +
-                "\"email\": \"test@mail.com\"," +
+                "\"email\": \"" + EXAMPLE_MAIL + "\"," +
                 "\"govID\": \"90010112340\"," +
                 "\"birthDate\": \"01-01-1990\"," +
                 "\"province\": \"Abcd\"," +
@@ -144,11 +150,11 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryRegisterUserDuplicateEmail() throws Exception {
 
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.of(new User("test@mail.com", "A", "B", "1234567890", LocalDate.of(1900, 12, 12), new Address("A", "A", "A", "A", "A"), "A", "A", new UserSettings("A", true, true))));
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
         String exampleUser = "{" +
                 "\"name\": \"TestName\"," +
                 "\"surname\": \"TestSurname\"," +
-                "\"email\": \"test@mail.com\"," +
+                "\"email\": \"" + EXAMPLE_MAIL + "\"," +
                 "\"govID\": \"90010112340\"," +
                 "\"birthDate\": \"01-01-1990\"," +
                 "\"province\": \"Abcd\"," +
@@ -167,10 +173,10 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryRegisterUserMissingName() throws Exception {
 
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.empty());
         String exampleUser = "{" +
                 "\"name\": \"TestName\"," +
-                "\"email\": \"test@mail.com\"," +
+                "\"email\": \"" + EXAMPLE_MAIL + "\"," +
                 "\"govID\": \"90010112340\"," +
                 "\"birthDate\": \"01-01-1990\"," +
                 "\"province\": \"Abcd\"," +
@@ -190,7 +196,7 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryRegisterUserMissingData() throws Exception {
 
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.empty());
         String exampleUser = "{}";
 
         mvc.perform(post("/api/users/register").contentType("application/json").content(exampleUser))
@@ -211,13 +217,13 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryRegisterUserWithDuplicateGovID() throws Exception {
 
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.of(new User("test@mail.com", "A", "B", "1234567890", LocalDate.of(1900, 12, 12), new Address("A", "A", "A", "A", "A"), "A", "A", new UserSettings("A", true, true))));
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
 
         String exampleUser = "{" +
                 "\"name\": \"TestName\"," +
                 "\"surname\": \"TestSurname\"," +
-                "\"email\": \"test@mail.com\"," +
+                "\"email\": \"" + EXAMPLE_MAIL + "\"," +
                 "\"govID\": \"1234567890\"," +
                 "\"birthDate\": \"01-01-1990\"," +
                 "\"province\": \"Abcd\"," +
@@ -234,10 +240,10 @@ class MedipathbackendApplicationTests {
     }
     @Test
     public void tryLogInSuccess() throws Exception {
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.of(new User("test@mail.com", "A", "B", "1234567890", LocalDate.of(1900, 12, 12), new Address("A", "A", "A", "A", "A"), "A", "$argon2id$v=19$m=60000,t=10,p=1$MOrLn9JdvWpJyJDMZ4Z9qg$zgHTASZaQH9zoTUO0bd0re+6G523ZUreKFmWQSu+f24", new UserSettings("A", true, true))));
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
 
         String exampleLogin = "{" +
-                "\"email\": \"test@mail.com\"," +
+                "\"email\": \"" + EXAMPLE_MAIL + "\"," +
                 "\"password\": \"passwordpassword\"" +
                 "}";
 
@@ -262,10 +268,10 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryLogInValidEmailInvalidPassword() throws Exception {
 
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.of(new User("test@mail.com", "A", "B", "1234567890", LocalDate.of(1900, 12, 12), new Address("A", "A", "A", "A", "A"), "A", "A", new UserSettings("A", true, true))));
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
 
         String exampleLogin = "{" +
-                "\"email\": \"test@mail.com\"," +
+                "\"email\": \"" + EXAMPLE_MAIL + "\"," +
                 "\"password\": \"invalid\"" +
                 "}";
 
@@ -277,7 +283,7 @@ class MedipathbackendApplicationTests {
     public void tryLogInNoPassword() throws Exception {
 
         String exampleLogin = "{" +
-                "\"email\": \"test@mail.com\"" +
+                "\"email\": \"" + EXAMPLE_MAIL + "\"" +
                 "}";
 
         mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
@@ -312,7 +318,7 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryResetMailValid() throws Exception {
 
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.of(new User("test@mail.com", "A", "B", "1234567890", LocalDate.of(1900, 12, 12), new Address("A", "A", "A", "A", "A"), "A", "A", new UserSettings("A", true, true))));
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
 
 
         mvc.perform(get("/api/users/resetpassword?address=test@mail.com"))
@@ -323,7 +329,7 @@ class MedipathbackendApplicationTests {
             MimeMessage receivedMessage = greenMail.getReceivedMessages()[0];
 
             assertEquals(1, receivedMessage.getAllRecipients().length);
-            assertEquals("test@mail.com", receivedMessage.getAllRecipients()[0].toString());
+            assertEquals(EXAMPLE_MAIL, receivedMessage.getAllRecipients()[0].toString());
             assertEquals("MediPath <service@medipath.com>", receivedMessage.getFrom()[0].toString());
             assertEquals("Password reset request", receivedMessage.getSubject());
         });
@@ -346,12 +352,13 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryResetMailSecondaryValidToken() throws Exception {
 
-        when(preRepository.findValidToken("1234567890abcdef")).thenReturn(Optional.of(new PasswordResetEntry("test@mail.com", "1234567890abcdef")));
-        when(userRepository.findByEmail("test@mail.com")).thenReturn(Optional.of(new User("test@mail.com", "A", "B", "1234567890", LocalDate.of(1900, 12, 12), new Address("A", "A", "A", "A", "A"), "A", "A", new UserSettings("A", true, true))));
+
+        when(preRepository.findValidToken(EXAMPLE_TOKEN)).thenReturn(Optional.of(new PasswordResetEntry(EXAMPLE_MAIL, EXAMPLE_TOKEN)));
+        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
 
 
         String exampleLogin = "{" +
-                "\"token\": \"1234567890abcdef\"," +
+                "\"token\": \"" + EXAMPLE_TOKEN +"\"," +
                 "\"password\": \"anotherpassword\"" +
                 "}";
 
@@ -362,10 +369,10 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryResetMailSecondaryInvalidToken() throws Exception {
 
-        when(preRepository.findValidToken("1234567890abcdef")).thenReturn(Optional.empty());
+        when(preRepository.findValidToken(EXAMPLE_TOKEN)).thenReturn(Optional.empty());
 
         String exampleLogin = "{" +
-                "\"token\": \"1234567890abcdef\"," +
+                "\"token\": \""+ EXAMPLE_TOKEN +"\"," +
                 "\"password\": \"anotherpassword\"" +
                 "}";
 
