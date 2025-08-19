@@ -22,4 +22,7 @@ export class AuthenticationService {
   public getProvinces() {
     return this.http.get<string[]>(API_URL + '/provinces');
   }
+  public login(email: string, password: string) {
+    return this.http.post(API_URL + '/users/login', { email, password });
+  }
 }
