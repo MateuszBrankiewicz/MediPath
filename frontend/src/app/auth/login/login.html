@@ -1,32 +1,80 @@
 <div class="card">
   <div class="flex-content">
-    <div class="image-content">
-      <img src="assets/imageDoctor.png" />
-    </div>
+    <app-image-for-auth
+      [imageSrc]="'assets/imageDoctor.png'"
+      [title]="translationService.translate('welcomeBack')"
+      [subtitle]="translationService.translate('takeCareOfYourHealth')"
+      [homeLabel]="translationService.translate('home')"
+      [aboutLabel]="translationService.translate('aboutUs')"
+    />
     <div class="form-content">
-      <h2>Zaloguj</h2>
-      <form class="form-content--without-heder">
-        <app-input-for-auth
-          type="email"
-          [label]="'Email'"
-          [control]="loginFormGroup.controls.email"
-        />
-        <div class="password-with-forgot-password">
+      @if (isLoading()) {
+        <div class="spinner">
+          <p-progress-spinner ariaLabel="loading" />
+        </div>
+      } @else {
+        <h2>{{ translationService.translate("login.title") }}</h2>
+        <form
+          class="form-content--without-heder"
+          [formGroup]="loginForm"
+          (ngSubmit)="onSubmit()"
+        >
           <app-input-for-auth
-            type="password"
-            [label]="'Password'"
-            [control]="loginFormGroup.controls.Password"
+            type="email"
+            [label]="translationService.translate('register.form.email')"
+            [control]="loginFormGroup.controls.email"
           />
-          <a routerLink="/auth/login"> Forgot Password? </a>
-        </div>
-        <div class="button-content">
-          <p-button size="large" class="button" type="submit" label="Zaloguj" />
-          <span class="login-link"
-            ><span>Nie masz konta? </span>
-            <a routerLink="/auth/login"> Zarejestruj sie </a></span
-          >
-        </div>
-      </form>
+          <div class="password-with-forgot-password">
+            <app-input-for-auth
+              type="password"
+              [label]="translationService.translate('register.form.password')"
+              [control]="loginFormGroup.controls.password"
+            />
+            <a routerLink="/auth/forgot-password">{{
+              translationService.translate("login.forgotPassword")
+            }}</a>
+          </div>
+          <div class="button-content">
+            <p-button
+              size="large"
+              class="button"
+              type="submit"
+              [label]="translationService.translate('login.loginButton')"
+            />
+            <span class="login-link">
+              <span
+                >{{ translationService.translate("login.noAccount") }}
+              </span>
+              <a routerLink="/auth/register">{{
+                translationService.translate("login.registerLink")
+              }}</a>
+            </span>
+          </div>
+        </form>
+      }
     </div>
   </div>
 </div>
+
+<app-modal-dialog
+  [visible]="hasError().haveError"
+  (visibleChange)="
+    hasError.set({ haveError: $event, errorMessage: hasError().errorMessage })
+  "
+  type="error"
+  [errorMessage]="hasError().errorMessage"
+  buttonLabel="Ok"
+  (buttonClick)="hasError.set({ haveError: false, errorMessage: '' })"
+/>
+
+<app-modal-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  type="success"
+  [title]="translationService.translate('register.dialog.success')"
+  [messages]="[translationService.translate('login.success')]"
+  [buttonLabel]="translationService.translate('login.redirectToHome')"
+  buttonIcon="pi pi-arrow-right"
+  buttonIconPos="right"
+  (buttonClick)="redirectToHomePage()"
+/>

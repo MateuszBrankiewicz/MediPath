@@ -16,12 +16,14 @@ import { map } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
 import { InputForAuth } from '../../shared/input-for-auth/input-for-auth';
 import { LanguageSwitcher } from '../../shared/language-switcher/language-switcher';
+import { ModalDialogComponent } from '../../shared/modal-dialog/modal-dialog';
 import {
   SelectOption,
   SelectWithSearch,
 } from '../../shared/select-with-search/select-with-search';
 import { RegisterUser } from '../auth.constants';
 import { AuthenticationService } from '../services/authentication/authentication';
+import { ImageForAuth } from "../../shared/image-for-auth/image-for-auth";
 
 @Component({
   selector: 'app-register',
@@ -35,8 +37,10 @@ import { AuthenticationService } from '../services/authentication/authentication
     LanguageSwitcher,
     ProgressSpinnerModule,
     SelectWithSearch,
+    ModalDialogComponent,
     DialogModule,
-  ],
+    ImageForAuth
+],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })

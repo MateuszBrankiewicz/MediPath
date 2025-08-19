@@ -1,7 +1,4 @@
 <div class="card">
-  <div class="language-switcher-container">
-    <app-language-switcher></app-language-switcher>
-  </div>
   <div class="flex-content">
     <div class="form-content">
       @if (isLoading()) {
@@ -177,54 +174,37 @@
         </form>
       }
     </div>
-    <div class="image-content">
-      <img [src]="'assets/imageDoctor.png'" alt="DoctorBackground image" />
-    </div>
+    <app-image-for-auth
+      [imageSrc]="'assets/imageDoctor.png'"
+      [title]="translationService.translate('register.hero.title')"
+      [subtitle]="translationService.translate('register.hero.subtitle')"
+      [homeLabel]="translationService.translate('home')"
+      [aboutLabel]="translationService.translate('aboutUs')"
+    />
   </div>
+  <app-modal-dialog
+    [visible]="visible()"
+    (visibleChange)="visible.set($event)"
+    type="success"
+    [title]="translationService.translate('register.dialog.success')"
+    [messages]="[
+      translationService.translate('register.dialog.registered'),
+      translationService.translate('register.dialog.goToLogin'),
+    ]"
+    [buttonLabel]="translationService.translate('register.dialog.signIn')"
+    buttonIcon="pi pi-arrow-right"
+    buttonIconPos="right"
+    (buttonClick)="redirectToLoginPage()"
+  />
+
+  <app-modal-dialog
+    [visible]="hasError().haveError"
+    (visibleChange)="
+      hasError.set({ haveError: $event, errorMessage: hasError().errorMessage })
+    "
+    type="error"
+    [errorMessage]="hasError().errorMessage"
+    buttonLabel="Ok"
+    (buttonClick)="hasError.set({ haveError: false, errorMessage: '' })"
+  />
 </div>
-<p-dialog
-  [modal]="true"
-  [(visible)]="visible"
-  [style]="{ width: '30rem', height: '20rem' }"
->
-  <ng-template #headless>
-    <div class="dialog-content">
-      <i class="pi pi-check" [style]="{ fontSize: '5rem' }"></i>
-      <span class="modal-success">{{
-        translationService.translate("register.dialog.success")
-      }}</span>
-      <div>
-        <span class="modal-text">{{
-          translationService.translate("register.dialog.registered")
-        }}</span>
-        <span class="modal-text">{{
-          translationService.translate("register.dialog.goToLogin")
-        }}</span>
-      </div>
-
-      <p-button
-        [label]="translationService.translate('register.dialog.signIn')"
-        icon="pi pi-arrow-right"
-        iconPos="right"
-        (click)="redirectToLoginPage()"
-      />
-    </div>
-  </ng-template>
-</p-dialog>
-<p-dialog
-  [modal]="true"
-  [(visible)]="hasError().haveError"
-  [style]="{ width: '30rem', height: '16rem' }"
->
-  <ng-template #headless>
-    <div class="dialog-content">
-      <i class="pi pi-times" [style]="{ fontSize: '5rem', color: 'red' }"></i>
-      <p class="error-message-dialog">{{ hasError().errorMessage }}</p>
-
-      <p-button
-        [label]="'Ok'"
-        (click)="hasError.set({ haveError: false, errorMessage: '' })"
-      />
-    </div>
-  </ng-template>
-</p-dialog>
