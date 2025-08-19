@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.security.SecureRandom;
@@ -18,10 +19,8 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,7 +34,8 @@ public class UserController {
     @Autowired
     PasswordResetEntryRepository preRepository;
 
-
+    @Autowired
+    private JavaMailSender sender;
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody RegistrationForm registrationForm) {
@@ -49,19 +49,17 @@ public class UserController {
         }
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(registrationForm.getPassword());
+        UserSettings userSettings = new UserSettings("PL", true, true);
         userRepository.save(new User(
                 registrationForm.getEmail(),
                 registrationForm.getName(),
                 registrationForm.getSurname(),
                 registrationForm.getGovID(),
                 LocalDate.parse(registrationForm.getBirthDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy")),
-                registrationForm.getProvince(),
-                registrationForm.getCity(),
-                registrationForm.getPostalCode(),
-                registrationForm.getNumber(),
-                registrationForm.getStreet(),
+                new Address(registrationForm.getProvince(), registrationForm.getCity(), registrationForm.getStreet(), registrationForm.getNumber(), registrationForm.getPostalCode()),
                 registrationForm.getPhoneNumber(),
-                passwordHash
+                passwordHash,
+                userSettings
         ));
         return new ResponseEntity<>(Map.of("message", "Success"), HttpStatus.CREATED);
     }
@@ -93,19 +91,17 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+
+
     @GetMapping("/resetpassword")
-    public ResponseEntity<Map<String, Object>> resetPassword(@RequestParam("address") String address) {
+    public ResponseEntity<Map<String, Object>> resetPassword(@RequestParam(value = "address", required = false) String address) {
         if(address == null || address.isBlank()) {
-            return new ResponseEntity<>(Map.of("message", "missing email in request body"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("message", "missing email in request parameters"), HttpStatus.BAD_REQUEST);
         }
         Optional<User> u = userRepository.findByEmail(address);
         if(u.isPresent()) {
             PasswordResetEntry passwordResetEntry = null;
             try {
-
-                JavaMailSenderImpl sender = new JavaMailSenderImpl();
-                sender.setHost("127.0.0.1");
-                sender.setPort(1025);
 
                 MimeMessage message = sender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message);
