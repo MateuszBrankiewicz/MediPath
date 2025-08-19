@@ -59,4 +59,13 @@
   "aboutUs": "About us",
   "welcomeBack": "Welcome back!",
   "takeCareOfYourHealth": "Continue taking care of your health."
+  ,
+  "passwordReset.title": "Forgot password?",
+  "passwordReset.subtitle": "Enter your email address, and we will send you a message with instructions to reset your password.",
+  "passwordReset.resetButton": "RESET PASSWORD",
+  "passwordReset.noAccount": "Don't have an account?",
+  "passwordReset.signUp": "Sign up",
+  "passwordReset.dialog.successTitle": "Success",
+  "passwordReset.dialog.sent": "If an account exists for this email, we've sent password reset instructions.",
+  "passwordReset.dialog.signIn": "Back to sign in"
 }
