@@ -96,7 +96,7 @@ public class UserController {
     @GetMapping("/resetpassword")
     public ResponseEntity<Map<String, Object>> resetPassword(@RequestParam(value = "address", required = false) String address) {
         if(address == null || address.isBlank()) {
-            return new ResponseEntity<>(Map.of("message", "missing email in request parameters"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("message", "missing address in request parameters"), HttpStatus.BAD_REQUEST);
         }
         Optional<User> u = userRepository.findByEmail(address);
         if(u.isPresent()) {

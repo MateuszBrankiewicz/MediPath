@@ -35,6 +35,14 @@ services:
 
     networks:
       - web-network
+
+  mailhog:
+    image: 'mailhog/mailhog:latest'
+    ports:
+        - "8025:8025"
+        - "1025:1025"
+    networks:
+        - web-network
 networks:
   web-network:
     driver: bridge
