@@ -25,4 +25,9 @@ export class AuthenticationService {
   public login(email: string, password: string) {
     return this.http.post(API_URL + '/users/login', { email, password });
   }
+  public resetPassword(email: string) {
+    return this.http.get<{ message: string }>(
+      API_URL + '/users/resetpassword?address=' + email,
+    );
+  }
 }

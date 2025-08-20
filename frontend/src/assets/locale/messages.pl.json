@@ -59,8 +59,7 @@
   "home": "Strona główna",
   "aboutUs": "O nas",
   "welcomeBack": "Witaj ponownie",
-  "takeCareOfYourHealth": "Dbaj o swoje zdrowie"
-  ,
+  "takeCareOfYourHealth": "Dbaj o swoje zdrowie",
   "passwordReset.title": "Zapomniałeś hasła?",
   "passwordReset.subtitle": "Wpisz swój adres e-mail, a wyślemy wiadomość z instrukcjami dotyczącymi resetowania hasła.",
   "passwordReset.resetButton": "RESETUJ HASŁO",
@@ -68,5 +67,6 @@
   "passwordReset.signUp": "Zarejestruj się",
   "passwordReset.dialog.successTitle": "Sukces",
   "passwordReset.dialog.sent": "Jeśli konto istnieje dla tego adresu e-mail, wysłaliśmy instrukcje resetowania hasła.",
-  "passwordReset.dialog.signIn": "Wróć do logowania"
+  "passwordReset.dialog.signIn": "Wróć do logowania",
+  "passwordReset.subtitleWithToken": "Wprowadź nowe hasło dla swojego konta."
 }
