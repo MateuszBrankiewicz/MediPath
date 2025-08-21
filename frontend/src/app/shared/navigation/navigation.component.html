@@ -1,0 +1,76 @@
+@if (sidebarVisible()) {
+  <header class="mobile-header">
+    <div class="mobile-header-content">
+      <div class="logo-container">
+        <div class="logo">
+          <i class="pi pi-plus-circle"></i>
+          <span>MediPath</span>
+        </div>
+      </div>
+      <button
+        pButton
+        type="button"
+        icon="pi pi-times"
+        class="p-button-text close-btn"
+        (click)="toggleSidebar()"
+        aria-label="Close menu"
+      >
+        <span class="sr-only">Close</span>
+      </button>
+    </div>
+  </header>
+}
+<aside class="sidebar" [class.visible]="sidebarVisible()">
+  <div class="logo-section">
+    <div class="logo">
+      <i class="pi pi-plus-circle"></i>
+      <span>MediPath</span>
+    </div>
+  </div>
+
+  <div class="nav-menu">
+    <p-menu [model]="menuItems" styleClass="medipath-menu">
+      <ng-template #item let-item>
+        <a
+          pRipple
+          class="flex items-center p-menu-item-link"
+          [routerLink]="item.routerLink"
+          routerLinkActive="active-route"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <span [class]="item.icon" class="menu-icon"></span>
+          <span class="menu-label">{{ item.label }}</span>
+          @if (item.badge) {
+            <span class="menu-badge" [class]="item.badgeStyleClass">
+              {{ item.badge }}
+            </span>
+          }
+        </a>
+      </ng-template>
+    </p-menu>
+  </div>
+
+  <div class="user-profile">
+    <button
+      class="user-info"
+      (click)="navigateToProfile()"
+      (keyup.enter)="navigateToProfile()"
+      tabindex="0"
+      aria-label="Go to profile"
+    >
+      <div class="user-details">
+        <span class="user-name">{{ userName() }}</span>
+        <span class="user-role">{{ userRole() }}</span>
+      </div>
+    </button>
+  </div>
+</aside>
+
+<button
+  class="mobile-toggle"
+  (click)="toggleSidebar()"
+  aria-label="Toggle menu"
+>
+  <i class="pi pi-bars"></i>
+  <span class="sr-only">Menu</span>
+</button>

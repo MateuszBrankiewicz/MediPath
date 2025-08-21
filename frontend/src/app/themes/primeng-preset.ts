@@ -1,5 +1,6 @@
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
+import { menuComponent } from './components/menu';
 
 export const MyPreset = definePreset(Aura, {
   primitive: {
@@ -14,7 +15,7 @@ export const MyPreset = definePreset(Aura, {
       700: '#003249',
       800: '#075985',
       900: '#0c4a6e',
-      950: '#082f49'
+      950: '#2D4A69',
     },
     gray: {
       50: '#f9fafb',
@@ -26,8 +27,8 @@ export const MyPreset = definePreset(Aura, {
       600: '#4b5563',
       700: '#374151',
       800: '#1f2937',
-      900: '#111827'
-    }
+      900: '#111827',
+    },
   },
   semantic: {
     primary: {
@@ -41,15 +42,15 @@ export const MyPreset = definePreset(Aura, {
       700: '{clinicblue.700}',
       800: '{clinicblue.800}',
       900: '{clinicblue.900}',
-      950: '{clinicblue.950}'
+      950: '{clinicblue.950}',
     },
     colorScheme: {
       light: {
         primary: {
-          color: '{clinicblue.700}',
+          color: '{clinicblue.950}',
           inverseColor: '#ffffff',
           hoverColor: '{clinicblue.800}',
-          activeColor: '{clinicblue.900}'
+          activeColor: '{clinicblue.900}',
         },
         surface: {
           0: '#ffffff',
@@ -62,24 +63,24 @@ export const MyPreset = definePreset(Aura, {
           600: '{gray.600}',
           700: '{gray.700}',
           800: '{gray.800}',
-          900: '{gray.900}'
+          900: '{gray.900}',
         },
         highlight: {
           background: '{clinicblue.50}',
           focusBackground: '{clinicblue.100}',
           color: '{clinicblue.900}',
-          focusColor: '{clinicblue.950}'
+          focusColor: '{clinicblue.950}',
         },
         formField: {
-          hoverBorderColor: '{primary.color}'
-        }
+          hoverBorderColor: '{primary.color}',
+        },
       },
       dark: {
         primary: {
           color: '{clinicblue.200}',
           inverseColor: '{clinicblue.950}',
           hoverColor: '{clinicblue.100}',
-          activeColor: '{clinicblue.50}'
+          activeColor: '{clinicblue.50}',
         },
         surface: {
           0: '#0f172a',
@@ -92,24 +93,27 @@ export const MyPreset = definePreset(Aura, {
           600: '#e2e8f0',
           700: '#f1f5f9',
           800: '#f8fafc',
-          900: '#ffffff'
+          900: '#ffffff',
         },
         highlight: {
           background: 'rgba(255, 255, 255, 0.08)',
           focusBackground: 'rgba(255, 255, 255, 0.16)',
           color: 'rgba(255,255,255,0.87)',
-          focusColor: 'rgba(255,255,255,0.87)'
+          focusColor: 'rgba(255,255,255,0.87)',
         },
         formField: {
-          hoverBorderColor: '{primary.color}'
-        }
-      }
+          hoverBorderColor: '{primary.color}',
+        },
+      },
     },
     focusRing: {
       width: '2px',
       style: 'solid',
       color: '{primary.color}',
-      offset: '2px'
-    }
-  }
+      offset: '2px',
+    },
+  },
+  components: {
+    menu: menuComponent,
+  },
 });

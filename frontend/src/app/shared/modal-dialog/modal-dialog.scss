@@ -1,20 +1,87 @@
+.p-dialog {
+  border-radius: 16px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: none;
+  overflow: hidden;
+
+  .p-dialog-content {
+    padding: 0;
+    border-radius: 16px;
+  }
+
+  .p-dialog-header {
+    display: none;
+  }
+}
+
 .dialog-content {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: 0.9rem;
-  margin-top: 0.5rem;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+
+  .pi {
+    font-size: 4rem !important;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: iconPulse 0.6s ease-out;
+
+    &.pi-check {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    &.pi-times {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 2%);
+      color: white;
+      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+    }
+  }
+
   .modal-success {
     text-align: center;
-    font-size: 3rem;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
   }
+
   div {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
+    gap: 0.5rem;
+
+    .modal-text {
+      color: #6b7280;
+      line-height: 1.5;
+      text-align: center;
+    }
+  }
+
+  .error-message-dialog {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #dc2626;
+    margin: 0;
+    line-height: 1.4;
+    padding: 1rem;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    text-align: center;
   }
 
   p-button {
@@ -28,5 +95,52 @@
     transition:
       transform 0.2s ease,
       box-shadow 0.2s ease;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+@keyframes iconPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Success variant styling
+:host(.success-dialog) {
+  .dialog-content {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  }
+}
+
+// Error variant styling
+:host(.error-dialog) {
+  .dialog-content {
+    background: linear-gradient(135deg, #fef2f2 0%, #fdf2f2 100%);
+  }
+
+  p-button {
+    --p-button-bg-color: #ef4444;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
   }
 }

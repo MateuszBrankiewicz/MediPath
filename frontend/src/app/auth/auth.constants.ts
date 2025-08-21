@@ -12,3 +12,7 @@ export interface RegisterUser {
   email: string;
   password: string;
 }
+export interface ForgotPasswordRequest {
+  password: string;
+  token: string;
+}

@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { of } from 'rxjs';
 import { SelectOption } from '../../../shared/select-with-search/select-with-search';
 import { API_URL } from '../../../utils/constants';
-import { RegisterUser } from '../../auth.constants';
+import { ForgotPasswordRequest, RegisterUser } from '../../auth.constants';
 
 @Injectable({
   providedIn: 'root',
@@ -29,5 +29,8 @@ export class AuthenticationService {
     return this.http.get<{ message: string }>(
       API_URL + '/users/resetpassword?address=' + email,
     );
+  }
+  public sentPasswordWithToken(request: ForgotPasswordRequest) {
+    return this.http.post(API_URL + '/users/resetpassword', request);
   }
 }

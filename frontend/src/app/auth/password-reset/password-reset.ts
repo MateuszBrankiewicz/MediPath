@@ -36,6 +36,8 @@ export class PasswordReset {
   private readonly activatedRoute = inject(ActivatedRoute);
   protected readonly isLoading = signal(false);
   protected readonly visible = signal(false);
+  protected readonly errorMessage = signal<string | null>(null);
+  protected readonly isTokenExpired = signal(false);
   private readonly authenticationService = inject(AuthenticationService);
   protected readonly token = signal<string | null>(null);
   protected readonly forgotPasswordForm = new FormGroup({
@@ -51,58 +53,88 @@ export class PasswordReset {
   protected readonly emailSentForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
   });
+
   constructor() {
     this.activatedRoute.params.subscribe((params) => {
       const token = params['token'];
       this.token.set(token || null);
     });
   }
+
   protected emailSubmit() {
     this.emailSentForm.markAllAsTouched();
     this.emailSentForm.updateValueAndValidity();
     if (this.emailSentForm.valid) {
-      this.visible.set(true);
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+
       if (!this.emailSentForm.value.email) {
-        this.visible.set(false);
+        this.isLoading.set(false);
         return;
       }
+
       this.authenticationService
         .resetPassword(this.emailSentForm.value.email)
         .subscribe({
-          next: (response) => {
-            console.log(response.message);
-            console.log('tutaj');
-            this.visible.set(false);
+          next: () => {
+            this.isLoading.set(false);
+            this.visible.set(true);
           },
           error: (error) => {
-            console.error(error);
-            this.visible.set(false);
+            this.isLoading.set(false);
+            this.errorMessage.set(error.error?.message || 'An error occurred');
           },
         });
     }
   }
+
   passwordReset() {
     this.forgotPasswordForm.markAllAsTouched();
     this.forgotPasswordForm.updateValueAndValidity();
-    // if (this.forgotPasswordForm.valid) {
-    //   this.visible.set(true);
 
-    //   this.authenticationService
-    //     .resetPassword(this.forgotPasswordForm.value.email)
-    //     .subscribe({
-    //       next: (response) => {
-    //         console.log(response.message);
-    //         console.log('tutaj');
-    //         this.visible.set(false);
-    //       },
-    //       error: (error) => {
-    //         console.error(error);
-    //         this.visible.set(false);
-    //       },
-    //     });
-    // }
+    if (this.forgotPasswordForm.valid) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+      this.isTokenExpired.set(false);
+      console.log({
+        password: this.forgotPasswordForm.value.password ?? '',
+        token: this.token() ?? '',
+      });
+      this.authenticationService
+        .sentPasswordWithToken({
+          password: this.forgotPasswordForm.value.password ?? '',
+          token: this.token() ?? '',
+        })
+        .subscribe({
+          next: () => {
+            this.isLoading.set(false);
+            this.visible.set(true);
+          },
+          error: (error) => {
+            this.isLoading.set(false);
+
+            if (
+              error.status === 410 &&
+              error.error?.message === 'token invalid or expired'
+            ) {
+              this.isTokenExpired.set(true);
+              this.errorMessage.set('passwordReset.error.tokenExpired');
+            } else {
+              this.errorMessage.set(
+                error.error?.message || 'passwordReset.error.generic',
+              );
+            }
+          },
+        });
+    }
   }
+
   protected redirectToLoginPage() {
     this.visible.set(false);
+    this.router.navigate(['/auth/login']);
+  }
+
+  protected redirectToForgotPassword() {
+    this.router.navigate(['/auth/forgot-password']);
   }
 }

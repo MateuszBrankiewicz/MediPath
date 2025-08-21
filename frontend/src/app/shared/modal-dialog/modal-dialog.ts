@@ -15,24 +15,28 @@ export type DialogType = 'success' | 'error';
   templateUrl: './modal-dialog.html',
   styleUrls: ['./modal-dialog.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.success-dialog]': 'type() === "success"',
+    '[class.error-dialog]': 'type() === "error"',
+  },
   imports: [DialogModule, ButtonModule],
 })
 export class ModalDialogComponent {
-  visible = input<boolean>(false);
-  type = input<DialogType>('success');
-  title = input<string>('');
-  errorMessage = input<string>('');
-  messages = input<string[]>([]);
-  buttonLabel = input<string>('Ok');
-  buttonIcon = input<string>('');
-  buttonIconPos = input<'left' | 'right'>('left');
-  width = input<string>('30rem');
-  height = input<string>('20rem');
+  public readonly visible = input<boolean>(false);
+  public readonly type = input<DialogType>('success');
+  public readonly title = input<string>('');
+  public readonly errorMessage = input<string>('');
+  public readonly messages = input<string[]>([]);
+  public readonly buttonLabel = input<string>('Ok');
+  public readonly buttonIcon = input<string>('');
+  public readonly buttonIconPos = input<'left' | 'right'>('left');
+  public readonly width = input<string>('30rem');
+  public readonly height = input<string>('20rem');
 
-  buttonClick = output<void>();
-  visibleChange = output<boolean>();
+  public readonly buttonClick = output<void>();
+  public readonly visibleChange = output<boolean>();
 
-  dialogStyle = computed(() => ({
+  public readonly dialogStyle = computed(() => ({
     width: this.width(),
     height: this.type() === 'error' ? '16rem' : this.height(),
   }));

@@ -68,5 +68,10 @@
   "passwordReset.dialog.successTitle": "Sukces",
   "passwordReset.dialog.sent": "Jeśli konto istnieje dla tego adresu e-mail, wysłaliśmy instrukcje resetowania hasła.",
   "passwordReset.dialog.signIn": "Wróć do logowania",
-  "passwordReset.subtitleWithToken": "Wprowadź nowe hasło dla swojego konta."
+  "passwordReset.subtitleWithToken": "Wprowadź nowe hasło do swojego konta.",
+  "passwordReset.error.tokenExpired": "Link do resetowania hasła wygasł lub jest nieprawidłowy. Proszę poprosić o nowy.",
+  "passwordReset.error.generic": "Wystąpił błąd podczas resetowania hasła. Spróbuj ponownie.",
+  "passwordReset.tokenExpired.title": "Link Wygasł",
+  "passwordReset.tokenExpired.message": "Ten link do resetowania hasła wygasł. Proszę poprosić o nowy email resetujący hasło.",
+  "passwordReset.tokenExpired.requestNew": "Poproś o Nowy Link"
 }
