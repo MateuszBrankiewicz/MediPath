@@ -7,6 +7,7 @@ export enum UserRoles {
   DOCTOR = 'doctor',
   PATIENT = 'patient',
   STAFF = 'staff',
+  GUEST = 'guest',
 }
 
 @Component({
@@ -34,8 +35,11 @@ export class App {
         case '/staf':
           this.userRole.set(UserRoles.STAFF);
           break;
-        default:
+        case '/patient':
           this.userRole.set(UserRoles.PATIENT);
+          break;
+        default:
+          this.userRole.set(UserRoles.GUEST);
       }
     });
     console.log('App initialized with role:', this.userRole());

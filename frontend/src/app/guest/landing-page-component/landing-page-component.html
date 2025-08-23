@@ -1,0 +1,51 @@
+<p-menubar>
+  <ng-template #start>
+    <div class="logo">
+      <img src="assets/main_logo.png" alt="MediPath Logo" class="logo-image" />
+      <span>MediPath</span>
+    </div>
+  </ng-template>
+  <ng-template #end>
+    <div class="button-group">
+      <p-button
+        size="large"
+        [rounded]="true"
+        severity="secondary"
+        label="Dla instytucji"
+      ></p-button>
+      <p-button
+        [rounded]="true"
+        size="large"
+        severity="secondary"
+        label="Dla lekarzy"
+      ></p-button>
+      <p-button
+        [rounded]="true"
+        size="large"
+        severity="secondary"
+        label="Dla pacjentow"
+      ></p-button>
+
+      <a routerLink="/auth/login">
+        <p-button
+          size="large"
+          [rounded]="true"
+          severity="secondary"
+          type="button"
+          label="Login"
+          class="p-button-text login-button"
+        />
+      </a>
+      <a routerLink="/auth/register">
+        <p-button
+          [rounded]="true"
+          pButton
+          size="large"
+          type="button"
+          label="Register"
+          class="p-button-outlined register-button"
+        />
+      </a>
+    </div>
+  </ng-template>
+</p-menubar>
