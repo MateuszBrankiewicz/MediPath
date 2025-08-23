@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Menubar } from 'primeng/menubar';
 
@@ -15,5 +15,7 @@ enum LandingPageSelectedTab {
   styleUrl: './landing-page-component.scss',
 })
 export class LandingPageComponent {
-  protected readonly selectedTab: LandingPageSelectedTab = signal<LandingPageSelectedTab>(LandingPageSelectedTab.FOR_INSTITUTIONS);
+  protected readonly selectedTab = signal(
+    LandingPageSelectedTab.FOR_INSTITUTIONS,
+  );
 }
