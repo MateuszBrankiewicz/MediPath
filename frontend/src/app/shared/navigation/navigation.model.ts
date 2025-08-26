@@ -1,5 +1,5 @@
 import { MenuItemCommandEvent } from 'primeng/api';
-import { UserRoles } from '../../app';
+import { UserRoles } from '../../services/authorization/authorization.model';
 
 export interface MediPathMenuItem {
   role: UserRoles;

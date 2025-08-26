@@ -1,29 +1,6 @@
-@if (sidebarVisible()) {
-  <header class="mobile-header">
-    <div class="mobile-header-content">
-      <div class="logo-container">
-        <div class="logo">
-          <img
-            src="assets/main_logo.png"
-            alt="MediPath Logo"
-            class="logo-image"
-          />
-          <span>MediPath</span>
-        </div>
-      </div>
-      <button
-        pButton
-        type="button"
-        icon="pi pi-times"
-        class="p-button-text close-btn"
-        (click)="toggleSidebar()"
-        aria-label="Close menu"
-      >
-        <span class="sr-only">Close</span>
-      </button>
-    </div>
-  </header>
-}
+<!-- Desktop Header -->
+
+<!-- Sidebar Navigation -->
 <aside class="sidebar" [class.visible]="sidebarVisible()">
   <div class="logo-section">
     <div class="logo">
@@ -33,11 +10,11 @@
   </div>
 
   <div class="nav-menu">
-    <p-menu [model]="menuItems" styleClass="medipath-menu">
+    <p-menu [model]="menuItems()" styleClass="medipath-menu">
       <ng-template #item let-item>
         <a
           pRipple
-          class="flex items-center p-menu-item-link"
+          class="p-menu-item-link"
           [routerLink]="item.routerLink"
           routerLinkActive="active-route"
           [routerLinkActiveOptions]="{ exact: true }"
@@ -70,6 +47,7 @@
   </div>
 </aside>
 
+<!-- Mobile Toggle Button -->
 <button
   class="mobile-toggle"
   (click)="toggleSidebar()"

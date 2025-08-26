@@ -1,6 +1,7 @@
 :host {
   display: block;
   height: 100vh;
+  width: 100%;
 }
 
 .sr-only {
@@ -38,11 +39,10 @@
 }
 
 .sidebar {
-  position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
-  width: 280px;
+
   background: var(--p-primary-950);
   color: white;
   display: flex;

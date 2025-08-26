@@ -1,47 +1,39 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter, map, startWith } from 'rxjs';
+import { AuthorizationService } from './services/authorization/authorization-service';
+import { UserRoles } from './services/authorization/authorization.model';
 import { NavigationComponent } from './shared/navigation/navigation.component';
-
-export enum UserRoles {
-  ADMIN = 'admin',
-  DOCTOR = 'doctor',
-  PATIENT = 'patient',
-  STAFF = 'staff',
-  GUEST = 'guest',
-}
+import { TopBarComponent } from './shared/top-bar-component/top-bar-component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavigationComponent],
+  imports: [RouterOutlet, NavigationComponent, TopBarComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
   protected readonly router = inject(Router);
   protected readonly title = signal('frontend');
-  protected readonly userRole = signal<UserRoles>(UserRoles.PATIENT);
+  protected readonly authService = inject(AuthorizationService);
+  protected readonly userRole = signal<UserRoles>(this.authService.userRole());
 
-  constructor() {
-    console.log('App initialized with role:', this.userRole());
-    this.router.events.subscribe(() => {
-      const currentRoute = this.router.url;
-      switch (currentRoute) {
-        case '/doctor':
-          this.userRole.set(UserRoles.DOCTOR);
-          break;
-        case '/admin':
-          this.userRole.set(UserRoles.ADMIN);
-          break;
-        case '/staf':
-          this.userRole.set(UserRoles.STAFF);
-          break;
-        case '/patient':
-          this.userRole.set(UserRoles.PATIENT);
-          break;
-        default:
-          this.userRole.set(UserRoles.GUEST);
-      }
-    });
-    console.log('App initialized with role:', this.userRole());
-  }
+  readonly navigationConfig = computed(() => ({
+    showSearch: true,
+    showNotifications: true,
+  }));
+
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map((event) => (event as NavigationEnd).url),
+      startWith(this.router.url),
+    ),
+  );
+  public readonly showNavigation = computed(() => {
+    const url = this.currentUrl();
+    const guestRoutes = ['/auth', '/'];
+    return !guestRoutes.some((route) => url?.startsWith(route));
+  });
 }

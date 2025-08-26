@@ -1,5 +1,7 @@
 import { Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
+import { Card } from 'primeng/card';
 import { Menubar } from 'primeng/menubar';
 
 enum LandingPageSelectedTab {
@@ -10,7 +12,7 @@ enum LandingPageSelectedTab {
 
 @Component({
   selector: 'app-landing-page-component',
-  imports: [Menubar, Button],
+  imports: [Menubar, Button, Card, RouterLink],
   templateUrl: './landing-page-component.html',
   styleUrl: './landing-page-component.scss',
 })

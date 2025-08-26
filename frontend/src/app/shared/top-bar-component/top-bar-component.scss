@@ -1,0 +1,108 @@
+.dashboard-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.5rem 2rem;
+  background: white;
+  border-bottom: 1px solid var(--p-surface-200);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  gap: 3rem;
+  .search-section {
+    flex: 1;
+    max-width: 600px;
+    margin: 0 2rem;
+
+    .p-input-group {
+      &:hover {
+        overflow: hidden;
+        border-color: var(--p-primary-color);
+        border-radius: 8px;
+        box-shadow: 0 0 0 1px var(--p-primary-color);
+      }
+
+      &:focus-within {
+        border-color: var(--p-neutral-900);
+        border-radius: 8px;
+        box-shadow: 0 0 0 2px var(--p-primary-color);
+        outline: none;
+      }
+
+      .p-inputtext {
+        border-right: none;
+        border-left: none;
+        border-radius: 0;
+        outline: none;
+
+        &:hover {
+          border-color: transparent;
+        }
+
+        &:focus {
+          border-color: transparent;
+          box-shadow: none;
+          outline: none;
+        }
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .user-info {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+    cursor: pointer;
+    .user-name {
+      font-weight: 600;
+      color: var(--p-text-color);
+    }
+
+    .chevron-icon {
+      transition: transform 0.3s ease;
+      transform-origin: center;
+
+      &.rotated {
+        transform: rotate(180deg);
+      }
+    }
+  }
+}
+:host ::ng-deep .menu {
+  .p-menu-overlay {
+    border-radius: 12px;
+    background: var(--p-surface-50);
+    color: var(--p-surface-900);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--p-surface-200);
+    min-width: 200px;
+  }
+  .p-menu-item-label {
+    color: var(--p-surface-900);
+    padding: 0.1rem;
+    &:hover {
+      background: var(--p-surface-100);
+    }
+  }
+}
+.p-menuitem-icon {
+  margin-right: 0.75rem;
+}
+.role-select-container {
+  border-bottom: 1px solid var(--p-surface-200);
+
+  p-select {
+    width: 100%;
+    box-shadow: none;
+    padding: 0.5rem;
+  }
+}
+.notification-button {
+  --p-button-sm-font-size: 1.5rem;
+  --p-button-sm-padding-x: 1.5rem;
+}

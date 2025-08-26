@@ -15,4 +15,9 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./guest/guest.routes').then((m) => m.GUEST_ROUTES),
   },
+  {
+    path: 'patient',
+    loadChildren: () =>
+      import('./patient/patient.routes').then((m) => m.PATIENT_ROUTES),
+  },
 ];

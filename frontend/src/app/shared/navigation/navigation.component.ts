@@ -1,78 +1,78 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input, signal } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
-import { UserRoles } from '../../app';
-import { MediPathMenuItem, MediPathMenuLinks } from './navigation.model';
+import { RippleModule } from 'primeng/ripple';
+import { AuthorizationService } from '../../services/authorization/authorization-service';
+import { MediPathMenuItem } from './navigation.model';
 import { NavigationService } from './navigation.service';
 
 @Component({
   selector: 'app-navigation',
-  imports: [CommonModule, RouterModule, MenuModule],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    RouterLink,
+    RouterLinkActive,
+    MenuModule,
+    ButtonModule,
+    RippleModule,
+  ],
 })
 export class NavigationComponent {
   private readonly router = inject(Router);
-
   private readonly navigationService = inject(NavigationService);
+  private readonly authService = inject(AuthorizationService);
 
-  protected readonly sidebarVisible = signal(false);
+  readonly sidebarVisible = signal(false);
 
-  protected readonly userName = signal('Jan Kowalski');
+  readonly userRole = computed(() => this.authService.userRole());
+  readonly userName = computed(() => this.authService.userName());
 
-  public readonly userRole = input<UserRoles>();
+  readonly menuItems = computed(() => {
+    const items = this.navigationService.getMenuItemsForRole(this.userRole());
+    return this.convertToPrimeMenuItems(items);
+  });
 
-  protected readonly menuItems: MenuItem[] = this.convertToPrimeMenuItems(
-    this.navigationService.getMenuItemsForRole(
-      this.userRole() ?? UserRoles.PATIENT,
-    ),
-  );
+  toggleSidebar(): void {
+    this.sidebarVisible.update((visible) => !visible);
+  }
+
+  navigateToProfile(): void {
+    this.router.navigate(['/profile']);
+    this.sidebarVisible.set(false);
+  }
 
   private convertToPrimeMenuItems(items: MediPathMenuItem[]): MenuItem[] {
-    return items.flatMap((menuItem) =>
-      menuItem.menuItems.map((item) => ({
-        label: item.label,
-        icon: item.icon,
-        routerLink: item.routerLink,
-        badge: item.badge?.toString(),
-        badgeStyleClass: item.badgeClass,
-        visible: item.visible !== false,
-        disabled: item.disabled,
+    return items.flatMap((item) =>
+      item.menuItems.map((menuItem) => ({
+        label: menuItem.label,
+        icon: menuItem.icon,
+        routerLink: menuItem.routerLink,
+        badge: menuItem.badge?.toString(),
+        badgeStyleClass: menuItem.badgeClass,
+        visible: menuItem.visible !== false,
+        disabled: menuItem.disabled,
         command: (event: MenuItemCommandEvent) => {
-          if (item.routerLink) {
-            this.router.navigate([item.routerLink]);
+          if (menuItem.routerLink) {
+            this.router.navigate([menuItem.routerLink]);
             this.sidebarVisible.set(false);
           }
-          if (item.command) {
-            item.command(event);
+          if (menuItem.command) {
+            menuItem.command(event);
           }
         },
       })),
     );
-  }
-
-  protected onMenuItemClick(item: MediPathMenuLinks): void {
-    if (item.routerLink) {
-      this.router.navigate([item.routerLink]);
-      this.sidebarVisible.set(false);
-    }
-  }
-
-  protected toggleSidebar(): void {
-    this.sidebarVisible.update((visible) => !visible);
-  }
-
-  protected navigateToProfile(): void {
-    this.router.navigate(['/profile']);
-  }
-
-  protected logout(): void {
-    this.router.navigate(['/auth/login']);
-  }
-
-  protected trackByIndex(index: number): number {
-    return index;
   }
 }
