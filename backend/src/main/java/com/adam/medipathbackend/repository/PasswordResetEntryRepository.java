@@ -10,10 +10,10 @@ import java.util.Optional;
 
 public interface PasswordResetEntryRepository extends MongoRepository<PasswordResetEntry, String> {
 
-    @Query("{'email': ?0, 'dateIssued': {$gt: {$dateSubtract: {startDate: Date(), unit: 'day', amount: 1}}}}")
+    @Query("{'email': ?0, 'dateIssued': {$gt: new Date(ISODate().getTime() - 1000*3600*24)}")
     List<PasswordResetEntry> findLatestByEmail(String email);
 
-    @Query("{'token': ?0, 'gotUsed': false, 'dateExpiry': {$lt: {$dateAdd: {startDate: Date(), unit: 'minute', amount: 10}}}}")
+    @Query("{'token': ?0, 'gotUsed': false, 'dateExpiry': { $gt: new Date() }}")
     Optional<PasswordResetEntry> findValidToken(String token);
 
 }
