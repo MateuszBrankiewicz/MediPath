@@ -49,7 +49,7 @@ public class UserController {
         }
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(registrationForm.getPassword());
-        UserSettings userSettings = new UserSettings("PL", true, true);
+        UserSettings userSettings = new UserSettings("PL", true, true, 1);
         userRepository.save(new User(
                 registrationForm.getEmail(),
                 registrationForm.getName(),
@@ -119,7 +119,7 @@ public class UserController {
                         "<body>\n" +
                         "    <h2>MediPath</h2>\n" +
                         "    <p>We have received a password reset request for your MediPath account.<br>To reset your password click the link below:</p>\n" +
-                        "    <a href=\"http://localhost:4200/resetpassword?prid="+token+"\">http://localhost:4200/resetpassword?prid="+token+"</a>\n" +
+                        "    <a href=\"http://localhost:4200/auth/resetpassword/"+token+"\">http://localhost:4200/auth/resetpassword/"+token+"</a>\n" +
                         "    <br>\n" +
                         "    <p>The link will expire within 10 minutes</p>\n" +
                         "    <p>If you have not sent a password reset request, ignore this email.</p>\n" +

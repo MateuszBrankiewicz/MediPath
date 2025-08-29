@@ -79,7 +79,7 @@ class MedipathbackendApplicationTests {
 
     private final String EXAMPLE_TOKEN = "1234567890abcdef";
 
-    private final User exampleValidUser = new User(EXAMPLE_MAIL, "Name", "Surname", "1234567890", LocalDate.of(1900, 12, 12), new Address("Province", "City", "Street", "Number", "PostalCode"), "123456789", "$argon2id$v=19$m=60000,t=10,p=1$MOrLn9JdvWpJyJDMZ4Z9qg$zgHTASZaQH9zoTUO0bd0re+6G523ZUreKFmWQSu+f24", new UserSettings("PL", true, true));
+    private final User exampleValidUser = new User(EXAMPLE_MAIL, "Name", "Surname", "1234567890", LocalDate.of(1900, 12, 12), new Address("Province", "City", "Street", "Number", "PostalCode"), "123456789", "$argon2id$v=19$m=60000,t=10,p=1$MOrLn9JdvWpJyJDMZ4Z9qg$zgHTASZaQH9zoTUO0bd0re+6G523ZUreKFmWQSu+f24", new UserSettings("PL", true, true, 1));
 
     @BeforeEach
     public void createTestData() {
