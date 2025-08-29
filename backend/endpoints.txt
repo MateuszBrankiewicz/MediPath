@@ -160,4 +160,30 @@ Reason: Password has been reset successfully.
 
 
 
+/search/{type}/{query}
+
+Method: GET
+Path Variables:
+    type: Decides whether to search doctors and institutions by name or by specialisations (types in case of institutions). Accepted values are by-spec and by-name
+    query: String that gets looked in the database. Can match to name or surname of a doctor, name of an institution or specialisation, depending on the "type" variable
+
+Returns:
+
+Status code: 400
+Message: unknown query type
+
+Reason: "type" if of value different than by-name or by-spec
+
+
+Status code: 200
+Fields:
+    "institutions": [Array]
+    "doctors": [Array]
+
+Reason: Regardless of the amount of doctors and institutions matching a given query, result is always 200 OK.
+
+
+
+
+
 
