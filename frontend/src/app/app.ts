@@ -2,10 +2,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
-import { AuthorizationService } from './services/authorization/authorization-service';
-import { UserRoles } from './services/authorization/authorization.model';
-import { NavigationComponent } from './shared/navigation/navigation.component';
-import { TopBarComponent } from './shared/top-bar-component/top-bar-component';
+import { AuthorizationService } from './core/services/authorization/authorization-service';
+import { UserRoles } from './core/services/authorization/authorization.model';
+import { NavigationComponent } from './modules/shared/components/ui/navigation/navigation.component';
+import { TopBarComponent } from './modules/shared/components/ui/top-bar-component/top-bar-component';
 
 @Component({
   selector: 'app-root',
