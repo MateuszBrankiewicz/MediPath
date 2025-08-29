@@ -59,6 +59,7 @@ public class User {
         return email + " : " + name + " " + surname;
     }
 
+
     public User(String email, String name, String surname, String govId, LocalDate birthDate, Address address, String phoneNumber, String passwordHash, UserSettings userSettings) {
         this.email = email;
         this.name = name;
@@ -68,10 +69,15 @@ public class User {
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.passwordHash = passwordHash;
+        this.licenceNumber = "";
+        this.specialisations = new ArrayList<>();
+        this.latestMedicalHistory = new LinkedList<>();
+        this.roleCode = 1;
+        this.notifications = new ArrayList<>();
+        this.rating = 0;
+        this.isActive = true;
         this.employers = new ArrayList<>();
         this.userSettings = userSettings;
-        this.employers = new ArrayList<>();
-
     }
 
     public UserSettings getUserSettings() {

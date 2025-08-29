@@ -7,10 +7,15 @@ public class UserSettings {
 
     private boolean userNotifications;
 
-    public UserSettings(String language, boolean systemNotifications, boolean userNotifications) {
+
+
+    private int lastPanel;
+
+    public UserSettings(String language, boolean systemNotifications, boolean userNotifications, int lastPanel) {
         this.language = language;
         this.systemNotifications = systemNotifications;
         this.userNotifications = userNotifications;
+        this.lastPanel = lastPanel;
     }
 
     public String getLanguage() {
@@ -35,5 +40,13 @@ public class UserSettings {
 
     public void setUserNotifications(boolean userNotifications) {
         this.userNotifications = userNotifications;
+    }
+
+    public int getLastPanel() {
+        return lastPanel;
+    }
+
+    public void setLastPanel(int lastPanel) {
+        this.lastPanel = lastPanel;
     }
 }
