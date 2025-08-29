@@ -1,0 +1,12 @@
+{
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "emeraldwalk.runonsave": {
+    "runOnSave": true,
+    "commands": [
+      {
+        "match": ".*\\.(kt|kts|xml)$",
+        "cmd": "cd ${workspaceFolder} && ./gradlew installDebug && adb shell am start -n com.medipath/.MainActivity"
+      }
+    ]
+  }
+}
