@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { TranslationService } from '../../core/services/translation.service';
+import { TranslationService } from '../../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-language-switcher',
@@ -12,7 +12,7 @@ export class LanguageSwitcher {
   private translationService = inject(TranslationService);
 
   currentLanguage = this.translationService.language;
-  
+
   buttonLabel = computed(() => {
     return this.currentLanguage() === 'pl' ? 'EN' : 'PL';
   });

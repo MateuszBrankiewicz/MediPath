@@ -73,5 +73,7 @@
   "passwordReset.error.generic": "Wystąpił błąd podczas resetowania hasła. Spróbuj ponownie.",
   "passwordReset.tokenExpired.title": "Link Wygasł",
   "passwordReset.tokenExpired.message": "Ten link do resetowania hasła wygasł. Proszę poprosić o nowy email resetujący hasło.",
-  "passwordReset.tokenExpired.requestNew": "Poproś o Nowy Link"
+  "passwordReset.tokenExpired.requestNew": "Poproś o Nowy Link",
+  "passwordReset.dialog.checkemail": "Sprawdz email",
+  "passwordReset.dialog.success" : "Haslo zresetowane pomyslnie"
 }

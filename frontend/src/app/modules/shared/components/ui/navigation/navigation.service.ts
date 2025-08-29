@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { UserRoles } from '../../core/services/authorization/authorization.model';
 import { MediPathMenuItem } from './navigation.model';
+import { UserRoles } from '../../../../../core/services/authorization/authorization.model';
 
 @Injectable({
   providedIn: 'root',
