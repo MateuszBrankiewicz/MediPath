@@ -27,6 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.ui.theme.MediPathTheme
+import android.content.Intent
+import com.medipath.auth.RegisterActivity
 
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +37,9 @@ class SplashActivity : ComponentActivity() {
         setContent {
             MediPathTheme {
                 SplashScreen{
-
+                    val intent = Intent(this, RegisterActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 }
             }
         }
