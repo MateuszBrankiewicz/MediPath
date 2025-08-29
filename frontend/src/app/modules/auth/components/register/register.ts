@@ -1,10 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import {
-    FormControl,
-    FormGroup,
-    FormsModule,
-    ReactiveFormsModule,
-    Validators,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -16,13 +16,13 @@ import { map } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { InputForAuth } from '../../../shared/components/forms/input-for-auth/input-for-auth';
 import {
-    SelectOption,
-    SelectWithSearch,
+  SelectOption,
+  SelectWithSearch,
 } from '../../../shared/components/forms/input-for-auth/select-with-search/select-with-search';
 import { ModalDialogComponent } from '../../../shared/components/ui/modal-dialog/modal-dialog';
-import { ImageForAuth } from '../../../shared/image-for-auth/image-for-auth';
 import { RegisterUser } from '../../models/auth.constants';
 import { AuthenticationService } from '../../services/authentication/authentication';
+import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
 
 @Component({
   selector: 'app-register',

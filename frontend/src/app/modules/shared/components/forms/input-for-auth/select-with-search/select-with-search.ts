@@ -1,22 +1,22 @@
 import { CommonModule } from '@angular/common';
 import {
-    Component,
-    computed,
-    effect,
-    inject,
-    input,
-    signal,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
-    debounceTime,
-    distinctUntilChanged,
-    from,
-    of,
-    Subject,
-    switchMap,
+  debounceTime,
+  distinctUntilChanged,
+  from,
+  of,
+  Subject,
+  switchMap,
 } from 'rxjs';
-import { TranslationService } from '../../core/services/translation.service';
+import { TranslationService } from '../../../../../../core/services/translation/translation.service';
 
 export interface SelectOption {
   name: string;

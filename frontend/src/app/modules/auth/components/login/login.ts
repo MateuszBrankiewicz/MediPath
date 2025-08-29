@@ -1,9 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import {
-    FormControl,
-    FormGroup,
-    ReactiveFormsModule,
-    Validators,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Button } from 'primeng/button';
@@ -12,7 +12,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { InputForAuth } from '../../../shared/components/forms/input-for-auth/input-for-auth';
 import { ModalDialogComponent } from '../../../shared/components/ui/modal-dialog/modal-dialog';
-import { ImageForAuth } from '../../../shared/image-for-auth/image-for-auth';
+import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
 import { AuthenticationService } from '../../services/authentication/authentication';
 
 @Component({
