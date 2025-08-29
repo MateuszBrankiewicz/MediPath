@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build & Run (Debug)",
+      "type": "shell",
+      "command": "./gradlew installDebug && adb shell monkey -p com.medipath -c android.intent.category.LAUNCHER 1",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
