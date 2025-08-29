@@ -1,12 +1,15 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+  provideZoneChangeDetection,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 
-import { routes } from './app.routes';
-import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeuix/themes/aura';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { MyPreset } from './themes/primeng-preset';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { providePrimeNG } from 'primeng/config';
+import { routes } from './app.routes';
+import { MyPreset } from './themes/primeng-preset';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -15,13 +18,12 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideAnimationsAsync(),
     providePrimeNG({
-  theme: {
-    preset: MyPreset,
-    options: {
-      darkModeSelector: '.my-app-dark'
-    }
-  }
-})
-
-  ]
+      theme: {
+        preset: MyPreset,
+        options: {
+          darkModeSelector: '.my-app-dark',
+        },
+      },
+    }),
+  ],
 };
