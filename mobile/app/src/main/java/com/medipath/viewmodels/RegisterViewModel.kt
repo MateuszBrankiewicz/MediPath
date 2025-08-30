@@ -13,8 +13,12 @@ class RegisterViewModel: ViewModel() {
     private val _cities = mutableStateOf<List<City>>(emptyList())
     val cities: State<List<City>> = _cities
 
+    private val _provinces = mutableStateOf<List<String>>(emptyList())
+    val provinces: State<List<String>> = _provinces
+
     init {
         fetchCities()
+        fetchProvinces()
     }
 
     private fun fetchCities() {
@@ -25,6 +29,18 @@ class RegisterViewModel: ViewModel() {
             } catch (e: Exception) {
                 Log.e("RegisterViewModel", "Błąd podczas pobierania miast: ${e.message}", e)
                 _cities.value = emptyList()
+            }
+        }
+    }
+
+    private fun fetchProvinces() {
+        viewModelScope.launch {
+            try {
+                _provinces.value = RetrofitInstance.api.getProvinces()
+                Log.d("RegisterViewModel", "Pobrano wojewódźtwa: ${_provinces.value}")
+            } catch (e: Exception) {
+                Log.e("RegisterViewModel", "Błąd podczas pobierania wojewódźtw: ${e.message}", e)
+                _provinces.value = emptyList()
             }
         }
     }
