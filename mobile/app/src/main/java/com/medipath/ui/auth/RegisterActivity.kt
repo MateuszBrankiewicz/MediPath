@@ -31,6 +31,7 @@ import com.medipath.ui.components.AuthTextField
 import com.medipath.viewmodels.RegisterViewModel
 import androidx.compose.runtime.getValue
 import com.medipath.ui.components.SearchableCityDropdown
+import com.medipath.ui.components.SearchableProvinceDropdown
 
 
 class RegisterActivity : ComponentActivity() {
@@ -56,6 +57,9 @@ fun RegisterScreen( viewModel: RegisterViewModel = RegisterViewModel(), onSignIn
 
     val cities by viewModel.cities
     var city by remember { mutableStateOf("") }
+
+    val provinces by viewModel.provinces
+    var province by remember { mutableStateOf("") }
 
 //    if (cities.isEmpty()) {
 //        CircularProgressIndicator()
@@ -105,7 +109,11 @@ fun RegisterScreen( viewModel: RegisterViewModel = RegisterViewModel(), onSignIn
             AuthTextField(governmentId, { governmentId = it }, "Government ID")
             AuthTextField(birthDate, { birthDate = it }, "Birth Date (DD-MM-YYYY)")
 
-            //province
+            SearchableProvinceDropdown(
+                provinces = provinces,
+                selectedProvince = province,
+                onProvinceSelected = { province = it }
+            )
 
             AuthTextField(postalCode, { postalCode = it }, "Postal Code (XX-XXX)")
 
