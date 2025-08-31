@@ -8,6 +8,8 @@ import com.medipath.data.models.City
 import kotlinx.coroutines.launch
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import com.medipath.data.models.RegisterRequest
+import retrofit2.HttpException
 
 class RegisterViewModel: ViewModel() {
     private val _cities = mutableStateOf<List<City>>(emptyList())
@@ -15,6 +17,12 @@ class RegisterViewModel: ViewModel() {
 
     private val _provinces = mutableStateOf<List<String>>(emptyList())
     val provinces: State<List<String>> = _provinces
+
+    private val _registrationError = mutableStateOf("")
+    val registrationError: State<String> = _registrationError
+
+    private val _registrationSuccess = mutableStateOf(false)
+    val registrationSuccess: State<Boolean> = _registrationSuccess
 
     init {
         fetchCities()
@@ -43,5 +51,41 @@ class RegisterViewModel: ViewModel() {
                 _provinces.value = emptyList()
             }
         }
+    }
+
+    fun registerUser(request: RegisterRequest) {
+        viewModelScope.launch {
+            _registrationError.value = ""
+            _registrationSuccess.value = false
+
+            try {
+                val response = RetrofitInstance.api.registerUser(request)
+                _registrationSuccess.value = true
+                Log.d("RegisterViewModel", "Registration successful: $response")
+            } catch (e: HttpException) {
+                when (e.code()) {
+                    400 -> {
+                        _registrationError.value = "Please fill in all required fields."
+                        Log.e("RegisterViewModel", "Missing fields: ${e.response()?.errorBody()?.string()}")
+                    }
+                    409 -> {
+                        _registrationError.value = "An account with this email or GovID already exists."
+                        Log.e("RegisterViewModel", "User already exists")
+                    }
+                    else -> {
+                        _registrationError.value = "An unknown error occurred. Please try again later."
+                        Log.e("RegisterViewModel", "Unknown error: ${e.message()}")
+                    }
+                }
+            } catch (e: Exception) {
+                _registrationError.value = "Registration failed"
+                Log.e("RegisterViewModel", "Network error: ${e.message}", e)
+            }
+        }
+    }
+
+    fun clearError() {
+        _registrationError.value = ""
+        _registrationSuccess.value = false
     }
 }

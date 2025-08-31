@@ -29,9 +29,11 @@ import com.medipath.ui.theme.MediPathTheme
 import com.medipath.ui.components.AuthTextField
 import com.medipath.viewmodels.RegisterViewModel
 import androidx.compose.runtime.getValue
+import com.medipath.data.models.RegisterRequest
 import com.medipath.ui.components.SearchableCityDropdown
 import com.medipath.ui.components.SearchableProvinceDropdown
 import com.medipath.utils.ValidationUtils
+import android.widget.Toast
 
 
 class RegisterActivity : ComponentActivity() {
@@ -44,6 +46,10 @@ class RegisterActivity : ComponentActivity() {
                     val intent = Intent(this, SplashActivity::class.java)
                     startActivity(intent)
                     finish()
+                },
+                onRegistrationSuccess = {
+                    Toast.makeText(this, "Registration successful! Please log in.", Toast.LENGTH_LONG).show()
+                    //przejscie do logowania
                 }
             ) }
         }
@@ -53,10 +59,18 @@ class RegisterActivity : ComponentActivity() {
 
 
 @Composable
-fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel() }, onSignInClick: () -> Unit = {}) {
+fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel() }, onSignInClick: () -> Unit = {}, onRegistrationSuccess: () -> Unit = {}) {
 
     var city by remember { mutableStateOf("") }
     var province by remember { mutableStateOf("") }
+    val registrationError by viewModel.registrationError
+    val registrationSuccess by viewModel.registrationSuccess
+
+    LaunchedEffect(registrationSuccess) {
+        if (registrationSuccess) {
+            onRegistrationSuccess()
+        }
+    }
 
     var isChecked by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
@@ -260,9 +274,33 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        if (registrationError.isNotEmpty()) {
+            Text(
+                text = registrationError,
+                color = Color.Red,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+
         Button(
             onClick = {
-
+                viewModel.clearError()
+                val registerRequest = RegisterRequest(
+                    name = name,
+                    surname = surname,
+                    email = email,
+                    govID = governmentId,
+                    birthDate = birthDate,
+                    province = province,
+                    city = city,
+                    postalCode = postalCode,
+                    phoneNumber = phoneNumber,
+                    street = street,
+                    number = number,
+                    password = password
+                )
+                viewModel.registerUser(registerRequest)
             },
             enabled = isFormValid,
             colors = ButtonDefaults.buttonColors(
