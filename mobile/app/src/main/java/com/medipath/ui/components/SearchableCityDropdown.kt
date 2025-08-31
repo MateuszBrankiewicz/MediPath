@@ -1,5 +1,6 @@
 package com.medipath.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,20 +10,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medipath.data.models.City
+import com.medipath.viewmodels.RegisterViewModel
 
 @Composable
 fun SearchableCityDropdown(
-    cities: List<City>,
+    viewModel: RegisterViewModel,
     selectedCity: String,
     onCitySelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    errorMessage: String = "",
+    onFocusLost: () -> Unit = {}
 ) {
+    var hadFocus by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
+    val cities by viewModel.cities
 
     val filteredCities = remember(cities, query) {
         if (query.isEmpty()) {
@@ -32,6 +38,7 @@ fun SearchableCityDropdown(
         }
     }
 
+    Column {
     Box(modifier = modifier) {
         OutlinedTextField(
             value = if (selectedCity.isNotEmpty()) selectedCity else query,
@@ -43,7 +50,13 @@ fun SearchableCityDropdown(
                 }
             },
             label = { Text("Miasto", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
-            placeholder = { Text("Wpisz lub wybierz miasto", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
+            placeholder = {
+                Text(
+                    "Wpisz lub wybierz miasto",
+                    color = Color(0xFF5D5D5D),
+                    fontSize = 14.sp
+                )
+            },
             trailingIcon = {
                 Icon(
                     painter = painterResource(
@@ -59,14 +72,23 @@ fun SearchableCityDropdown(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = true },
+                .onFocusChanged { focusState ->
+                    Log.d("debug", "Focus changed: ${focusState.isFocused}")
+                    if (focusState.isFocused) {
+                        hadFocus = true
+                        expanded = true
+                    } else if (hadFocus){
+                        onFocusLost()
+                    }
+                },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF2D4A69),
-                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
+                unfocusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
                 focusedContainerColor = Color(0xFFD9D9D9),
                 unfocusedContainerColor = Color(0xFFD9D9D9)
             ),
-            shape = RoundedCornerShape(20.dp)
+            shape = RoundedCornerShape(20.dp),
+            isError = errorMessage.isNotEmpty()
         )
         if (expanded && filteredCities.isNotEmpty()) {
             DropdownMenu(
@@ -80,10 +102,12 @@ fun SearchableCityDropdown(
             ) {
                 filteredCities.take(5).forEach { cityItem ->
                     DropdownMenuItem(
-                        text = { Text(
-                            text = cityItem.name,
-                            color = Color.White
-                        ) },
+                        text = {
+                            Text(
+                                text = cityItem.name,
+                                color = Color.White
+                            )
+                        },
                         onClick = {
                             onCitySelected(cityItem.name)
                             query = cityItem.name
@@ -93,5 +117,14 @@ fun SearchableCityDropdown(
                 }
             }
         }
+    }
+    if (errorMessage.isNotEmpty()) {
+        Text(
+            text = errorMessage,
+            color = Color.Red,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+        )
+    }
     }
 }
