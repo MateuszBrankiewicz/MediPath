@@ -9,19 +9,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.viewmodels.RegisterViewModel
 
 @Composable
 fun SearchableProvinceDropdown(
-    provinces: List<String>,
+    viewModel: RegisterViewModel,
     selectedProvince: String,
     onProvinceSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    errorMessage: String = "",
+    onFocusLost: () -> Unit = {}
 ) {
+    var hadFocus by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
+    val provinces by viewModel.provinces
 
     val filteredProvinces = remember(provinces, query) {
         if (query.isEmpty()) {
@@ -31,66 +37,92 @@ fun SearchableProvinceDropdown(
         }
     }
 
-    Box(modifier = modifier) {
-        OutlinedTextField(
-            value = if (selectedProvince.isNotEmpty()) selectedProvince else query,
-            onValueChange = { newValue ->
-                query = newValue
-                expanded = true
-                if (newValue != selectedProvince) {
-                    onProvinceSelected("")
-                }
-            },
-            label = { Text("Wojewódźtwo", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
-            placeholder = { Text("Wpisz lub wybierz wojewódźtwo", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(
-                        id = if (expanded) android.R.drawable.arrow_up_float
-                        else android.R.drawable.arrow_down_float
-                    ),
-                    contentDescription = null,
-                    modifier = Modifier.clickable {
-                        expanded = !expanded
-                        if (expanded) query = ""
+    Column {
+        Box(modifier = modifier) {
+            OutlinedTextField(
+                value = if (selectedProvince.isNotEmpty()) selectedProvince else query,
+                onValueChange = { newValue ->
+                    query = newValue
+                    expanded = true
+                    if (newValue != selectedProvince) {
+                        onProvinceSelected("")
                     }
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = true },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF2D4A69),
-                unfocusedBorderColor = Color.Transparent,
-                focusedContainerColor = Color(0xFFD9D9D9),
-                unfocusedContainerColor = Color(0xFFD9D9D9)
-            ),
-            shape = RoundedCornerShape(20.dp)
-        )
-        if (expanded && filteredProvinces.isNotEmpty()) {
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier.fillMaxWidth()
-                    .background(
-                        color = Color(0xFF2D4A69),
-                        shape = RoundedCornerShape(12.dp)
+                },
+                label = { Text("Wojewódźtwo", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
+                placeholder = {
+                    Text(
+                        "Wpisz lub wybierz wojewódźtwo",
+                        color = Color(0xFF5D5D5D),
+                        fontSize = 14.sp
                     )
-            ) {
-                filteredProvinces.take(5).forEach { ProvinceItem ->
-                    DropdownMenuItem(
-                        text = { Text(
-                            text = ProvinceItem,
-                            color = Color.White
-                        ) },
-                        onClick = {
-                            onProvinceSelected(ProvinceItem)
-                            query = ProvinceItem
-                            expanded = false
+                },
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(
+                            id = if (expanded) android.R.drawable.arrow_up_float
+                            else android.R.drawable.arrow_down_float
+                        ),
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            expanded = !expanded
+                            if (expanded) query = ""
                         }
                     )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            hadFocus = true
+                            expanded = true
+                        } else if (hadFocus){
+                            onFocusLost()
+                        }
+                    },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
+                    unfocusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
+                    focusedContainerColor = Color(0xFFD9D9D9),
+                    unfocusedContainerColor = Color(0xFFD9D9D9)
+                ),
+                shape = RoundedCornerShape(20.dp),
+                isError = errorMessage.isNotEmpty()
+            )
+            if (expanded && filteredProvinces.isNotEmpty()) {
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.fillMaxWidth()
+                        .background(
+                            color = Color(0xFF2D4A69),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                ) {
+                    filteredProvinces.take(5).forEach { provinceItem ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = provinceItem,
+                                    color = Color.White
+                                )
+                            },
+                            onClick = {
+                                onProvinceSelected(provinceItem)
+                                query = provinceItem
+                                expanded = false
+                            }
+                        )
+                    }
                 }
             }
+        }
+        if (errorMessage.isNotEmpty()) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
         }
     }
 }

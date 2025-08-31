@@ -25,13 +25,13 @@ import androidx.compose.ui.unit.sp
 import com.medipath.R
 import com.medipath.SplashActivity
 import android.content.Intent
-import android.util.Log
 import com.medipath.ui.theme.MediPathTheme
 import com.medipath.ui.components.AuthTextField
 import com.medipath.viewmodels.RegisterViewModel
 import androidx.compose.runtime.getValue
 import com.medipath.ui.components.SearchableCityDropdown
 import com.medipath.ui.components.SearchableProvinceDropdown
+import com.medipath.utils.ValidationUtils
 
 
 class RegisterActivity : ComponentActivity() {
@@ -53,28 +53,10 @@ class RegisterActivity : ComponentActivity() {
 
 
 @Composable
-fun RegisterScreen( viewModel: RegisterViewModel = RegisterViewModel(), onSignInClick: () -> Unit = {}) {
+fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel() }, onSignInClick: () -> Unit = {}) {
 
-    val cities by viewModel.cities
     var city by remember { mutableStateOf("") }
-
-    val provinces by viewModel.provinces
     var province by remember { mutableStateOf("") }
-
-//    if (cities.isEmpty()) {
-//        CircularProgressIndicator()
-//    } else {
-//        LazyColumn (
-//            contentPadding = PaddingValues(16.dp),
-//            verticalArrangement = Arrangement.spacedBy(8.dp),
-//            modifier = Modifier.padding()
-//        ){
-//            items(cities) { city ->
-//                Text(text = city.name)
-//            }
-//        }
-//    }
-    Log.d("DEBUG", "Cities: $cities")
 
     var isChecked by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
@@ -88,6 +70,39 @@ fun RegisterScreen( viewModel: RegisterViewModel = RegisterViewModel(), onSignIn
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
+    var nameError by remember { mutableStateOf("") }
+    var surnameError by remember { mutableStateOf("") }
+    var governmentIdError by remember { mutableStateOf("") }
+    var birthDateError by remember { mutableStateOf("") }
+    var numberError by remember { mutableStateOf("") }
+    var streetError by remember { mutableStateOf("") }
+    var postalCodeError by remember { mutableStateOf("") }
+    var phoneNumberError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf("") }
+    var confirmPasswordError by remember { mutableStateOf("") }
+    var cityError by remember { mutableStateOf("") }
+    var provinceError by remember { mutableStateOf("") }
+
+    val isFormValid by remember {
+        derivedStateOf {
+            name.isNotBlank() &&
+            surname.isNotBlank() &&
+            governmentId.isNotBlank() &&
+            birthDate.isNotBlank() &&
+            number.isNotBlank() &&
+            street.isNotBlank() &&
+            postalCode.isNotBlank() &&
+            phoneNumber.isNotBlank() &&
+            email.isNotBlank() &&
+            password.isNotBlank() &&
+            confirmPassword.isNotBlank() &&
+            city.isNotBlank() &&
+            province.isNotBlank() &&
+            isChecked
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().background(Color.White).verticalScroll(rememberScrollState()).padding(30.dp),
@@ -104,33 +119,136 @@ fun RegisterScreen( viewModel: RegisterViewModel = RegisterViewModel(), onSignIn
         Spacer(modifier = Modifier.height(30.dp))
 
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            AuthTextField(name, { name = it }, "Name")
-            AuthTextField(surname, { surname = it }, "Surname")
-            AuthTextField(governmentId, { governmentId = it }, "Government ID")
-            AuthTextField(birthDate, { birthDate = it }, "Birth Date (DD-MM-YYYY)")
-
-            SearchableProvinceDropdown(
-                provinces = provinces,
-                selectedProvince = province,
-                onProvinceSelected = { province = it }
+            AuthTextField(name, {
+                name = it
+                nameError = ValidationUtils.validateName(it)
+            },
+                "Name", errorMessage = nameError,
+                onFocusLost = {
+                    nameError = ValidationUtils.validateName(name)
+                }
             )
 
-            AuthTextField(postalCode, { postalCode = it }, "Postal Code (XX-XXX)")
+            AuthTextField(surname, {
+                surname = it
+                surnameError = ValidationUtils.validateSurname(it)
+            }, "Surname", errorMessage = surnameError,
+                onFocusLost = {
+                    surnameError = ValidationUtils.validateSurname(surname)
+                }
+            )
+
+            AuthTextField(governmentId, {
+                governmentId = it
+                governmentIdError = ValidationUtils.validateGovernmentId(it)
+            }, "Government ID", errorMessage = governmentIdError,
+                onFocusLost = {
+                    governmentIdError = ValidationUtils.validateGovernmentId(governmentId)
+                }
+                )
+
+            AuthTextField(birthDate, {
+                birthDate = it
+                birthDateError = ValidationUtils.validateBirthDate(it)
+            }, "Birth Date (DD-MM-YYYY)", errorMessage = birthDateError,
+                onFocusLost = {
+                    birthDateError = ValidationUtils.validateBirthDate(birthDate)
+                }
+                )
+
+            SearchableProvinceDropdown(
+                viewModel = viewModel,
+                selectedProvince = province,
+                onProvinceSelected = {
+                    province = it
+                    provinceError = ValidationUtils.validateProvince(it)
+                },
+                errorMessage = provinceError,
+                onFocusLost = {
+                    provinceError = ValidationUtils.validateProvince(province)
+                }
+            )
+
+            AuthTextField(postalCode, {
+                postalCode = it
+                postalCodeError = ValidationUtils.validatePostalCode(it)
+            }, "Postal Code (XX-XXX)", errorMessage = postalCodeError,
+                onFocusLost = {
+                    postalCodeError = ValidationUtils.validatePostalCode(postalCode)
+                }
+            )
 
             SearchableCityDropdown(
-                cities = cities,
+                viewModel = viewModel,
                 selectedCity = city,
-                onCitySelected = { city = it }
+                onCitySelected = {
+                    city = it
+                    cityError = ValidationUtils.validateCity(it)
+                },
+                errorMessage = cityError,
+                onFocusLost = {
+                    cityError = ValidationUtils.validateCity(city)
+                }
             )
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                AuthTextField(postalCode, { number = it }, "Number", Modifier.weight(.5f))
-                AuthTextField(postalCode, { street = it }, "Street", Modifier.weight(1f))
+                AuthTextField(number, {
+                    number = it
+                    numberError = ValidationUtils.validateNumber(it)
+                }, "Number", Modifier.weight(.5f), errorMessage = numberError,
+                    onFocusLost = {
+                        numberError = ValidationUtils.validateNumber(number)
+                    }
+                )
+
+                AuthTextField(street, {
+                    street = it
+                    streetError = ValidationUtils.validateStreet(it)
+                }, "Street", Modifier.weight(1f), errorMessage = streetError,
+                    onFocusLost = {
+                        streetError = ValidationUtils.validateStreet(street)
+                    }
+                )
             }
-            AuthTextField(phoneNumber, { phoneNumber = it }, "Phone Number", keyboardType = KeyboardType.Phone)
-            AuthTextField(email, { email = it }, "Email Address", keyboardType = KeyboardType.Email)
-            AuthTextField(password, { password = it }, "Password", isPassword = true)
-            AuthTextField(confirmPassword, { confirmPassword = it }, "Confirm password", isPassword = true)
+
+            AuthTextField(phoneNumber, {
+                phoneNumber = it
+                phoneNumberError = ValidationUtils.validatePhoneNumber(it)
+            }, "Phone Number", keyboardType = KeyboardType.Phone, errorMessage = phoneNumberError,
+                onFocusLost = {
+                    phoneNumberError = ValidationUtils.validatePhoneNumber(phoneNumber)
+                }
+            )
+
+            AuthTextField(email, {
+                email = it
+                emailError = ValidationUtils.validateEmail(it)
+            }, "Email Address", keyboardType = KeyboardType.Email, errorMessage = emailError,
+                onFocusLost = {
+                    emailError = ValidationUtils.validateEmail(email)
+                }
+            )
+
+            AuthTextField(password, {
+                password = it
+                passwordError = ValidationUtils.validatePassword(it)
+                if (confirmPassword.isNotEmpty()) {
+                    confirmPasswordError = ValidationUtils.validateConfirmPassword(it, confirmPassword)
+                }
+            }, "Password", isPassword = true, errorMessage = passwordError,
+                onFocusLost = {
+                    passwordError = ValidationUtils.validatePassword(password)
+                }
+            )
+
+            AuthTextField(confirmPassword, {
+                confirmPassword = it
+                confirmPasswordError = ValidationUtils.validateConfirmPassword(password, it)
+            }, "Confirm password", isPassword = true, errorMessage = confirmPasswordError,
+                onFocusLost = {
+                    confirmPasswordError = ValidationUtils.validateConfirmPassword(password, confirmPassword)
+                }
+            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -143,16 +261,23 @@ fun RegisterScreen( viewModel: RegisterViewModel = RegisterViewModel(), onSignIn
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(
-            {},
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White),
+            onClick = {
+
+            },
+            enabled = isFormValid,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isFormValid) Color.Black else Color.Gray,
+                contentColor = if (isFormValid) Color.White else Color.LightGray,
+                disabledContainerColor = Color.Gray,
+                disabledContentColor = Color.LightGray
+            ),
             shape = RoundedCornerShape(30.dp),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 14.dp)
         ) {
             Text(
-                text =" SIGN UP",
+                text = "SIGN UP",
                 fontSize = 16.sp,
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp)
             )
         }
 
