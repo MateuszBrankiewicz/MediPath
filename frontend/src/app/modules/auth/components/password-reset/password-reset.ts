@@ -1,19 +1,19 @@
 import { Component, inject, signal } from '@angular/core';
 import {
-    FormControl,
-    FormGroup,
-    ReactiveFormsModule,
-    Validators,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Button } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { TranslationService } from '../../../core/services/translation/translation.service';
-import { ImageForAuth } from '../../shared/image-for-auth/image-for-auth';
-import { InputForAuth } from '../../shared/input-for-auth/input-for-auth';
-import { ModalDialogComponent } from '../../shared/modal-dialog/modal-dialog';
-import { AuthenticationService } from '../services/authentication/authentication';
+import { InputForAuth } from '../../../shared/components/forms/input-for-auth/input-for-auth';
+import { ModalDialogComponent } from '../../../shared/components/ui/modal-dialog/modal-dialog';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
+import { AuthenticationService } from '../../services/authentication/authentication';
 
 @Component({
   selector: 'app-password-reset',
@@ -53,6 +53,8 @@ export class PasswordReset {
   protected readonly emailSentForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
   });
+
+  protected readonly passwordSended = signal(false);
 
   constructor() {
     this.activatedRoute.params.subscribe((params) => {
@@ -100,18 +102,21 @@ export class PasswordReset {
         password: this.forgotPasswordForm.value.password ?? '',
         token: this.token() ?? '',
       });
+      this.passwordSended.set(true);
       this.authenticationService
         .sentPasswordWithToken({
           password: this.forgotPasswordForm.value.password ?? '',
           token: this.token() ?? '',
         })
         .subscribe({
-          next: () => {
+          next: (res) => {
             this.isLoading.set(false);
             this.visible.set(true);
           },
           error: (error) => {
             this.isLoading.set(false);
+
+            console.error(error)
 
             if (
               error.status === 410 &&
@@ -131,7 +136,9 @@ export class PasswordReset {
 
   protected redirectToLoginPage() {
     this.visible.set(false);
+    this.passwordSended.set(false);
     this.router.navigate(['/auth/login']);
+
   }
 
   protected redirectToForgotPassword() {

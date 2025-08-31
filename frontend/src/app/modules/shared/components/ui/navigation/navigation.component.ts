@@ -1,19 +1,19 @@
 import { CommonModule } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    computed,
-    inject,
-    signal,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
 } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { RippleModule } from 'primeng/ripple';
-import { AuthorizationService } from '../../core/services/authorization/authorization-service';
 import { MediPathMenuItem } from './navigation.model';
 import { NavigationService } from './navigation.service';
+import { AuthorizationService } from '../../../../../core/services/authorization/authorization-service';
 
 @Component({
   selector: 'app-navigation',

@@ -1,7 +1,7 @@
 
 import { Component, computed, inject, input } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { TranslationService } from '../../core/services/translation.service';
+import { TranslationService } from '../../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-input-for-auth',
@@ -11,7 +11,7 @@ import { TranslationService } from '../../core/services/translation.service';
 })
 export class InputForAuth {
   private translationService = inject(TranslationService);
-  
+
   public hasCustomError = input<boolean>(false);
   public customErrorMessage = input<string>('');
 
@@ -19,15 +19,15 @@ export class InputForAuth {
   public readonly labelKey = input("");
 
   public control = input.required<FormControl>();
-  
-  public readonly type = input<'text'|'password'|'email'|'number'>('text');
-  
+
+  public readonly type = input<'text' | 'password' | 'email' | 'number'>('text');
+
   public readonly placeholder = input('');
   public readonly placeholderKey = input('');
-  
+
   public readonly name = input('')
 
- 
+
   getTranslatedLabel = computed(() => {
     const key = this.labelKey();
     const fallback = this.label();
@@ -73,8 +73,8 @@ export class InputForAuth {
     return '';
   });
 
-   get hasError(): boolean {
-    if(this.hasCustomError()){
+  get hasError(): boolean {
+    if (this.hasCustomError()) {
       return true;
     }
     const control = this.control();

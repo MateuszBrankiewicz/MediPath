@@ -72,5 +72,6 @@
   "passwordReset.error.generic": "An error occurred while resetting your password. Please try again.",
   "passwordReset.tokenExpired.title": "Link Expired",
   "passwordReset.tokenExpired.message": "This password reset link has expired. Please request a new password reset email.",
-  "passwordReset.tokenExpired.requestNew": "Request New Link"
+  "passwordReset.tokenExpired.requestNew": "Request New Link",
+  "passwordReset.dialog.checkemail": "Check email"
 }
