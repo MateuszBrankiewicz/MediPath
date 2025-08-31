@@ -1,10 +1,10 @@
-@if (showNavigation()) {
+@if (userRole() !== "guest") {
   <div class="app-layout">
     <app-top-bar-component
       [config]="navigationConfig()"
     ></app-top-bar-component>
     <app-navigation />
-    <main [class]="showNavigation() ? 'app-content' : 'guest-content'">
+    <main [class]="'app-content'">
       <router-outlet />
     </main>
   </div>

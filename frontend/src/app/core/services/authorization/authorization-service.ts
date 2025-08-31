@@ -6,7 +6,7 @@ import { UserRoles } from './authorization.model';
 })
 export class AuthorizationService {
   public userRole() {
-    return UserRoles.GUEST;
+    return UserRoles.PATIENT;
   }
   public userName() {
     return 'John Doe';
