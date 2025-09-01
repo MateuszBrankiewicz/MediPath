@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 fun AuthTextField(
     value: String,
     onValueChange: (String) -> Unit,
+    fieldText: String,
     hintText: String,
     modifier: Modifier = Modifier,
     isPassword: Boolean = false,
@@ -33,13 +34,14 @@ fun AuthTextField(
 ) {
     var hadFocus by remember { mutableStateOf(false) }
 
-    Column(modifier = modifier) {
+    Column {
         OutlinedTextField(
             value, onValueChange,
+            label = { Text(fieldText, color = Color(0xFF5D5D5D), fontSize = 14.sp) },
             placeholder = { Text(hintText, color = Color(0xFF5D5D5D), fontSize = 14.sp) },
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            modifier = Modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth()
                 .onFocusChanged { focusState ->
                     if (focusState.isFocused) {
                         hadFocus = true

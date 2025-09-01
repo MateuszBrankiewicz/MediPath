@@ -34,6 +34,7 @@ import com.medipath.ui.components.SearchableCityDropdown
 import com.medipath.ui.components.SearchableProvinceDropdown
 import com.medipath.utils.ValidationUtils
 import android.widget.Toast
+import androidx.compose.ui.platform.testTag
 
 
 class RegisterActivity : ComponentActivity() {
@@ -132,12 +133,12 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             AuthTextField(name, {
                 name = it
                 nameError = ValidationUtils.validateName(it)
             },
-                "Name", errorMessage = nameError,
+                "Name", "Enter your first name", errorMessage = nameError,
                 onFocusLost = {
                     nameError = ValidationUtils.validateName(name)
                 }
@@ -146,7 +147,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
             AuthTextField(surname, {
                 surname = it
                 surnameError = ValidationUtils.validateSurname(it)
-            }, "Surname", errorMessage = surnameError,
+            }, "Surname", "Enter your last name", errorMessage = surnameError,
                 onFocusLost = {
                     surnameError = ValidationUtils.validateSurname(surname)
                 }
@@ -155,7 +156,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
             AuthTextField(governmentId, {
                 governmentId = it
                 governmentIdError = ValidationUtils.validateGovernmentId(it)
-            }, "Government ID", errorMessage = governmentIdError,
+            }, "Government ID", "Enter your PESEL number", errorMessage = governmentIdError,
                 onFocusLost = {
                     governmentIdError = ValidationUtils.validateGovernmentId(governmentId)
                 }
@@ -164,7 +165,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
             AuthTextField(birthDate, {
                 birthDate = it
                 birthDateError = ValidationUtils.validateBirthDate(it)
-            }, "Birth Date (DD-MM-YYYY)", errorMessage = birthDateError,
+            }, "Birth Date", "DD-MM-YYYY format", errorMessage = birthDateError,
                 onFocusLost = {
                     birthDateError = ValidationUtils.validateBirthDate(birthDate)
                 }
@@ -186,7 +187,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
             AuthTextField(postalCode, {
                 postalCode = it
                 postalCodeError = ValidationUtils.validatePostalCode(it)
-            }, "Postal Code (XX-XXX)", errorMessage = postalCodeError,
+            }, "Postal Code", "XX-XXX format", errorMessage = postalCodeError,
                 onFocusLost = {
                     postalCodeError = ValidationUtils.validatePostalCode(postalCode)
                 }
@@ -205,11 +206,11 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
                 }
             )
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 AuthTextField(number, {
                     number = it
                     numberError = ValidationUtils.validateNumber(it)
-                }, "Number", Modifier.weight(.5f), errorMessage = numberError,
+                }, "Number", "Enter number", modifier = Modifier.width(130.dp), errorMessage = numberError,
                     onFocusLost = {
                         numberError = ValidationUtils.validateNumber(number)
                     }
@@ -218,7 +219,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
                 AuthTextField(street, {
                     street = it
                     streetError = ValidationUtils.validateStreet(it)
-                }, "Street", Modifier.weight(1f), errorMessage = streetError,
+                }, "Street", "Enter street", errorMessage = streetError,
                     onFocusLost = {
                         streetError = ValidationUtils.validateStreet(street)
                     }
@@ -228,7 +229,8 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
             AuthTextField(phoneNumber, {
                 phoneNumber = it
                 phoneNumberError = ValidationUtils.validatePhoneNumber(it)
-            }, "Phone Number", keyboardType = KeyboardType.Phone, errorMessage = phoneNumberError,
+            }, "Phone Number", "Enter your phone number", keyboardType = KeyboardType.Phone, errorMessage = phoneNumberError,
+                modifier = Modifier.testTag("phone_number"),
                 onFocusLost = {
                     phoneNumberError = ValidationUtils.validatePhoneNumber(phoneNumber)
                 }
@@ -237,7 +239,8 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
             AuthTextField(email, {
                 email = it
                 emailError = ValidationUtils.validateEmail(it)
-            }, "Email Address", keyboardType = KeyboardType.Email, errorMessage = emailError,
+            }, "Email Address", "Enter your email address", keyboardType = KeyboardType.Email, errorMessage = emailError,
+                modifier = Modifier.testTag("email_field"),
                 onFocusLost = {
                     emailError = ValidationUtils.validateEmail(email)
                 }
@@ -249,7 +252,8 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
                 if (confirmPassword.isNotEmpty()) {
                     confirmPasswordError = ValidationUtils.validateConfirmPassword(it, confirmPassword)
                 }
-            }, "Password", isPassword = true, errorMessage = passwordError,
+            }, "Password", "Enter your password", isPassword = true, errorMessage = passwordError,
+                modifier = Modifier.testTag("password_field"),
                 onFocusLost = {
                     passwordError = ValidationUtils.validatePassword(password)
                 }
@@ -258,7 +262,8 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
             AuthTextField(confirmPassword, {
                 confirmPassword = it
                 confirmPasswordError = ValidationUtils.validateConfirmPassword(password, it)
-            }, "Confirm password", isPassword = true, errorMessage = confirmPasswordError,
+            }, "Confirm Password", "Re-enter your password", isPassword = true, errorMessage = confirmPasswordError,
+                modifier = Modifier.testTag("confirm_password_field"),
                 onFocusLost = {
                     confirmPasswordError = ValidationUtils.validateConfirmPassword(password, confirmPassword)
                 }
@@ -268,7 +273,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
         Spacer(modifier = Modifier.height(20.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(isChecked, { isChecked = it })
+            Checkbox(isChecked, { isChecked = it }, modifier = Modifier.testTag("conditions_checkbox"))
             Text("Accept Terms & Conditions", fontSize = 13.sp, fontWeight = FontWeight.Bold)
         }
 

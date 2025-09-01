@@ -8,10 +8,13 @@ import com.medipath.data.models.City
 import kotlinx.coroutines.launch
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import com.medipath.data.api.ApiService
 import com.medipath.data.models.RegisterRequest
 import retrofit2.HttpException
 
-class RegisterViewModel: ViewModel() {
+class RegisterViewModel(
+    private val apiService: ApiService = RetrofitInstance.api
+): ViewModel() {
     private val _cities = mutableStateOf<List<City>>(emptyList())
     val cities: State<List<City>> = _cities
 
@@ -32,10 +35,10 @@ class RegisterViewModel: ViewModel() {
     private fun fetchCities() {
         viewModelScope.launch {
             try {
-                _cities.value = RetrofitInstance.api.getCities()
-                Log.d("RegisterViewModel", "Pobrano miasta: ${_cities.value}")
+                _cities.value = apiService.getCities()
+                Log.d("RegisterViewModel", "Fetched cities: ${_cities.value}")
             } catch (e: Exception) {
-                Log.e("RegisterViewModel", "Błąd podczas pobierania miast: ${e.message}", e)
+                Log.e("RegisterViewModel", "Error fetching cities", e)
                 _cities.value = emptyList()
             }
         }
@@ -44,10 +47,10 @@ class RegisterViewModel: ViewModel() {
     private fun fetchProvinces() {
         viewModelScope.launch {
             try {
-                _provinces.value = RetrofitInstance.api.getProvinces()
-                Log.d("RegisterViewModel", "Pobrano wojewódźtwa: ${_provinces.value}")
+                _provinces.value = apiService.getProvinces()
+                Log.d("RegisterViewModel", "Fetched provinces: ${_provinces.value}")
             } catch (e: Exception) {
-                Log.e("RegisterViewModel", "Błąd podczas pobierania wojewódźtw: ${e.message}", e)
+                Log.e("RegisterViewModel", "Error fetching provinces", e)
                 _provinces.value = emptyList()
             }
         }
@@ -59,7 +62,7 @@ class RegisterViewModel: ViewModel() {
             _registrationSuccess.value = false
 
             try {
-                val response = RetrofitInstance.api.registerUser(request)
+                val response = apiService.registerUser(request)
                 _registrationSuccess.value = true
                 Log.d("RegisterViewModel", "Registration successful: $response")
             } catch (e: HttpException) {

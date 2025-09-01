@@ -39,6 +39,8 @@ android {
     }
 }
 
+val compose_version = "1.7.6"
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -50,6 +52,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
+    testImplementation(libs.junit.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -63,4 +66,17 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
+    //ui tests
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
+
+    //unit tests
+//    testImplementation("androidx.test:core:1.5.0")
+//    testImplementation("org.mockito:mockito-core:5.7.0")
+//    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+//    testImplementation("io.mockk:mockk:1.13.8")
+//    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+//    testImplementation("androidx.arch.core:core-testing:2.2.0")
+
 }
