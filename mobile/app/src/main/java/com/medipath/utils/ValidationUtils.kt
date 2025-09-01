@@ -8,39 +8,39 @@ object ValidationUtils {
 
     fun validateName(name: String): String {
         return when {
-            name.isBlank() -> "Imię jest wymagane"
-            name.length < 2 -> "Imię musi mieć co najmniej 2 znaki"
-            name.first().isLowerCase() -> "Imię musi zaczynać się wielką literą"
-            !name.all { it.isLetter() || it.isWhitespace() } -> "Imię może zawierać tylko litery"
+            name.isBlank() -> "Name is required"
+            name.length < 2 -> "Name must be at least 2 characters long"
+            name.first().isLowerCase() -> "Name must start with a capital letter"
+            !name.all { it.isLetter() || it.isWhitespace() } -> "Name can only contain letters"
             else -> ""
         }
     }
 
     fun validateSurname(surname: String): String {
         return when {
-            surname.isBlank() -> "Nazwisko jest wymagane"
-            surname.length < 2 -> "Nazwisko musi mieć co najmniej 2 znaki"
-            surname.first().isLowerCase() -> "Nazwisko musi zaczynać się wielką literą"
-            !surname.all { it.isLetter() || it.isWhitespace() } -> "Nazwisko może zawierać tylko litery"
+            surname.isBlank() -> "Surname is required"
+            surname.length < 2 -> "Surname must be at least 2 characters long"
+            surname.first().isLowerCase() -> "Surname must start with a capital letter"
+            !surname.all { it.isLetter() || it.isWhitespace() } -> "Surname can only contain letters"
             else -> ""
         }
     }
 
     fun validateGovernmentId(id: String): String {
         return when {
-            id.isBlank() -> "PESEL jest wymagany"
-            id.length != 11 -> "PESEL musi mieć dokładnie 11 cyfr"
-            !id.all { it.isDigit() } -> "PESEL może zawierać tylko cyfry"
+            id.isBlank() -> "PESEL is required"
+            id.length != 11 -> "PESEL must be exactly 11 digits long"
+            !id.all { it.isDigit() } -> "PESEL can only contain digits"
             else -> ""
         }
     }
 
     fun validateBirthDate(date: String): String {
-        if (date.isBlank()) return "Data urodzenia jest wymagana"
+        if (date.isBlank()) return "Birth date is required"
 
         val pattern = Pattern.compile("^\\d{2}-\\d{2}-\\d{4}$")
         if (!pattern.matcher(date).matches()) {
-            return "Data musi być w formacie DD-MM-YYYY"
+            return "Date must be in DD-MM-YYYY format"
         }
 
         try {
@@ -50,10 +50,10 @@ object ValidationUtils {
             val currentDate = System.currentTimeMillis()
 
             if (parsedDate == null || parsedDate.time > currentDate) {
-                return "Nieprawidłowa data"
+                return "Invalid date"
             }
         } catch (e: Exception) {
-            return "Nieprawidłowa data"
+            return "Invalid date"
         }
 
         return ""
@@ -61,74 +61,74 @@ object ValidationUtils {
 
     fun validatePostalCode(code: String): String {
         return when {
-            code.isBlank() -> "Kod pocztowy jest wymagany"
+            code.isBlank() -> "Postal code is required"
             !Pattern.compile("^\\d{2}-\\d{3}$").matcher(code).matches() ->
-                "Kod pocztowy musi być w formacie XX-XXX"
+                "Postal code must be in XX-XXX format"
             else -> ""
         }
     }
 
     fun validatePhoneNumber(phone: String): String {
         return when {
-            phone.isBlank() -> "Numer telefonu jest wymagany"
-            phone.length < 9 -> "Numer telefonu jest za krótki"
+            phone.isBlank() -> "Phone number is required"
+            phone.length < 9 -> "Phone number is too short"
             !phone.all { it.isDigit() || it == '+' || it == ' ' || it == '-' } ->
-                "Nieprawidłowy format numeru telefonu"
+                "Invalid phone number format"
             else -> ""
         }
     }
 
     fun validateEmail(email: String): String {
         return when {
-            email.isBlank() -> "Email jest wymagany"
+            email.isBlank() -> "Email is required"
             !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() ->
-                "Nieprawidłowy format email"
+                "Invalid email format"
             else -> ""
         }
     }
 
     fun validatePassword(password: String): String {
         return when {
-            password.isBlank() -> "Hasło jest wymagane"
-            password.length < 6 -> "Hasło musi mieć co najmniej 6 znaków"
+            password.isBlank() -> "Password is required"
+            password.length < 6 -> "Password must be at least 6 characters long"
             else -> ""
         }
     }
 
     fun validateConfirmPassword(password: String, confirmPassword: String): String {
         return when {
-            confirmPassword.isBlank() -> "Potwierdzenie hasła jest wymagane"
-            password != confirmPassword -> "Hasła nie są identyczne"
+            confirmPassword.isBlank() -> "Password confirmation is required"
+            password != confirmPassword -> "Passwords do not match"
             else -> ""
         }
     }
 
     fun validateCity(city: String): String {
         return when {
-            city.isBlank() -> "Miasto jest wymagane"
+            city.isBlank() -> "City is required"
             else -> ""
         }
     }
 
     fun validateProvince(province: String): String {
         return when {
-            province.isBlank() -> "Województwo jest wymagane"
+            province.isBlank() -> "Province is required"
             else -> ""
         }
     }
 
     fun validateStreet(street: String): String {
         return when {
-            street.isBlank() -> "Ulica jest wymagana"
-            !street.all { it.isLetter() } -> "Ulica może zawierać tylko litery"
+            street.isBlank() -> "Street is required"
+            !street.all { it.isLetter() } -> "Street can only contain letters"
             else -> ""
         }
     }
 
     fun validateNumber(number: String): String {
         return when {
-            number.isBlank() -> "Numer jest wymagany"
-            !number.all { it.isDigit() } -> "Numer może zawierać tylko cyfry"
+            number.isBlank() -> "Number is required"
+            !number.all { it.isDigit() } -> "Number can only contain digits"
             else -> ""
         }
     }

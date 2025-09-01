@@ -49,10 +49,10 @@ fun SearchableCityDropdown(
                     onCitySelected("")
                 }
             },
-            label = { Text("Miasto", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
+            label = { Text("City", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
             placeholder = {
                 Text(
-                    "Wpisz lub wybierz miasto",
+                    "Select city or type to search",
                     color = Color(0xFF5D5D5D),
                     fontSize = 14.sp
                 )
@@ -73,7 +73,7 @@ fun SearchableCityDropdown(
             modifier = Modifier
                 .fillMaxWidth()
                 .onFocusChanged { focusState ->
-                    Log.d("debug", "Focus changed: ${focusState.isFocused}")
+//                    Log.d("debug", "Focus changed: ${focusState.isFocused}")
                     if (focusState.isFocused) {
                         hadFocus = true
                         expanded = true

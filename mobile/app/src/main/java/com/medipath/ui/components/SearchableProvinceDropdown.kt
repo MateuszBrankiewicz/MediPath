@@ -48,10 +48,10 @@ fun SearchableProvinceDropdown(
                         onProvinceSelected("")
                     }
                 },
-                label = { Text("Wojewódźtwo", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
+                label = { Text("Province", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
                 placeholder = {
                     Text(
-                        "Wpisz lub wybierz wojewódźtwo",
+                        "Select province or type to search",
                         color = Color(0xFF5D5D5D),
                         fontSize = 14.sp
                     )
