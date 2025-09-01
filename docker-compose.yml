@@ -20,32 +20,34 @@ services:
     networks:
       - web-network
   mongodb:
-    image: "mongo:latest"
+    image: 'mongo:latest'
     environment:
-      - "MONGO_INITDB_DATABASE=mydatabase"
-      - "MONGO_INITDB_ROOT_PASSWORD=secret"
-      - "MONGO_INITDB_ROOT_USERNAME=root"
+      - 'MONGO_INITDB_DATABASE=mydatabase'
+      - 'MONGO_INITDB_ROOT_PASSWORD=secret'
+      - 'MONGO_INITDB_ROOT_USERNAME=root'
     ports:
-      - "27017:27017"
+      - '27017:27017'
 
     volumes:
-      - type: volume
-        source: medipath_data
-        target: /data/db
+        - type: volume
+          source: medipath_data
+          target: /data/db
 
     networks:
       - web-network
 
   mailhog:
-    image: "mailhog/mailhog:latest"
+    image: 'mailhog/mailhog:latest'
     ports:
-      - "8025:8025"
-      - "1025:1025"
+        - "8025:8025"
+        - "1025:1025"
     networks:
-      - web-network
+        - web-network
 networks:
   web-network:
     driver: bridge
 
+
 volumes:
-  medipath_data:
+    medipath_data:
+

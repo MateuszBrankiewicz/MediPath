@@ -48,11 +48,11 @@ fun SearchableProvinceDropdown(
                         onProvinceSelected("")
                     }
                 },
-                label = { Text("Province", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
+                label = { Text("Province", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
                 placeholder = {
                     Text(
                         "Select province or type to search",
-                        color = Color(0xFF5D5D5D),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp
                     )
                 },
@@ -80,10 +80,10 @@ fun SearchableProvinceDropdown(
                         }
                     },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
-                    unfocusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
-                    focusedContainerColor = Color(0xFFD9D9D9),
-                    unfocusedContainerColor = Color(0xFFD9D9D9)
+                    focusedBorderColor = if (errorMessage.isNotEmpty()) MaterialTheme.colorScheme.error else Color.Transparent,
+                    unfocusedBorderColor = if (errorMessage.isNotEmpty()) MaterialTheme.colorScheme.error else Color.Transparent,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
                 ),
                 shape = RoundedCornerShape(20.dp),
                 isError = errorMessage.isNotEmpty()
@@ -94,7 +94,7 @@ fun SearchableProvinceDropdown(
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.fillMaxWidth()
                         .background(
-                            color = Color(0xFF2D4A69),
+                            color = MaterialTheme.colorScheme.onBackground,
                             shape = RoundedCornerShape(12.dp)
                         )
                 ) {
@@ -103,7 +103,7 @@ fun SearchableProvinceDropdown(
                             text = {
                                 Text(
                                     text = provinceItem,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.background
                                 )
                             },
                             onClick = {
@@ -119,7 +119,7 @@ fun SearchableProvinceDropdown(
         if (errorMessage.isNotEmpty()) {
             Text(
                 text = errorMessage,
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.error,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
             )

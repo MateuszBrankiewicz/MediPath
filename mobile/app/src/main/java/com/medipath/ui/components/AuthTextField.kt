@@ -37,8 +37,8 @@ fun AuthTextField(
     Column {
         OutlinedTextField(
             value, onValueChange,
-            label = { Text(fieldText, color = Color(0xFF5D5D5D), fontSize = 14.sp) },
-            placeholder = { Text(hintText, color = Color(0xFF5D5D5D), fontSize = 14.sp) },
+            label = { Text(fieldText, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
+            placeholder = { Text(hintText, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             modifier = modifier.fillMaxWidth()
@@ -50,10 +50,10 @@ fun AuthTextField(
                     }
                 },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
-                unfocusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
-                focusedContainerColor = Color(0xFFD9D9D9),
-                unfocusedContainerColor = Color(0xFFD9D9D9)
+                focusedBorderColor = if (errorMessage.isNotEmpty()) MaterialTheme.colorScheme.error else Color.Transparent,
+                unfocusedBorderColor = if (errorMessage.isNotEmpty()) MaterialTheme.colorScheme.error else Color.Transparent,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
             shape = RoundedCornerShape(20.dp),
             isError = errorMessage.isNotEmpty()
@@ -61,7 +61,7 @@ fun AuthTextField(
         if (errorMessage.isNotEmpty()) {
             Text(
                 text = errorMessage,
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.error,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
             )

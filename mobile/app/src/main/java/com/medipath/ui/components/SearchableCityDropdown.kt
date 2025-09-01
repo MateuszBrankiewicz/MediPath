@@ -1,6 +1,5 @@
 package com.medipath.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -49,11 +48,11 @@ fun SearchableCityDropdown(
                     onCitySelected("")
                 }
             },
-            label = { Text("City", color = Color(0xFF5D5D5D), fontSize = 14.sp) },
+            label = { Text("City", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
             placeholder = {
                 Text(
                     "Select city or type to search",
-                    color = Color(0xFF5D5D5D),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp
                 )
             },
@@ -82,10 +81,10 @@ fun SearchableCityDropdown(
                     }
                 },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
-                unfocusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else Color.Transparent,
-                focusedContainerColor = Color(0xFFD9D9D9),
-                unfocusedContainerColor = Color(0xFFD9D9D9)
+                focusedBorderColor = if (errorMessage.isNotEmpty()) MaterialTheme.colorScheme.error else Color.Transparent,
+                unfocusedBorderColor = if (errorMessage.isNotEmpty()) MaterialTheme.colorScheme.error else Color.Transparent,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
             shape = RoundedCornerShape(20.dp),
             isError = errorMessage.isNotEmpty()
@@ -96,7 +95,7 @@ fun SearchableCityDropdown(
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.fillMaxWidth()
                     .background(
-                        color = Color(0xFF2D4A69),
+                        color = MaterialTheme.colorScheme.onBackground,
                         shape = RoundedCornerShape(12.dp)
                     )
             ) {
@@ -105,7 +104,7 @@ fun SearchableCityDropdown(
                         text = {
                             Text(
                                 text = cityItem.name,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.background
                             )
                         },
                         onClick = {
@@ -121,7 +120,7 @@ fun SearchableCityDropdown(
     if (errorMessage.isNotEmpty()) {
         Text(
             text = errorMessage,
-            color = Color.Red,
+            color = MaterialTheme.colorScheme.error,
             fontSize = 12.sp,
             modifier = Modifier.padding(start = 16.dp, top = 4.dp)
         )
