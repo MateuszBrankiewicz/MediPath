@@ -1,6 +1,5 @@
 package com.medipath.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -12,32 +11,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = ThemeColors.Dark.primary,
+    onSurfaceVariant = ThemeColors.Dark.disabledBtn,
+    background = ThemeColors.Dark.background,
+    onBackground = ThemeColors.Dark.subtitle,
+    surface = ThemeColors.Dark.inputBgPrimary,
+    onSurface = ThemeColors.Dark.placeholder,
+    error = ThemeColors.Dark.error,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = ThemeColors.Light.primary,
+    onSurfaceVariant = ThemeColors.Light.disabledBtn,
+    background = ThemeColors.Light.background,
+    onBackground = ThemeColors.Light.subtitle,
+    surface = ThemeColors.Light.inputBgPrimary,
+    onSurface = ThemeColors.Light.placeholder,
+    error = ThemeColors.Light.error
 )
 
 @Composable
 fun MediPathTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

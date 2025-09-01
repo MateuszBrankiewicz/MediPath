@@ -15,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -23,7 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.R
-import com.medipath.SplashActivity
+import com.medipath.ui.splash.SplashActivity
 import android.content.Intent
 import com.medipath.ui.theme.MediPathTheme
 import com.medipath.ui.components.AuthTextField
@@ -120,7 +119,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Color.White).verticalScroll(rememberScrollState()).padding(30.dp),
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()).padding(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(90.dp))
@@ -128,7 +127,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
 
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
             Text("Take care of your health.", fontSize = 26.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(250.dp))
-            Text("Create an account", fontSize = 16.sp, fontWeight = FontWeight.W500, color = Color(0xFF284662))
+            Text("Create an account", fontSize = 16.sp, fontWeight = FontWeight.W500, color = MaterialTheme.colorScheme.onBackground)
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -282,7 +281,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
         if (registrationError.isNotEmpty()) {
             Text(
                 text = registrationError,
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.error,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
@@ -309,10 +308,10 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
             },
             enabled = isFormValid,
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isFormValid) Color.Black else Color.Gray,
-                contentColor = if (isFormValid) Color.White else Color.LightGray,
-                disabledContainerColor = Color.Gray,
-                disabledContentColor = Color.LightGray
+                containerColor = if (isFormValid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                contentColor = MaterialTheme.colorScheme.background,
+                disabledContainerColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledContentColor = MaterialTheme.colorScheme.background
             ),
             shape = RoundedCornerShape(30.dp),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 14.dp)

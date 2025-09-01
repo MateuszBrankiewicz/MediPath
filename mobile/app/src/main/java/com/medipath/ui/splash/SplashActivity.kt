@@ -1,5 +1,6 @@
-package com.medipath
+package com.medipath.ui.splash
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -22,14 +22,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.ui.theme.MediPathTheme
 import android.content.Intent
+import com.medipath.R
 import com.medipath.ui.auth.RegisterActivity
 
+@SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MediPathTheme {
+            MediPathTheme() {
                 SplashScreen{
                     val intent = Intent(this, RegisterActivity::class.java)
                     startActivity(intent)
@@ -46,7 +48,7 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Image(
             painter = painterResource(id = R.drawable.splash_background),
@@ -77,7 +79,7 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
                 text = "Welcome!",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -86,7 +88,7 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
                 text = "Sign up to book your first visit and start setting medication reminders",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.W400,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
             )
 
@@ -95,8 +97,8 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
             Button(
                 onClick = onGetStartedClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.background
                 ),
                 shape = RoundedCornerShape(30.dp),
                 modifier = Modifier
