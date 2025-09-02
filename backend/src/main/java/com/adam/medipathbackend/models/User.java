@@ -52,7 +52,7 @@ public class User {
 
     private UserSettings userSettings;
 
-
+    private int numOfRatings;
 
     @Override
     public String toString() {
@@ -78,6 +78,7 @@ public class User {
         this.isActive = true;
         this.employers = new ArrayList<>();
         this.userSettings = userSettings;
+        this.numOfRatings = 0;
     }
 
     public UserSettings getUserSettings() {
@@ -196,9 +197,11 @@ public class User {
         return rating;
     }
 
-    public void setRating(float rating) {
-        this.rating = rating;
+    public void addRating(float newRating) {
+        this.rating = ((this.rating * this.numOfRatings) + newRating) / (this.numOfRatings + 1);
+        this.numOfRatings += 1;
     }
+
 
     public boolean isActive() {
         return isActive;
@@ -212,8 +215,8 @@ public class User {
         return employers;
     }
 
-    public void setEmployers(ArrayList<InstitutionDigest> employers) {
-        this.employers = employers;
+    public void addEmployer(InstitutionDigest digest) {
+        this.employers.add(digest);
     }
 
     public String getId() {
