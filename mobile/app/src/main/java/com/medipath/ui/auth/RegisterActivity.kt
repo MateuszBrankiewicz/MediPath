@@ -22,7 +22,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.R
-import com.medipath.ui.splash.SplashActivity
 import android.content.Intent
 import com.medipath.ui.theme.MediPathTheme
 import com.medipath.ui.components.AuthTextField
@@ -43,13 +42,15 @@ class RegisterActivity : ComponentActivity() {
         setContent {
             MediPathTheme { RegisterScreen(
                 onSignInClick = {
-                    val intent = Intent(this, SplashActivity::class.java)
+                    val intent = Intent(this, LoginActivity::class.java)
                     startActivity(intent)
                     finish()
                 },
                 onRegistrationSuccess = {
                     Toast.makeText(this, "Registration successful! Please log in.", Toast.LENGTH_LONG).show()
-                    //przejscie do logowania
+                    val intent = Intent(this, LoginActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 }
             ) }
         }
@@ -314,7 +315,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
                 disabledContentColor = MaterialTheme.colorScheme.background
             ),
             shape = RoundedCornerShape(30.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 14.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp)
         ) {
             Text(
                 text = "SIGN UP",
@@ -323,11 +324,11 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row {
-            Text("Already have an account? ", fontWeight = FontWeight.W400)
-            Text("Sign in", fontWeight = FontWeight.Bold, modifier = Modifier.clickable {
+            Text("Already have an account? ", fontWeight = FontWeight.W400, fontSize = 14.sp)
+            Text("Sign in", fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.clickable {
                 onSignInClick()
             })
         }

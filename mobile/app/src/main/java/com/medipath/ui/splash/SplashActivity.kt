@@ -103,7 +103,7 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
                 shape = RoundedCornerShape(30.dp),
                 modifier = Modifier
                     .width(410.dp)
-                    .padding(horizontal = 24.dp, vertical = 14.dp)
+                    .padding(vertical = 14.dp)
             ) {
                 Text(
                     text = "GET STARTED",
