@@ -15,12 +15,11 @@
 
         <div class="doctor-rating">
           <div class="stars">
-            <span
-              *ngFor="let star of [1, 2, 3, 4, 5]"
-              class="star"
-              [class.filled]="star <= doctor().rating"
-              >★</span
-            >
+            @for (star of [1, 2, 3, 4, 5]; track star) {
+              <span class="star" [class.filled]="star <= doctor().rating"
+                >★</span
+              >
+            }
           </div>
           <span class="reviews-count">{{ doctor().reviewsCount }} opinion</span>
         </div>
@@ -29,14 +28,15 @@
 
     <div class="address-section">
       <div class="address-tabs">
-        <button
-          *ngFor="let address of doctor().addresses; let i = index"
-          class="address-tab"
-          [class.active]="i === selectedAddressIndex()"
-          (click)="onAddressTabClick(i)"
-        >
-          Adres {{ i + 1 }}
-        </button>
+        @for (address of doctor().addresses; let i = $index; track i) {
+          <button
+            class="address-tab"
+            [class.active]="i === selectedAddressIndex()"
+            (click)="onAddressTabClick(i)"
+          >
+            Adres {{ i + 1 }}
+          </button>
+        }
       </div>
 
       <div class="current-address">
@@ -47,30 +47,33 @@
 
   <div class="schedule-section">
     <div class="schedule-days">
-      <div *ngFor="let day of doctor().schedule" class="day-column">
-        <div class="day-header">
-          <div class="day-name">{{ day.dayName }}</div>
-          <div class="day-date">{{ day.dayNumber }}</div>
-        </div>
+      @for (day of doctor().schedule; track day) {
+        <div class="day-column">
+          <div class="day-header">
+            <div class="day-name">{{ day.dayName }}</div>
+            <div class="day-date">{{ day.dayNumber }}</div>
+          </div>
 
-        <div class="time-slots">
-          <button
-            *ngFor="let slot of day.slots"
-            class="time-slot"
-            [class.available]="slot.available && !slot.booked"
-            [class.booked]="slot.booked"
-            [class.unavailable]="!slot.available"
-            [disabled]="!slot.available || slot.booked"
-            (click)="onTimeSlotClick(day, slot)"
-          >
-            {{ slot.time }}
-          </button>
+          <div class="time-slots">
+            @for (slot of day.slots; track slot) {
+              <button
+                class="time-slot"
+                [class.available]="slot.available && !slot.booked"
+                [class.booked]="slot.booked"
+                [class.unavailable]="!slot.available"
+                [disabled]="!slot.available || slot.booked"
+                (click)="onTimeSlotClick(day, slot)"
+              >
+                {{ slot.time }}
+              </button>
+            }
 
-          <button class="more-hours-btn" (click)="onShowMoreHours(day)">
-            More hours ⌄
-          </button>
+            <button class="more-hours-btn" (click)="onShowMoreHours(day)">
+              More hours ⌄
+            </button>
+          </div>
         </div>
-      </div>
+      }
     </div>
 
     <button class="next-btn">
