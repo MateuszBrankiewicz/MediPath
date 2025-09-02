@@ -92,6 +92,18 @@ public class UserController {
     }
 
 
+    @GetMapping("/profile")
+    public ResponseEntity<Map<String, Object>> getProfile(HttpSession session) {
+        String id = (String) session.getAttribute("id");
+        if(id == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> opt = userRepository.findById(id);
+        if(opt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(Map.of("user", opt.get()), HttpStatus.OK);
+    }
 
     @GetMapping("/resetpassword")
     public ResponseEntity<Map<String, Object>> resetPassword(@RequestParam(value = "address", required = false) String address) {
