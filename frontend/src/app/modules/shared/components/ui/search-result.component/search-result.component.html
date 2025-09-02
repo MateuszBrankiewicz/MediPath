@@ -1,0 +1,8 @@
+<app-hospital-card [hospital]="sampleHospital"> </app-hospital-card>
+<app-doctor-card
+  [doctor]="sampleDoctor"
+  (bookAppointment)="onBookAppointment($event)"
+  (showMoreInfo)="onShowMoreInfo($event)"
+  (addressChange)="onAddressChange($event)"
+>
+</app-doctor-card>
