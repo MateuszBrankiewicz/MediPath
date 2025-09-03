@@ -1,2 +1,31 @@
 frontend/.github/ copilot-instructions.md
-mobile/.gitignore
+
+# mobile
+mobile/*.apk
+mobile/*.ap_
+mobile/*.aab
+mobile/*.dex
+mobile/*.class
+mobile/bin/
+mobile/gen/
+mobile/out/
+mobile/.gradle/
+mobile/build/
+mobile/local.properties
+mobile/proguard/
+mobile/*.log
+mobile/.idea/
+mobile/*.iml
+mobile/*.ipr
+mobile/*.iws
+mobile/.vscode/
+mobile/*.jks
+mobile/*.keystore
+mobile/.externalNativeBuild/
+mobile/.cxx/
+mobile/.kotlinc/
+mobile/.kotlin/
+mobile/captures/
+mobile/.DS_Store
+mobile/Thumbs.db
+
