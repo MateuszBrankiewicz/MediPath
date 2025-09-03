@@ -1,6 +1,7 @@
 package com.medipath.data.api
 
 import com.medipath.data.models.City
+import com.medipath.data.models.LoginRequest
 import com.medipath.data.models.RegisterRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -15,4 +16,7 @@ interface ApiService {
 
     @POST("/api/users/register")
     suspend fun registerUser(@Body userData: RegisterRequest): ApiResponse
+
+    @POST("/api/users/login")
+    suspend fun loginUser(@Body loginData: LoginRequest): ApiResponse
 }
