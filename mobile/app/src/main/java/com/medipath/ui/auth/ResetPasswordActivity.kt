@@ -28,6 +28,8 @@ import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
 import com.medipath.viewmodels.ResetPasswordViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 
 
 class ResetPasswordActivity : ComponentActivity() {
@@ -41,10 +43,11 @@ class ResetPasswordActivity : ComponentActivity() {
                     startActivity(intent)
                     finish()
                 },
+                onBackClick = {
+                    finish()
+                },
                 onResetSuccess = {
-                    Toast.makeText(this, "Success! If an account exists for this email, we've sent password reset instructions.", Toast.LENGTH_LONG).show()
-                    val intent = Intent(this, LoginActivity::class.java)
-                    startActivity(intent)
+                    Toast.makeText(this, "Success! If an account exists, we've sent password reset instructions.", Toast.LENGTH_LONG).show()
                     finish()
                 }
             ) }
@@ -55,7 +58,12 @@ class ResetPasswordActivity : ComponentActivity() {
 
 
 @Composable
-fun ResetPasswordScreen(viewModel: ResetPasswordViewModel = remember { ResetPasswordViewModel() }, onSignUpClick: () -> Unit = {}, onResetSuccess: () -> Unit = {}) {
+fun ResetPasswordScreen(
+    viewModel: ResetPasswordViewModel = remember { ResetPasswordViewModel() },
+    onSignUpClick: () -> Unit = {},
+    onBackClick: () -> Unit = {},
+    onResetSuccess: () -> Unit = {}
+) {
 
     val resetError by viewModel.resetError
     val resetSuccess by viewModel.resetSuccess
@@ -78,8 +86,26 @@ fun ResetPasswordScreen(viewModel: ResetPasswordViewModel = remember { ResetPass
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier.offset(x = (-20).dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBackIosNew,
+                    contentDescription = "Back to login",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(50.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(50.dp))
+
         Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(110.dp))
         Spacer(modifier = Modifier.height(60.dp))
 

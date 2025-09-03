@@ -52,7 +52,6 @@ class LoginActivity : ComponentActivity() {
                 onForgotClick = {
                     val intent = Intent(this, ResetPasswordActivity::class.java)
                     startActivity(intent)
-                    finish()
                 }
             ) }
         }
