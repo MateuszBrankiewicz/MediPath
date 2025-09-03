@@ -1,6 +1,7 @@
 package com.adam.medipathbackend.controllers;
 
 import com.adam.medipathbackend.models.Institution;
+import com.adam.medipathbackend.models.StaffDigest;
 import com.adam.medipathbackend.models.User;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.UserRepository;
@@ -25,22 +26,18 @@ public class SearchController {
     InstitutionRepository institutionRepository;
 
 
-    @GetMapping("/search/{type}/{query}")
-    public ResponseEntity<Map<String, Object>> search(@PathVariable String query, @PathVariable String type) {
+    @GetMapping(value = {"/search/{query}", "/search/{query}/{city}"})
+    public ResponseEntity<Map<String, Object>> search(@PathVariable String query, @PathVariable(required = false) String city) {
         ArrayList<Institution> institutions;
-        ArrayList<User> doctors;
-        if(type.equals("by-spec")) {
-            institutions = institutionRepository.findInstitutionBySpec(query);
-            doctors = userRepository.findDoctorsBySpec(query);
-        } else if(type.equals("by-name")) {
-            institutions = institutionRepository.findInstitutionByName(query);
-            doctors = userRepository.findDoctorsByName(query);
-        } else {
-            return new ResponseEntity<>(Map.of("message", "unknown query type"), HttpStatus.BAD_REQUEST);
-        }
-        List<Map<String, Serializable>> institutions_clean = institutions.stream().map(institution -> Map.of("name", institution.getName(), "types", institution.getTypes(), "rating", institution.getRating())).toList();
-        List<Map<String, Serializable>> doctors_clean = doctors.stream().map(doctor -> Map.of("name", doctor.getName(), "surname", doctor.getSurname(), "specialisations", doctor.getSpecialisations(), "rating", doctor.getRating())).toList();
-        return new ResponseEntity<>(Map.of("institutions", institutions_clean, "doctors", doctors_clean), HttpStatus.OK);
+        ArrayList<StaffDigest> doctors;
+
+        city = city == null ? ".*" : city;
+        institutions = institutionRepository.findInstitutionByCity(city, query);
+        doctors = institutionRepository.findDoctorsByCity(city, query);
+
+        List<Map<String, Serializable>> institutions_clean = institutions.stream().map(institution -> Map.of("name", institution.getName(), "types", institution.getTypes())).toList();
+        List<Map<String, Serializable>> doctors_clean = doctors.stream().map(doctor -> Map.of("name", doctor.getName(), "surname", doctor.getSurname(), "specialisations", doctor.getSpecialisations())).toList();
+        return new ResponseEntity<>(Map.of("institutions", institutions_clean, "doctors", doctors), HttpStatus.OK);
     }
 
 }
