@@ -54,3 +54,9 @@
     </p-card>
   </div>
 </div>
+<div class="comment-block">
+  <span>Comments</span>
+  @for (comment of exampleDoctor().comments; track comment.id) {
+    <app-patient-comment-component [comment]="comment" />
+  }
+</div>

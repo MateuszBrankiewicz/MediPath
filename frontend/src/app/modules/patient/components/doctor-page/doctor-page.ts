@@ -3,10 +3,11 @@ import { ActivatedRoute } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { CardModule } from 'primeng/card';
+import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 
 @Component({
   selector: 'app-doctor-page',
-  imports: [CardModule, BreadcrumbModule],
+  imports: [CardModule, BreadcrumbModule, PatientCommentComponent],
   templateUrl: './doctor-page.html',
   styleUrl: './doctor-page.scss',
 })
@@ -44,6 +45,7 @@ export class DoctorPage {
     specialisation: ['Cardiology', 'Internal Medicine'],
     comments: [
       {
+        id: 1,
         userName: 'Alice Smith',
         visitedInstitution: 'City Hospital',
         content: 'Very professional and caring.',
@@ -51,6 +53,7 @@ export class DoctorPage {
         numberOfStars: 5,
       },
       {
+        id: 2,
         userName: 'Bob Johnson',
         visitedInstitution: 'Health Clinic',
         content: 'Helpful and knowledgeable.',
