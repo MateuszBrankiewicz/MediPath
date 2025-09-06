@@ -27,31 +27,28 @@ import com.medipath.utils.ValidationUtils
 import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.style.TextAlign
-import com.medipath.data.models.LoginRequest
-import com.medipath.viewmodels.LoginViewModel
+import com.medipath.viewmodels.ResetPasswordViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 
 
-class LoginActivity : ComponentActivity() {
+class ResetPasswordActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MediPathTheme { LoginScreen(
+            MediPathTheme { ResetPasswordScreen(
                 onSignUpClick = {
                     val intent = Intent(this, RegisterActivity::class.java)
                     startActivity(intent)
                     finish()
                 },
-                onLoginSuccess = {
-                    Toast.makeText(this, "Login successful!", Toast.LENGTH_LONG).show()
-//                    val intent = Intent(this, MainActivity::class.java)
-//                    startActivity(intent)
-//                    finish()
+                onBackClick = {
+                    finish()
                 },
-                onForgotClick = {
-                    val intent = Intent(this, ResetPasswordActivity::class.java)
-                    startActivity(intent)
+                onResetSuccess = {
+                    Toast.makeText(this, "Success! If an account exists, we've sent password reset instructions.", Toast.LENGTH_LONG).show()
+                    finish()
                 }
             ) }
         }
@@ -61,76 +58,80 @@ class LoginActivity : ComponentActivity() {
 
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSignUpClick: () -> Unit = {}, onForgotClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {}) {
+fun ResetPasswordScreen(
+    viewModel: ResetPasswordViewModel = remember { ResetPasswordViewModel() },
+    onSignUpClick: () -> Unit = {},
+    onBackClick: () -> Unit = {},
+    onResetSuccess: () -> Unit = {}
+) {
 
-    val loginError by viewModel.loginError
-    val loginSuccess by viewModel.loginSuccess
+    val resetError by viewModel.resetError
+    val resetSuccess by viewModel.resetSuccess
 
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess) {
-            onLoginSuccess()
+    LaunchedEffect(resetSuccess) {
+        if (resetSuccess) {
+            onResetSuccess()
         }
     }
 
     var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
     var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
 
     val isFormValid by remember {
         derivedStateOf {
-            email.isNotBlank() &&
-            password.isNotBlank()
+            email.isNotBlank() && emailError.isEmpty()
         }
     }
 
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
-        Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(120.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier.offset(x = (-20).dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBackIosNew,
+                    contentDescription = "Back to login",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(50.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(50.dp))
+
+        Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(110.dp))
         Spacer(modifier = Modifier.height(60.dp))
 
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-            Text("Welcome Back.", fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(250.dp).padding(vertical = 10.dp))
-            Text("Login to your account", fontSize = 17.sp, fontWeight = FontWeight.W500, color = MaterialTheme.colorScheme.onBackground)
+            Text("Forgot password?", fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(250.dp).padding(vertical = 10.dp))
+            Text("Enter your email address, and we will send you a message with instructions to reset your password.", fontSize = 16.sp, fontWeight = FontWeight.W500, color = MaterialTheme.colorScheme.onBackground)
         }
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.End) {
             AuthTextField(email, {
                 email = it
                 emailError = ValidationUtils.validateEmail(it)
             }, "Email Address", "Enter your email address", keyboardType = KeyboardType.Email, errorMessage = emailError,
-                modifier = Modifier.testTag("email_field"),
+                modifier = Modifier.testTag("email_field").fillMaxWidth(),
                 leadingIcon = R.drawable.user,
                 onFocusLost = {
                     emailError = ValidationUtils.validateEmail(email)
                 }
             )
-            AuthTextField(password, {
-                password = it
-                passwordError = ValidationUtils.validatePassword(it)
-            }, "Password", "Enter your password", isPassword = true, errorMessage = passwordError,
-                modifier = Modifier.testTag("password_field"),
-                leadingIcon = R.drawable.password,
-                onFocusLost = {
-                    passwordError = ValidationUtils.validatePassword(password)
-                }
-            )
-            Text("Forgot password?", fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.ExtraBold, modifier = Modifier.clickable {
-                onForgotClick()
-            })
-        }
 
         Spacer(modifier = Modifier.height(25.dp))
 
-        if (loginError.isNotEmpty()) {
+        if (resetError.isNotEmpty()) {
             Text(
-                text = loginError,
+                text = resetError,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 14.sp,
             )
@@ -141,11 +142,7 @@ fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSig
         Button(
             onClick = {
                 viewModel.clearError()
-                val loginRequest = LoginRequest(
-                    email = email,
-                    password = password
-                )
-                viewModel.loginUser(loginRequest)
+                viewModel.resetPassword(email)
             },
             enabled = isFormValid,
             colors = ButtonDefaults.buttonColors(
@@ -158,7 +155,7 @@ fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSig
             modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp)
         ) {
             Text(
-                text = "SIGN IN",
+                text = "RESET PASSWORD",
                 fontSize = 14.sp,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
@@ -177,6 +174,6 @@ fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSig
 
 @Preview(showBackground = true)
 @Composable
-fun LoginScreenPreview() {
-    MediPathTheme { LoginScreen() }
+fun ResetScreenPreview() {
+    MediPathTheme { ResetPasswordScreen() }
 }

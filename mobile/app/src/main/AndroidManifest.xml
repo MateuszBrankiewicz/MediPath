@@ -30,6 +30,8 @@
             android:exported="false" />
         <activity android:name=".ui.auth.LoginActivity"
             android:exported="false" />
+        <activity android:name=".ui.auth.ResetPasswordActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
