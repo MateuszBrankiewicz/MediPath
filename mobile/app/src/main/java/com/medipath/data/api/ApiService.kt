@@ -6,6 +6,7 @@ import com.medipath.data.models.RegisterRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
     @GET("/api/cities/")
@@ -19,4 +20,7 @@ interface ApiService {
 
     @POST("/api/users/login")
     suspend fun loginUser(@Body loginData: LoginRequest): ApiResponse
+
+    @GET("/api/users/resetpassword")
+    suspend fun resetPassword(@Query("address") email: String): ApiResponse
 }
