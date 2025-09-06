@@ -1,29 +1,44 @@
 :host {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 100%;
   height: 100%;
+  justify-content: space-around;
+  ::ng-deep {
+    .hospital-card {
+      background-color: white;
+    }
+  }
+}
+app-hospital-card {
+  width: 900px !important;
+  height: 400px !important;
 }
 
-p-breadcrumb {
-  align-self: flex-start;
-  width: 100%;
+.comment-block {
+  width: 40%;
+  height: 100%;
+  .comment-content {
+    height: 100%;
+    width: 100%;
+  }
 }
-
-.doctor-info {
+.doctor-block {
+  background-color: white;
+  height: 100%;
   display: flex;
-  width: 100%;
-  gap: 20px;
-  padding: 20px;
-  align-items: flex-start;
-}
+  align-items: center;
+  flex-direction: column;
 
-.main-card {
-  flex: 2;
+  .doctors-card {
+    width: 95%;
+  }
+}
+.p-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .doctor-info-card {
+  width: 80%;
   display: flex;
   gap: 30px;
 
@@ -77,45 +92,9 @@ p-breadcrumb {
     }
   }
 }
-
-.institution-card,
-.spec-card {
-  flex: 1;
-
-  .card-title {
-    font-weight: bold;
-    margin-bottom: 15px;
-    font-size: 16px;
-    color: #333;
-  }
-
-  ul {
-    padding: 0px 20px;
-    margin: 0;
-
-    li {
-      padding: 6px 0;
-      font-size: 14px;
-    }
-  }
-}
-
-p-card {
-  width: 100%;
-  height: 100%;
-}
-.comment-block {
-  width: 97%;
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  span {
-    font-size: 20px;
-    font-weight: bold;
-    margin: 20px 2px;
-  }
-  .comment-content {
-    overflow: auto;
-  }
+.comment-section {
+  align-self: flex-start;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 10px;
 }

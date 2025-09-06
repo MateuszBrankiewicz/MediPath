@@ -1,0 +1,46 @@
+<div>
+  <app-hospital-card [hospital]="sampleHospital" />
+  <div class="doctor-block">
+    <span class="comment-section">Doctors in institution</span>
+    <div class="doctors-card">
+      <p-card>
+        <div class="doctor-info-card">
+          <img
+            [src]="exampleDoctor().photoUrl"
+            [alt]="
+              'Dr. ' + exampleDoctor().name + ' ' + exampleDoctor().surname
+            "
+          />
+          <div class="doctor-personal-information">
+            <p class="doctor-name">
+              Dr. {{ exampleDoctor().name }} {{ exampleDoctor().surname }}
+            </p>
+            <div class="doctor-rating">
+              <div class="stars">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <span
+                    class="star"
+                    [class.filled]="star <= exampleDoctor().rating.stars"
+                    >★</span
+                  >
+                }
+              </div>
+              <span class="reviews-count">
+                ({{ exampleDoctor().rating.opinions }} opinions)
+              </span>
+            </div>
+            <span class="pwz-info">PWZ: {{ exampleDoctor().pwz }}</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>
+<div class="comment-block">
+  <span class="comment-section">Comments</span>
+  <div class="comment-content">
+    @for (comment of comments; track comment.id) {
+      <app-patient-comment-component [comment]="comment" />
+    }
+  </div>
+</div>

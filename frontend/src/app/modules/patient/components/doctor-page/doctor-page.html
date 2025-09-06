@@ -56,7 +56,9 @@
 </div>
 <div class="comment-block">
   <span>Comments</span>
-  @for (comment of exampleDoctor().comments; track comment.id) {
-    <app-patient-comment-component [comment]="comment" />
-  }
+  <div class="comment-content">
+    @for (comment of exampleDoctor().comments; track comment.id) {
+      <app-patient-comment-component [comment]="comment" />
+    }
+  </div>
 </div>
