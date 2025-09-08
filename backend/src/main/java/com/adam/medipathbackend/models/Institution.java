@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import com.adam.medipathbackend.config.Utils;
 
 @Document("Institution")
 public class Institution {
@@ -105,15 +106,14 @@ public class Institution {
         this.image = image;
     }
 
-    @Override
-    public boolean equals(Object o) {
+
+    public boolean isSimilar(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Institution that = (Institution) o;
-        return isPublic == that.isPublic && Objects.equals(name, that.name) && Objects.equals(address, that.address);
+        Institution other = (Institution) o;
+        String currentFullName = this.name + "," + this.address.toString();
+        String otherFullName = other.name + "," + other.address.toString();
+        return Utils.isSimilar(currentFullName, otherFullName);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, isPublic, address);
-    }
+
 }

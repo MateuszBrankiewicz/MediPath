@@ -39,8 +39,8 @@ public class InstitutionController {
 
         ArrayList<Institution> possibleDuplicates = institutionRepository.findInstitutionByName(institution.getName());
         for(Institution dupl: possibleDuplicates) {
-            if(dupl.equals(institution)) {
-                return new ResponseEntity<>(Map.of("message", "This institution already exists"), HttpStatus.CONFLICT);
+            if(dupl.isSimilar(institution)) {
+                return new ResponseEntity<>(Map.of("message", "This institution is a possible duplicate"), HttpStatus.CONFLICT);
             }
         }
 

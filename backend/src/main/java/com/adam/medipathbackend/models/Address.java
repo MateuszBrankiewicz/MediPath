@@ -58,6 +58,11 @@ public class Address {
     }
 
     @Override
+    public String toString() {
+        return province + "," + city + "," + street + "," + number + "," + postalCode;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Address address = (Address) o;
