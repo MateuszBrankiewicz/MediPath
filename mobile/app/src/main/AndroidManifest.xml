@@ -32,6 +32,8 @@
             android:exported="false" />
         <activity android:name=".ui.auth.ResetPasswordActivity"
             android:exported="false" />
+        <activity android:name=".ui.main.HomeActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

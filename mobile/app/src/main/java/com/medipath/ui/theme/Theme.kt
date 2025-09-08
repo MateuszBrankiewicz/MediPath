@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -18,6 +19,14 @@ private val DarkColorScheme = darkColorScheme(
     surface = ThemeColors.Dark.inputBgPrimary,
     onSurface = ThemeColors.Dark.placeholder,
     error = ThemeColors.Dark.error,
+    secondary = ThemeColors.Dark.secondBackground,
+//    darkBlue = Color(0xFF2D4A69),
+//    darkBlueIcon = Color(0xFF3E6187),
+//    lightBlue = Color(0xFF88A8C9),
+//    lightBlueIcon = Color(0xFF9DB9D5),
+//    lightGray = Color(0xFFBABABA),
+//    lightGrayIcon = Color(0xFFD2D2D2),
+
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -27,7 +36,8 @@ private val LightColorScheme = lightColorScheme(
     onBackground = ThemeColors.Light.subtitle,
     surface = ThemeColors.Light.inputBgPrimary,
     onSurface = ThemeColors.Light.placeholder,
-    error = ThemeColors.Light.error
+    error = ThemeColors.Light.error,
+    secondary = ThemeColors.Light.secondBackground
 )
 
 @Composable

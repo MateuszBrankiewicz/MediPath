@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.medipath.ui.theme.MediPathTheme
 import android.content.Intent
 import com.medipath.R
-import com.medipath.ui.auth.RegisterActivity
+import com.medipath.ui.main.HomeActivity
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
@@ -33,7 +33,7 @@ class SplashActivity : ComponentActivity() {
         setContent {
             MediPathTheme() {
                 SplashScreen{
-                    val intent = Intent(this, RegisterActivity::class.java)
+                    val intent = Intent(this, HomeActivity::class.java)
                     startActivity(intent)
                     finish()
                 }

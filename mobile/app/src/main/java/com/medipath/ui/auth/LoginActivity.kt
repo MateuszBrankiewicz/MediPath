@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import com.medipath.data.models.LoginRequest
+import com.medipath.ui.main.HomeActivity
 import com.medipath.viewmodels.LoginViewModel
 
 
@@ -45,9 +46,9 @@ class LoginActivity : ComponentActivity() {
                 },
                 onLoginSuccess = {
                     Toast.makeText(this, "Login successful!", Toast.LENGTH_LONG).show()
-//                    val intent = Intent(this, MainActivity::class.java)
-//                    startActivity(intent)
-//                    finish()
+                    val intent = Intent(this, HomeActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 },
                 onForgotClick = {
                     val intent = Intent(this, ResetPasswordActivity::class.java)
