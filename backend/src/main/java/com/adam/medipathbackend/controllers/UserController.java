@@ -47,9 +47,11 @@ public class UserController {
         if(userRepository.findByEmail(registrationForm.getEmail()).isPresent() || userRepository.findByGovID(registrationForm.getGovID()).isPresent()) {
             return new ResponseEntity<>(Map.of("message", "this email or person is already registered"), HttpStatus.CONFLICT);
         }
+
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(registrationForm.getPassword());
         UserSettings userSettings = new UserSettings("PL", true, true, 1);
+
         userRepository.save(new User(
                 registrationForm.getEmail(),
                 registrationForm.getName(),
@@ -67,6 +69,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> loginUser(HttpSession session, @RequestBody LoginForm loginForm) {
         ArrayList<String> missingFields = new ArrayList<>();
+
         if(loginForm.getEmail() == null || loginForm.getEmail().isBlank()) {
             missingFields.add("email");
         }
@@ -76,11 +79,13 @@ public class UserController {
         if(!missingFields.isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
+
         Optional<User> user = userRepository.findByEmail(loginForm.getEmail());
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         if(user.isEmpty() || !argon2PasswordEncoder.matches(loginForm.getPassword(), user.get().getPasswordHash())) {
             return new ResponseEntity<>(Map.of("message", "invalid email or password"), HttpStatus.UNAUTHORIZED);
         }
+
         User u = user.get();
         session.setAttribute("id", u.getId());
         return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.OK);
@@ -110,6 +115,7 @@ public class UserController {
         if(address == null || address.isBlank()) {
             return new ResponseEntity<>(Map.of("message", "missing address in request parameters"), HttpStatus.BAD_REQUEST);
         }
+
         Optional<User> u = userRepository.findByEmail(address);
         if(u.isPresent()) {
             PasswordResetEntry passwordResetEntry = null;
@@ -167,6 +173,7 @@ public class UserController {
         if(!missingFields.isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
+
         Optional<PasswordResetEntry> p = preRepository.findValidToken(resetForm.getToken());
         if(p.isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "token invalid or expired"), HttpStatus.GONE);
@@ -176,9 +183,11 @@ public class UserController {
         if(u.isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "invalid user referenced by token"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
         User user = u.get();
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(resetForm.getPassword());
+
         user.setPasswordHash(passwordHash);
         userRepository.save(user);
         return new ResponseEntity<>(Map.of("message", "password reset successfully"), HttpStatus.OK);

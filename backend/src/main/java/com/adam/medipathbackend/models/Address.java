@@ -1,5 +1,7 @@
 package com.adam.medipathbackend.models;
 
+import java.util.Objects;
+
 public class Address {
     private String province;
     private String city;
@@ -53,5 +55,26 @@ public class Address {
 
     public void setPostalCode(String postalCode) {
         this.postalCode = postalCode;
+    }
+
+    @Override
+    public String toString() {
+        return province + "," + city + "," + street + "," + number + "," + postalCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Address address = (Address) o;
+        return Objects.equals(province, address.province) && Objects.equals(city, address.city) && Objects.equals(street, address.street) && Objects.equals(number, address.number) && Objects.equals(postalCode, address.postalCode);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(province, city, street, number, postalCode);
+    }
+
+    public boolean isValid() {
+        return !(postalCode == null || postalCode.isBlank() || number == null || number.isBlank() || city == null || city.isBlank() || province == null || province.isBlank());
     }
 }
