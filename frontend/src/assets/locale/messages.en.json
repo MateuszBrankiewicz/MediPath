@@ -58,5 +58,20 @@
   "home": "Home",
   "aboutUs": "About us",
   "welcomeBack": "Welcome back!",
-  "takeCareOfYourHealth": "Continue taking care of your health."
+  "takeCareOfYourHealth": "Continue taking care of your health.",
+  "passwordReset.title": "Forgot password?",
+  "passwordReset.subtitle": "Enter your email address, and we will send you a message with instructions to reset your password.",
+  "passwordReset.resetButton": "RESET PASSWORD",
+  "passwordReset.noAccount": "Don't have an account?",
+  "passwordReset.signUp": "Sign up",
+  "passwordReset.dialog.successTitle": "Success",
+  "passwordReset.dialog.sent": "If an account exists for this email, we've sent password reset instructions.",
+  "passwordReset.dialog.signIn": "Back to sign in",
+  "passwordReset.subtitleWithToken": "Enter a new password for your account.",
+  "passwordReset.error.tokenExpired": "The password reset link has expired or is invalid. Please request a new one.",
+  "passwordReset.error.generic": "An error occurred while resetting your password. Please try again.",
+  "passwordReset.tokenExpired.title": "Link Expired",
+  "passwordReset.tokenExpired.message": "This password reset link has expired. Please request a new password reset email.",
+  "passwordReset.tokenExpired.requestNew": "Request New Link",
+  "passwordReset.dialog.checkemail": "Check email"
 }

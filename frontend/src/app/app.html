@@ -1,11 +1,15 @@
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * The content below * * * * * * * * * * * -->
-<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
-<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * Delete the template below * * * * * * * * * -->
-<!-- * * * * * * * to get started with your project! * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-
-
-<router-outlet />
+@if (showNavigation()) {
+  <div class="app-layout">
+    <app-top-bar-component
+      [config]="navigationConfig()"
+    ></app-top-bar-component>
+    <app-navigation />
+    <main [class]="showNavigation() ? 'app-content' : 'guest-content'">
+      <router-outlet />
+    </main>
+  </div>
+} @else {
+  <main [class]="'guest-content'">
+    <router-outlet />
+  </main>
+}

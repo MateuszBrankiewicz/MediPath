@@ -1,0 +1,81 @@
+<p-menubar>
+  <ng-template #start>
+    <div class="logo">
+      <img src="assets/main_logo.png" alt="MediPath Logo" class="logo-image" />
+      <span>MediPath</span>
+    </div>
+  </ng-template>
+  <ng-template #end>
+    <div class="button-group">
+      <p-button
+        size="large"
+        [rounded]="true"
+        severity="secondary"
+        label="Dla instytucji"
+      ></p-button>
+      <p-button
+        [rounded]="true"
+        size="large"
+        severity="secondary"
+        label="Dla lekarzy"
+      ></p-button>
+      <p-button
+        [rounded]="true"
+        size="large"
+        severity="secondary"
+        label="Dla pacjentow"
+      ></p-button>
+
+      <a routerLink="/auth/login">
+        <p-button
+          size="large"
+          [rounded]="true"
+          severity="secondary"
+          type="button"
+          label="Login"
+          class="p-button-text login-button"
+        />
+      </a>
+      <a routerLink="/auth/register">
+        <p-button
+          [rounded]="true"
+          pButton
+          size="large"
+          type="button"
+          label="Register"
+          class="p-button-outlined register-button"
+        />
+      </a>
+    </div>
+  </ng-template>
+</p-menubar>
+<p-card [style]="{ width: '80%', overflow: 'hidden' }">
+  <ng-template #header>
+    <div class="header">
+      <h1>Dla instytucji</h1>
+      <div class="pyramid-text">
+        <div class="text-line line-1">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla luctus
+          rhoncus pharetra.
+        </div>
+        <div class="text-line line-2">
+          Suspendisse potenti. Suspendisse id sagittis nibh. Curabitur semper
+          felis non urna
+        </div>
+        <div class="text-line line-3">
+          dictum, ut condimentum orci tempor. Fusce iaculis quis tortor vel
+          gravida. Aenean
+        </div>
+        <div class="text-line line-4">
+          dictum lectus posuere augue imperdiet, ac elementum ligula dignissim.
+        </div>
+      </div>
+    </div>
+  </ng-template>
+  <div class="content">Napisz do nas i wypróbuj nasze rozwiązanie!</div>
+  <ng-template #footer>
+    <div class="footer">
+      <img src="assets/footer-landing.png" alt="image of doctors" />
+    </div>
+  </ng-template>
+</p-card>

@@ -1,0 +1,65 @@
+<header class="dashboard-header">
+  @if (config().pageTitle) {
+    <h1>{{ config().pageTitle }}</h1>
+  }
+
+  <div class="search-section">
+    <div class="search-container">
+      <p-input-group class="p-input-group">
+        <p-inputgroup-addon>
+          <i class="pi pi-bars"></i>
+        </p-inputgroup-addon>
+        <input
+          type="text"
+          pInputText
+          placeholder="Search..."
+          styleClass="w-full"
+          class="p-inputtext"
+        />
+        <p-inputgroup-addon>
+          <i class="pi pi-search"></i>
+        </p-inputgroup-addon>
+      </p-input-group>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    @if (config().showNotifications) {
+      <p-button
+        [size]="'small'"
+        icon="pi pi-bell"
+        [text]="true"
+        [rounded]="true"
+        [badge]="'3'"
+        class="notification-button"
+      />
+    }
+
+    <div class="user-info" (click)="toggleUserMenu($event)">
+      <div class="user-menu-header"></div>
+      <span class="user-name">{{ userName() }}</span>
+      <i
+        [class]="
+          isMenuOpen()
+            ? 'chevron-icon pi pi-chevron-up'
+            : 'chevron-icon pi pi-chevron-down'
+        "
+      ></i>
+    </div>
+
+    <p-menu #userMenu [model]="menuItems()" [popup]="true" class="menu">
+      <ng-template #start>
+        <div class="role-select-container">
+          <p-select
+            [options]="roleOptions()"
+            [ngModel]="userRole()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select role"
+            class="role-select"
+          />
+        </div>
+      </ng-template>
+    </p-menu>
+  </div>
+</header>
