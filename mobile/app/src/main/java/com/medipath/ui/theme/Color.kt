@@ -12,29 +12,16 @@ sealed class ThemeColors(
     val placeholder: Color, // color for placeholder text in input fields
     val error: Color, // color for error messages
     val secondBackground: Color,
-    val darkBlue: Color,
-    val darkBlueIcon: Color,
-    val lightBlue: Color,
-    val lightBlueIcon: Color,
-    val lightGray: Color,
-    val lightGrayIcon: Color
 ) {
     object Light : ThemeColors(
         primary = Color(0xFF000000),
-        disabledBtn =
-            Color.Gray,
+        disabledBtn = Color.Gray,
         background = Color(0xFFFFFFFF),
         subtitle = Color(0xFF284662),
         inputBgPrimary = Color(0xFFD9D9D9),
         placeholder = Color(0xFF5D5D5D),
         error = Color.Red,
-        secondBackground = Color(0xFFE8E8E8),
-        darkBlue = Color(0xFF2D4A69),
-        darkBlueIcon = Color(0xFF3E6187),
-        lightBlue = Color(0xFF88A8C9),
-        lightBlueIcon = Color(0xFF9DB9D5),
-        lightGray = Color(0xFFBABABA),
-        lightGrayIcon = Color(0xFFD2D2D2),
+        secondBackground = Color(0xFFE8E8E8)
     )
 
     object Dark : ThemeColors(
@@ -45,12 +32,6 @@ sealed class ThemeColors(
         inputBgPrimary = Color(0xFF000000),
         placeholder = Color(0xFF000000),
         error = Color(0xFF000000),
-        secondBackground = Color(0xFF000000),
-        darkBlue = Color(0xFF000000),
-        darkBlueIcon = Color(0xFF000000),
-        lightBlue = Color(0xFF000000),
-        lightBlueIcon = Color(0xFF000000),
-        lightGray = Color(0xFF000000),
-        lightGrayIcon = Color(0xFF000000),
+        secondBackground = Color(0xFF000000)
     )
 }

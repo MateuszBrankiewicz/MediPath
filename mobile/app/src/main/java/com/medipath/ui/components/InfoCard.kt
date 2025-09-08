@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.ui.theme.LocalCustomColors
 
 @Composable
 fun InfoCard(
@@ -24,7 +25,7 @@ fun InfoCard(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                MaterialTheme.colorScheme.onBackground,
+                LocalCustomColors.current.blue900,
                 shape = MaterialTheme.shapes.large
             )
             .padding(horizontal = 25.dp, vertical = 30.dp)

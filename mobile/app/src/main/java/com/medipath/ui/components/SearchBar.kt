@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.medipath.ui.theme.LocalCustomColors
 
 @Composable
 fun SearchBar(
@@ -67,7 +68,7 @@ fun SearchBar(
             TextButton(
                 onClick = { selectedType = "by-name" },
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = if (selectedType == "by-name") Color(0xFF88A8C9)
+                    contentColor = if (selectedType == "by-name") LocalCustomColors.current.blue400
                     else MaterialTheme.colorScheme.onSurface
                 )
             ) { Text("By name") }
@@ -75,7 +76,7 @@ fun SearchBar(
             TextButton(
                 onClick = { selectedType = "by-spec" },
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = if (selectedType == "by-spec") Color(0xFF88A8C9)
+                    contentColor = if (selectedType == "by-spec") LocalCustomColors.current.blue400
                     else MaterialTheme.colorScheme.onSurface
                 )
             ) { Text("By specialisation (type)") }

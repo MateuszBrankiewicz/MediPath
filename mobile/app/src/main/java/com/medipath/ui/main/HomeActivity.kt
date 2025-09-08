@@ -28,12 +28,12 @@ import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.MedicalInformation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import com.medipath.ui.components.InfoCard
 import com.medipath.ui.components.MenuCard
 import com.medipath.ui.components.Navigation
 import com.medipath.ui.components.SearchBar
+import com.medipath.ui.theme.LocalCustomColors
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?){
@@ -51,6 +51,7 @@ class HomeActivity : ComponentActivity() {
 fun HomeScreen() {
     Navigation(
         content = { innerPadding ->
+            val colors = LocalCustomColors.current
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -98,32 +99,32 @@ fun HomeScreen() {
                                 icon = Icons.Outlined.List,
                                 title = "Visits",
                                 onClick = { println("Visits clicked!") },
-                                backgroundColor = Color(0xFF6A1B9A),
-                                iconColor = Color(0xFF9C4DCC)
+                                backgroundColor = colors.purple800,
+                                iconColor = colors.purple300
                             )
 
                             MenuCard(
                                 icon = Icons.Outlined.MedicalInformation,
                                 title = "Medical History",
                                 onClick = { println("History clicked!") },
-                                backgroundColor = Color(0xFF0277BD),
-                                iconColor = Color(0xFF4FC3F7)
+                                backgroundColor = colors.blue800,
+                                iconColor = colors.blue300
                             )
 
                             MenuCard(
                                 icon = Icons.Outlined.Comment,
                                 title = "Opinions",
                                 onClick = { println("Opinions clicked!") },
-                                backgroundColor = Color(0xFFE64A19),
-                                iconColor = Color(0xFFFF8A65)
+                                backgroundColor = colors.orange800,
+                                iconColor = colors.orange300
                             )
 
                             MenuCard(
                                 icon = Icons.Outlined.Notifications,
                                 title = "Reminders",
                                 onClick = { println("Reminders clicked!") },
-                                backgroundColor = Color(0xFF2E7D32),
-                                iconColor = Color(0xFF66BB6A)
+                                backgroundColor = colors.green800,
+                                iconColor = colors.green300
                             )
 
 
@@ -177,7 +178,7 @@ fun HomeScreen() {
                                     Button(
                                         onClick = {},
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0xFFDE2E2E),
+                                            containerColor = colors.red800,
                                             contentColor = MaterialTheme.colorScheme.background
                                         )) {
                                         Text("CANCEL VISIT")

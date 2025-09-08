@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.ui.theme.LocalCustomColors
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +52,7 @@ fun Navigation(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.onBackground)
+                    .background(LocalCustomColors.current.blue900)
             ) {
                 Text("Menu", Modifier.padding(16.dp), color = MaterialTheme.colorScheme.background)
                 HorizontalDivider()
