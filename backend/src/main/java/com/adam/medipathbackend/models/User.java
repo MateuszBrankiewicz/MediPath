@@ -199,7 +199,7 @@ public class User {
 
     public void addRating(float newRating) {
         this.rating = ((this.rating * this.numOfRatings) + newRating) / (this.numOfRatings + 1);
-        this.numOfRatings += 1;
+        this.numOfRatings++;
     }
 
 
