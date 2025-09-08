@@ -28,21 +28,19 @@ public class Visit {
 
     private String patientRemarks;
 
-    public Visit(String status, String note, PatientDigest patient, DoctorDigest doctor, VisitTime time, InstitutionDigest institution, String patientRemarks) {
-        this.status = status;
-        this.note = note;
+    public Visit(PatientDigest patient, DoctorDigest doctor, VisitTime time, InstitutionDigest institution) {
+        this.status = "Upcoming";
+        this.note = "";
         this.codes = new ArrayList<>();
         this.patient = patient;
         this.doctor = doctor;
         this.time = time;
         this.institution = institution;
-        this.patientRemarks = patientRemarks;
+        this.patientRemarks = "";
     }
 
-    public String getId() {
-        return id;
-    }
-
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public ArrayList<Code> getCodes() {
         return codes;
     }
