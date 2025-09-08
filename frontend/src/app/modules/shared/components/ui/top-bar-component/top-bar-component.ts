@@ -1,8 +1,10 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
   input,
   signal,
@@ -18,6 +20,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { Menu, MenuModule } from 'primeng/menu';
 import { SelectModule } from 'primeng/select';
 import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
+import { ToastService } from '../../../../../core/services/toast/toast.service';
 
 export interface TopBarConfig {
   showSearch?: boolean;
@@ -47,9 +50,13 @@ interface RoleOption {
 export class TopBarComponent {
   private readonly userMenu = viewChild<Menu>('userMenu');
 
+  private destroyRef = inject(DestroyRef);
+
   private readonly router = inject(Router);
 
   private readonly authService = inject(AuthenticationService);
+
+  private readonly toastService = inject(ToastService);
 
   readonly roleOptions = computed<RoleOption[]>(() => [
     { label: 'Doctor', value: 'doctor' },
@@ -65,9 +72,7 @@ export class TopBarComponent {
 
   readonly isMenuOpen = signal(false);
 
-  readonly userName = computed(() => 'Ktos');
-
-  readonly userRole = computed(() => this.authService.getUserRole());
+  readonly user = computed(() => this.authService.getUser());
 
   readonly menuItems = computed<MenuItem[]>(() => [
     {
@@ -111,6 +116,18 @@ export class TopBarComponent {
   }
 
   private logout(): void {
-    // this.authService.logout();
+    this.authService
+      .logout()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess('toast.logout.success');
+          this.router.navigate(['/']);
+        },
+        error: (error) => {
+          console.error('Logout failed', error);
+          this.toastService.showError('toast.logout.error');
+        },
+      });
   }
 }

@@ -14,6 +14,7 @@ import { RippleModule } from 'primeng/ripple';
 import { MediPathMenuItem } from './navigation.model';
 import { NavigationService } from './navigation.service';
 import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
+import { UserRoles } from '../../../../../core/services/authentication/authentication.model';
 
 @Component({
   selector: 'app-navigation',
@@ -36,10 +37,14 @@ export class NavigationComponent {
 
   readonly sidebarVisible = signal(false);
 
-  readonly userRole = computed(() => this.authService.getUserRole());
+  readonly user = computed(() => this.authService.getUser());
 
   readonly menuItems = computed(() => {
-    const items = this.navigationService.getMenuItemsForRole(this.userRole());
+    const items = this.navigationService.getMenuItemsForRole(
+      typeof this.user()?.roleCode === 'number'
+        ? UserRoles.GUEST
+        : ((this.user()?.roleCode as UserRoles) ?? UserRoles.GUEST),
+    );
     return this.convertToPrimeMenuItems(items);
   });
 

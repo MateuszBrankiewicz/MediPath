@@ -9,6 +9,7 @@
 }
 .input-form{
     border: none;
+    background: var(--p-background) !important;
     border-bottom: 0.15rem solid var(--p-primary-color);
     font-size: 1.2rem;
     &:active{
@@ -17,11 +18,11 @@
     &.error {
         border-bottom-color: #e74c3c;
     }
-    
+
     &:focus {
         outline: none;
         border-bottom-color: var(--p-primary-color);
-        
+
         &.error {
             border-bottom-color: #e74c3c;
         }
@@ -34,7 +35,7 @@
     position: absolute;
     bottom: 0.1rem;
     left: 0;
-    text-overflow: ellipsis;   
+    text-overflow: ellipsis;
      max-width: 100%;
     z-index: 10;
 }

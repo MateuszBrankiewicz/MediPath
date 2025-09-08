@@ -75,5 +75,10 @@
   "passwordReset.tokenExpired.message": "Ten link do resetowania hasła wygasł. Proszę poprosić o nowy email resetujący hasło.",
   "passwordReset.tokenExpired.requestNew": "Poproś o Nowy Link",
   "passwordReset.dialog.checkemail": "Sprawdz email",
-  "passwordReset.dialog.success" : "Haslo zresetowane pomyslnie"
+  "passwordReset.dialog.success": "Haslo zresetowane pomyslnie",
+  "toast.login.success": "Zalogowano pomyślnie",
+  "toast.logout.success": "Wylogowano pomyślnie",
+  "toast.logout.error": "Wylogowanie nie powiodło się. Spróbuj ponownie.",
+  "toast.error.title": "Błąd",
+  "toast.success.title": "Sukces"
 }

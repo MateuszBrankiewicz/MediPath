@@ -74,3 +74,41 @@
   height: 100%;
   display: flex;
 }
+
+:host ::ng-deep {
+
+  .p-toast-message {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    &.p-toast-message-success {
+      border-left: 4px solid var(--p-green-500);
+    }
+
+    &.p-toast-message-error {
+      border-left: 4px solid var(--p-red-500);
+    }
+
+    &.p-toast-message-info {
+      border-left: 4px solid var(--p-blue-500);
+    }
+
+    &.p-toast-message-warn {
+      border-left: 4px solid var(--p-yellow-500);
+    }
+  }
+
+  .p-toast-message-content {
+    padding: 1rem;
+  }
+
+  .p-toast-summary {
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .p-toast-detail {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+}

@@ -1,4 +1,4 @@
-@if (userRole() !== "guest") {
+@if (isAuthenticated()) {
   <div class="app-layout">
     <app-top-bar-component
       [config]="navigationConfig()"
@@ -13,3 +13,5 @@
     <router-outlet />
   </main>
 }
+
+<p-toast position="bottom-right" [breakpoints]="{ '920px': { width: '100%', right: '0', left: '0' } }" />

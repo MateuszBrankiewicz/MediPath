@@ -1,24 +1,30 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
+import { UserRoles } from './core/services/authentication/authentication.model';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
     path: 'auth',
+    canActivate: [guestGuard],
     loadChildren: () =>
       import('./modules/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
   {
     path: '',
-    loadChildren: () =>
-      import('./modules/guest/guest.routes').then((m) => m.GUEST_ROUTES),
-  },
-  {
-    path: 'admin',
+    canActivate: [guestGuard],
     loadChildren: () =>
       import('./modules/guest/guest.routes').then((m) => m.GUEST_ROUTES),
   },
   {
     path: 'patient',
+    canActivate: [authGuard, roleGuard([UserRoles.PATIENT])],
     loadChildren: () =>
       import('./modules/patient/patient.routes').then((m) => m.PATIENT_ROUTES),
+  },
+  {
+    path: '**',
+    redirectTo: '/auth/login',
   },
 ];

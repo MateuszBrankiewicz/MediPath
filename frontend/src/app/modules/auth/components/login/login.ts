@@ -10,6 +10,7 @@ import { Button } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { InputForAuth } from '../../../shared/components/forms/input-for-auth/input-for-auth';
 import { ModalDialogComponent } from '../../../shared/components/ui/modal-dialog/modal-dialog';
 import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
@@ -34,6 +35,7 @@ import { AuthenticationService } from '../../../../core/services/authentication/
 export class Login {
   private readonly authService = inject(AuthenticationService);
   private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
   protected readonly isLoading = signal(false);
 
   private destroyRef = inject(DestroyRef);
@@ -63,37 +65,45 @@ export class Login {
   protected onSubmit() {
     this.loginFormGroup.markAllAsTouched();
     this.loginFormGroup.updateValueAndValidity();
+
     if (this.loginFormGroup.valid) {
       const { email, password } = this.loginFormGroup.value;
       if (!email || !password) {
         console.error('Email and password are required');
         return;
       }
+
+      this.isLoading.set(true);
+
       this.authService
         .login(email, password)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: () => {
-            this.visible.set(true);
+            this.isLoading.set(false);
+            // Pokaż toast sukcesu
+            this.toastService.showSuccess('toast.login.success');
+            // Przekieruj na dashboard na podstawie roli użytkownika
+            const dashboardRoute = this.authService.getDashboardRoute();
+            this.router.navigate([dashboardRoute]);
           },
           error: (error) => {
+            this.isLoading.set(false);
             console.error('Login failed', error);
+            // Pokaż toast błędu
+            this.toastService.showError('login.error');
             this.hasError.set({
               haveError: true,
               errorMessage: this.translationService.translate('login.error'),
             });
           },
         });
-    } else {
-      console.error('Form is invalid');
     }
   }
 
-  protected redirectToLoginPage() {
-    this.visible.set(false);
-  }
-
   protected redirectToHomePage() {
-    this.router.navigate(['/']);
+    const dashboardRoute = this.authService.getDashboardRoute();
+    this.router.navigate([dashboardRoute]);
+    this.visible.set(false);
   }
 }
