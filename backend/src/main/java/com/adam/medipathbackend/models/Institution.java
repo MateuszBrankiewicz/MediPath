@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
+import java.util.Objects;
+import com.adam.medipathbackend.config.Utils;
 
 @Document("Institution")
 public class Institution {
@@ -24,19 +26,29 @@ public class Institution {
 
     private String image;
 
+    private int numOfRatings;
 
-    public Institution(String name, boolean isPublic, Address address, float rating, String image) {
+    public Institution(String name, boolean isPublic, Address address, String image) {
         this.name = name;
         this.isPublic = isPublic;
         this.address = address;
-        this.rating = rating;
+        this.rating = 0;
         this.image = image;
         this.types = new ArrayList<>();
         this.employees = new ArrayList<>();
+        this.numOfRatings = 0;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setName(String name) {
@@ -71,17 +83,20 @@ public class Institution {
         return employees;
     }
 
-    public void setEmployees(ArrayList<StaffDigest> employees) {
-        this.employees = employees;
+    public void addEmployee(StaffDigest staff) {
+        employees.add(staff);
     }
 
     public float getRating() {
         return rating;
     }
 
-    public void setRating(float rating) {
-        this.rating = rating;
+    public void addRating(float newRating) {
+        this.rating = ((this.rating * this.numOfRatings) + newRating) / (this.numOfRatings + 1);
+        this.numOfRatings += 1;
     }
+
+
 
     public String getImage() {
         return image;
@@ -90,4 +105,15 @@ public class Institution {
     public void setImage(String image) {
         this.image = image;
     }
+
+
+    public boolean isSimilar(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Institution other = (Institution) o;
+        String currentFullName = this.name + "," + this.address.toString();
+        String otherFullName = other.name + "," + other.address.toString();
+        return Utils.isSimilar(currentFullName, otherFullName);
+    }
+
+
 }
