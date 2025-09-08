@@ -7,9 +7,9 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { AuthenticationService } from '../../modules/auth/services/authentication/authentication';
 import { Router } from '@angular/router';
 import { catchError, Observable, throwError } from 'rxjs';
+import { AuthenticationService } from '../services/authentication/authentication';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {

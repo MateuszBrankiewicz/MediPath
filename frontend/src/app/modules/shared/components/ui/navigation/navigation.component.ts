@@ -13,7 +13,7 @@ import { MenuModule } from 'primeng/menu';
 import { RippleModule } from 'primeng/ripple';
 import { MediPathMenuItem } from './navigation.model';
 import { NavigationService } from './navigation.service';
-import { AuthorizationService } from '../../../../../core/services/authorization/authorization-service';
+import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
 
 @Component({
   selector: 'app-navigation',
@@ -32,12 +32,11 @@ import { AuthorizationService } from '../../../../../core/services/authorization
 export class NavigationComponent {
   private readonly router = inject(Router);
   private readonly navigationService = inject(NavigationService);
-  private readonly authService = inject(AuthorizationService);
+  private readonly authService = inject(AuthenticationService);
 
   readonly sidebarVisible = signal(false);
 
-  readonly userRole = computed(() => this.authService.userRole());
-  readonly userName = computed(() => this.authService.userName());
+  readonly userRole = computed(() => this.authService.getUserRole());
 
   readonly menuItems = computed(() => {
     const items = this.navigationService.getMenuItemsForRole(this.userRole());

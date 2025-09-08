@@ -2,10 +2,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
-import { AuthorizationService } from './core/services/authorization/authorization-service';
-import { UserRoles } from './core/services/authorization/authorization.model';
 import { NavigationComponent } from './modules/shared/components/ui/navigation/navigation.component';
 import { TopBarComponent } from './modules/shared/components/ui/top-bar-component/top-bar-component';
+import { UserRoles } from './core/services/authentication/authentication.model';
+import { AuthenticationService } from './core/services/authentication/authentication';
 
 @Component({
   selector: 'app-root',
@@ -16,8 +16,10 @@ import { TopBarComponent } from './modules/shared/components/ui/top-bar-componen
 export class App {
   protected readonly router = inject(Router);
   protected readonly title = signal('frontend');
-  protected readonly authService = inject(AuthorizationService);
-  protected readonly userRole = signal<UserRoles>(this.authService.userRole());
+  protected readonly authService = inject(AuthenticationService);
+  protected readonly userRole = signal<UserRoles>(
+    this.authService.getUserRole(),
+  );
 
   readonly navigationConfig = computed(() => ({
     showSearch: true,

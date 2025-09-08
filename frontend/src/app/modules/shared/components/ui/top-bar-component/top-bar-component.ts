@@ -17,8 +17,7 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { Menu, MenuModule } from 'primeng/menu';
 import { SelectModule } from 'primeng/select';
-import { AuthorizationService } from '../../../../../core/services/authorization/authorization-service';
-import { AuthenticationService } from '../../../../auth/services/authentication/authentication';
+import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
 
 export interface TopBarConfig {
   showSearch?: boolean;
@@ -47,15 +46,18 @@ interface RoleOption {
 })
 export class TopBarComponent {
   private readonly userMenu = viewChild<Menu>('userMenu');
+
   private readonly router = inject(Router);
-  private readonly authorizationService = inject(AuthorizationService);
+
   private readonly authService = inject(AuthenticationService);
+
   readonly roleOptions = computed<RoleOption[]>(() => [
     { label: 'Doctor', value: 'doctor' },
     { label: 'Nurse', value: 'nurse' },
     { label: 'Admin', value: 'admin' },
     { label: 'Patient', value: 'patient' },
   ]);
+
   readonly config = input<TopBarConfig>({
     showSearch: false,
     showNotifications: false,
@@ -63,8 +65,9 @@ export class TopBarComponent {
 
   readonly isMenuOpen = signal(false);
 
-  readonly userName = computed(() => this.authorizationService.userName());
-  readonly userRole = computed(() => this.authorizationService.userRole());
+  readonly userName = computed(() => 'Ktos');
+
+  readonly userRole = computed(() => this.authService.getUserRole());
 
   readonly menuItems = computed<MenuItem[]>(() => [
     {

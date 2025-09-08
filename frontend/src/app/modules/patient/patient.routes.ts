@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { PatientDashboardComponent } from './components/patient-dashboard-component/patient-dashboard-component';
 import { DoctorPage } from './components/doctor-page/doctor-page';
 import { InstitutionPage } from './components/institution-page/institution-page';
+import { VisitPage } from './components/visit-page/visit-page';
 
 export const PATIENT_ROUTES: Routes = [
   {
@@ -15,5 +16,9 @@ export const PATIENT_ROUTES: Routes = [
   {
     path: 'institution/:id',
     component: InstitutionPage,
+  },
+  {
+    path: 'visits',
+    component: VisitPage,
   },
 ];
