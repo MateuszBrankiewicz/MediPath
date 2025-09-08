@@ -14,6 +14,10 @@ public class InstitutionDigest {
         return institutionId;
     }
 
+    public boolean isValid() {
+        return this.institutionId != null && this.institutionName != null && !(this.institutionId.isBlank() || this.institutionName.isBlank());
+    }
+
     public void setInstitutionId(String institutionId) {
         this.institutionId = institutionId;
     }

@@ -19,6 +19,11 @@ public class DoctorDigest {
         return userId;
     }
 
+    public boolean isValid() {
+        return this.userId != null && this.doctorName != null && this.doctorSurname != null && this.specialisations != null
+                && !(this.userId.isBlank() || this.doctorSurname.isBlank() || this.doctorName.isBlank());
+    }
+
     public void setUserId(String userId) {
         this.userId = userId;
     }
