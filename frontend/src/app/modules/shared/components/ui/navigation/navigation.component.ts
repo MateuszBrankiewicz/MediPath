@@ -13,7 +13,8 @@ import { MenuModule } from 'primeng/menu';
 import { RippleModule } from 'primeng/ripple';
 import { MediPathMenuItem } from './navigation.model';
 import { NavigationService } from './navigation.service';
-import { AuthorizationService } from '../../../../../core/services/authorization/authorization-service';
+import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
+import { UserRoles } from '../../../../../core/services/authentication/authentication.model';
 
 @Component({
   selector: 'app-navigation',
@@ -32,15 +33,18 @@ import { AuthorizationService } from '../../../../../core/services/authorization
 export class NavigationComponent {
   private readonly router = inject(Router);
   private readonly navigationService = inject(NavigationService);
-  private readonly authService = inject(AuthorizationService);
+  private readonly authService = inject(AuthenticationService);
 
   readonly sidebarVisible = signal(false);
 
-  readonly userRole = computed(() => this.authService.userRole());
-  readonly userName = computed(() => this.authService.userName());
+  readonly user = computed(() => this.authService.getUser());
 
   readonly menuItems = computed(() => {
-    const items = this.navigationService.getMenuItemsForRole(this.userRole());
+    const items = this.navigationService.getMenuItemsForRole(
+      typeof this.user()?.roleCode === 'number'
+        ? UserRoles.GUEST
+        : ((this.user()?.roleCode as UserRoles) ?? UserRoles.GUEST),
+    );
     return this.convertToPrimeMenuItems(items);
   });
 

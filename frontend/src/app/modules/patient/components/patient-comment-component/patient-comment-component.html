@@ -1,0 +1,25 @@
+<div class="comment-content">
+  <div class="header-content">
+    <div class="icon-with-name">
+      <i class="pi pi-user"></i>
+      <span>{{ comment().userName }}</span>
+    </div>
+    <div class="date-with-review-grade">
+      <span class="date"
+        >Date of visit: <span>{{ comment().dateOfVisit | date }} </span></span
+      >
+      <div class="stars">
+        Review:
+        @for (star of [1, 2, 3, 4, 5]; track star) {
+          <span class="star" [class.filled]="star <= comment().numberOfStars"
+            >★</span
+          >
+        }
+      </div>
+    </div>
+  </div>
+  <p class="institution">
+    <span>Institution:</span> {{ comment().visitedInstitution }}
+  </p>
+  <span class="content"> {{ comment().content }}</span>
+</div>

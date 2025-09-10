@@ -1,0 +1,35 @@
+<div class="hospital-card">
+  <div class="hospital-image">
+    <img [src]="hospital().imageUrl" [alt]="hospital().name" />
+  </div>
+
+  <div class="hospital-info">
+    <h3 class="hospital-name">{{ hospital().name }}</h3>
+
+    <div class="hospital-details">
+      <div class="detail-item">
+        <span class="label">Adres:</span>
+        <span class="value">{{ hospital().address }}</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="label">Specialisations:</span>
+        <span class="value">{{ getSpecialisationText() }}</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="label">Public:</span>
+        <span class="value">{{ hospital().isPublic ? "Yes" : "No" }}</span>
+      </div>
+    </div>
+
+    @if (canEdit()) {
+      <div class="hospital-actions">
+        <p-button (click)="onEditDetails()">EDIT DETAILS </p-button>
+        @if (canDisabled()) {
+          <p-button severity="danger" (click)="onDisable()">DISABLE</p-button>
+        }
+      </div>
+    }
+  </div>
+</div>

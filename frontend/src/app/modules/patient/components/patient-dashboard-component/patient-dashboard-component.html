@@ -1,59 +1,57 @@
-<app-dashboard-layout [config]="dashboardConfig">
-  <!-- Search Slot -->
-  <div slot="search" class="search-container">
-    <input
-      type="text"
-      pInputText
-      placeholder="Search..."
-      [value]="searchQuery()"
-      styleClass="w-full"
-    />
-  </div>
-
-  <!-- Notifications Slot -->
-  <div slot="notifications">
-    <p-button
-      icon="pi pi-bell"
-      [text]="true"
-      [rounded]="true"
-      [badge]="notificationCount().toString()"
-      badgeClass="p-badge-danger"
-    />
-  </div>
-
-  <!-- Primary Content -->
-  <div slot="primary">
-    <!-- Prescriptions & Referrals Cards -->
-    <div class="content-grid">
-      <p-card header="Prescriptions">
-        <div class="prescription-item">
-          <span>Dr Jan Koś</span>
-          <span>13642</span>
-          <p-button icon="pi pi-chevron-down" [text]="true" />
+<div class="dashboard-content">
+  <div class="top-content">
+    <div class="prescriptions-content">
+      <p-card class="prescriptions">
+        <ng-template #header>
+          <span class="header-span">Prescriptions</span>
+        </ng-template>
+        <div class="items-content">
+          @for (refferal of refferals(); track refferal.id) {
+            <div class="single-item">
+              <span class="name">{{ refferal.doctorName }}</span>
+              <span>{{ refferal.pin }}</span>
+            </div>
+          }
         </div>
-      </p-card>
-
-      <p-card header="Referrals">
-        <div class="prescription-item">
-          <span>Dr Jan Koś</span>
-          <span>13642</span>
-          <p-button icon="pi pi-chevron-down" [text]="true" />
-        </div>
+        <ng-template #footer>
+          <div class="footer">
+            <p-button icon="pi pi-chevron-down" [text]="true" />
+          </div>
+        </ng-template>
       </p-card>
     </div>
-  </div>
 
-  <!-- Secondary Content -->
-  <div slot="secondary">
-    <!-- Comments lub inne secondary content -->
-    <p-card header="Recent Activity">
-      <p>No recent activity</p>
+    <p-card class="refferals">
+      <ng-template #header>
+        <span class="header-span">Refferals</span>
+      </ng-template>
+      <div class="items-content">
+        @for (refferal of refferals(); track refferal.id) {
+          <div class="single-item">
+            <span class="name">{{ refferal.doctorName }}</span>
+            <span>{{ refferal.pin }}</span>
+          </div>
+        }
+      </div>
+
+      <ng-template #footer>
+        <div class="footer">
+          <p-button icon="pi pi-chevron-down" [text]="true" />
+        </div>
+      </ng-template>
     </p-card>
   </div>
+  <div class="visits-content">
+    <span>
+      <i class="pi pi-calendar"></i>
+      Upcoming visits</span
+    >
 
-  <!-- Bottom Content -->
-  <div slot="bottom">
-    <p-card header="Upcoming visits" class="upcoming-visits-card">
+    <p-card
+      header="Upcoming visits"
+      class="upcoming-visits-card"
+      class="visits-card"
+    >
       @for (visit of upcomingVisits(); track visit.id) {
         <div class="visit-item">
           <span class="visit-time">{{ visit.time }}</span>
@@ -68,4 +66,4 @@
       }
     </p-card>
   </div>
-</app-dashboard-layout>
+</div>
