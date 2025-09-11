@@ -1,0 +1,53 @@
+<h2>Visits</h2>
+<p-table [value]="visits" [tableStyle]="{ width: '100%' }">
+  <ng-template #header>
+    <tr>
+      <th>Doctor</th>
+      <th>Institution</th>
+      <th>Date</th>
+      <th>Status</th>
+      <th>Details</th>
+      <th>Options</th>
+    </tr>
+  </ng-template>
+  <ng-template #body>
+    @for (visit of visits; track visit.id) {
+      <tr>
+        <td>{{ visit.doctorName }}</td>
+        <td>{{ visit.institution }}</td>
+        <td>{{ visit.date | date }}</td>
+        <td>{{ visit.status }}</td>
+        <td><i class="pi pi-file-export"></i></td>
+        <td class="options-cell">
+          <p-button
+            icon="pi pi-ellipsis-v"
+            size="large"
+            [text]="true"
+            (click)="op.toggle($event)"
+            #menuButton
+            class="options-button"
+          >
+          </p-button>
+          <p-popover #op>
+            <div class="menu-options">
+              <button
+                type="button"
+                class="menu-item"
+                (click)="editVisit(); op.hide()"
+              >
+                <span>Reschedule</span>
+              </button>
+              <button
+                type="button"
+                class="menu-item"
+                (click)="cancelVisit(); op.hide()"
+              >
+                <span>Cancel</span>
+              </button>
+            </div>
+          </p-popover>
+        </td>
+      </tr>
+    }
+  </ng-template>
+</p-table>

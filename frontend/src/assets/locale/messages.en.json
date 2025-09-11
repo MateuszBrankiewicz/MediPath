@@ -73,5 +73,10 @@
   "passwordReset.tokenExpired.title": "Link Expired",
   "passwordReset.tokenExpired.message": "This password reset link has expired. Please request a new password reset email.",
   "passwordReset.tokenExpired.requestNew": "Request New Link",
-  "passwordReset.dialog.checkemail": "Check email"
+  "passwordReset.dialog.checkemail": "Check email",
+  "toast.login.success": "Logged in successfully",
+  "toast.logout.success": "Logged out successfully",
+  "toast.logout.error": "Logout failed. Please try again.",
+  "toast.error.title": "Error",
+  "toast.success.title": "Success"
 }

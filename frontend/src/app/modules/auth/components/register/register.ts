@@ -21,8 +21,8 @@ import {
 } from '../../../shared/components/forms/input-for-auth/select-with-search/select-with-search';
 import { ModalDialogComponent } from '../../../shared/components/ui/modal-dialog/modal-dialog';
 import { RegisterUser } from '../../models/auth.constants';
-import { AuthenticationService } from '../../services/authentication/authentication';
 import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 
 @Component({
   selector: 'app-register',
@@ -77,6 +77,7 @@ export class Register {
           this.registerFormGroup.controls.termsChecked.touched))
     );
   });
+
   public registerFormGroup = new FormGroup({
     name: new FormControl('', [Validators.required]),
     surname: new FormControl('', [Validators.required]),
@@ -127,7 +128,7 @@ export class Register {
       });
   }
 
-  onRegisterFormSubmit() {
+  protected onRegisterFormSubmit() {
     this.registerFormGroup.markAllAsTouched();
 
     this.passwordMismatchError.set(false);
@@ -176,9 +177,11 @@ export class Register {
       });
     }
   }
+
   public loadCities = (searchTerm: string) => {
     return this.authService.getCities(searchTerm);
   };
+
   protected redirectToLoginPage() {
     this.visible.set(false);
     this.router.navigate(['/auth/login']);

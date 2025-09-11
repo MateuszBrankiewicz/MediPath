@@ -13,7 +13,7 @@ import { InputForAuth } from '../../../shared/components/forms/input-for-auth/in
 import { ModalDialogComponent } from '../../../shared/components/ui/modal-dialog/modal-dialog';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
-import { AuthenticationService } from '../../services/authentication/authentication';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 
 @Component({
   selector: 'app-password-reset',
@@ -109,14 +109,14 @@ export class PasswordReset {
           token: this.token() ?? '',
         })
         .subscribe({
-          next: (res) => {
+          next: () => {
             this.isLoading.set(false);
             this.visible.set(true);
           },
           error: (error) => {
             this.isLoading.set(false);
 
-            console.error(error)
+            console.error(error);
 
             if (
               error.status === 410 &&
@@ -138,7 +138,6 @@ export class PasswordReset {
     this.visible.set(false);
     this.passwordSended.set(false);
     this.router.navigate(['/auth/login']);
-
   }
 
   protected redirectToForgotPassword() {

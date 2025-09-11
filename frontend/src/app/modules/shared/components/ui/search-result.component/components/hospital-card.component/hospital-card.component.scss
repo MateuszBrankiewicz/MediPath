@@ -1,0 +1,82 @@
+.hospital-card {
+  display: flex;
+  background: var(--p-surface-200);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 100%;
+  margin: 16px 0;
+
+  .hospital-image {
+    flex: 0 0 400px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .hospital-info {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .hospital-name {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      align-self: center;
+    }
+
+    .hospital-details {
+      flex: 1;
+
+      .detail-item {
+        margin-bottom: 8px;
+        display: flex;
+
+        .label {
+          font-weight: 600;
+          color: #333;
+          min-width: 120px;
+          margin-right: 8px;
+        }
+
+        .value {
+          color: #666;
+          flex: 1;
+        }
+      }
+    }
+
+    .hospital-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      align-self: flex-end;
+    }
+  }
+}
+@media (max-width: 768px) {
+  .hospital-card {
+    flex-direction: column;
+
+    .hospital-image {
+      flex: none;
+
+      img {
+        height: 200px;
+      }
+    }
+
+    .hospital-actions {
+      .btn {
+        flex: 1;
+      }
+    }
+  }
+}

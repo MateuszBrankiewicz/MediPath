@@ -67,14 +67,4 @@
   (buttonClick)="hasError.set({ haveError: false, errorMessage: '' })"
 />
 
-<app-modal-dialog
-  [visible]="visible()"
-  (visibleChange)="visible.set($event)"
-  type="success"
-  [title]="translationService.translate('register.dialog.success')"
-  [messages]="[translationService.translate('login.success')]"
-  [buttonLabel]="translationService.translate('login.redirectToHome')"
-  buttonIcon="pi pi-arrow-right"
-  buttonIconPos="right"
-  (buttonClick)="redirectToHomePage()"
-/>
+
