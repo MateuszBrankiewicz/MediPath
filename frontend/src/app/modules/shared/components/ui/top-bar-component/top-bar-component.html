@@ -6,20 +6,32 @@
   <div class="search-section">
     <div class="search-container">
       <p-input-group class="p-input-group">
-        <p-inputgroup-addon>
-          <i class="pi pi-bars"></i>
+        <p-inputgroup-addon class="search-menu-addon">
+          <span class="search-menu-trigger" (click)="searchMenu.toggle($event)">
+            <i class="pi pi-bars"></i>
+          </span>
         </p-inputgroup-addon>
         <input
           type="text"
           pInputText
-          placeholder="Search..."
+          [placeholder]="getSearchPlaceholder()"
           styleClass="w-full"
           class="p-inputtext"
+          [(ngModel)]="query"
         />
         <p-inputgroup-addon>
-          <i class="pi pi-search"></i>
+          <span (click)="search()">
+            <i class="pi pi-search"></i>
+          </span>
         </p-inputgroup-addon>
       </p-input-group>
+
+      <p-menu
+        #searchMenu
+        [model]="searchMenuItems"
+        [popup]="true"
+        class="search-menu"
+      ></p-menu>
     </div>
   </div>
 

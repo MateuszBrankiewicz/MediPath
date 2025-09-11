@@ -3,8 +3,11 @@ import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { UserRoles } from './core/services/authentication/authentication.model';
 import { roleGuard } from './core/guards/role.guard';
+import { SearchResultComponent } from './modules/shared/components/ui/search-result.component/search-result.component';
 
 export const routes: Routes = [
+  { path: 'search/:type/:query', component: SearchResultComponent },
+
   {
     path: 'auth',
     canActivate: [guestGuard],

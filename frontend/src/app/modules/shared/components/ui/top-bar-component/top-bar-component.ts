@@ -58,23 +58,27 @@ export class TopBarComponent {
 
   private readonly toastService = inject(ToastService);
 
-  readonly roleOptions = computed<RoleOption[]>(() => [
+  protected readonly selectedSearchType = signal('institution');
+
+  protected readonly roleOptions = computed<RoleOption[]>(() => [
     { label: 'Doctor', value: 'doctor' },
     { label: 'Nurse', value: 'nurse' },
     { label: 'Admin', value: 'admin' },
     { label: 'Patient', value: 'patient' },
   ]);
 
-  readonly config = input<TopBarConfig>({
+  public readonly config = input<TopBarConfig>({
     showSearch: false,
     showNotifications: false,
   });
 
-  readonly isMenuOpen = signal(false);
+  protected readonly query = signal('');
 
-  readonly user = computed(() => this.authService.getUser());
+  protected readonly isMenuOpen = signal(false);
 
-  readonly menuItems = computed<MenuItem[]>(() => [
+  protected readonly user = computed(() => this.authService.getUser());
+
+  protected readonly menuItems = computed<MenuItem[]>(() => [
     {
       label: 'Edit profile',
       icon: 'pi pi-user',
@@ -99,6 +103,20 @@ export class TopBarComponent {
     },
   ]);
 
+  searchMenuItems: MenuItem[] = [
+    {
+      label: 'Szukaj po instytucji',
+      icon: 'pi pi-building',
+      command: () => this.onSearchType('institution'),
+    },
+    {
+      label: 'Szukaj po lekarzu',
+      icon: 'pi pi-user',
+      command: () => this.onSearchType('doctor'),
+      style: { 'font-size': '1.1rem' },
+    },
+  ];
+
   private navigateToProfile(): void {
     this.router.navigate(['/profile']);
   }
@@ -107,7 +125,7 @@ export class TopBarComponent {
     this.router.navigate(['/settings']);
   }
 
-  toggleUserMenu(event: Event): void {
+  protected toggleUserMenu(event: Event): void {
     const menu = this.userMenu();
     if (menu) {
       menu.toggle(event);
@@ -129,5 +147,64 @@ export class TopBarComponent {
           this.toastService.showError('toast.logout.error');
         },
       });
+  }
+
+  protected onSearchType(type: string): void {
+    this.selectedSearchType.set(type);
+    console.log(type);
+  }
+
+  protected getSearchPlaceholder(): string {
+    switch (this.selectedSearchType()) {
+      case 'institution':
+        return 'Szukaj instytucji...';
+      case 'doctor':
+        return 'Szukaj lekarza...';
+      default:
+        return 'Szukaj...';
+    }
+  }
+
+  protected updateMenuItems() {
+    this.searchMenuItems = this.searchMenuItems.map((item) => ({
+      ...item,
+      styleClass:
+        item.command && item.label?.includes(this.getTypeLabel())
+          ? 'active-menu-item'
+          : '',
+    }));
+  }
+
+  protected search() {
+    const query = this.query().trim();
+
+    if (!query) {
+      return;
+    }
+
+    const route = ['/search', this.selectedSearchType(), query];
+
+    this.router
+      .navigate(route)
+      .then((success) => {
+        console.log('Navigation success:', success);
+        if (!success) {
+          console.error('Navigation failed - route might not exist');
+        }
+      })
+      .catch((error) => {
+        console.error('Navigation error:', error);
+      });
+  }
+
+  private getTypeLabel(): string {
+    switch (this.selectedSearchType()) {
+      case 'institution':
+        return 'instytucji';
+      case 'doctor':
+        return 'lekarzu';
+      default:
+        return 'Wszystkie';
+    }
   }
 }

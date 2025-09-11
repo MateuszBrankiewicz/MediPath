@@ -1,9 +1,9 @@
-import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, effect, inject } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { DataViewModule } from 'primeng/dataview';
 import { SearchService, SearchType } from './services/search.service';
 import { ActivatedRoute } from '@angular/router';
-import { map, switchMap, of } from 'rxjs';
+import { map, switchMap, of, tap, take } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import {
   Hospital,
@@ -26,6 +26,8 @@ import { Doctor, BookAppointment, AddressChange } from './search-result.model';
 export class SearchResultComponent {
   private searchService = inject(SearchService);
   private route = inject(ActivatedRoute);
+
+  private destroyRef = inject(DestroyRef);
 
   sampleHospital: Hospital = {
     id: 1,
@@ -109,15 +111,39 @@ export class SearchResultComponent {
         byType: params.get('type') as SearchType,
         query: params.get('query') ?? undefined,
       })),
+      tap((searchQuery) => {
+        console.log('Route params:', searchQuery);
+        console.log('Available SearchType values:', Object.values(SearchType));
+        console.log(
+          'Type matches SearchType?',
+          Object.values(SearchType).includes(searchQuery.byType as SearchType),
+        );
+      }),
       switchMap((searchQuery) => {
-        if (
-          searchQuery.byType &&
-          searchQuery.query &&
-          Object.values(SearchType).includes(searchQuery.byType)
-        ) {
-          console.log(this.searchService.getSearchResult(searchQuery));
-          return this.searchService.getSearchResult(searchQuery);
+        const typeMapping: Record<string, SearchType> = {
+          institution: SearchType.INSTITUTION,
+          doctor: SearchType.DOCTOR,
+        };
+
+        const mappedType = typeMapping[searchQuery.byType as string];
+
+        if (mappedType && searchQuery.query) {
+          const mappedQuery = {
+            byType: mappedType,
+            query: searchQuery.query,
+          };
+
+          console.log('Mapped search query:', mappedQuery);
+          console.log('Calling search service with:', mappedQuery);
+
+          return this.searchService.getSearchResult(mappedQuery).pipe(
+            tap((result) => console.log('Search result:', result)),
+            take(1),
+            takeUntilDestroyed(this.destroyRef),
+          );
         }
+
+        console.log('No valid search parameters, returning empty array');
         return of([]);
       }),
     ),
@@ -126,26 +152,27 @@ export class SearchResultComponent {
 
   onEditHospital(hospital: Hospital): void {
     console.log('Edit hospital:', hospital);
-    // Implementuj logikę edycji
   }
 
   onDisableHospital(hospital: Hospital): void {
     console.log('Disable hospital:', hospital);
-    // Implementuj logikę wyłączania
   }
 
   onBookAppointment(event: BookAppointment): void {
     console.log('Book appointment:', event);
-    // Implementuj logikę rezerwacji
   }
 
   onShowMoreInfo(doctor: Doctor): void {
     console.log('Show more info for:', doctor);
-    // Implementuj logikę pokazania więcej informacji
   }
 
   onAddressChange(event: AddressChange): void {
     console.log('Address changed:', event);
-    // Implementuj logikę zmiany adresu
+  }
+
+  constructor() {
+    effect(() => {
+      console.log('Search results updated:', this.values());
+    });
   }
 }
