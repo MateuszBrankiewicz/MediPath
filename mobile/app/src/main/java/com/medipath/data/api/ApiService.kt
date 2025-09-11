@@ -23,4 +23,10 @@ interface ApiService {
 
     @GET("/api/users/resetpassword")
     suspend fun resetPassword(@Query("address") email: String): ApiResponse
+
+    @POST("/api/users/logout")
+    suspend fun logout(): ApiResponse
+
+    @GET("/api/users/profile")
+    suspend fun getUserProfile(): ApiResponse
 }

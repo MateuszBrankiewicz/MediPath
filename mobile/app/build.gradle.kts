@@ -80,4 +80,8 @@ dependencies {
 //    testImplementation("androidx.arch.core:core-testing:2.2.0")
 
     implementation("androidx.compose.material:material-icons-extended:$compose_version")
+
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }

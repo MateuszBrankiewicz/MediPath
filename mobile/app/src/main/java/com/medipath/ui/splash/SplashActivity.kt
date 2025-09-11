@@ -8,7 +8,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,21 +21,37 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.ui.theme.MediPathTheme
 import android.content.Intent
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.lifecycle.lifecycleScope
 import com.medipath.R
+import com.medipath.data.api.DataStoreSessionManager
+import com.medipath.ui.auth.LoginActivity
 import com.medipath.ui.main.HomeActivity
+import kotlinx.coroutines.launch
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val sessionManager = DataStoreSessionManager(this)
+
         setContent {
-            MediPathTheme() {
-                SplashScreen{
-                    val intent = Intent(this, HomeActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
+            MediPathTheme {
+                SplashScreen(
+                    onGetStartedClick = {
+                        lifecycleScope.launch {
+                            val isLoggedIn = sessionManager.isLoggedIn()
+                            if (isLoggedIn) {
+                                startActivity(Intent(this@SplashActivity, HomeActivity::class.java))
+                            } else {
+                                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+                            }
+                            finish()
+                        }
+                    }
+                )
             }
         }
     }
@@ -118,7 +133,7 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun SpashScreenPreview() {
+fun SplashScreenPreview() {
     MediPathTheme {
         SplashScreen(onGetStartedClick = {})
     }

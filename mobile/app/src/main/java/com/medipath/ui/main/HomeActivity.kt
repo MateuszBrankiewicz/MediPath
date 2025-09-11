@@ -1,5 +1,6 @@
 package com.medipath.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,26 +30,47 @@ import androidx.compose.material.icons.outlined.MedicalInformation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
+import com.medipath.data.api.DataStoreSessionManager
+import com.medipath.data.api.RetrofitInstance
+import com.medipath.ui.auth.LoginActivity
 import com.medipath.ui.components.InfoCard
 import com.medipath.ui.components.MenuCard
 import com.medipath.ui.components.Navigation
 import com.medipath.ui.components.SearchBar
 import com.medipath.ui.theme.LocalCustomColors
+import kotlinx.coroutines.launch
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val sessionManager = DataStoreSessionManager(this)
+        val apiService = RetrofitInstance.api
         setContent {
             MediPathTheme {
-                HomeScreen()
+                HomeScreen(
+                    onLogoutClick = {
+                        lifecycleScope.launch {
+                            try {
+                                apiService.logout()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            } finally {
+                                sessionManager.deleteSessionId()
+                                startActivity(Intent(this@HomeActivity, LoginActivity::class.java))
+                                finish()
+                            }
+                        }
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onLogoutClick: () -> Unit = {}) {
     Navigation(
         content = { innerPadding ->
             val colors = LocalCustomColors.current
@@ -195,9 +217,9 @@ fun HomeScreen() {
         },
         onNotificationsClick = {
             //powiadmoenia
-        }
+        },
+        onLogoutClick = onLogoutClick
     )
-
 }
 
 
