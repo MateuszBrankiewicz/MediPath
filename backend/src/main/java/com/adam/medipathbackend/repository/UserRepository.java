@@ -23,4 +23,7 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     @Aggregation({"{$project: { name: 1, surname: 1, specialisations: 1}}", "{$match: { specialisations: { $elemMatch: { $regex: /?0/i }}}}"})
     ArrayList<User> findDoctorsBySpec(String name);
+
+    @Query("{_id:{ $oid: \"?0\" }, roleCode: { $in: [2, 3, 6, 7, 14, 15] } }")
+    Optional<User> findDoctorById(String id);
 }
