@@ -15,6 +15,9 @@ public class VisitTime {
         this.endTime = endTime;
     }
 
+    public boolean isValid() {
+        return this.scheduleId != null && this.startTime != null && this.endTime != null && !this.scheduleId.isBlank();
+    }
     public String getScheduleId() {
         return scheduleId;
     }

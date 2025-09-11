@@ -1,25 +1,28 @@
 package com.adam.medipathbackend.models;
 
 public class PatientDigest {
-    private String patientId;
+    private String userId;
     private String name;
     private String surname;
     private String govID;
 
 
     public PatientDigest(String userId, String name, String surname, String govID) {
-        this.patientId = userId;
+        this.userId = userId;
         this.name = name;
         this.surname = surname;
         this.govID = govID;
     }
-
-    public String getPatientId() {
-        return patientId;
+    public boolean isValid() {
+        return this.userId != null && this.govID != null && this.name != null && this.surname != null
+                && !(this.userId.isBlank() || this.surname.isBlank() || this.name.isBlank() || this.govID.isBlank());
+    }
+    public String getUserId() {
+        return userId;
     }
 
-    public void setPatientId(String id) {
-        this.patientId = id;
+    public void setUserId(String id) {
+        this.userId = id;
     }
 
     public String getName() {

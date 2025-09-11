@@ -1,5 +1,6 @@
 package com.adam.medipathbackend.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,9 +10,9 @@ import java.time.LocalDateTime;
 public class Schedule {
     @Id
     private String id;
-
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Europe/Warsaw")
     private LocalDateTime startHour;
-
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Europe/Warsaw")
     private LocalDateTime endHour;
 
     private boolean booked;
@@ -20,10 +21,10 @@ public class Schedule {
 
     private InstitutionDigest institution;
 
-    public Schedule(LocalDateTime startHour, LocalDateTime endHour, boolean booked, DoctorDigest doctor, InstitutionDigest institution) {
+    public Schedule(LocalDateTime startHour, LocalDateTime endHour, DoctorDigest doctor, InstitutionDigest institution) {
         this.startHour = startHour;
         this.endHour = endHour;
-        this.booked = booked;
+        this.booked = false;
         this.doctor = doctor;
         this.institution = institution;
     }
