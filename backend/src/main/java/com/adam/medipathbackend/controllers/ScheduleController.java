@@ -1,16 +1,17 @@
 package com.adam.medipathbackend.controllers;
 
+import com.adam.medipathbackend.config.Utils;
 import com.adam.medipathbackend.models.Schedule;
+import com.adam.medipathbackend.models.User;
 import com.adam.medipathbackend.models.Visit;
 import com.adam.medipathbackend.repository.ScheduleRepository;
+import com.adam.medipathbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -22,6 +23,8 @@ public class ScheduleController {
     @Autowired
     ScheduleRepository scheduleRepository;
 
+    @Autowired
+    UserRepository userRepository;
 
     @PostMapping("/add")
     public ResponseEntity<Map<String, Object>> add(@RequestBody Schedule schedule) {
@@ -49,6 +52,15 @@ public class ScheduleController {
         scheduleRepository.save(schedule);
         return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.CREATED);
 
+    }
+
+    @GetMapping("/bydoctor/{id}")
+    public ResponseEntity<Map<String, Object>> getByDoctor(@PathVariable String id) {
+        if(!Utils.isValidMongoOID(id) || userRepository.findDoctorById(id).isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
+        }
+        ArrayList<Schedule> schedules = scheduleRepository.getSchedulesByDoctor(id);
+        return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
     }
 
 }
