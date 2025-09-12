@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -54,6 +55,10 @@ public class VisitController {
         VisitTime time = new VisitTime(foundSchedule.getId(), foundSchedule.getStartHour(), foundSchedule.getEndHour());
         Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(), time,foundSchedule.getInstitution());
         foundSchedule.setBooked(true);
+        ArrayList<Code> codes = new ArrayList<>();
+        codes.add(new Code(Code.CodeType.PRESCRIPTION, "1234", true));
+        codes.add(new Code(Code.CodeType.REFERRAL, "12345", true));
+        newVisit.setCodes(codes);
         visitRepository.save(newVisit);
         scheduleRepository.save(foundSchedule);
         return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.CREATED);
@@ -67,6 +72,12 @@ public class VisitController {
         ArrayList<Visit> upcomingVisits =  visitRepository.getUpcomingVisits(userid);
         return new ResponseEntity<>(Map.of("visits", upcomingVisits), HttpStatus.OK);
     }
-
+    @GetMapping("/getactivecodes/{userid}")
+    public ResponseEntity<Map<String, Object>> getCodes(@PathVariable String userid) {
+        if(!userRepository.existsById(userid)) {
+            return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(Map.of("codes", visitRepository.getActiveCodesForPatient(userid)), HttpStatus.OK);
+    }
 
 }
