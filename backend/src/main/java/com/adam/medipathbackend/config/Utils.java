@@ -29,12 +29,24 @@ public class Utils {
 
         return distanceMatrix[str1.length()][str2.length()];
     }
-  
+
     static int min(int a, int b, int c) {
         return Math.min(a, Math.min(b, c));
     }
 
     public static boolean isSimilar(String str1, String str2) {
         return compute_Levenshtein_distance(str1, str2) < MINIMUM_ACCEPTABLE_SIMILARITY_THRESHOLD;
+    }
+    public static boolean isValidMongoOID(String oid) {
+        if(oid.length() != 24) return false;
+        char c;
+        for(int i = 0; i < 24; i++) {
+            c = oid.charAt(i);
+            if((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) {
+                continue;
+            }
+            return false;
+        }
+        return true;
     }
 }
