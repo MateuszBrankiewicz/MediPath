@@ -19,9 +19,7 @@ export class SearchService {
   private readonly http = inject(HttpClient);
 
   public getSearchResult(searchQuery: SearchQuery) {
-    console.log(searchQuery)
-    return this.http.get(
-      API_URL + `/search/${searchQuery.byType}/${searchQuery.query}`,
-    );
+    console.log(searchQuery);
+    return this.http.get(API_URL + `/search/${searchQuery.query}`);
   }
 }

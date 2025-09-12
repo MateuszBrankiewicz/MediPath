@@ -21,6 +21,7 @@ import { SelectModule } from 'primeng/select';
 
 import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
 import { ToastService } from '../../../../../core/services/toast/toast.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export interface TopBarConfig {
   showSearch?: boolean;

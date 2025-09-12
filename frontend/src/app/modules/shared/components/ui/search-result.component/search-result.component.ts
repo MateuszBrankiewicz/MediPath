@@ -1,9 +1,8 @@
 import { Component, DestroyRef, effect, inject } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { DataViewModule } from 'primeng/dataview';
-import { SearchService, SearchType } from './services/search.service';
+import { SearchService } from './services/search.service';
 import { ActivatedRoute } from '@angular/router';
-import { map, switchMap, of, tap, take } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import {
   Hospital,
@@ -11,6 +10,7 @@ import {
 } from './components/hospital-card.component/hospital-card.component';
 import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
 import { Doctor, BookAppointment, AddressChange } from './search-result.model';
+import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
 
 @Component({
   selector: 'app-search-result.component',
@@ -19,6 +19,7 @@ import { Doctor, BookAppointment, AddressChange } from './search-result.model';
     ButtonModule,
     HospitalCardComponent,
     DoctorCardComponent,
+    BreadcumbComponent,
   ],
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.scss',
@@ -106,47 +107,37 @@ export class SearchResultComponent {
     ],
   };
   protected readonly values = toSignal(
-    this.route.paramMap.pipe(
-      map((params) => ({
-        byType: params.get('type') as SearchType,
-        query: params.get('query') ?? undefined,
-      })),
-      tap((searchQuery) => {
-        console.log('Route params:', searchQuery);
-        console.log('Available SearchType values:', Object.values(SearchType));
-        console.log(
-          'Type matches SearchType?',
-          Object.values(SearchType).includes(searchQuery.byType as SearchType),
-        );
-      }),
-      switchMap((searchQuery) => {
-        const typeMapping: Record<string, SearchType> = {
-          institution: SearchType.INSTITUTION,
-          doctor: SearchType.DOCTOR,
-        };
+    // this.route.paramMap.pipe(
+    //   map((params) => ({
+    //     query: params.get('query') ?? undefined,
+    //   })),
+    //   tap((searchQuery) => {
+    //     console.log('Route params:', searchQuery);
+    //     console.log('Available SearchType values:', Object.values(SearchType));
+    //     console.log('Type matches SearchType?');
+    //   }),
+    //   switchMap((searchQuery) => {
+    //     if (searchQuery.query) {
+    //       const mappedQuery = {
+    //         //byType: mappedType,
+    //         query: searchQuery.query,
+    //       };
 
-        const mappedType = typeMapping[searchQuery.byType as string];
+    //       console.log('Mapped search query:', mappedQuery);
+    //       console.log('Calling search service with:', mappedQuery);
 
-        if (mappedType && searchQuery.query) {
-          const mappedQuery = {
-            byType: mappedType,
-            query: searchQuery.query,
-          };
+    //       return this.searchService.getSearchResult(mappedQuery).pipe(
+    //         tap((result) => console.log('Search result:', result)),
+    //         take(1),
+    //         takeUntilDestroyed(this.destroyRef),
+    //       );
+    //     }
 
-          console.log('Mapped search query:', mappedQuery);
-          console.log('Calling search service with:', mappedQuery);
-
-          return this.searchService.getSearchResult(mappedQuery).pipe(
-            tap((result) => console.log('Search result:', result)),
-            take(1),
-            takeUntilDestroyed(this.destroyRef),
-          );
-        }
-
-        console.log('No valid search parameters, returning empty array');
-        return of([]);
-      }),
-    ),
+    //     console.log('No valid search parameters, returning empty array');
+    //     return of([]);
+    //   }),
+    // ),
+    this.searchService.getSearchResult({ query: 'Szpi' }),
     { initialValue: [] },
   );
 
