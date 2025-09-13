@@ -54,6 +54,8 @@ public class User {
 
     private int numOfRatings;
 
+    private String pfpimage;
+
     @Override
     public String toString() {
         return email + " : " + name + " " + surname;
@@ -79,6 +81,7 @@ public class User {
         this.employers = new ArrayList<>();
         this.userSettings = userSettings;
         this.numOfRatings = 0;
+        this.pfpimage = "";
     }
 
     public UserSettings getUserSettings() {
@@ -221,5 +224,13 @@ public class User {
 
     public String getId() {
         return id;
+    }
+
+    public String getPfpimage() {
+        return pfpimage;
+    }
+
+    public void setPfpimage(String pfpimage) {
+        this.pfpimage = pfpimage;
     }
 }
