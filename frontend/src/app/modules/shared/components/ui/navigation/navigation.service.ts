@@ -86,7 +86,7 @@ export class NavigationService {
               {
                 label: 'Visits',
                 icon: 'pi pi-calendar',
-                routerLink: '/patient/appointments',
+                routerLink: '/patient/visits',
                 visible: true,
               },
               {

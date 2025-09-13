@@ -1,0 +1,71 @@
+<div class="visit-details">
+  <div class="visit-info">
+    <div class="date-section">
+      <span class="date-label">Date of visit:</span>
+      <span class="date-value">20-03-2025</span>
+    </div>
+
+    <div class="content-row">
+      <div class="left-section">
+        <!-- Doctor Section -->
+        <div class="doctor-card">
+          <img src="assets/imageDoctor.png" alt="Doctor photo" class="doctor-photo">
+          <div class="doctor-info">
+            <div class="doctor-label">Doctor name:</div>
+            <div class="doctor-name">Jadwiga Chymyl</div>
+            <div class="doctor-label">Specialisation:</div>
+            <div class="doctor-specialisation">Cardiologist</div>
+          </div>
+        </div>
+
+        <!-- Institution Section -->
+        <div class="institution-card">
+          <img src="assets/footer-landing.png" alt="Institution photo" class="institution-photo">
+          <div class="institution-info">
+            <div class="institution-label">Institution name</div>
+            <div class="institution-name">Szpital kliniczny</div>
+            <div class="institution-label">Address</div>
+            <div class="institution-address">Jana Pawła II 2/34,<br>23-500 Lublin</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-section">
+        <div class="pins-section">
+          <div class="pin-item">
+            <span class="pin-label">Prescription pin:</span>
+            <span class="pin-value">0000</span>
+          </div>
+          <div class="pin-item">
+            <span class="pin-label">Referral pin:</span>
+            <span class="pin-value">0000</span>
+          </div>
+        </div>
+
+        <div class="notes-section">
+          <div class="notes-label">Notes:</div>
+          <div class="notes-content">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Sed tristique, turpis ut tincidunt pretium, purus ex faucibus odio, ut varius elit lorem a justo. Phasellus in urna vitae mauris pharetra sollicitudin. Integer auctor, turpis vel dignissim pharetra, arcu ligula tincidunt eros, eget scelerisque velit nulla nec nunc.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p-button
+      label="CLOSE"
+      styleClass="close-btn"
+      severity="danger"
+      [rounded]="true"
+      [raised]="true"
+      (onClick)="closeDialog()">
+    </p-button>
+    <p-button
+      label="REVIEW VISIT"
+      [rounded]="true"
+      [raised]="true"
+      (onClick)="reviewVisit()">
+    </p-button>
+  </div>
+</div>

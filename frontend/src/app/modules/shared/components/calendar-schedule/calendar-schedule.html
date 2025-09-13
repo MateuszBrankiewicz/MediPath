@@ -1,0 +1,73 @@
+<div class="calendar-schedule">
+  <div class="schedule-layout">
+    <!-- Left Section: Date Selection -->
+    <div class="date-selection">
+      <h3>Select date</h3>
+
+      <div class="custom-calendar">
+        <!-- Calendar Header -->
+        <div class="calendar-header">
+          <p-button
+            icon="pi pi-chevron-left"
+            styleClass="nav-button"
+            (onClick)="previousMonth()"
+            [text]="true">
+          </p-button>
+
+          <span class="month-year">{{ monthYearDisplay() }}</span>
+
+          <p-button
+            icon="pi pi-chevron-right"
+            styleClass="nav-button"
+            (onClick)="nextMonth()"
+            [text]="true">
+          </p-button>
+        </div>
+
+        <!-- Day Names -->
+        <div class="day-names">
+          <div class="day-name" *ngFor="let dayName of dayNames">
+            {{ dayName }}
+          </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="calendar-grid">
+          <div
+            *ngFor="let calendarDay of calendarDays()"
+            class="calendar-day"
+            [class.other-month]="!calendarDay.isCurrentMonth"
+            [class.today]="calendarDay.isToday"
+            [class.has-appointments]="calendarDay.hasAppointments"
+            [class.selected]="isDateSelected(calendarDay)"
+            [class.selectable]="calendarDay.hasAppointments"
+            (click)="onDateSelect(calendarDay)">
+            {{ calendarDay.dayNumber }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="time-selection">
+      <h3>Available terms</h3>
+
+      <div class="time-slots" *ngIf="selectedDate(); else noDateSelected">
+        <div class="time-grid">
+          <button
+            *ngFor="let slot of availableTimes()"
+            class="time-slot"
+            [class.selected]="selectedTime() === slot.time"
+            [class.unavailable]="!slot.available"
+            [disabled]="!slot.available"
+            (click)="onTimeSelect(slot.time)">
+            {{ slot.time }}
+          </button>
+        </div>
+      </div>
+
+      <ng-template #noDateSelected>
+        <p class="no-date-message">Please select a date to see available times</p>
+      </ng-template>
+    </div>
+  </div>
+</div>

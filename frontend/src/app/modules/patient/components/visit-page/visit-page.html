@@ -17,7 +17,7 @@
         <td>{{ visit.institution }}</td>
         <td>{{ visit.date | date }}</td>
         <td>{{ visit.status }}</td>
-        <td><i class="pi pi-file-export"></i></td>
+        <td><i (click)="openVisitDialog(visit.id)" class="pi pi-file-export"></i></td>
         <td class="options-cell">
           <p-button
             icon="pi pi-ellipsis-v"
@@ -33,7 +33,7 @@
               <button
                 type="button"
                 class="menu-item"
-                (click)="editVisit(); op.hide()"
+                (click)="openRescheduleDialog(visit.id); op.hide()"
               >
                 <span>Reschedule</span>
               </button>
@@ -51,3 +51,5 @@
     }
   </ng-template>
 </p-table>
+
+
