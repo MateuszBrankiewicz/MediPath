@@ -28,22 +28,45 @@ public class SearchController {
     @Autowired
     ScheduleRepository scheduleRepository;
 
-    @GetMapping(value = {"/search/{query}", "/search/{query}/{city}"})
-    public ResponseEntity<Map<String, Object>> search(@PathVariable String query, @PathVariable(required = false) String city) {
-        ArrayList<Institution> institutions;
-        ArrayList<StaffDigest> doctors;
+    @GetMapping(value = {"/search/{query}"})
+    public ResponseEntity<Map<String, Object>> search(@PathVariable String query, @RequestParam("type") String type, @RequestParam(value = "city", defaultValue = ".*") String city, @RequestParam(value = "specialisations", defaultValue = "") String specialisations) {
 
-        city = city == null ? ".*" : city;
-        institutions = institutionRepository.findInstitutionByCity(city, query);
-        doctors = institutionRepository.findDoctorsByCity(city, query);
 
-        List<Map<String, Serializable>> institutions_clean = institutions.stream().map(institution -> Map.of("id", institution.getId(), "name", institution.getName(), "types", institution.getTypes())).toList();
-        List<Map<String, Object>> doctors_clean = doctors.stream().map(doctor ->
-                Map.of("id", doctor.getUserId(), "name", doctor.getName(), "surname", doctor.getSurname(),
-                        "specialisations", doctor.getSpecialisations(), "addresses", getAddressesForDoctor(doctor.getUserId()),
-                        "schedules", getSchedulesTruncatedForDoctor(doctor.getUserId()))
-        ).toList();
-        return new ResponseEntity<>(Map.of("institutions", institutions_clean, "doctors", doctors_clean), HttpStatus.OK);
+        if(type.equals("institution")) {
+            ArrayList<Institution> institutions;
+
+            if(specialisations.isBlank()) {
+                institutions = institutionRepository.findInstitutionByCity(city + ".*", query);
+            } else {
+                institutions = institutionRepository.findInstitutionByCityAndSpec(city + ".*", query, specialisations);
+            }
+            if(institutions.isEmpty()) {
+                return new ResponseEntity<>(Map.of("result", List.of()), HttpStatus.OK);
+            }
+            List<Map<String, Serializable>> institutions_clean = institutions.stream().map(institution -> Map.of("id", institution.getId(), "name", institution.getName(), "types", institution.getTypes(), "image", institution.getImage())).toList();
+            return new ResponseEntity<>(Map.of("result", institutions_clean), HttpStatus.OK);
+        } else if(type.equals("doctor")) {
+            ArrayList<StaffDigest> doctors;
+
+            if(specialisations.isBlank()) {
+                doctors = institutionRepository.findDoctorsByCity(city + ".*", query);
+            } else {
+                doctors = institutionRepository.findDoctorsByCityAndSpec(city + ".*", query, specialisations);
+            }
+            if(doctors.isEmpty()) {
+                return new ResponseEntity<>(Map.of("result", List.of()), HttpStatus.OK);
+            }
+            System.out.println();
+            List<Map<String, Object>> doctors_clean = doctors.stream().map(doctor ->
+                    Map.of("id", doctor.getUserId(), "name", doctor.getName(), "surname", doctor.getSurname(),
+                            "specialisations", doctor.getSpecialisations(), "addresses", getAddressesForDoctor(doctor.getUserId()),
+                            "schedules", getSchedulesTruncatedForDoctor(doctor.getUserId()), "image", doctor.getPfpimage())
+            ).toList();
+            return new ResponseEntity<>(Map.of("result", doctors_clean), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(Map.of("message", "unknown type"), HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     private ArrayList<String> getAddressesForDoctor(String userId) {
