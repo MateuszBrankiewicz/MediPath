@@ -28,10 +28,12 @@ public class SearchController {
     @Autowired
     ScheduleRepository scheduleRepository;
 
-    @GetMapping(value = {"/search/{query}"})
-    public ResponseEntity<Map<String, Object>> search(@PathVariable String query, @RequestParam("type") String type, @RequestParam(value = "city", defaultValue = ".*") String city, @RequestParam(value = "specialisations", defaultValue = "") String specialisations) {
+    @GetMapping(value = {"/search/{query}", "/search"})
+    public ResponseEntity<Map<String, Object>> search(@PathVariable(required = false) String query, @RequestParam("type") String type, @RequestParam(value = "city", defaultValue = ".*") String city, @RequestParam(value = "specialisations", defaultValue = "") String specialisations) {
 
-
+        if(query == null || query.isBlank()) {
+            query = ".*";
+        }
         if(type.equals("institution")) {
             ArrayList<Institution> institutions;
 
