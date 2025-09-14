@@ -160,29 +160,242 @@ Reason: Password has been reset successfully.
 
 
 
-/search/{type}/{query}
+/search/{query}?type=type&city=city&specialisations=specialisations
 
 Method: GET
 Path Variables:
-    type: Decides whether to search doctors and institutions by name or by specialisations (types in case of institutions). Accepted values are by-spec and by-name
-    query: String that gets looked in the database. Can match to name or surname of a doctor, name of an institution or specialisation, depending on the "type" variable
+    query: String that gets looked in the database. Can match to name or surname of a doctor or name of an institution, depending on the "type" variable. If ommitted, will match any name.
+
+Parameters:
+    type: Determines which collection to search with the given query. Accepted values are "doctor" or "institution". Required
+    city: city and province to restrict the search results to. Syntax: "city,province". Not required.
+    specialisations: specialisations to restrict the search results to. Syntax: specialisation names separated by a comma. Not required.
 
 Returns:
 
 Status code: 400
-Message: unknown query type
+Message: unknown type
 
-Reason: "type" if of value different than by-name or by-spec
+Reason: "type" if of value different than doctor or institution
 
 
 Status code: 200
 Fields:
-    "institutions": [Array]
-    "doctors": [Array]
+    result: search results
 
 Reason: Regardless of the amount of doctors and institutions matching a given query, result is always 200 OK.
 
 
+
+/visits/add
+Method: POST
+Body:
+    scheduleID: object ID of the schedule to which a given visit will be assigned
+    patientID: object ID of the patient's user profile
+
+Returns:
+
+Status code: 400
+Message: Missing fields in request body
+
+Reason: Required fields are missing
+
+Status code: 400
+Message: invalid patient id
+
+Reason: Specified patient userID is invalid
+
+Status code: 400
+Message: visit time is invalid or booked
+
+Reason: Specified schedule does not exist or is booked already
+
+Status code: 201
+Message: success
+
+Reason: visit booked successfully
+
+
+
+/visits/getupcoming/{userid}
+Method: GET
+Path variables:
+    userid: doctor's userID
+
+Returns:
+
+Status code: 400
+Message: invalid user id
+
+Reason: user id of the doctor is invalid
+
+Status code: 200
+Fields:
+    visits: upcoming visits for a given user
+
+Reason: successfully retrieved doctor's upcoming schedules
+
+
+/visits/getactivecodes/{userid}
+Method: GET
+Path variables:
+    userid: patient's userID
+
+Returns:
+
+Status code: 400
+Message: invalid user id
+
+Reason: user id of the patient is invalid
+
+Status code: 200
+Fields:
+    codes: given users' codes
+
+Reason: successfully retrieved user's codes
+
+
+/schedules/add
+Method: POST
+
+Body:
+    doctorID: doctor's user id
+    institutionID: institution's ID
+    startTime: schedule start time (yyyy-MM-dd HH:mm:ss)
+    endTime: schedule end time (yyyy-MM-dd HH:mm:ss)
+
+Returns:
+
+Status code: 400
+Message: invalid doctor id
+
+Reason: doctor's user id is invalid
+
+Status code: 400
+Message: invalid institution id
+
+Reason: institution id is invalid
+
+Status code: 409
+Message: this doctor is booked at this hour
+
+Reason: the start time is conflicting with another schedule for a given doctor
+
+Status code: 201
+Message: success
+
+Reason:  successfully created a schedule
+
+
+/schedules/bydoctor/{id}
+Method: GET
+
+Path variables:
+    id: doctor's user id
+
+Returns:
+
+   Status code: 400
+   Message: invalid user id
+
+   Reason: user with a given id does not exist or user is not a doctor
+
+
+   Status code: 200
+   Fields:
+    schedules: schedules for a given doctor starting from today
+
+   Reason: schedules retrieved successfully
+
+/doctors/{id}
+Method: GET
+
+Path Variables:
+    id: id of the doctor
+
+Request parameters:
+    fields: Array of fields to return. accepted values are id, name, surname, licence_number, specialisations and employers.
+
+Returns:
+
+Status code; 400
+message: invalid user id
+
+Reason: user with a given id does not exist or is not a doctor
+
+
+Status code; 200
+fields;
+    doctor: an object with fields specified in the "fields" parameter
+
+Reason: successfully retrieved a doctor. Any unknown fields specified in the list are omitted.
+
+
+
+/institution/add
+Method: POST
+
+Body:
+    name: name of the institution
+    isPublic: whether the institution is public or private
+    address: address of the institution. Is an object with fields: province, city, street, number and postalCode
+    image: Base64 image of the institution
+
+Returns:
+
+Status code: 400
+message: missing fields in request body
+
+Reason: there are missing fields in requests' body. Missing fields are listed.
+
+Status code: 409
+message: this institution is a possible duplicate.
+
+Reason: An institution with the same name and a very close address is already registered
+
+
+Status code: 201
+message: success
+
+Reason; institution created successfully
+
+
+/institution/{institutionid}/addemployees/
+Method: POST
+Path Variables:
+    institutionid: objectid of the institution
+
+Body: Array of employee forms
+
+Employee form:
+    userID: objectid of the user to add
+    rolecode: integer - role to assign to the user within the institution 2 - doctor, 4 - staff, 8 - admin. Roles may be combined
+    specialisations: array of strings - if user is a doctor, this list contains specialisations which the doctor uses in the given institution
+
+Returns:
+
+Status code: 400
+message: list of users is empty
+
+Reason: empty list of users to add is counted as an error
+
+
+Status code: 400
+message: invalid institution id
+
+Reason: invalid institution id
+
+
+Status code: 400
+message: one or more user IDs is invalid
+
+Reason: If at least one user id is invalid, the operation is aborted
+
+
+Status code: 200
+message: status
+
+Reason: successfully added employees
 
 
 
