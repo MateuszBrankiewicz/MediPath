@@ -8,9 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/api/institution")
@@ -90,6 +89,50 @@ public class InstitutionController {
         return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.OK);
     }
 
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> getInstitution(@PathVariable String id, @RequestParam(value = "fields", required = false) String[] fields) {
+        Optional<Institution> institutionOptional = institutionRepository.findById(id);
+        if(institutionOptional.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
+        }
+        Institution institution = institutionOptional.get();
+        Map<String, Object> outputFields = new HashMap<>();
+        System.out.println(fields == null);
+        List<String> fieldsList;
+        if(fields == null) {
+            fieldsList = List.of("id", "name", "types", "isPublic", "address", "employees", "rating", "image");
+        } else {
+            fieldsList = List.of(fields);
+        }
+
+        if(fieldsList.contains("id")) {
+            outputFields.put("id", institution.getId());
+        }
+        if(fieldsList.contains("name")) {
+            outputFields.put("name", institution.getName());
+        }
+        if(fieldsList.contains("address")) {
+            outputFields.put("address", institution.getAddress());
+        }
+        if(fieldsList.contains("isPublic")) {
+            outputFields.put("isPublic", institution.isPublic());
+        }
+        if(fieldsList.contains("types")) {
+            outputFields.put("types", institution.getTypes());
+        }
+        if(fieldsList.contains("employees")) {
+            int[] validDoctorCodes = {2, 3, 6, 7, 14, 15};
+            outputFields.put("employees", institution.getEmployees().stream().filter(employee -> IntStream.of(validDoctorCodes).anyMatch(x -> x == employee.getRoleCode())));
+        }
+        if(fieldsList.contains("rating")) {
+            outputFields.put("rating", institution.getRating());
+        }
+        if(fieldsList.contains("image")) {
+            outputFields.put("image", institution.getImage());
+        }
+        return new ResponseEntity<>(Map.of("institution", outputFields), HttpStatus.OK);
+    }
 
 
 }
