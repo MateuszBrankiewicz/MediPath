@@ -33,10 +33,10 @@ public class VisitController {
         ArrayList<String> missingFields = new ArrayList<>();
 
         if(visit.getPatientID() == null || visit.getPatientID().isBlank()) {
-            missingFields.add("patient");
+            missingFields.add("patientID");
         }
         if(visit.getScheduleID() == null || visit.getScheduleID().isBlank()) {
-            missingFields.add("time");
+            missingFields.add("scheduleID");
         }
         if(!missingFields.isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
