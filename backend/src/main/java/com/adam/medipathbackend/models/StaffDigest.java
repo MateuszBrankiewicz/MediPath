@@ -8,13 +8,15 @@ public class StaffDigest {
     private String surname;
     private ArrayList<String> specialisations;
     private int roleCode;
+    private String pfpimage;
 
-    public StaffDigest(String userId, String name, String surname, ArrayList<String> specialisations, int roleCode) {
+    public StaffDigest(String userId, String name, String surname, ArrayList<String> specialisations, int roleCode, String pfpimage) {
         this.userId = userId;
         this.name = name;
         this.surname = surname;
         this.specialisations = specialisations;
         this.roleCode = roleCode;
+        this.pfpimage = pfpimage;
     }
 
     public String getUserId() {
@@ -55,5 +57,13 @@ public class StaffDigest {
 
     public void setRoleCode(int roleCode) {
         this.roleCode = roleCode;
+    }
+
+    public String getPfpimage() {
+        return pfpimage;
+    }
+
+    public void setPfpimage(String pfpimage) {
+        this.pfpimage = pfpimage;
     }
 }

@@ -74,12 +74,13 @@ public class InstitutionController {
             if(currentUserOpt.isPresent()) {
 
                 User currentUser = currentUserOpt.get();
-                StaffDigest digest = new StaffDigest(currentUser.getId(), currentUser.getName(), currentUser.getSurname(), employee.getSpecialisations(), employee.getRoleCode());
+                StaffDigest digest = new StaffDigest(currentUser.getId(), currentUser.getName(), currentUser.getSurname(), employee.getSpecialisations(), employee.getRoleCode(), currentUser.getPfpimage());
 
                 currentInstitution.addEmployee(digest);
                 currentUser.setRoleCode(currentUser.getRoleCode() | employee.getRoleCode());
 
-                InstitutionDigest institutionDigest = new InstitutionDigest(currentInstitution.getId(), currentInstitution.getName());
+                InstitutionDigest institutionDigest = new InstitutionDigest(currentInstitution.getId(), currentInstitution.getName()
+                );
                 currentUser.addEmployer(institutionDigest);
                 userRepository.save(currentUser);
             }
