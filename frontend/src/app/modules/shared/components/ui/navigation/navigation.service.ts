@@ -92,13 +92,13 @@ export class NavigationService {
               {
                 label: 'Prescriptions',
                 icon: 'pi pi-file-medical',
-                routerLink: '/patient/records',
+                routerLink: '/patient/prescriptions',
                 visible: true,
               },
               {
                 label: 'Referrals',
                 icon: 'pi pi-user',
-                routerLink: '/patient/profile',
+                routerLink: '/patient/referrals',
                 visible: true,
               },
               {

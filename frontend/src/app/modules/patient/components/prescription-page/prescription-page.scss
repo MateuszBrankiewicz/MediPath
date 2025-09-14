@@ -1,0 +1,48 @@
+:host {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
+
+h2 {
+  align-self: flex-start;
+  text-align: right;
+  margin-left: 140px;
+  font-size: 30px;
+}
+
+p-table {
+  margin-top: 20px;
+  width: 85%;
+  height: 100%;
+
+  th {
+    background-color: var(--p-primary-color) !important;
+    color: var(--p-surface-50) !important;
+    border: 1px solid black !important;
+    text-align: center !important;
+  }
+
+  td {
+    border: 1px solid black !important;
+    text-align: center !important;
+
+    &.options-cell {
+      position: relative;
+      overflow: visible !important;
+      // Zapobiegaj propagacji kliknięć z komórki tabeli
+      pointer-events: none;
+
+      p-button {
+        pointer-events: all;
+      }
+
+      p-menu {
+        pointer-events: all;
+      }
+    }
+  }
+}
