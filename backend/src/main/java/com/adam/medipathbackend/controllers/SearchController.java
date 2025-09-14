@@ -45,7 +45,7 @@ public class SearchController {
             if(institutions.isEmpty()) {
                 return new ResponseEntity<>(Map.of("result", List.of()), HttpStatus.OK);
             }
-            List<Map<String, Serializable>> institutions_clean = institutions.stream().map(institution -> Map.of("id", institution.getId(), "name", institution.getName(), "types", institution.getTypes(), "image", institution.getImage())).toList();
+            List<Map<String, Serializable>> institutions_clean = institutions.stream().map(institution -> Map.of("id", institution.getId(), "name", institution.getName(), "types", institution.getTypes(), "image", institution.getImage(), "address", institution.getAddress().toString())).toList();
             return new ResponseEntity<>(Map.of("result", institutions_clean), HttpStatus.OK);
         } else if(type.equals("doctor")) {
             ArrayList<StaffDigest> doctors;
