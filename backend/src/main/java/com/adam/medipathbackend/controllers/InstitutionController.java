@@ -94,7 +94,7 @@ public class InstitutionController {
     public ResponseEntity<Map<String, Object>> getInstitution(@PathVariable String id, @RequestParam(value = "fields", required = false) String[] fields) {
         Optional<Institution> institutionOptional = institutionRepository.findById(id);
         if(institutionOptional.isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("message", "invalid institution id"), HttpStatus.BAD_REQUEST);
         }
         Institution institution = institutionOptional.get();
         Map<String, Object> outputFields = new HashMap<>();
