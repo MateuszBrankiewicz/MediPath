@@ -5,6 +5,7 @@ import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
 import com.adam.medipathbackend.repository.VisitRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,9 @@ public class VisitController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    InstitutionRepository institutionRepository;
 
     @PostMapping("/add")
     public ResponseEntity<Map<String, Object>> add(@RequestBody AddVisitForm visit) {
@@ -78,6 +82,34 @@ public class VisitController {
             return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(Map.of("codes", visitRepository.getActiveCodesForPatient(userid)), HttpStatus.OK);
+    }
+    @DeleteMapping("/{visitid}")
+    public ResponseEntity<Map<String, Object>> cancelVisit(@PathVariable String visitid, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Visit> optVisit = visitRepository.findById(visitid);
+        if(optVisit.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Visit visitToCancel = optVisit.get();
+        if(!(visitToCancel.getPatient().getUserId().equals(loggedUserID) || isLoggedAsEmployeeOfInstitution(loggedUserID, visitToCancel.getInstitution().getInstitutionId()))) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(visitToCancel.getStatus().equals("Completed")) {
+            return new ResponseEntity<>(Map.of("message", "this visit is completed"), HttpStatus.BAD_REQUEST);
+        }
+        if(visitToCancel.getStatus().equals("Cancelled")) {
+            return new ResponseEntity<>(Map.of("message", "this visit is already cancelled"), HttpStatus.BAD_REQUEST);
+        }
+        visitToCancel.setStatus("Cancelled");
+        visitRepository.save(visitToCancel);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private boolean isLoggedAsEmployeeOfInstitution(String userID, String institutionID) {
+        return institutionRepository.findStaffById(userID, institutionID).isPresent();
     }
 
 }
