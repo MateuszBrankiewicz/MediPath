@@ -399,4 +399,54 @@ Reason: successfully added employees
 
 
 
+/institution/{id}
+Method: GET
+
+Path variables:
+    id - object id of the institution
+
+Parameters:
+    fields - array of strings - specifies fields to return inside of the response. Accepted values are "id", "name", "types", "isPublic", "address", "employees", "rating" and "image"
+
+Returns:
+
+Status code: 400
+Message: invalid institution id
+
+Reason: Provided institution id is invalid
+
+Status code: 200
+Fields:
+    institution: object containing all fields specified in the fields parameter or all if omitted
+
+Reason: successfully retrieved visit
+
+
+/visit/{id}
+Method: DELETE
+
+Path variables:
+    id - object id of the visit
+
+Returns:
+
+Status code: 401
+
+Reason: User is not logged in
+
+
+Status code: 403
+
+Reason: User is not the patient from the visit, a staff member from the institution listed in the visit or the visit with this ID does not exist
+
+
+Status code; 400
+Message: this visit is completed/cancelled
+
+Reason: this visit has already been marked as completed or cancelled respectively
+
+
+Status code: 200
+
+Reason: Visit successfully cancelled
 
