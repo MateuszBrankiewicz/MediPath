@@ -84,6 +84,10 @@ public class User {
         this.pfpimage = "";
     }
 
+    public int getNumOfRatings() {
+        return numOfRatings;
+    }
+
     public UserSettings getUserSettings() {
         return userSettings;
     }

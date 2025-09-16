@@ -399,4 +399,133 @@ Reason: successfully added employees
 
 
 
+/institution/{id}
+Method: GET
+
+Path variables:
+    id - object id of the institution
+
+Parameters:
+    fields - array of strings - specifies fields to return inside of the response. Accepted values are "id", "name", "types", "isPublic", "address", "employees", "rating" and "image"
+
+Returns:
+
+Status code: 400
+Message: invalid institution id
+
+Reason: Provided institution id is invalid
+
+Status code: 200
+Fields:
+    institution: object containing all fields specified in the fields parameter or all if omitted
+
+Reason: successfully retrieved visit
+
+
+/visit/{id}
+Method: DELETE
+
+Path variables:
+    id - object id of the visit
+
+Returns:
+
+Status code: 401
+
+Reason: User is not logged in
+
+
+Status code: 403
+
+Reason: User is not the patient from the visit, a staff member from the institution listed in the visit or the visit with this ID does not exist
+
+
+Status code; 400
+Message: this visit is completed/cancelled
+
+Reason: this visit has already been marked as completed or cancelled respectively
+
+
+Status code: 200
+
+Reason: Visit successfully cancelled
+
+
+
+/users/me/codes/{codeType}
+Method: GET
+
+Path variables:
+    codeType - specifies the code type to return. Accepted values are "prescriptions" and "referrals". If ommitted, will output both types of codes.
+
+Returns:
+
+Status code: 401
+
+Reason: User is not logged in
+
+
+Status code: 400
+Message: invalid code type
+
+Reason: code type provided is not prescriptions or referrals
+
+
+Status code: 500
+
+Reason: if the schedule id inside of the visit is invalid, the server is programmed to throw a 500. THIS SHOULD NEVER HAPPEN
+
+Status code; 200
+Fields:
+    codes: - a list of objects containing active codes and their code types
+
+
+
+/visits/{visitid}/reschedule
+Method: PUT
+
+Path variables:
+    visitid - objectid of the visit to reschedule
+
+Parameters:
+    newschedule - object id of the new schedule to rebook the visit to
+
+
+Returns;
+
+Status code: 401
+
+Reason - user is not logged in
+
+
+Status code: 403
+
+Reason: visitid is invalid or the user is not the patient assigned to the visit or a member of staff of the institution specified in the visit
+
+
+Status code: 400
+Message: this visit is completed
+
+Reason: visit is already completed
+
+
+Status code: 400
+Message: this visit is already cancelled
+
+Reason: Cancelled visits cannot be rebooked. A new one must be created
+
+
+Status code: 400
+Message: invalid new schedule id or schedule is booked
+
+Reason: object id of the new schedule is invalid or the schedule is already booked
+
+Status code: 500
+
+Reason: if the schedule id inside of the visit is invalid, the server is programmed to throw a 500. THIS SHOULD NEVER HAPPEN
+
+
+Status code: 200
+
+Reason: visit rebooked successfully
 
