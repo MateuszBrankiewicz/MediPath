@@ -450,3 +450,30 @@ Status code: 200
 
 Reason: Visit successfully cancelled
 
+
+
+/users/me/codes/{codeType}
+Method: GET
+
+Path variables:
+    codeType - specifies the code type to return. Accepted values are "prescriptions" and "referrals". If ommitted, will output both types of codes.
+
+Returns:
+
+Status code: 401
+
+Reason: User is not logged in
+
+
+Status code: 400
+Message: invalid code type
+
+Reason: code type provided is not prescriptions or referrals
+
+
+Status code; 200
+Fields:
+    codes: - a list of objects containing active codes and their code types
+
+
+
