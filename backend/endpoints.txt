@@ -471,9 +471,61 @@ Message: invalid code type
 Reason: code type provided is not prescriptions or referrals
 
 
+Status code: 500
+
+Reason: if the schedule id inside of the visit is invalid, the server is programmed to throw a 500. THIS SHOULD NEVER HAPPEN
+
 Status code; 200
 Fields:
     codes: - a list of objects containing active codes and their code types
 
 
+
+/visits/{visitid}/reschedule
+Method: PUT
+
+Path variables:
+    visitid - objectid of the visit to reschedule
+
+Parameters:
+    newschedule - object id of the new schedule to rebook the visit to
+
+
+Returns;
+
+Status code: 401
+
+Reason - user is not logged in
+
+
+Status code: 403
+
+Reason: visitid is invalid or the user is not the patient assigned to the visit or a member of staff of the institution specified in the visit
+
+
+Status code: 400
+Message: this visit is completed
+
+Reason: visit is already completed
+
+
+Status code: 400
+Message: this visit is already cancelled
+
+Reason: Cancelled visits cannot be rebooked. A new one must be created
+
+
+Status code: 400
+Message: invalid new schedule id or schedule is booked
+
+Reason: object id of the new schedule is invalid or the schedule is already booked
+
+Status code: 500
+
+Reason: if the schedule id inside of the visit is invalid, the server is programmed to throw a 500. THIS SHOULD NEVER HAPPEN
+
+
+Status code: 200
+
+Reason: visit rebooked successfully
 

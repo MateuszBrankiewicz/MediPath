@@ -115,6 +115,47 @@ public class VisitController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PutMapping(value = {"/{visitid}/reschedule/", "/{visitid}/reschedule"})
+    public ResponseEntity<Map<String, Object>> rescheduleVisit(@PathVariable String visitid, @RequestParam(value = "newschedule", defaultValue = "") String newScheduleId, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(newScheduleId.isBlank()) {
+            return new ResponseEntity<>(Map.of("message", "newschedule parameter missing"), HttpStatus.BAD_REQUEST);
+        }
+        Optional<Visit> optVisit = visitRepository.findById(visitid);
+        if(optVisit.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Visit visitToReschedule = optVisit.get();
+        if(!(visitToReschedule.getPatient().getUserId().equals(loggedUserID) || isLoggedAsEmployeeOfInstitution(loggedUserID, visitToReschedule.getInstitution().getInstitutionId()))) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(visitToReschedule.getStatus().equals("Completed")) {
+            return new ResponseEntity<>(Map.of("message", "this visit is completed"), HttpStatus.BAD_REQUEST);
+        }
+        if(visitToReschedule.getStatus().equals("Cancelled")) {
+            return new ResponseEntity<>(Map.of("message", "this visit is already cancelled"), HttpStatus.BAD_REQUEST);
+        }
+        Optional<Schedule> newScheduleOptional = scheduleRepository.findById(newScheduleId);
+        if(newScheduleOptional.isEmpty() || newScheduleOptional.get().isBooked()) {
+            return new ResponseEntity<>(Map.of("message", "invalid new schedule id or schedule is booked"), HttpStatus.BAD_REQUEST);
+        }
+        Schedule newSchedule = newScheduleOptional.get();
+        Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToReschedule.getTime().getScheduleId());
+        if(scheduleOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        Schedule oldSchedule = scheduleOptional.get();
+        oldSchedule.setBooked(false);
+        newSchedule.setBooked(true);
+        visitToReschedule.setTime(new VisitTime(newSchedule.getId(), newSchedule.getStartHour(), newSchedule.getEndHour()));
+        scheduleRepository.save(oldSchedule);
+        scheduleRepository.save(newSchedule);
+        visitRepository.save(visitToReschedule);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
     private boolean isLoggedAsEmployeeOfInstitution(String userID, String institutionID) {
         return institutionRepository.findStaffById(userID, institutionID).isPresent();
     }
