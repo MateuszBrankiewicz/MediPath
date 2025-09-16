@@ -46,4 +46,11 @@ public interface InstitutionRepository extends MongoRepository<Institution, Stri
             "{ \"$project\": { \"_id\": 1, \"name\": \"$employees.name\", \"surname\": \"$employees.surname\", \"specialisations\": \"$employees.specialisations\", \"userId\": \"$employees.userId\", \"roleCode\": \"$employees.roleCode\", \"pfpimage\": \"$employees.pfpimage\"} }"
     })
     Optional<StaffDigest> findStaffById(String staffid, String institutionid);
+
+    @Aggregation({
+            "{ \"$unwind\": \"$employees\" }",
+            "{ \"$match\": { \"employees.userId\": ?0, \"_id\": {$oid: ?1} } }",
+            "{ \"$project\": { \"_id\": 1, \"name\": \"$employees.name\", \"surname\": \"$employees.surname\", \"specialisations\": \"$employees.specialisations\", \"userId\": \"$employees.userId\", \"roleCode\": \"$employees.roleCode\", \"pfpimage\": \"$employees.pfpimage\"} }"
+    })
+    Optional<StaffDigest> findStaffORDoctorById(String staffid, String institutionid);
 }

@@ -26,6 +26,10 @@ public class Institution {
 
     private String image;
 
+    public int getNumOfRatings() {
+        return numOfRatings;
+    }
+
     private int numOfRatings;
 
     public Institution(String name, boolean isPublic, Address address, String image) {
