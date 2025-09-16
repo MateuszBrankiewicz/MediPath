@@ -104,6 +104,13 @@ public class VisitController {
             return new ResponseEntity<>(Map.of("message", "this visit is already cancelled"), HttpStatus.BAD_REQUEST);
         }
         visitToCancel.setStatus("Cancelled");
+        Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToCancel.getTime().getScheduleId());
+        if(scheduleOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        Schedule oldSchedule = scheduleOptional.get();
+        oldSchedule.setBooked(false);
+        scheduleRepository.save(oldSchedule);
         visitRepository.save(visitToCancel);
         return new ResponseEntity<>(HttpStatus.OK);
     }
