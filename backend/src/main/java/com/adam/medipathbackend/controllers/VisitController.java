@@ -156,8 +156,29 @@ public class VisitController {
         visitRepository.save(visitToReschedule);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping("/{visitid}")
+    public ResponseEntity<Map<String, Object>> getVisitDetails(@PathVariable String visitid, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Visit> optVisit = visitRepository.findById(visitid);
+        if(optVisit.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Visit visit = optVisit.get();
+        if(!(visit.getPatient().getUserId().equals(loggedUserID) || isLoggedInAsStaffOrDoctorInInstitution(loggedUserID, visit.getInstitution().getInstitutionId()))) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return new ResponseEntity<>(Map.of("visit", visit), HttpStatus.OK);
+    }
+
     private boolean isLoggedAsEmployeeOfInstitution(String userID, String institutionID) {
         return institutionRepository.findStaffById(userID, institutionID).isPresent();
+    }
+    private boolean isLoggedInAsStaffOrDoctorInInstitution(String userid, String institutionID) {
+        return institutionRepository.findStaffORDoctorById(userid, institutionID).isPresent();
     }
 
 }
