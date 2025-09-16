@@ -14,7 +14,7 @@ import { PatientCommentComponent } from '../patient-comment-component/patient-co
 })
 export class InstitutionPage {
   sampleHospital: Hospital = {
-    id: 1,
+    id: '1',
     name: 'Szpital kliniczny',
     address: 'Jana Pawła II 25, 23-200 Lublin',
     specialisation: ['Oncologist', 'Cardiologist'],

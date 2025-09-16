@@ -1,0 +1,144 @@
+.medical-history-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+
+  .history-panel {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+
+    ::ng-deep .p-panel-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    ::ng-deep .p-panel-content {
+      padding: 0;
+
+    }
+  }
+
+  .history-list {
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e9ecef;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .history-content {
+        flex: 1;
+
+        .history-text {
+          font-size: 1rem;
+          color: #333;
+          font-weight: 500;
+        }
+      }
+
+      .history-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+
+        .view-button {
+          ::ng-deep .p-button {
+            color: #2196f3;
+            background: transparent;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+              background-color: #e3f2fd;
+            }
+
+            .p-button-icon {
+              font-size: 1.2rem;
+            }
+          }
+        }
+
+        .delete-button {
+          ::ng-deep .p-button {
+            color: #f44336;
+            background: transparent;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+              background-color: #ffebee;
+            }
+
+            .p-button-icon {
+              font-size: 1.2rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .add-entry-container {
+    padding: 20px;
+    display: flex;
+    justify-content: flex-end;
+
+    .add-entry-button {
+      ::ng-deep .p-button {
+        background: var(--p-primary-color);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: white;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(74, 144, 164, 0.3);
+
+        &:hover {
+          background: linear-gradient(135deg, #357a8d 0%, #2d6b7c 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(74, 144, 164, 0.4);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .medical-history-container {
+    padding: 10px;
+
+    .history-list {
+      .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+
+        .history-actions {
+          align-self: flex-end;
+        }
+      }
+    }
+  }
+}

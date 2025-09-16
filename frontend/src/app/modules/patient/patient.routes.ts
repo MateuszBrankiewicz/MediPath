@@ -5,6 +5,7 @@ import { InstitutionPage } from './components/institution-page/institution-page'
 import { VisitPage } from './components/visit-page/visit-page';
 import { RefferalsPage } from './components/refferals-page/refferals-page';
 import { PrescriptionPage } from './components/prescription-page/prescription-page';
+import { MedicalHistoryPage } from './components/medical-history-page/medical-history-page';
 
 export const PATIENT_ROUTES: Routes = [
   {
@@ -30,5 +31,9 @@ export const PATIENT_ROUTES: Routes = [
   {
     path: 'prescriptions',
     component: PrescriptionPage,
+  },
+  {
+    path: 'medical-history',
+    component: MedicalHistoryPage,
   },
 ];

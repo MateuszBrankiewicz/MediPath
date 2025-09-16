@@ -61,6 +61,18 @@ export class TopBarComponent {
 
   protected readonly selectedSearchType = signal('institution');
 
+  protected readonly selectedCategory = signal('');
+  protected readonly locationQuery = signal('');
+  protected readonly specializationQuery = signal('');
+
+  protected readonly isSearchExpanded = signal(false);
+
+  protected readonly categoryOptions = computed(() => [
+    { label: '-- Category --', value: '' },
+    { label: 'Doctor', value: 'doctor' },
+    { label: 'Institution', value: 'institution' },
+  ]);
+
   protected readonly roleOptions = computed<RoleOption[]>(() => [
     { label: 'Doctor', value: 'doctor' },
     { label: 'Nurse', value: 'nurse' },
@@ -72,6 +84,34 @@ export class TopBarComponent {
     showSearch: false,
     showNotifications: false,
   });
+
+  protected toggleSearchExpanded(): void {
+    this.isSearchExpanded.update((expanded) => !expanded);
+  }
+
+  protected search() {
+    const query = this.query().trim();
+    const category = this.selectedCategory();
+    const location = this.locationQuery().trim();
+    const specialization = this.specializationQuery().trim();
+
+    if (!category) {
+      return;
+    }
+
+    const searchParams = {
+      query,
+      category,
+      location,
+      specialization,
+    };
+
+    this.toggleSearchExpanded();
+
+    this.router.navigate(['/search'], {
+      queryParams: searchParams,
+    });
+  }
 
   protected readonly query = signal('');
 
@@ -176,27 +216,27 @@ export class TopBarComponent {
     }));
   }
 
-  protected search() {
-    const query = this.query().trim();
+  // protected search() {
+  //   const query = this.query().trim();
 
-    if (!query) {
-      return;
-    }
+  //   if (!query) {
+  //     return;
+  //   }
 
-    const route = ['/search', this.selectedSearchType(), query];
+  //   const route = ['/search', this.selectedSearchType(), query];
 
-    this.router
-      .navigate(route)
-      .then((success) => {
-        console.log('Navigation success:', success);
-        if (!success) {
-          console.error('Navigation failed - route might not exist');
-        }
-      })
-      .catch((error) => {
-        console.error('Navigation error:', error);
-      });
-  }
+  //   this.router
+  //     .navigate(route)
+  //     .then((success) => {
+  //       console.log('Navigation success:', success);
+  //       if (!success) {
+  //         console.error('Navigation failed - route might not exist');
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error('Navigation error:', error);
+  //     });
+  // }
 
   private getTypeLabel(): string {
     switch (this.selectedSearchType()) {

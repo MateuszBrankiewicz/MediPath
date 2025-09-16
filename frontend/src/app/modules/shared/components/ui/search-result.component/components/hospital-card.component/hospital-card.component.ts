@@ -2,7 +2,7 @@ import { Component, input, output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 
 export interface Hospital {
-  id: number;
+  id: string;
   name: string;
   address: string;
   specialisation: string[];
@@ -36,6 +36,9 @@ export class HospitalCardComponent {
   }
 
   protected getSpecialisationText(): string {
+    if (!this.hospital().specialisation) {
+      return '';
+    }
     return this.hospital().specialisation.join(', ');
   }
 }

@@ -1,10 +1,16 @@
 <app-breadcumb-component/>
 
-<app-hospital-card [hospital]="sampleHospital"> </app-hospital-card>
-<app-doctor-card
-  [doctor]="sampleDoctor"
-  (bookAppointment)="onBookAppointment($event)"
-  (showMoreInfo)="onShowMoreInfo($event)"
-  (addressChange)="onAddressChange($event)"
->
-</app-doctor-card>
+@if(category() === 'institution'){
+  @for(institution of hospitals(); track institution.id){
+    <app-hospital-card [hospital]="institution"></app-hospital-card>
+  }
+} @else {
+  @for(doctor of doctors(); track doctor.id){
+    <app-doctor-card
+      [doctor]="doctor"
+      (bookAppointment)="onBookAppointment($event)"
+      (showMoreInfo)="onShowMoreInfo($event)"
+      (addressChange)="onAddressChange($event)">
+    </app-doctor-card>
+  }
+}

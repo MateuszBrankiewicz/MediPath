@@ -4,8 +4,8 @@
     <tr>
       <th>Doctor</th>
       <th>Prescription pin</th>
-      <th>Mark as Used</th>
       <th>Date</th>
+      <th>Mark as Used</th>
       <th>Delete</th>
     </tr>
   </ng-template>
@@ -14,7 +14,7 @@
       <tr>
         <td>{{ prescription.doctorName }}</td>
         <td>{{ prescription.prescriptionPin }}</td>
-        <td>{{ prescription.date | date }}</td>1
+        <td>{{ prescription.date | date }}</td>
         @if(prescription.status === 'UNUSED'){
         <td><p-button
             severity="success"
@@ -30,8 +30,6 @@
             label="Delete"
             [rounded]="true"
           />
-
-
         </td>
       </tr>
     }

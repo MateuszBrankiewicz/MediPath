@@ -6,7 +6,7 @@ import { roleGuard } from './core/guards/role.guard';
 import { SearchResultComponent } from './modules/shared/components/ui/search-result.component/search-result.component';
 
 export const routes: Routes = [
-  { path: 'search/:type/:query', component: SearchResultComponent },
+  { path: 'search', component: SearchResultComponent },
 
   {
     path: 'auth',

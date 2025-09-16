@@ -104,7 +104,7 @@ export class NavigationService {
               {
                 label: 'Medical History',
                 icon: 'pi pi-user',
-                routerLink: '/patient/profile',
+                routerLink: '/patient/medical-history',
                 visible: true,
               },
               {

@@ -5,33 +5,77 @@
 
   <div class="search-section">
     <div class="search-container">
-      <p-input-group class="p-input-group">
+      <p-input-group class="p-input-group" (click)="toggleSearchExpanded()">
         <p-inputgroup-addon class="search-menu-addon">
-          <span class="search-menu-trigger" (click)="searchMenu.toggle($event)">
+          <span class="search-menu-trigger">
             <i class="pi pi-bars"></i>
           </span>
         </p-inputgroup-addon>
         <input
           type="text"
           pInputText
-          [placeholder]="getSearchPlaceholder()"
+          [placeholder]="'Szukaj'"
           styleClass="w-full"
           class="p-inputtext"
           [(ngModel)]="query"
+          [readonly]="true"
         />
         <p-inputgroup-addon>
-          <span (click)="search()">
+          <span>
             <i class="pi pi-search"></i>
           </span>
         </p-inputgroup-addon>
       </p-input-group>
 
-      <p-menu
-        #searchMenu
-        [model]="searchMenuItems"
-        [popup]="true"
-        class="search-menu"
-      ></p-menu>
+      @if (isSearchExpanded()) {
+        <div class="expanded-search-section">
+          <div class="expanded-search-container">
+            <div class="search-filters">
+              <p-select
+                [options]="categoryOptions()"
+                [(ngModel)]="selectedCategory"
+                placeholder="-- Category --"
+                class="category-select"
+                optionLabel="label"
+                optionValue="value"
+              />
+              <input
+                type="text"
+                pInputText
+                placeholder="Location (e.g. Lublin)"
+                class="location-input"
+                [(ngModel)]="locationQuery"
+              />
+            </div>
+
+            <div class="search-input-row">
+              <div class="main-search-container">
+                <i class="pi pi-search search-icon"></i>
+                <input
+                  type="text"
+                  pInputText
+                  [placeholder]="getSearchPlaceholder()"
+                  class="main-search-input"
+                  [(ngModel)]="query"
+                />
+                <input
+                  type="text"
+                  pInputText
+                  placeholder="Specialization"
+                  class="specialization-input"
+                  [(ngModel)]="specializationQuery"
+                />
+              </div>
+            </div>
+
+            <p-button
+              label="SEARCH"
+              class="search-button"
+              (onClick)="search()"
+            />
+          </div>
+        </div>
+      }
     </div>
   </div>
 

@@ -1,7 +1,17 @@
-import { Component, DestroyRef, effect, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { DataViewModule } from 'primeng/dataview';
-import { SearchService } from './services/search.service';
+import {
+  SearchQuery,
+  SearchResponse,
+  SearchService,
+} from './services/search.service';
 import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import {
@@ -11,6 +21,7 @@ import {
 import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
 import { Doctor, BookAppointment, AddressChange } from './search-result.model';
 import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-search-result.component',
@@ -24,122 +35,52 @@ import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.scss',
 })
-export class SearchResultComponent {
+export class SearchResultComponent implements OnInit {
   private searchService = inject(SearchService);
   private route = inject(ActivatedRoute);
 
+  protected readonly category = signal('');
+
+  protected readonly values = signal<SearchResponse | null>(null);
+
+  protected readonly hospitals = computed(() => {
+    const results = this.values();
+    if (this.category() === 'institution' && results?.result) {
+      return results.result as Hospital[];
+    }
+    return [];
+  });
+
+  protected readonly doctors = computed(() => {
+    const results = this.values();
+    if (this.category() === 'doctor' && results?.result) {
+      return results.result as Doctor[];
+    }
+    return [];
+  });
+
   private destroyRef = inject(DestroyRef);
 
-  sampleHospital: Hospital = {
-    id: 1,
-    name: 'Szpital kliniczny',
-    address: 'Jana Pawła II 25, 23-200 Lublin',
-    specialisation: ['Oncologist', 'Cardiologist'],
-    isPublic: true,
-    imageUrl: 'assets/footer-landing.png',
-  };
-  sampleDoctor: Doctor = {
-    id: 1,
-    name: 'Dr. Jadwiga Chymyl',
-    specialisation: 'Cardiologist',
-    rating: 5,
-    reviewsCount: 120,
-    photoUrl: 'assets/footer-landing.png',
-    addresses: [
-      'Jana Pawła II 4/32, Lublin',
-      'Szpital Kliniczny nr 1',
-      'Centrum Medyczne',
-    ],
-    currentAddressIndex: 0,
-    schedule: [
-      {
-        date: '2024-04-02',
-        dayName: 'Today',
-        dayNumber: '2 Apr',
-        slots: [
-          { time: '12:00AM', available: false },
-          { time: '12:20AM', available: true },
-          { time: '12:40AM', available: true },
-          { time: '1:00PM', available: true },
-          { time: '1:20PM', available: false },
-          { time: '1:40PM', available: true },
-        ],
-      },
-      {
-        date: '2024-04-03',
-        dayName: 'Tomorrow',
-        dayNumber: '3 Apr',
-        slots: [
-          { time: '12:00AM', available: true },
-          { time: '12:20AM', available: true },
-          { time: '12:40AM', available: false },
-          { time: '1:00PM', available: true },
-          { time: '1:20PM', available: true },
-          { time: '1:40PM', available: true },
-        ],
-      },
-      {
-        date: '2024-04-05',
-        dayName: 'Friday',
-        dayNumber: '4 Apr',
-        slots: [
-          { time: '12:00AM', available: true },
-          { time: '12:20AM', available: true },
-          { time: '12:40AM', available: true },
-          { time: '1:00PM', available: false },
-          { time: '1:20PM', available: true },
-          { time: '1:40PM', available: true },
-        ],
-      },
-      {
-        date: '2024-04-05',
-        dayName: 'Friday',
-        dayNumber: '4 Apr',
-        slots: [
-          { time: '12:00AM', available: true },
-          { time: '12:20AM', available: true },
-          { time: '12:40AM', available: true },
-          { time: '1:00PM', available: false },
-          { time: '1:20PM', available: true },
-          { time: '1:40PM', available: true },
-        ],
-      },
-    ],
-  };
-  protected readonly values = toSignal(
-    // this.route.paramMap.pipe(
-    //   map((params) => ({
-    //     query: params.get('query') ?? undefined,
-    //   })),
-    //   tap((searchQuery) => {
-    //     console.log('Route params:', searchQuery);
-    //     console.log('Available SearchType values:', Object.values(SearchType));
-    //     console.log('Type matches SearchType?');
-    //   }),
-    //   switchMap((searchQuery) => {
-    //     if (searchQuery.query) {
-    //       const mappedQuery = {
-    //         //byType: mappedType,
-    //         query: searchQuery.query,
-    //       };
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      const query = params['query'] || '';
+      const category = params['category'] || '';
+      const location = params['location'] || '';
+      const specialization = params['specialization'] || '';
+      this.category.set(category);
+      this.performSearch({ query, category, location, specialization });
+    });
+  }
 
-    //       console.log('Mapped search query:', mappedQuery);
-    //       console.log('Calling search service with:', mappedQuery);
-
-    //       return this.searchService.getSearchResult(mappedQuery).pipe(
-    //         tap((result) => console.log('Search result:', result)),
-    //         take(1),
-    //         takeUntilDestroyed(this.destroyRef),
-    //       );
-    //     }
-
-    //     console.log('No valid search parameters, returning empty array');
-    //     return of([]);
-    //   }),
-    // ),
-    this.searchService.getSearchResult({ query: 'Szpi' }),
-    { initialValue: [] },
-  );
+  protected performSearch(params: SearchQuery): void {
+    this.searchService
+      .search(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((results) => {
+        console.log('Search results:', results);
+        this.values.set(results);
+      });
+  }
 
   onEditHospital(hospital: Hospital): void {
     console.log('Edit hospital:', hospital);
@@ -159,11 +100,5 @@ export class SearchResultComponent {
 
   onAddressChange(event: AddressChange): void {
     console.log('Address changed:', event);
-  }
-
-  constructor() {
-    effect(() => {
-      console.log('Search results updated:', this.values());
-    });
   }
 }

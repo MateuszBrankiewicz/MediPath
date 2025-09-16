@@ -1,0 +1,39 @@
+<div class="medical-history-container">
+  <p-panel header="Medical History" class="history-panel">
+    <div class="history-list">
+      @for (record of medicalRecords(); track record.id) {
+        <div class="history-item">
+          <div class="history-content">
+            <span class="history-text">{{ record.date | date: 'dd-MM-yyyy' }} - {{ record.title }}</span>
+          </div>
+          <div class="history-actions">
+            <p-button
+              icon="pi pi-eye"
+              class="view-button"
+              [text]="true"
+              (onClick)="viewRecord(record)"
+              pTooltip="View details">
+            </p-button>
+            <p-button
+              icon="pi pi-trash"
+              class="delete-button"
+              [text]="true"
+              severity="danger"
+              (onClick)="deleteRecord(record.id)"
+              pTooltip="Delete record">
+            </p-button>
+          </div>
+        </div>
+      }
+    </div>
+
+
+  </p-panel>
+  <div class="add-entry-container">
+      <p-button
+        label="ADD NEW ENTRY"
+        class="add-entry-button"
+        (onClick)="addNewEntry()">
+      </p-button>
+    </div>
+</div>

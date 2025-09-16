@@ -33,7 +33,6 @@ p-table {
     &.options-cell {
       position: relative;
       overflow: visible !important;
-      // Zapobiegaj propagacji kliknięć z komórki tabeli
       pointer-events: none;
 
       p-button {
