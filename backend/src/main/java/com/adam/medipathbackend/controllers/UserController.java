@@ -3,6 +3,7 @@ package com.adam.medipathbackend.controllers;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.PasswordResetEntryRepository;
 import com.adam.medipathbackend.repository.UserRepository;
+import com.adam.medipathbackend.repository.VisitRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -33,6 +34,9 @@ public class UserController {
 
     @Autowired
     PasswordResetEntryRepository preRepository;
+
+    @Autowired
+    VisitRepository visitRepository;
 
     @Autowired
     private JavaMailSender sender;
@@ -159,6 +163,40 @@ public class UserController {
         }
         return new ResponseEntity<>(Map.of("message", "password reset mail has been sent, if the account exists"), HttpStatus.OK);
 
+    }
+
+    @GetMapping(value = {"/me/codes/{type}", "/me/codes/", "/me/codes"})
+    public ResponseEntity<Map<String, Object>> getMyReferrals(@PathVariable(required = false) String type,  HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(!(type == null || type.equals("referrals") || type.equals("prescriptions"))) {
+            return new ResponseEntity<>(Map.of("message", "invalid code type"), HttpStatus.BAD_REQUEST);
+        }
+        ArrayList<Map<String, Object>> codes = visitRepository.getActiveCodesForPatient(loggedUserID);
+        if(codes.isEmpty()) {
+            return new ResponseEntity<>(Map.of("codes", new ArrayList<String>()), HttpStatus.OK);
+        }
+        if(type == null) {
+            return new ResponseEntity<>(Map.of("codes", codes), HttpStatus.OK);
+        } else if(type.equals("prescriptions")) {
+            return new ResponseEntity<>(Map.of("codes", codes.stream().filter(code -> {
+                        if(!code.containsKey("codes") || !(code.get("codes") instanceof Map<?, ?> subDoc)) {
+                            return false;
+                        }
+                        return subDoc.containsKey("codeType") && subDoc.get("codeType").equals("PRESCRIPTION");
+                    }
+            )), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(Map.of("codes", codes.stream().filter(code -> {
+                        if(!code.containsKey("codes") || !(code.get("codes") instanceof Map<?, ?> subDoc)) {
+                            return false;
+                        }
+                        return subDoc.containsKey("codeType") && subDoc.get("codeType").equals("REFERRAL");
+                    }
+            )), HttpStatus.OK);
+        }
     }
 
     @PostMapping("/resetpassword")
