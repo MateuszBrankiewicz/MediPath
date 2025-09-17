@@ -48,9 +48,9 @@ class LoginActivity : ComponentActivity() {
                     startActivity(intent)
                     finish()
                 },
-                onLoginSuccess = {
+                onLoginSuccess = { sessionId ->
                     lifecycleScope.launch {
-                        sessionManager.saveSessionId("some_session_id")
+                        sessionManager.saveSessionId(sessionId)
                     }
                     Toast.makeText(this, "Login successful!", Toast.LENGTH_LONG).show()
                     val intent = Intent(this, HomeActivity::class.java)
@@ -69,14 +69,15 @@ class LoginActivity : ComponentActivity() {
 
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSignUpClick: () -> Unit = {}, onForgotClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {}) {
+fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSignUpClick: () -> Unit = {}, onForgotClick: () -> Unit = {}, onLoginSuccess: (String) -> Unit = {}) {
 
     val loginError by viewModel.loginError
     val loginSuccess by viewModel.loginSuccess
+    val sessionId by viewModel.sessionId
 
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess) {
-            onLoginSuccess()
+    LaunchedEffect(loginSuccess, sessionId) {
+        if (loginSuccess && sessionId.isNotEmpty()) {
+            onLoginSuccess(sessionId)
         }
     }
 

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -46,7 +45,8 @@ import kotlinx.coroutines.launch
 fun Navigation(
     content: @Composable (PaddingValues) -> Unit,
     onNotificationsClick: () -> Unit = {},
-    onLogoutClick: () -> Unit = {}
+    onLogoutClick: () -> Unit = {},
+    firstName: String
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -94,7 +94,7 @@ fun Navigation(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Hello, imię!", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontSize = 28.sp, modifier = Modifier.padding(horizontal = 10.dp)) },
+                    title = { Text("Hello, $firstName", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontSize = 28.sp, modifier = Modifier.padding(horizontal = 10.dp)) },
                     modifier = Modifier.padding(horizontal = 10.dp),
                     navigationIcon = {
                         IconButton(onClick = {

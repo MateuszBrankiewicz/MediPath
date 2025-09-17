@@ -38,7 +38,9 @@ import com.medipath.ui.components.InfoCard
 import com.medipath.ui.components.MenuCard
 import com.medipath.ui.components.Navigation
 import com.medipath.ui.components.SearchBar
+import com.medipath.ui.components.VisitItem
 import com.medipath.ui.theme.LocalCustomColors
+import com.medipath.viewmodels.HomeViewModel
 import kotlinx.coroutines.launch
 
 class HomeActivity : ComponentActivity() {
@@ -62,7 +64,7 @@ class HomeActivity : ComponentActivity() {
                                 finish()
                             }
                         }
-                    }
+                    }, sessionManager = sessionManager
                 )
             }
         }
@@ -70,7 +72,14 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen(onLogoutClick: () -> Unit = {}) {
+fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = remember { HomeViewModel() }, sessionManager: DataStoreSessionManager) {
+    LaunchedEffect(Unit) {
+        viewModel.fetchUserProfile(sessionManager)
+    }
+
+    val firstName by viewModel.firstName
+    val upcomingVisits by viewModel.upcomingVisits
+
     Navigation(
         content = { innerPadding ->
             val colors = LocalCustomColors.current
@@ -182,43 +191,26 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}) {
                             )
                         }
                         HorizontalDivider(thickness = 2.dp)
-                        LazyColumn( //lista wizyt
+                        LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(450.dp)
+                                .heightIn(max = 450.dp)
                         ) {
-                            items(20) { index ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 10.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ){
-                                    Text(
-                                        text = "Visit $index")
-                                    Button(
-                                        onClick = {},
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = colors.red800,
-                                            contentColor = MaterialTheme.colorScheme.background
-                                        )) {
-                                        Text("CANCEL VISIT")
-                                    }
-                                }
+                            items(upcomingVisits.size) { index ->
+                                VisitItem(visit = upcomingVisits[index])
                                 HorizontalDivider()
                             }
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                     }
-
                 }
             }
         },
         onNotificationsClick = {
             //powiadmoenia
         },
-        onLogoutClick = onLogoutClick
+        onLogoutClick = onLogoutClick,
+        firstName = firstName
     )
 }
 
@@ -227,5 +219,5 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}) {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    MediPathTheme { HomeScreen() }
+//    MediPathTheme { HomeScreen() }
 }
