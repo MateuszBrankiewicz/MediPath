@@ -5,11 +5,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -19,10 +25,15 @@ import com.medipath.data.models.Visit
 import com.medipath.ui.theme.LocalCustomColors
 
 @Composable
-fun VisitItem(visit: Visit) {
+fun VisitItem(
+    visit: Visit,
+    onCancelVisit: (String) -> Unit
+) {
     val colors = LocalCustomColors.current
     val startTime = visit.time.startTime
     val dateTime = "${String.format("%02d", startTime[2])}.${String.format("%02d", startTime[1])}.${startTime[0]} ${String.format("%02d", startTime[3])}:${String.format("%02d", startTime[4])}"
+
+    var showDialog by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -52,7 +63,7 @@ fun VisitItem(visit: Visit) {
             )
         }
         Button(
-            onClick = {},
+            onClick = { showDialog = true},
             colors = ButtonDefaults.buttonColors(
                 containerColor = colors.red800,
                 contentColor = MaterialTheme.colorScheme.background
@@ -60,5 +71,28 @@ fun VisitItem(visit: Visit) {
         ) {
             Text("CANCEL")
         }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Potwierdź anulowanie") },
+            text = { Text("Czy na pewno chcesz anulować wizytę u Dr. ${visit.doctor.doctorName} ${visit.doctor.doctorSurname}?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                        onCancelVisit(visit.id)
+                    }
+                ) {
+                    Text("TAK", color = colors.red800)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("NIE")
+                }
+            }
+        )
     }
 }

@@ -23,6 +23,12 @@ class HomeViewModel(
 
     private val _userId = mutableStateOf("")
 
+    private val _deleteSuccess = mutableStateOf(false)
+    val deleteSuccess: State<Boolean> = _deleteSuccess
+
+    private val _deleteError = mutableStateOf("")
+    val deleteError: State<String> = _deleteError
+
     fun fetchUserProfile(sessionManager: DataStoreSessionManager) {
         viewModelScope.launch {
             try {
@@ -67,5 +73,48 @@ class HomeViewModel(
         } catch (e: Exception) {
             Log.e("HomeViewModel", "Error fetching visits: $e")
         }
+    }
+
+    fun cancelVisit(visitId: String, sessionManager: DataStoreSessionManager) {
+        viewModelScope.launch {
+            try {
+                if (visitId.isEmpty()) {
+                    _deleteError.value = "Nieprawidłowy ID wizyty"
+                    return@launch
+                }
+
+                val token = sessionManager.getSessionId()
+                if (token.isNullOrEmpty()) {
+                    _deleteError.value = "Brak sesji użytkownika"
+                    return@launch
+                }
+
+                Log.d("HomeViewModel", "Cancelling visit with ID: $visitId")
+                val response = apiService.cancelVisit(visitId, "SESSION=$token")
+
+                if (response.isSuccessful) {
+                    _deleteSuccess.value = true
+                    Log.d("HomeViewModel", "Visit cancelled successfully")
+                    fetchUpcomingVisits(token)
+                } else {
+                    val errorMessage = when (response.code()) {
+                        400 -> "Wizyta została już zakończona lub anulowana"
+                        401 -> "Sesja wygasła, zaloguj się ponownie"
+                        403 -> "Brak uprawnień do anulowania tej wizyty"
+                        else -> "Błąd podczas anulowania wizyty (${response.code()})"
+                    }
+                    _deleteError.value = errorMessage
+                    Log.e("HomeViewModel", "Cancel visit error: ${response.code()} - ${response.message()}")
+                }
+            } catch (e: Exception) {
+                _deleteError.value = "Błąd sieciowy: ${e.message}"
+                Log.e("HomeViewModel", "Error cancelling visit", e)
+            }
+        }
+    }
+
+    fun clearDeleteMessages() {
+        _deleteSuccess.value = false
+        _deleteError.value = ""
     }
 }

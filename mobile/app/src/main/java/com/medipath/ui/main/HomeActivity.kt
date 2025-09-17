@@ -42,6 +42,7 @@ import com.medipath.ui.components.VisitItem
 import com.medipath.ui.theme.LocalCustomColors
 import com.medipath.viewmodels.HomeViewModel
 import kotlinx.coroutines.launch
+import kotlin.text.get
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?){
@@ -79,6 +80,8 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
 
     val firstName by viewModel.firstName
     val upcomingVisits by viewModel.upcomingVisits
+    val deleteSuccess by viewModel.deleteSuccess
+    val deleteError by viewModel.deleteError
 
     Navigation(
         content = { innerPadding ->
@@ -163,6 +166,7 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
                         }
 
                     }
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -190,14 +194,21 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
                                 modifier = Modifier.size(30.dp)
                             )
                         }
+
                         HorizontalDivider(thickness = 2.dp)
+
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(max = 450.dp)
                         ) {
                             items(upcomingVisits.size) { index ->
-                                VisitItem(visit = upcomingVisits[index])
+                                VisitItem(
+                                    visit = upcomingVisits[index],
+                                    onCancelVisit = { visitId ->
+                                        viewModel.cancelVisit(visitId, sessionManager)
+                                    }
+                                )
                                 HorizontalDivider()
                             }
                         }
@@ -212,6 +223,32 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
         onLogoutClick = onLogoutClick,
         firstName = firstName
     )
+
+    if (deleteSuccess) {
+        AlertDialog(
+            onDismissRequest = { viewModel.clearDeleteMessages() },
+            title = { Text("Sukces") },
+            text = { Text("Wizyta została pomyślnie anulowana") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearDeleteMessages() }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (deleteError.isNotEmpty()) {
+        AlertDialog(
+            onDismissRequest = { viewModel.clearDeleteMessages() },
+            title = { Text("Błąd") },
+            text = { Text(deleteError) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearDeleteMessages() }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 }
 
 
