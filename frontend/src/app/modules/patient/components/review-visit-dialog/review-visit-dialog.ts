@@ -3,12 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
-
-interface StarRatingOption {
-  label: string;
-  value: number;
-  stars: string;
-}
+import { StarRatingOption } from '../../models/review-page.model';
 
 @Component({
   selector: 'app-review-visit-dialog',

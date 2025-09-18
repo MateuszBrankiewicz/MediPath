@@ -3,14 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
-
-interface RescheduleData {
-  doctorName: string;
-  institution: string;
-  selectedDate?: Date;
-  selectedTime?: string;
-  patientRemarks?: string;
-}
+import { RescheduleData } from '../../models/visit-page.model';
 
 @Component({
   selector: 'app-schedule-visit-dialog',

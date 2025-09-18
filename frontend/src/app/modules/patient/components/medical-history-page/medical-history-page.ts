@@ -4,12 +4,7 @@ import { DataViewModule } from 'primeng/dataview';
 import { ButtonModule } from 'primeng/button';
 import { PanelModule } from 'primeng/panel';
 import { TooltipModule } from 'primeng/tooltip';
-
-interface MedicalRecord {
-  id: number;
-  title: string;
-  date: Date;
-}
+import { MedicalRecord } from '../../models/medical-history.model';
 
 @Component({
   selector: 'app-medical-history-page',

@@ -5,14 +5,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { PanelModule } from 'primeng/panel';
 import { TooltipModule } from 'primeng/tooltip';
 import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder-dialog';
-
-interface Reminder {
-  id: string;
-  date: Date;
-  hour: string;
-  title: string;
-  description: string;
-}
+import { Reminder } from '../../models/reminder-page.model';
 
 @Component({
   selector: 'app-reminder-page',

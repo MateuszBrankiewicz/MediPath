@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
-import { Comment } from '../doctor-page/doctor.model';
 import { DatePipe } from '@angular/common';
+import { Comment } from '../..//models/doctor.model';
 
 @Component({
   selector: 'app-patient-comment-component',

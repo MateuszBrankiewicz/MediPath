@@ -2,21 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
-
-interface Visit {
-  id: number;
-  doctorName: string;
-  doctorPhoto?: string;
-  specialisation: string;
-  institution: string;
-  institutionPhoto?: string;
-  address: string;
-  date: Date;
-  status: string;
-  notes?: string;
-  prescriptionPin?: string;
-  referralPin?: string;
-}
+import { Visit } from '../../models/visit-page.model';
 
 @Component({
   selector: 'app-visit-details-dialog',

@@ -1,7 +1,7 @@
 import { CardModule } from 'primeng/card';
 import { Component, inject, signal } from '@angular/core';
 import { TableModule } from 'primeng/table';
-import { VisitPageModel, VisitStatus } from './visit-page.model';
+import { VisitPageModel, VisitStatus } from '../../models/visit-page.model';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
@@ -82,6 +82,7 @@ export class VisitPage {
       }
     });
   }
+
   protected openRescheduleDialog(id: number): void {
     this.ref = this.dialogService.open(ScheduleVisitDialog, {
       data: { visitId: id },

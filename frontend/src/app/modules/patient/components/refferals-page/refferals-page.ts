@@ -4,19 +4,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ToastService } from '../../../../core/services/toast/toast.service';
-
-export enum UsedState {
-  USED = 'USED',
-  UNUSED = 'UNUSED',
-}
-
-export interface Refferal {
-  id: number;
-  doctorName: string;
-  prescriptionPin: number;
-  status: UsedState;
-  date: Date;
-}
+import { Refferal, UsedState } from '../../models/refferal-page.model';
 
 @Component({
   selector: 'app-refferals-page',

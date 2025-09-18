@@ -1,4 +1,4 @@
-export interface DoctorPage {
+export interface DoctorPageModel {
   name: string;
   surname: string;
   photoUrl: string;

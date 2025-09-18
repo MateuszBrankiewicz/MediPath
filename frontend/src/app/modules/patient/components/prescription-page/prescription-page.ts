@@ -1,10 +1,10 @@
 import { ToastService } from './../../../../core/services/toast/toast.service';
 import { Component, inject, signal } from '@angular/core';
-import { Refferal, UsedState } from '../refferals-page/refferals-page';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DatePipe, CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
+import { Refferal, UsedState } from '../../models/refferal-page.model';
 
 @Component({
   selector: 'app-prescription-page',

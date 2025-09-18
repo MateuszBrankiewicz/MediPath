@@ -5,6 +5,7 @@ import {
   HospitalCardComponent,
 } from '../../../shared/components/ui/search-result.component/components/hospital-card.component/hospital-card.component';
 import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
+import { Comment } from '../../models/doctor.model';
 
 @Component({
   selector: 'app-institution-page',
@@ -22,7 +23,7 @@ export class InstitutionPage {
     imageUrl: 'assets/footer-landing.png',
   };
 
-  comments = [
+  comments: Comment[] = [
     {
       id: 1,
       userName: 'Alice Smith',
@@ -56,6 +57,7 @@ export class InstitutionPage {
       numberOfStars: 4,
     },
   ];
+
   protected readonly exampleDoctor = signal({
     name: 'John',
     surname: 'Doe',
