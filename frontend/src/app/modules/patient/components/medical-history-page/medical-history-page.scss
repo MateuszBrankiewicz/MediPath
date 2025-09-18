@@ -1,6 +1,7 @@
 .medical-history-container {
-  max-width: 800px;
+  min-width: 800px;
   margin: 0 auto;
+  max-width: 1400px;
   padding: 20px;
 
   .history-panel {
@@ -8,10 +9,7 @@
     border-radius: 8px;
 
     ::ng-deep .p-panel-header {
-      background-color: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
-      font-weight: 600;
-      font-size: 1.1rem;
+      display: none;
     }
 
     ::ng-deep .p-panel-content {
@@ -21,6 +19,7 @@
   }
 
   .history-list {
+    min-height: 700px;
     .history-item {
       display: flex;
       justify-content: space-between;
@@ -130,6 +129,7 @@
     padding: 10px;
 
     .history-list {
+      min-width: none;
       .history-item {
         flex-direction: column;
         align-items: flex-start;

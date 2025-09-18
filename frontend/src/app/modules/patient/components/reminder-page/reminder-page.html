@@ -1,0 +1,82 @@
+<div class="medical-reminder-container">
+  <!-- Statistics Section -->
+  <div class="stats-section">
+    <div class="stats-cards">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="pi pi-bell"></i>
+        </div>
+        <div class="stat-content">
+          <h4>{{ reminders().length }}</h4>
+          <p>Active Reminders</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="pi pi-calendar"></i>
+        </div>
+        <div class="stat-content">
+          <h4>{{ getTodayReminders() }}</h4>
+          <p>Today's Doses</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="pi pi-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h4>100%</h4>
+          <p>Compliance Rate</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Reminders</h3>
+
+  <div class="reminder-panel">
+    <div class="reminder-list">
+      @for (record of reminders(); track record.id; let i = $index) {
+        <div class="reminder-item">
+          <div class="reminder-content">
+            <span class="reminder-text">{{ record.date | date: 'dd.MM.yyyy' }} {{ record.hour }} - {{ record.title }} - {{ record.description }}</span>
+          </div>
+          <div class="reminder-actions">
+            <div class="menu-container">
+              <p-button
+                icon="pi pi-ellipsis-v"
+                class="menu-button"
+                [text]="true"
+                size="small"
+                (onClick)="toggleMenu($event, record)"
+                pTooltip="More options">
+              </p-button>
+              
+              @if (isMenuOpen(record.id)) {
+                <div class="dropdown-menu">
+                  <div class="menu-item" (click)="editReminder(record); openMenuId.set(null)">
+                    <i class="pi pi-pencil"></i>
+                    <span>Edit</span>
+                  </div>
+                  <div class="menu-item delete-item" (click)="deleteReminder(record.id); openMenuId.set(null)">
+                    <i class="pi pi-trash"></i>
+                    <span>Delete</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="add-entry-container">
+    <p-button
+      label="ADD REMINDER"
+      icon="pi pi-plus"
+      class="add-entry-button"
+      (onClick)="addNewEntry()">
+    </p-button>
+  </div>
+</div>

@@ -1,16 +1,20 @@
-import { Component, signal } from '@angular/core';
+import { ToastService } from './../../../../core/services/toast/toast.service';
+import { Component, inject, signal } from '@angular/core';
 import { Refferal, UsedState } from '../refferals-page/refferals-page';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { DatePipe } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
+import { CardModule } from 'primeng/card';
 
 @Component({
   selector: 'app-prescription-page',
-  imports: [ButtonModule, TableModule, DatePipe],
+  imports: [ButtonModule, TableModule, DatePipe, CardModule, CommonModule],
   templateUrl: './prescription-page.html',
   styleUrl: './prescription-page.scss',
 })
 export class PrescriptionPage {
+  private toastService = inject(ToastService);
+
   protected prescriptions = signal<Refferal[]>([
     {
       id: 1,
@@ -27,4 +31,21 @@ export class PrescriptionPage {
       date: new Date('2023-09-15'),
     },
   ]);
+
+  protected copyToClipboard(pin: number): void {
+    navigator.clipboard
+      .writeText(pin.toString())
+      .then(() => {
+        this.toastService.showSuccess('PIN copied to clipboard');
+      })
+      .catch((err) => {
+        console.error('Failed to copy PIN:', err);
+      });
+  }
+
+  protected getValidityDate(prescriptionDate: Date): Date {
+    const validityDate = new Date(prescriptionDate);
+    validityDate.setDate(validityDate.getDate() + 30);
+    return validityDate;
+  }
 }

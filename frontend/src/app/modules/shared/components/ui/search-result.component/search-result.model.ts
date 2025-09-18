@@ -12,15 +12,20 @@ export interface DaySchedule {
 }
 
 export interface Doctor {
-  id: number;
+  id: string;
   name: string;
   specialisation: string;
   rating: number;
   reviewsCount: number;
   photoUrl: string;
-  addresses: string[];
+  addresses: AddressWithInstitution[];
   currentAddressIndex: number;
   schedule: DaySchedule[];
+}
+
+export interface AddressWithInstitution {
+  address: string;
+  institution: string;
 }
 
 export interface BookAppointment {

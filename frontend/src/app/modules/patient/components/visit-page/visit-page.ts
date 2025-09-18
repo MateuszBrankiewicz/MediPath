@@ -1,3 +1,4 @@
+import { CardModule } from 'primeng/card';
 import { Component, inject, signal } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { VisitPageModel, VisitStatus } from './visit-page.model';
@@ -8,12 +9,18 @@ import { PopoverModule } from 'primeng/popover';
 import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
-import { header } from '@primeuix/themes/aura/accordion';
 import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
 
 @Component({
   selector: 'app-visit-page',
-  imports: [TableModule, CommonModule, MenuModule, ButtonModule, PopoverModule],
+  imports: [
+    TableModule,
+    CommonModule,
+    MenuModule,
+    ButtonModule,
+    PopoverModule,
+    CardModule,
+  ],
   providers: [DialogService],
   templateUrl: './visit-page.html',
   styleUrl: './visit-page.scss',

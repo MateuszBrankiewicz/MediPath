@@ -40,7 +40,8 @@
       </div>
 
       <div class="current-address">
-        {{ doctor().addresses[selectedAddressIndex()] }}
+        {{ doctor().addresses[selectedAddressIndex()].address | addressFormat}}
+        <p>{{ doctor().addresses[selectedAddressIndex()].institution }}</p>
       </div>
     </div>
   </div>
