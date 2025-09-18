@@ -107,7 +107,6 @@ public class UserController {
         if(id == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-
         Optional<User> opt = userRepository.findById(id);
         if(opt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

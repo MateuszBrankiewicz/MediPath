@@ -4,7 +4,7 @@ import { MenuItem } from 'primeng/api';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { CardModule } from 'primeng/card';
 import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
-
+import { DoctorPageModel } from '../../models/doctor.model';
 @Component({
   selector: 'app-doctor-page',
   imports: [CardModule, BreadcrumbModule, PatientCommentComponent],
@@ -32,7 +32,7 @@ export class DoctorPage {
     ];
   });
 
-  protected readonly exampleDoctor = signal({
+  protected readonly exampleDoctor = signal<DoctorPageModel>({
     name: 'John',
     surname: 'Doe',
     photoUrl: 'assets/footer-landing.png',

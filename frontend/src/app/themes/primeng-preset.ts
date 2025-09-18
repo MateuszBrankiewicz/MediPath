@@ -1,6 +1,7 @@
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { menuComponent } from './components/menu';
+import { dialogDesign } from './components/dialog';
 
 export const MyPreset = definePreset(Aura, {
   primitive: {
@@ -115,5 +116,6 @@ export const MyPreset = definePreset(Aura, {
   },
   components: {
     menu: menuComponent,
+    dialog: dialogDesign,
   },
 });

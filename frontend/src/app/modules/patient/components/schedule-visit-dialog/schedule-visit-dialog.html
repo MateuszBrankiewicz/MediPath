@@ -1,0 +1,48 @@
+<div class="reschedule-dialog">
+  <div class="dialog-content">
+    <div class="left-section">
+      <app-calendar-schedule
+        (dateTimeSelected)="onDateTimeSelected($event)">
+      </app-calendar-schedule>
+    </div>
+
+    <div class="right-section">
+      <div class="doctor-info">
+        <h3>Doctor:</h3>
+        <p class="doctor-name">{{ rescheduleData().doctorName }}</p>
+
+        <h3>Institution:</h3>
+        <p class="institution-name">{{ rescheduleData().institution }}</p>
+      </div>
+
+      <div class="patient-remarks">
+        <h3>Patient's remarks:</h3>
+        <textarea
+          class="remarks-textarea"
+          placeholder="Enter any additional notes you would like to share with your doctor before your visit."
+          [value]="rescheduleData().patientRemarks"
+          rows="6">
+        </textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-footer">
+    <p-button
+      label="CONFIRM"
+      styleClass="confirm-btn"
+       [rounded]="true"
+      [raised]="true"
+      [disabled]="!isFormValid()"
+      (onClick)="confirmReschedule()">
+    </p-button>
+    <p-button
+      label="CANCEL"
+      styleClass="cancel-btn"
+      severity="danger"
+       [rounded]="true"
+      [raised]="true"
+      (onClick)="cancelReschedule()">
+    </p-button>
+  </div>
+</div>

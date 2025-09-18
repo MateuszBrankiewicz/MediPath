@@ -1,8 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { DashboardConfig } from '../../../shared/components/layout/dashboard-layout-component/dashboard-layout-component';
+import { DashboardService } from './service/dashboard-service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-patient-dashboard-component',
@@ -10,10 +12,11 @@ import { DashboardConfig } from '../../../shared/components/layout/dashboard-lay
   templateUrl: './patient-dashboard-component.html',
   styleUrl: './patient-dashboard-component.scss',
 })
-export class PatientDashboardComponent {
+export class PatientDashboardComponent implements OnInit {
   readonly searchQuery = signal('');
   readonly notificationCount = signal(3);
-
+  private dashboardService = inject(DashboardService);
+  private destroyRef = inject(DestroyRef);
   readonly dashboardConfig: DashboardConfig = {
     title: 'Dashboard',
     showSearch: true,
@@ -32,4 +35,13 @@ export class PatientDashboardComponent {
     { id: 2, doctorName: 'Lech wales', pin: '1234' },
     { id: 3, doctorName: 'Lech wales', pin: '1234' },
   ]);
+
+  ngOnInit(): void {
+    this.dashboardService
+      .getPrescriptions()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((prescriptions) => {
+        console.log(prescriptions);
+      });
+  }
 }

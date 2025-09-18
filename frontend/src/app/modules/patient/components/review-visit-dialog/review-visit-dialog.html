@@ -1,0 +1,60 @@
+<div class="review-container">
+    <h3>Leave a Review</h3>
+    
+    <div class="content-row">
+        <div class="left-section">
+            <div class="form-group">
+                <label for="comments">Comments about your visit:</label>
+                <textarea 
+                    id="comments"
+                    [(ngModel)]="comments"
+                    placeholder="Leave your comments about the visit..." 
+                    rows="8"
+                    class="comments-textarea">
+                </textarea>
+            </div>
+        </div>
+        
+        <div class="right-section">
+            <div class="form-group">
+                <label for="doctorRating">Rate the doctor:</label>
+                <p-select 
+                    id="doctorRating"
+                    [(ngModel)]="doctorRating"
+                    [options]="starRatingOptions" 
+                    placeholder="Select rating (1-5 stars)" 
+                    optionLabel="stars" 
+                    optionValue="value"
+                    class="star-select">
+                </p-select>
+            </div>
+            
+            <div class="form-group">
+                <label for="institutionRating">Rate the institution:</label>
+                <p-select 
+                    id="institutionRating"
+                    [(ngModel)]="institutionRating"
+                    [options]="starRatingOptions" 
+                    placeholder="Select rating (1-5 stars)" 
+                    optionLabel="stars" 
+                    optionValue="value"
+                    class="star-select">
+                </p-select>
+            </div>
+        </div>
+    </div>
+
+    <div class="dialog-actions">
+        <p-button 
+            label="Cancel" 
+            severity="secondary" 
+            (onClick)="onCancel()"
+            class="cancel-btn">
+        </p-button>
+        <p-button 
+            label="Submit Review" 
+            (onClick)="onSubmit()"
+            class="submit-btn">
+        </p-button>
+    </div>
+</div>

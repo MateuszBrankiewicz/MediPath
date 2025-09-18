@@ -1,1 +1,60 @@
-<p>refferals-page works!</p>
+<h2>Referrals</h2>
+<div class="referrals-list">
+  @for (referral of referrals(); track referral.id) {
+    <p-card class="referral-card">
+      <div class="referral-content">
+        <div class="referral-icon">
+          <i class="pi pi-file-edit"></i>
+        </div>
+        <div class="referral-info">
+          <h3 class="referral-title">Referral</h3>
+          <div class="referral-meta">
+            <div class="meta-item">
+              <i class="pi pi-key"></i>
+              <span>PIN: {{ referral.prescriptionPin }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-user"></i>
+              <span>{{ referral.doctorName }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-calendar"></i>
+              <span>{{ referral.date | date:'dd.MM.yyyy HH:mm' }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-clock"></i>
+              <span>Valid until: {{ getValidityDate(referral.date) | date:'dd.MM.yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="referral-actions">
+          <p-button 
+            icon="pi pi-copy" 
+            [text]="true" 
+            size="small" 
+            (click)="copyToClipboard(referral.prescriptionPin)"
+            title="Copy PIN">
+          </p-button>
+          @if(referral.status === 'UNUSED'){
+            <p-button
+              severity="success"
+              icon="pi pi-check"
+              [rounded]="true"
+              label="Mark as Used"
+              size="small" />
+          }@else {
+            <span class="status-chip used">USED</span>
+          }
+          <p-button
+            severity="danger"
+            icon="pi pi-trash"
+            [rounded]="true"
+            label="Delete"
+            size="small" />
+        </div>
+      </div>
+    </p-card>
+  }
+</div>
+
+
