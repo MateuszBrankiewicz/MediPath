@@ -29,6 +29,12 @@ class HomeViewModel(
     private val _deleteError = mutableStateOf("")
     val deleteError: State<String> = _deleteError
 
+    private val _prescriptionCode = mutableStateOf("")
+    val prescriptionCode: State<String> = _prescriptionCode
+
+    private val _referralCode = mutableStateOf("")
+    val referralCode: State<String> = _referralCode
+
     fun fetchUserProfile(sessionManager: DataStoreSessionManager) {
         viewModelScope.launch {
             try {
@@ -43,6 +49,7 @@ class HomeViewModel(
                 _userId.value = userResponse.user.id
                 Log.d("HomeViewModel", "Fetched user profile: ${userResponse.user.name}, ID: ${userResponse.user.id}")
                 fetchUpcomingVisits(token)
+                fetchActiveCodes(token)
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Error: $e")
             }
@@ -73,6 +80,40 @@ class HomeViewModel(
         } catch (e: Exception) {
             Log.e("HomeViewModel", "Error fetching visits: $e")
         }
+    }
+
+    private suspend fun fetchActiveCodes(token: String) {
+        try {
+            if (_userId.value.isEmpty()) {
+                Log.e("HomeViewModel", "UserId is empty!")
+                return
+            }
+
+            val userId = _userId.value
+
+            val codesResponse = apiService.getActiveCodes(userId)
+
+            if (codesResponse.isSuccessful) {
+                val codes = codesResponse.body()?.codes ?: emptyList()
+                Log.d("HomeViewModel", "Received ${codes.size} codes")
+
+                val prescriptions = codes.filter { it.codes.codeType == "PRESCRIPTION" }
+                val referrals = codes.filter { it.codes.codeType == "REFERRAL" }
+
+                _prescriptionCode.value = prescriptions.lastOrNull()?.codes?.code ?: ""
+                _referralCode.value = referrals.lastOrNull()?.codes?.code ?: ""
+
+                Log.d("HomeViewModel", "Final codes: Prescription=${_prescriptionCode.value}, Referral=${_referralCode.value}")
+            } else {
+                Log.e("HomeViewModel", "API error: ${codesResponse.code()} - ${codesResponse.message()}")
+            }
+        } catch (e: Exception) {
+            Log.e("HomeViewModel", "Error fetching codes: $e")
+        }
+    }
+
+    fun getCurrentUserId(): String {
+        return _userId.value ?: ""
     }
 
     fun cancelVisit(visitId: String, sessionManager: DataStoreSessionManager) {

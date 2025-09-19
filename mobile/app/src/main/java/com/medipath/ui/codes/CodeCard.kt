@@ -1,0 +1,67 @@
+package com.medipath.ui.codes
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.medipath.data.models.CodeData
+
+@Composable
+fun CodeCard(
+    codeData: CodeData,
+    onCopyClick: (String) -> Unit,
+    isCopied: Boolean = false
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = if (codeData.codeType == "PRESCRIPTION") Icons.Default.Receipt else Icons.Default.MedicalServices,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = codeData.code,
+                        fontSize = 20.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            IconButton(
+                onClick = { onCopyClick(codeData.code) }
+            ) {
+                Icon(
+                    Icons.Default.ContentCopy,
+                    contentDescription = "Copy Code",
+                    tint = if (isCopied) Color.Green else MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}

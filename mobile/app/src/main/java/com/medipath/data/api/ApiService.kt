@@ -3,7 +3,6 @@ package com.medipath.data.api
 import com.medipath.data.models.City
 import com.medipath.data.models.LoginRequest
 import com.medipath.data.models.RegisterRequest
-import com.medipath.data.models.User
 import com.medipath.data.models.UserProfileResponse
 import com.medipath.data.models.VisitsResponse
 import retrofit2.Response
@@ -40,6 +39,12 @@ interface ApiService {
     @GET("/api/visits/getupcoming/{userid}")
     suspend fun getUpcomingVisits(@Path("userid") userId: String, @Header("Cookie") cookie: String): VisitsResponse
 
-    @DELETE("/api/visits/{id}")
-    suspend fun cancelVisit(@Path("id") visitId: String, @Header("Cookie") cookie: String): Response<Unit>
+    @DELETE("/api/visits/{visitid}")
+    suspend fun cancelVisit(@Path("visitid") visitId: String, @Header("Cookie") cookie: String): Response<Unit>
+
+    @GET("/api/search/{query}")
+    suspend fun search(@Path("query") query: String, @Query("type") type: String, @Query("city") city: String? = null, @Query("specialisations") specialisations: String? = null): Response<SearchResponse>
+
+    @GET("api/visits/getactivecodes/{userid}")
+    suspend fun getActiveCodes(@Path("userid") userId: String): Response<CodesResponse>
 }

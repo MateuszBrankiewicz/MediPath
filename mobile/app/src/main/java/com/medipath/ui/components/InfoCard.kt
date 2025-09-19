@@ -17,8 +17,8 @@ import com.medipath.ui.theme.LocalCustomColors
 @Composable
 fun InfoCard(
     title: String,
-    label1: String,
-    label2: String,
+    label: String,
+    code: String = "",
     onClick: () -> Unit
 ) {
     Column(
@@ -28,7 +28,7 @@ fun InfoCard(
                 LocalCustomColors.current.blue900,
                 shape = MaterialTheme.shapes.large
             )
-            .padding(horizontal = 25.dp, vertical = 30.dp)
+            .padding(horizontal = 25.dp, vertical = 20.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -63,8 +63,8 @@ fun InfoCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(label1, color = MaterialTheme.colorScheme.background, fontSize = 16.sp)
-            Text(label2, color = MaterialTheme.colorScheme.background, fontSize = 16.sp)
+            Text(label, color = MaterialTheme.colorScheme.background, fontSize = 16.sp)
+            Text(code, color = MaterialTheme.colorScheme.background, fontSize = 16.sp)
         }
     }
 }

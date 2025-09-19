@@ -35,6 +35,13 @@
             android:exported="false" />
         <activity android:name=".ui.main.HomeActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.codes.CodesActivity"
+            android:exported="false" />
+        <activity android:name=".ui.search.SearchResultsActivity"
+            android:exported="false" />
+        <activity android:name=".ui.booking.AppointmentBookingActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

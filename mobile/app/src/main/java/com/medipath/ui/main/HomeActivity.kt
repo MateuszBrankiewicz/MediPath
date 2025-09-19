@@ -29,11 +29,13 @@ import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.MedicalInformation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.medipath.data.api.DataStoreSessionManager
 import com.medipath.data.api.RetrofitInstance
 import com.medipath.ui.auth.LoginActivity
+import com.medipath.ui.codes.CodesActivity
 import com.medipath.ui.components.InfoCard
 import com.medipath.ui.components.MenuCard
 import com.medipath.ui.components.Navigation
@@ -42,7 +44,6 @@ import com.medipath.ui.components.VisitItem
 import com.medipath.ui.theme.LocalCustomColors
 import com.medipath.viewmodels.HomeViewModel
 import kotlinx.coroutines.launch
-import kotlin.text.get
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?){
@@ -65,7 +66,8 @@ class HomeActivity : ComponentActivity() {
                                 finish()
                             }
                         }
-                    }, sessionManager = sessionManager
+                    },
+                    sessionManager = sessionManager
                 )
             }
         }
@@ -73,7 +75,13 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = remember { HomeViewModel() }, sessionManager: DataStoreSessionManager) {
+fun HomeScreen(
+    onLogoutClick: () -> Unit = {},
+    viewModel: HomeViewModel = remember { HomeViewModel() },
+    sessionManager: DataStoreSessionManager
+) {
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         viewModel.fetchUserProfile(sessionManager)
     }
@@ -82,6 +90,8 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
     val upcomingVisits by viewModel.upcomingVisits
     val deleteSuccess by viewModel.deleteSuccess
     val deleteError by viewModel.deleteError
+    val prescriptionCode by viewModel.prescriptionCode
+    val referralCode by viewModel.referralCode
 
     Navigation(
         content = { innerPadding ->
@@ -95,13 +105,11 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Column(Modifier.fillMaxSize().padding(top = 13.dp)) {
-                    SearchBar { type, query ->
-                        println("Kliknięto szukaj: type=$type, query=$query")
-                    }
+                Column(Modifier.fillMaxSize()) {
+                    SearchBar()
                     Column(
                         modifier = Modifier
-                            .padding(vertical = 15.dp, horizontal = 30.dp)
+                            .padding(vertical = 20.dp, horizontal = 30.dp)
                     ) {
                         Text(
                             text = "Dashboard",
@@ -112,16 +120,26 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
                         )
                         InfoCard(
                             title = "Prescriptions",
-                            label1 = "Lekarz",
-                            label2 = "Numer recepty",
-                            onClick = { println("Prescriptions clicked") }
+                            label = "Code:",
+                            code = if (prescriptionCode.isNotEmpty()) prescriptionCode else "No active prescriptions",
+                            onClick = {
+                                val intent = Intent(context, CodesActivity::class.java)
+                                intent.putExtra("code_type", "PRESCRIPTION")
+                                intent.putExtra("user_id", viewModel.getCurrentUserId())
+                                context.startActivity(intent)
+                            }
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         InfoCard(
                             title = "Referrals",
-                            label1 = "Lekarz",
-                            label2 = "Numer skierowania",
-                            onClick = { println("Referrals clicked") }
+                            label = "Code:",
+                            code = if(referralCode.isNotEmpty()) referralCode else "No active referrals",
+                            onClick = {
+                                val intent = Intent(context, CodesActivity::class.java)
+                                intent.putExtra("code_type", "REFERRAL")
+                                intent.putExtra("user_id", viewModel.getCurrentUserId())
+                                context.startActivity(intent)
+                            }
                         )
                         Row(
                             modifier = Modifier
@@ -160,11 +178,7 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
                                 backgroundColor = colors.green800,
                                 iconColor = colors.green300
                             )
-
-
-
                         }
-
                     }
 
                     Column(
@@ -174,7 +188,7 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
                                 color = MaterialTheme.colorScheme.background,
                                 shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
                             )
-                            .padding(horizontal = 20.dp, vertical = 10.dp)
+                            .padding(horizontal = 20.dp, vertical = 5.dp)
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -202,15 +216,26 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
                                 .fillMaxWidth()
                                 .heightIn(max = 450.dp)
                         ) {
-                            items(upcomingVisits.size) { index ->
-                                VisitItem(
-                                    visit = upcomingVisits[index],
-                                    onCancelVisit = { visitId ->
-                                        viewModel.cancelVisit(visitId, sessionManager)
-                                    }
-                                )
-                                HorizontalDivider()
-                            }
+                            if(upcomingVisits.isEmpty())
+                                item {
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                    Text(
+                                        "No upcoming visits",
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                }
+                            else
+                                items(upcomingVisits.size) { index ->
+                                    VisitItem(
+                                        visit = upcomingVisits[index],
+                                        onCancelVisit = { visitId ->
+                                            viewModel.cancelVisit(visitId, sessionManager)
+                                        }
+                                    )
+                                    HorizontalDivider()
+                                }
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                     }
@@ -218,7 +243,7 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
             }
         },
         onNotificationsClick = {
-            //powiadmoenia
+            //powiadomienia
         },
         onLogoutClick = onLogoutClick,
         firstName = firstName
@@ -250,8 +275,6 @@ fun HomeScreen(onLogoutClick: () -> Unit = {}, viewModel: HomeViewModel = rememb
         )
     }
 }
-
-
 
 @Preview(showBackground = true)
 @Composable
