@@ -551,3 +551,94 @@ fields:
 
 Reason: successfully retrieved visits
 
+
+
+/comments/add
+Method: POST
+
+Request body:
+    visitID: Object id of the visit which a given comment is for
+    institutionRating: a rating for the institution. accepted values are between 1 and 5 in increments of 0.5
+    doctorRating: a rating for the doctor. accepted values are between 1 and 5 in increments of 0.5
+    comment: the written content of the comment
+
+
+Returns:
+
+Status code: 401
+
+Reason: User is not logged in
+
+
+Status code: 400
+Message: invalid doctor/institution rating
+
+Reason: the rating provided does not fit within specified bounds
+
+
+Status code: 403
+
+Reason: provided visit Id is invalid or the user is not the patient from the visit
+
+
+Status code: 500
+
+Reason: The institution or doctor specified within the visit object under the specified visitID is invalid. This could mean some kind of database corruption
+
+
+Status code: 201
+
+Reason: comment successfully created
+
+
+
+/comments/{id}
+Method: GET
+
+Path variables:
+    id - object id of the comment
+
+
+Returns:
+
+Status code: 401
+
+Reason: user is not logged in
+
+
+Status code: 400
+Message: invalid comment id
+
+Reason: a comment with a given object id does not exist
+
+
+Status code: 200
+Fields:
+    id - object id of the comment
+    author - name and surname of the author
+    doctor - name and surname of the doctor
+    institution - name of the institution
+    doctorRating - a float describing the rating given to the doctor, ranging between 1 and 5
+    institutionRating - a float describing the rating given to the institution, ranging between 1 and 5
+    content - the written part of the comment
+
+Reason: successfully retrieved the comment
+
+
+/users/me/comments
+Method: GET
+
+Returns:
+
+Status code: 401
+
+Reason: user is not logged in
+
+
+Status code: 200
+Fields:
+    comments - a list of comments with the same syntax as /comments/{id}
+
+Reason: successfully retrieved all comments authored by the user
+
+

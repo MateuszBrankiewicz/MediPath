@@ -1,6 +1,7 @@
 package com.adam.medipathbackend.controllers;
 
 import com.adam.medipathbackend.models.*;
+import com.adam.medipathbackend.repository.CommentRepository;
 import com.adam.medipathbackend.repository.PasswordResetEntryRepository;
 import com.adam.medipathbackend.repository.UserRepository;
 import com.adam.medipathbackend.repository.VisitRepository;
@@ -37,6 +38,9 @@ public class UserController {
 
     @Autowired
     VisitRepository visitRepository;
+
+    @Autowired
+    CommentRepository commentRepository;
 
     @Autowired
     private JavaMailSender sender;
@@ -211,6 +215,30 @@ public class UserController {
         } else {
             return new ResponseEntity<>(Map.of("visits", visitRepository.getUpcomingVisits(loggedUserID)), HttpStatus.OK);
         }
+
+    }
+
+    @GetMapping(value = {"/me/comments", "/me/comments/"})
+    public ResponseEntity<Map<String, Object>> getMyComments(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        ArrayList<Comment> comments = commentRepository.getCommentsForUser(loggedUserID);
+        if(comments.isEmpty()) {
+            return new ResponseEntity<>(Map.of("comments", new ArrayList<>()), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(Map.of(
+                "comments", comments.stream().map(
+                        comment -> Map.of(
+                                "id", comment.getId(),
+                                "doctor", comment.getDoctorDigest().getDoctorName() + " " + comment.getDoctorDigest().getDoctorSurname(),
+                                "institution", comment.getInstitution().getInstitutionName(),
+                                "doctorRating", comment.getDoctorRating(),
+                                "institutionRating", comment.getInstitutionRating(),
+                                "content", comment.getContent()))
+                        .toList()
+                ), HttpStatus.OK);
 
     }
 
