@@ -422,7 +422,7 @@ Fields:
 Reason: successfully retrieved visit
 
 
-/visit/{id}
+/visits/{id}
 Method: DELETE
 
 Path variables:
@@ -528,4 +528,26 @@ Reason: if the schedule id inside of the visit is invalid, the server is program
 Status code: 200
 
 Reason: visit rebooked successfully
+
+
+
+/users/me/visits
+Method: GET
+
+Parameters:
+    upcoming - if ommitted, the method returns all visits. If not blank, returns only upcoming visits
+
+
+Returns:
+
+Status code: 401
+
+Reason: User is not logged in
+
+
+Status code: 200
+fields:
+    visits: contains either all or upcoming visits for a given user, depending on the "upcoming" parameter
+
+Reason: successfully retrieved visits
 
