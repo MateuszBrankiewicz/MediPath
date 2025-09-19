@@ -200,7 +200,22 @@ public class UserController {
         }
     }
 
-    @PostMapping("/resetpassword")
+    @GetMapping(value = {"/me/visits", "/me/visits/"})
+    public ResponseEntity<Map<String, Object>> getMyVisits(HttpSession session, @RequestParam(value = "upcoming", defaultValue = "") String upcoming) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(upcoming.isBlank()) {
+            return new ResponseEntity<>(Map.of("visits", visitRepository.getAllVisitsForPatient(loggedUserID)), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(Map.of("visits", visitRepository.getUpcomingVisits(loggedUserID)), HttpStatus.OK);
+        }
+
+    }
+
+
+    @PostMapping(value = {"/resetpassword", "/resetpassword/"})
     public ResponseEntity<Map<String, Object>> resetPasswordWithToken(@RequestBody ResetForm resetForm) {
         ArrayList<String> missingFields = new ArrayList<>();
         if(resetForm.getToken() == null || resetForm.getToken().isBlank()) {
