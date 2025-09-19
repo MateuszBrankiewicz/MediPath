@@ -41,7 +41,7 @@ public class UserController {
     @Autowired
     private JavaMailSender sender;
 
-    @PostMapping("/register")
+    @PostMapping(value = {"/register", "/register/"})
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody RegistrationForm registrationForm) {
 
         ArrayList<String> missingFields = getMissingFields(registrationForm);
@@ -70,7 +70,7 @@ public class UserController {
         return new ResponseEntity<>(Map.of("message", "Success"), HttpStatus.CREATED);
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = {"/login", "/login/"})
     public ResponseEntity<Map<String, Object>> loginUser(HttpSession session, @RequestBody LoginForm loginForm) {
         ArrayList<String> missingFields = new ArrayList<>();
 
@@ -94,14 +94,14 @@ public class UserController {
         session.setAttribute("id", u.getId());
         return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.OK);
     }
-    @GetMapping("/logout")
+    @GetMapping(value = {"/logout", "/logout/"})
     public ResponseEntity<Map<String, Object>> logoutUser(HttpSession session) {
         session.invalidate();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
 
-    @GetMapping("/profile")
+    @GetMapping(value = {"/profile", "/profile/"})
     public ResponseEntity<Map<String, Object>> getProfile(HttpSession session) {
         String id = (String) session.getAttribute("id");
         if(id == null) {
@@ -115,7 +115,7 @@ public class UserController {
         return new ResponseEntity<>(Map.of("user", opt.get()), HttpStatus.OK);
     }
 
-    @GetMapping("/resetpassword")
+    @GetMapping(value = {"/resetpassword", "/resetpassword/"})
     public ResponseEntity<Map<String, Object>> resetPassword(@RequestParam(value = "address", required = false) String address) {
         if(address == null || address.isBlank()) {
             return new ResponseEntity<>(Map.of("message", "missing address in request parameters"), HttpStatus.BAD_REQUEST);

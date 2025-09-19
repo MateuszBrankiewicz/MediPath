@@ -28,7 +28,7 @@ public class ScheduleController {
     @Autowired
     InstitutionRepository institutionRepository;
 
-    @PostMapping("/add")
+    @PostMapping(value = {"/add", "/add/"})
     public ResponseEntity<Map<String, Object>> add(@RequestBody AddScheduleForm schedule) {
         ArrayList<String> missingFields = new ArrayList<>();
 
@@ -69,7 +69,7 @@ public class ScheduleController {
 
     }
 
-    @GetMapping("/bydoctor/{id}")
+    @GetMapping(value = {"/bydoctor/{id}", "/bydoctor/{id}/"})
     public ResponseEntity<Map<String, Object>> getByDoctor(@PathVariable String id) {
         if(!Utils.isValidMongoOID(id) || userRepository.findDoctorById(id).isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);

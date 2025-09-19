@@ -21,7 +21,7 @@ public class InstitutionController {
     @Autowired
     UserRepository userRepository;
 
-    @PostMapping("/add")
+    @PostMapping(value = {"/add", "/add/"})
     public ResponseEntity<Map<String, Object>> addInstitution(@RequestBody Institution institution) {
         ArrayList<String> missingFields = new ArrayList<>();
 
@@ -47,7 +47,7 @@ public class InstitutionController {
         return new ResponseEntity<>(Map.of("message", "Success"), HttpStatus.CREATED);
     }
 
-    @PostMapping("/{institutionid}/addemployees/")
+    @PostMapping(value = {"/{institutionid}/addemployees/", "/{institutionid}/addemployees"})
     public ResponseEntity<Map<String, Object>> addEmployeeToInstitution(@PathVariable String institutionid, @RequestBody ArrayList<AddEmployeeForm> employeeIds) {
 
         if(employeeIds.isEmpty()) {
@@ -90,7 +90,7 @@ public class InstitutionController {
     }
 
 
-    @GetMapping("/{id}")
+    @GetMapping(value = {"/{id}", "/{id}/"})
     public ResponseEntity<Map<String, Object>> getInstitution(@PathVariable String id, @RequestParam(value = "fields", required = false) String[] fields) {
         Optional<Institution> institutionOptional = institutionRepository.findById(id);
         if(institutionOptional.isEmpty()) {

@@ -32,7 +32,7 @@ public class VisitController {
     @Autowired
     InstitutionRepository institutionRepository;
 
-    @PostMapping("/add")
+    @PostMapping(value = {"/add", "/add/"})
     public ResponseEntity<Map<String, Object>> add(@RequestBody AddVisitForm visit) {
         ArrayList<String> missingFields = new ArrayList<>();
 
@@ -68,7 +68,7 @@ public class VisitController {
         return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.CREATED);
     }
 
-    @GetMapping("/getupcoming/{userid}")
+    @GetMapping(value = {"/getupcoming/{userid}", "/getupcoming/{userid}/"})
     public ResponseEntity<Map<String, Object>> add(@PathVariable String userid) {
         if(!userRepository.existsById(userid)) {
             return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
@@ -76,14 +76,14 @@ public class VisitController {
         ArrayList<Visit> upcomingVisits =  visitRepository.getUpcomingVisits(userid);
         return new ResponseEntity<>(Map.of("visits", upcomingVisits), HttpStatus.OK);
     }
-    @GetMapping("/getactivecodes/{userid}")
+    @GetMapping(value = {"/getactivecodes/{userid}", "/getactivecodes/{userid}/"})
     public ResponseEntity<Map<String, Object>> getCodes(@PathVariable String userid) {
         if(!userRepository.existsById(userid)) {
             return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(Map.of("codes", visitRepository.getActiveCodesForPatient(userid)), HttpStatus.OK);
     }
-    @DeleteMapping("/{visitid}")
+    @DeleteMapping(value = {"/{visitid}", "/{visitid}/"})
     public ResponseEntity<Map<String, Object>> cancelVisit(@PathVariable String visitid, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
@@ -157,7 +157,7 @@ public class VisitController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("/{visitid}")
+    @GetMapping(value = {"/{visitid}", "/{visitid}/"})
     public ResponseEntity<Map<String, Object>> getVisitDetails(@PathVariable String visitid, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
