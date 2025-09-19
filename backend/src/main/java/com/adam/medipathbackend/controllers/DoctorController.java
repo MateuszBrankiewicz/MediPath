@@ -18,7 +18,7 @@ public class DoctorController {
 
 
 
-    @GetMapping("/{id}")
+    @GetMapping(value= {"/{id}", "/{id}/"})
     public ResponseEntity<Map<String, Object>> getDoctor(@PathVariable String id, @RequestParam(value = "fields", required = false) String[] fields) {
         Optional<User> user = userRepository.findDoctorById(id);
         if(user.isEmpty()) {

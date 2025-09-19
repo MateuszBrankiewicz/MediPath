@@ -36,7 +36,7 @@ public class CityController {
         return new ResponseEntity<>(returnedCities, HttpStatus.OK);
     }
 
-    @GetMapping("/provinces")
+    @GetMapping(value= {"/provinces", "/provinces/"})
     public ResponseEntity<List<String>> getProvinces() {
         String[] provinces = {"Dolnośląskie", "Kujawsko-Pomorskie", "Lubelskie", "Lubuskie", "Łódzkie", "Małopolskie", "Mazowieckie", "Opolskie", "Podkarpackie", "Podlaskie", "Pomorskie", "Śląskie", "Świętokrzyskie", "Warmińsko-Mazurskie", "Wielkopolskie", "Zachodniopomorskie"};
         return new ResponseEntity<>(List.of(provinces), HttpStatus.OK);
