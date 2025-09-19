@@ -81,7 +81,7 @@ public class VisitController {
         if(!userRepository.existsById(userid)) {
             return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(Map.of("codes", visitRepository.getActiveCodesForPatient(userid)), HttpStatus.OK);
+        return new ResponseEntity<>(Map.of("codes", visitRepository.getCodesForPatient(userid)), HttpStatus.OK);
     }
     @DeleteMapping(value = {"/{visitid}", "/{visitid}/"})
     public ResponseEntity<Map<String, Object>> cancelVisit(@PathVariable String visitid, HttpSession session) {

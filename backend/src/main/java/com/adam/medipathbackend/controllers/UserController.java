@@ -175,7 +175,7 @@ public class UserController {
         if(!(type == null || type.equals("referrals") || type.equals("prescriptions"))) {
             return new ResponseEntity<>(Map.of("message", "invalid code type"), HttpStatus.BAD_REQUEST);
         }
-        ArrayList<Map<String, Object>> codes = visitRepository.getActiveCodesForPatient(loggedUserID);
+        ArrayList<Map<String, Object>> codes = visitRepository.getCodesForPatient(loggedUserID);
         if(codes.isEmpty()) {
             return new ResponseEntity<>(Map.of("codes", new ArrayList<String>()), HttpStatus.OK);
         }
