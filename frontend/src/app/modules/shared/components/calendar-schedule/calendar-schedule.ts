@@ -27,15 +27,12 @@ interface CalendarDay {
   styleUrl: './calendar-schedule.scss',
 })
 export class CalendarSchedule {
-  // Output event for parent component
   public readonly dateTimeSelected = output<{ date: Date; time: string }>();
 
-  // Reactive state
   public readonly selectedDate = signal<Date | null>(null);
   public readonly selectedTime = signal<string | null>(null);
   public readonly currentMonth = signal<Date>(new Date());
 
-  // Mock data for available appointments
   private readonly availableAppointments = signal<AvailableDay[]>([
     {
       date: new Date(2025, 8, 16),
@@ -91,12 +88,11 @@ export class CalendarSchedule {
 
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
-    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7; // Monday = 0
+    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
 
     const days: CalendarDay[] = [];
     const today = new Date();
 
-    // Previous month days
     const prevMonth = new Date(year, month - 1, 0);
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
       const date = new Date(year, month - 1, prevMonth.getDate() - i);
@@ -120,7 +116,7 @@ export class CalendarSchedule {
       });
     }
 
-    const remainingDays = 42 - days.length; // 6 rows × 7 days
+    const remainingDays = 42 - days.length;
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(year, month + 1, day);
       days.push({

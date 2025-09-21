@@ -70,7 +70,6 @@ export class ReminderPage {
 
   protected viewReminder(reminder: Reminder): void {
     console.log('Viewing reminder:', reminder);
-    // TODO: Implement view reminder functionality
   }
 
   protected getTodayReminders(): number {

@@ -24,7 +24,7 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  min-width: 400px; // Minimalna szerokość
+  min-width: 400px;
   position: relative;
 
   .doctor-header {
@@ -148,7 +148,6 @@
     }
   }
 
-  // Pionowa linia separatora
   &::after {
     content: "";
     position: absolute;
@@ -253,7 +252,7 @@
           border: none;
           color: var(--p-primary-color);
           cursor: pointer;
-          padding: 10px 8px; // Zwiększony padding
+          padding: 10px 8px;
           font-size: 12px;
           text-align: center;
           transition: all 0.2s ease;
@@ -411,7 +410,6 @@
   }
 }
 
-// Focus management for accessibility
 .time-slot:focus,
 .more-hours-btn:focus,
 .next-btn:focus,
@@ -422,12 +420,10 @@
   outline-offset: var(--p-focus-ring-offset);
 }
 
-// Hover states
 .address-tab:hover {
   border-color: var(--p-form-field-hover-border-color);
 }
 
-// Scrollbar styling dla schedule-days
 .schedule-days::-webkit-scrollbar {
   height: 4px;
 }

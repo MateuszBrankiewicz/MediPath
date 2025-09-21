@@ -21,7 +21,6 @@ export interface SearchQuery {
   specialization?: string;
 }
 
-// Format który przychodzi z API (ten który mi wysłałeś)
 export interface ApiDoctor {
   name: string;
   numOfRatings: number;
@@ -127,9 +126,9 @@ export class SearchService {
       ];
 
       return {
-        date: dateKey, // "2026-02-01"
-        dayName: dayNames[date.getDay()], // "Sobota"
-        dayNumber: date.getDate().toString(), // "1" (jako string)
+        date: dateKey,
+        dayName: dayNames[date.getDay()],
+        dayNumber: date.getDate().toString(),
         slots: slots.map((slot) => {
           const slotDate = new Date(slot.startTime);
           const timeString = slotDate.toLocaleTimeString('pl-PL', {

@@ -1,5 +1,4 @@
 <div class="medical-reminder-container">
-  <!-- Statistics Section -->
   <div class="stats-section">
     <div class="stats-cards">
       <div class="stat-card">
@@ -51,7 +50,7 @@
                 (onClick)="toggleMenu($event, record)"
                 pTooltip="More options">
               </p-button>
-              
+
               @if (isMenuOpen(record.id)) {
                 <div class="dropdown-menu">
                   <div class="menu-item" (click)="editReminder(record); openMenuId.set(null)">

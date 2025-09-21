@@ -63,7 +63,6 @@ export class DoctorCardComponent implements OnInit {
   }
 
   onShowMoreHours(day: DaySchedule): void {
-    // Logika do pokazania więcej godzin
     console.log('Show more hours for', day.dayName);
   }
 }

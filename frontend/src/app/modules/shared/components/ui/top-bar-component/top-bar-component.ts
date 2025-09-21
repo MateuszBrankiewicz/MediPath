@@ -216,28 +216,6 @@ export class TopBarComponent {
     }));
   }
 
-  // protected search() {
-  //   const query = this.query().trim();
-
-  //   if (!query) {
-  //     return;
-  //   }
-
-  //   const route = ['/search', this.selectedSearchType(), query];
-
-  //   this.router
-  //     .navigate(route)
-  //     .then((success) => {
-  //       console.log('Navigation success:', success);
-  //       if (!success) {
-  //         console.error('Navigation failed - route might not exist');
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error('Navigation error:', error);
-  //     });
-  // }
-
   private getTypeLabel(): string {
     switch (this.selectedSearchType()) {
       case 'institution':

@@ -185,7 +185,6 @@
   }
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .review-container {
     min-width: auto;
@@ -219,7 +218,6 @@
   }
 }
 
-// Override PrimeNG dialog styles for consistent appearance
 :host ::ng-deep .p-dialog .p-dialog-header {
   display: none;
 }
