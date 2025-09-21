@@ -18,6 +18,7 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { Menu, MenuModule } from 'primeng/menu';
 import { SelectModule } from 'primeng/select';
+import { TranslationService } from '../../../../../core/services/translation/translation.service';
 
 import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
 import { ToastService } from '../../../../../core/services/toast/toast.service';
@@ -59,6 +60,8 @@ export class TopBarComponent {
 
   private readonly toastService = inject(ToastService);
 
+  protected readonly translationService = inject(TranslationService);
+
   protected readonly selectedSearchType = signal('institution');
 
   protected readonly selectedCategory = signal('');
@@ -69,8 +72,14 @@ export class TopBarComponent {
 
   protected readonly categoryOptions = computed(() => [
     { label: '-- Category --', value: '' },
-    { label: 'Doctor', value: 'doctor' },
-    { label: 'Institution', value: 'institution' },
+    {
+      label: this.translationService.translate('topBar.doctor'),
+      value: 'doctor',
+    },
+    {
+      label: this.translationService.translate('topBar.institution'),
+      value: 'institution',
+    },
   ]);
 
   protected readonly roleOptions = computed<RoleOption[]>(() => [

@@ -1,58 +1,56 @@
 <div class="review-container">
     <h3>Leave a Review</h3>
-    
+
     <div class="content-row">
         <div class="left-section">
-            <div class="form-group">
-                <label for="comments">Comments about your visit:</label>
-                <textarea 
+              <div class="review-dialog-content">
+    <h3>{{ translationService.translate('patient.reviewVisit.title') }}</h3>
+
+    <form class="review-form">
+        <div class="form-group">
+            <div class="input-group">
+                <label for="comments">{{ translationService.translate('patient.reviewVisit.comments') }}</label>
+                <textarea
                     id="comments"
                     [(ngModel)]="comments"
-                    placeholder="Leave your comments about the visit..." 
-                    rows="8"
-                    class="comments-textarea">
+                    name="comments"
+                    rows="4"
+                    placeholder="Share your experience with this visit..."
+                    class="form-control">
                 </textarea>
             </div>
         </div>
-        
-        <div class="right-section">
-            <div class="form-group">
-                <label for="doctorRating">Rate the doctor:</label>
-                <p-select 
+
+        <div class="form-group">
+            <div class="input-group">
+                <label for="doctorRating">{{ translationService.translate('patient.reviewVisit.rateDoctor') }}</label>
+                <p-select
                     id="doctorRating"
                     [(ngModel)]="doctorRating"
-                    [options]="starRatingOptions" 
-                    placeholder="Select rating (1-5 stars)" 
-                    optionLabel="stars" 
+                    name="doctorRating"
+                    [options]="starRatingOptions"
+                    optionLabel="stars"
                     optionValue="value"
-                    class="star-select">
-                </p-select>
-            </div>
-            
-            <div class="form-group">
-                <label for="institutionRating">Rate the institution:</label>
-                <p-select 
-                    id="institutionRating"
-                    [(ngModel)]="institutionRating"
-                    [options]="starRatingOptions" 
-                    placeholder="Select rating (1-5 stars)" 
-                    optionLabel="stars" 
-                    optionValue="value"
-                    class="star-select">
+                    placeholder="Select rating"
+                    class="w-100">
                 </p-select>
             </div>
         </div>
+
+        <div class="form-group">
+            <div class="input-group">
+                <label for="institutionRating">{{ translationService.translate('patient.reviewVisit.rateInstitution') }}</label>
     </div>
 
     <div class="dialog-actions">
-        <p-button 
-            label="Cancel" 
-            severity="secondary" 
+        <p-button
+            label="Cancel"
+            severity="secondary"
             (onClick)="onCancel()"
             class="cancel-btn">
         </p-button>
-        <p-button 
-            label="Submit Review" 
+        <p-button
+            label="Submit Review"
             (onClick)="onSubmit()"
             class="submit-btn">
         </p-button>

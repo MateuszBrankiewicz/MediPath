@@ -3,7 +3,7 @@
     <div class="prescriptions-content">
       <p-card class="prescriptions">
         <ng-template #header>
-          <span class="header-span">Prescriptions</span>
+          <span class="header-span">{{ translationService.translate('patient.dashboard.prescriptions') }}</span>
         </ng-template>
         <div class="items-content">
           @for (refferal of refferals(); track refferal.id) {
@@ -23,7 +23,7 @@
 
     <p-card class="refferals">
       <ng-template #header>
-        <span class="header-span">Refferals</span>
+        <span class="header-span">{{ translationService.translate('patient.dashboard.referrals') }}</span>
       </ng-template>
       <div class="items-content">
         @for (refferal of refferals(); track refferal.id) {
@@ -44,11 +44,11 @@
   <div class="visits-content">
     <span>
       <i class="pi pi-calendar"></i>
-      Upcoming visits</span
+      {{ translationService.translate('patient.dashboard.upcomingVisits') }}</span
     >
 
     <p-card
-      header="Upcoming visits"
+      [header]="translationService.translate('patient.dashboard.upcomingVisits')"
       class="upcoming-visits-card"
       class="visits-card"
     >
@@ -57,7 +57,7 @@
           <span class="visit-time">{{ visit.time }}</span>
           <span class="visit-doctor">{{ visit.doctor }}</span>
           <p-button
-            label="CANCEL VISIT"
+            [label]="translationService.translate('patient.dashboard.cancelVisit')"
             severity="danger"
             [outlined]="true"
             size="small"

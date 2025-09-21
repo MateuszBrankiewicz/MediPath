@@ -10,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { signal } from '@angular/core';
+import { TranslationService } from '../../../../../../core/services/translation/translation.service';
 
 export interface MedicationReminder {
   id?: number;
@@ -31,6 +32,7 @@ export class AddReminderDialog implements OnInit {
   private config = inject(DynamicDialogConfig);
   visible = signal(false);
   reminder = signal<MedicationReminder | null>(null);
+  protected translationService = inject(TranslationService);
 
   visibleChange = new EventEmitter<boolean>();
   save = new EventEmitter<MedicationReminder>();

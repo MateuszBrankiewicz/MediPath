@@ -1,7 +1,7 @@
 <div>
   <app-hospital-card [hospital]="sampleHospital" />
   <div class="doctor-block">
-    <span class="comment-section">Doctors in institution</span>
+    <span class="comment-section">{{ translationService.translate('patient.institution.doctorsInInstitution') }}</span>
     <div class="doctors-card">
       <p-card>
         <div class="doctor-info-card">
@@ -29,7 +29,7 @@
                 ({{ exampleDoctor().rating.opinions }} opinions)
               </span>
             </div>
-            <span class="pwz-info">PWZ: {{ exampleDoctor().pwz }}</span>
+            <span class="pwz-info">{{ translationService.translate('patient.institution.pwz') }} {{ exampleDoctor().pwz }}</span>
           </div>
         </div>
       </p-card>
@@ -37,7 +37,7 @@
   </div>
 </div>
 <div class="comment-block">
-  <span class="comment-section">Comments</span>
+  <span class="comment-section">{{ translationService.translate('patient.institution.comments') }}</span>
   <div class="comment-content">
     @for (comment of comments; track comment.id) {
       <app-patient-comment-component [comment]="comment" />

@@ -1,10 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { DataViewModule } from 'primeng/dataview';
 import { ButtonModule } from 'primeng/button';
 import { PanelModule } from 'primeng/panel';
 import { TooltipModule } from 'primeng/tooltip';
 import { MedicalRecord } from '../../models/medical-history.model';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-medical-history-page',
@@ -14,6 +15,7 @@ import { MedicalRecord } from '../../models/medical-history.model';
 })
 export class MedicalHistoryPage {
   protected readonly medicalRecords = signal<MedicalRecord[]>([]);
+  protected translationService = inject(TranslationService);
 
   constructor() {
     this.medicalRecords.set([

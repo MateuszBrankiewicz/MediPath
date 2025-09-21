@@ -7,6 +7,7 @@ import {
   CalendarSchedule,
 } from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { RescheduleData } from '../../models/visit-page.model';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-schedule-visit-dialog',
@@ -17,6 +18,7 @@ import { RescheduleData } from '../../models/visit-page.model';
 export class ScheduleVisitDialog {
   private ref = inject(DynamicDialogRef);
   private config = inject(DynamicDialogConfig);
+  protected translationService = inject(TranslationService);
 
   protected readonly visitId = this.config.data?.visitId;
 

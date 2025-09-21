@@ -8,26 +8,26 @@
 
     <div class="hospital-details">
       <div class="detail-item">
-        <span class="label">Adres:</span>
+        <span class="label">{{ translationService.translate('shared.hospitalCard.address') }}</span>
         <span class="value">{{ hospital().address }}</span>
       </div>
 
       <div class="detail-item">
-        <span class="label">Specialisations:</span>
+        <span class="label">{{ translationService.translate('shared.hospitalCard.specialisations') }}</span>
         <span class="value">{{ getSpecialisationText() }}</span>
       </div>
 
       <div class="detail-item">
-        <span class="label">Public:</span>
+        <span class="label">{{ translationService.translate('shared.hospitalCard.public') }}</span>
         <span class="value">{{ hospital().isPublic ? "Yes" : "No" }}</span>
       </div>
     </div>
 
     @if (canEdit()) {
       <div class="hospital-actions">
-        <p-button (click)="onEditDetails()">EDIT DETAILS </p-button>
+        <p-button (click)="onEditDetails()">{{ translationService.translate('shared.hospitalCard.editDetails') }}</p-button>
         @if (canDisabled()) {
-          <p-button severity="danger" (click)="onDisable()">DISABLE</p-button>
+          <p-button severity="danger" (click)="onDisable()">{{ translationService.translate('shared.hospitalCard.disable') }}</p-button>
         }
       </div>
     }

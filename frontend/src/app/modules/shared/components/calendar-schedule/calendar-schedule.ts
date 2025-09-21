@@ -5,9 +5,11 @@ import {
   output,
   signal,
   effect,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 export interface TimeSlot {
   id: string;
@@ -36,6 +38,8 @@ export interface CalendarDay {
   styleUrl: './calendar-schedule.scss',
 })
 export class CalendarSchedule {
+  protected translationService = inject(TranslationService);
+
   public readonly dateTimeSelected = output<{
     date: Date;
     time: string;

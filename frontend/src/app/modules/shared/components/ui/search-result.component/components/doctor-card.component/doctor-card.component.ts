@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, OnInit, output, signal } from '@angular/core';
+import {
+  Component,
+  input,
+  OnInit,
+  output,
+  signal,
+  inject,
+} from '@angular/core';
 import {
   AddressChange,
   BookAppointment,
@@ -8,6 +15,7 @@ import {
   TimeSlot,
 } from '../../search-result.model';
 import { AddressFormatPipe } from '../../../../../../../core/pipes/address-format-pipe';
+import { TranslationService } from '../../../../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-doctor-card',
@@ -16,6 +24,8 @@ import { AddressFormatPipe } from '../../../../../../../core/pipes/address-forma
   styleUrl: './doctor-card.component.scss',
 })
 export class DoctorCardComponent implements OnInit {
+  public readonly translationService = inject(TranslationService);
+
   onShowMore() {
     throw new Error('Method not implemented.');
   }
