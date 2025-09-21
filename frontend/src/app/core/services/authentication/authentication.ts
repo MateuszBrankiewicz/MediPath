@@ -47,6 +47,9 @@ export class AuthenticationService {
       .pipe(
         switchMap(() => this.getUserRoleFromApi()),
         tap((response: ApiUserResponse) => {
+          const lastPanel = getRoleFromCode(
+            response.user.userSettings.lastPanel as number,
+          );
           const userInfo: UserBasicInfo = {
             id: response.user.id,
             name: response.user.name,
@@ -54,8 +57,9 @@ export class AuthenticationService {
             roleCode: getRoleFromCode(response.user.roleCode),
             notifications: response.user.notifications,
             email: response.user.email,
+            userSettings: response.user.userSettings,
           };
-
+          userInfo.userSettings.lastPanel = lastPanel;
           this.user.set(userInfo);
         }),
         catchError((error) => {
@@ -95,7 +99,8 @@ export class AuthenticationService {
   }
 
   public readonly routePrefix = computed(() => {
-    const userRole = this.user()?.roleCode;
+    const userRole = this.user()?.userSettings.lastPanel;
+
     switch (userRole) {
       case UserRoles.PATIENT:
         return '/patient';
@@ -111,6 +116,9 @@ export class AuthenticationService {
   public checkAuthStatus() {
     return this.getUserRoleFromApi().pipe(
       tap((response: ApiUserResponse) => {
+        const lastPanel = getRoleFromCode(
+          response.user.userSettings.lastPanel as number,
+        );
         const userInfo: UserBasicInfo = {
           id: response.user.id,
           name: response.user.name,
@@ -118,8 +126,9 @@ export class AuthenticationService {
           roleCode: getRoleFromCode(response.user.roleCode),
           notifications: response.user.notifications,
           email: response.user.email,
+          userSettings: response.user.userSettings,
         };
-
+        userInfo.userSettings.lastPanel = lastPanel;
         this.user.set(userInfo);
       }),
       catchError(() => {

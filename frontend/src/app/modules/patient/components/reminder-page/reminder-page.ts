@@ -6,6 +6,7 @@ import { PanelModule } from 'primeng/panel';
 import { TooltipModule } from 'primeng/tooltip';
 import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder-dialog';
 import { Reminder } from '../../models/reminder-page.model';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-reminder-page',
@@ -17,6 +18,7 @@ import { Reminder } from '../../models/reminder-page.model';
 export class ReminderPage {
   private dialogService = inject(DialogService);
   private ref: DynamicDialogRef | undefined;
+  protected translationService = inject(TranslationService);
 
   reminders = signal<Reminder[]>([
     {

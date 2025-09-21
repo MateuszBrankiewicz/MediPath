@@ -10,6 +10,7 @@ import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
 import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-visit-page',
@@ -30,6 +31,7 @@ export class VisitPage {
   protected readonly selectedVisitId = signal<number | null>(null);
 
   private dialogService = inject(DialogService);
+  protected translationService = inject(TranslationService);
 
   private ref: DynamicDialogRef | undefined;
 
@@ -61,6 +63,25 @@ export class VisitPage {
     console.log('cancel');
   }
 
+  protected getStatusTranslation(status: VisitStatus): string {
+    switch (status) {
+      case VisitStatus.Scheduled:
+        return this.translationService.translate(
+          'patient.visits.statusScheduled',
+        );
+      case VisitStatus.Completed:
+        return this.translationService.translate(
+          'patient.visits.statusCompleted',
+        );
+      case VisitStatus.Canceled:
+        return this.translationService.translate(
+          'patient.visits.statusCanceled',
+        );
+      default:
+        return status;
+    }
+  }
+
   protected editVisit() {
     console.log('edit');
   }
@@ -69,7 +90,9 @@ export class VisitPage {
 
     this.ref = this.dialogService.open(VisitDetailsDialog, {
       data: { visitId: id },
-      header: 'Visit details',
+      header: this.translationService.translate(
+        'patient.visits.visitDetailsTitle',
+      ),
       width: '80%',
       closable: true,
       modal: true,
@@ -86,7 +109,9 @@ export class VisitPage {
   protected openRescheduleDialog(id: number): void {
     this.ref = this.dialogService.open(ScheduleVisitDialog, {
       data: { visitId: id },
-      header: 'Reschedule a visit',
+      header: this.translationService.translate(
+        'patient.visits.rescheduleTitle',
+      ),
       width: '70%',
       height: 'auto',
       closable: true,
@@ -104,7 +129,7 @@ export class VisitPage {
   private openReviewDialog(id: number) {
     this.ref = this.dialogService.open(ReviewVisitDialog, {
       data: { visitId: id },
-      header: 'ReviewVisit',
+      header: this.translationService.translate('patient.visits.reviewTitle'),
       width: '70%',
       height: 'auto',
     });

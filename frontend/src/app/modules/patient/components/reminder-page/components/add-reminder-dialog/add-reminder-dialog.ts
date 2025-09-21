@@ -1,11 +1,4 @@
-import {
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-  OnInit,
-  inject,
-} from '@angular/core';
+import { Component, EventEmitter, OnInit, inject } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -16,6 +9,8 @@ import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { signal } from '@angular/core';
+import { TranslationService } from '../../../../../../core/services/translation/translation.service';
 
 export interface MedicationReminder {
   id?: number;
@@ -35,11 +30,13 @@ export interface MedicationReminder {
 export class AddReminderDialog implements OnInit {
   private ref = inject(DynamicDialogRef);
   private config = inject(DynamicDialogConfig);
-  @Input() visible = false;
-  @Input() reminder: MedicationReminder | null = null;
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() save = new EventEmitter<MedicationReminder>();
-  @Output() delete = new EventEmitter<number>();
+  visible = signal(false);
+  reminder = signal<MedicationReminder | null>(null);
+  protected translationService = inject(TranslationService);
+
+  visibleChange = new EventEmitter<boolean>();
+  save = new EventEmitter<MedicationReminder>();
+  delete = new EventEmitter<number>();
 
   reminderForm: FormGroup;
   private fb = inject(FormBuilder);
@@ -55,13 +52,13 @@ export class AddReminderDialog implements OnInit {
   }
 
   ngOnInit() {
-    if (this.reminder) {
+    if (this.reminder()) {
       this.reminderForm.patchValue({
-        title: this.reminder.title,
-        reminderTime: this.reminder.reminderTime,
-        startDate: this.reminder.startDate,
-        endDate: this.reminder.endDate,
-        content: this.reminder.content,
+        title: this.reminder()?.title ?? '',
+        reminderTime: this.reminder()?.reminderTime ?? null,
+        startDate: this.reminder()?.startDate ?? null,
+        endDate: this.reminder()?.endDate ?? null,
+        content: this.reminder()?.content ?? '',
       });
     }
   }
@@ -75,7 +72,7 @@ export class AddReminderDialog implements OnInit {
       const formValue = this.reminderForm.value;
       const reminderData: MedicationReminder = {
         ...formValue,
-        id: this.reminder?.id,
+        id: this.reminder()?.id,
       };
 
       this.save.emit(reminderData);
@@ -84,8 +81,8 @@ export class AddReminderDialog implements OnInit {
   }
 
   onDelete() {
-    if (this.reminder?.id) {
-      this.delete.emit(this.reminder.id);
+    if (this.reminder()?.id) {
+      this.delete.emit(this.reminder()?.id);
       this.onClose();
     }
   }

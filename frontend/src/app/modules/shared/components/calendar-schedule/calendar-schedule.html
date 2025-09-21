@@ -1,7 +1,7 @@
 <div class="calendar-schedule">
   <div class="schedule-layout">
     <div class="date-selection">
-      <h3>Select date</h3>
+      <h3>{{ translationService.translate('shared.calendar.selectDate') }}</h3>
 
       <div class="custom-calendar">
         <div class="calendar-header">
@@ -23,7 +23,7 @@
         </div>
 
         <div class="day-names">
-          @for (dayName of dayNames; track dayName) {
+          @for (dayName of dayNames; track $index) {
             <div class="day-name">
               {{ dayName }}
             </div>
@@ -48,7 +48,7 @@
     </div>
 
     <div class="time-selection">
-      <h3>Available terms</h3>
+      <h3>{{ translationService.translate('shared.calendar.availableTerms') }}</h3>
 
       @if (selectedDate()) {
         <div class="time-slots">
@@ -59,14 +59,14 @@
                 [class.selected]="selectedTime() === slot.time"
                 [class.unavailable]="!slot.available"
                 [disabled]="!slot.available"
-                (click)="onTimeSelect(slot.time)">
+                (click)="onTimeSelect(slot)">
                 {{ slot.time }}
               </button>
             }
           </div>
         </div>
       } @else {
-        <p class="no-date-message">Please select a date to see available times</p>
+        <p class="no-date-message">{{ translationService.translate('shared.calendar.pleaseSelectDate') }}</p>
       }
     </div>
   </div>

@@ -1,8 +1,9 @@
 import { FormsModule } from '@angular/forms';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { PanelModule } from 'primeng/panel';
 import { RatingModule } from 'primeng/rating';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 export interface CommentWithRating {
   id: string;
@@ -20,6 +21,8 @@ export interface CommentWithRating {
   styleUrl: './rating-component.scss',
 })
 export class RatingComponent {
+  protected translationService = inject(TranslationService);
+
   protected viewRatings(id: string): void {
     console.log('Viewing ratings for ID:', id);
   }

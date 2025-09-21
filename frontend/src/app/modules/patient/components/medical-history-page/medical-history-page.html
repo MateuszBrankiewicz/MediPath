@@ -1,5 +1,5 @@
 <div class="medical-history-container">
-<h3>Medical History</h3>
+<h3>{{ translationService.translate('patient.medicalHistory.title') }}</h3>
 
   <p-panel  class="history-panel">
     <div class="history-list">
@@ -33,7 +33,7 @@
   </p-panel>
   <div class="add-entry-container">
       <p-button
-        label="ADD NEW ENTRY"
+        [label]="translationService.translate('patient.medicalHistory.addEntry')"
         class="add-entry-button"
         (onClick)="addNewEntry()">
       </p-button>

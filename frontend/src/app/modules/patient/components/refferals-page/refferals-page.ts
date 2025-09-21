@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { Refferal, UsedState } from '../../models/refferal-page.model';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-refferals-page',
@@ -14,6 +15,7 @@ import { Refferal, UsedState } from '../../models/refferal-page.model';
 })
 export class RefferalsPage {
   private toastService = inject(ToastService);
+  protected translationService = inject(TranslationService);
   protected referrals = signal<Refferal[]>([
     {
       id: 1,

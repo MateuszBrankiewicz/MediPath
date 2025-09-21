@@ -5,6 +5,7 @@ import { TableModule } from 'primeng/table';
 import { DatePipe, CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { Refferal, UsedState } from '../../models/refferal-page.model';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-prescription-page',
@@ -14,6 +15,7 @@ import { Refferal, UsedState } from '../../models/refferal-page.model';
 })
 export class PrescriptionPage {
   private toastService = inject(ToastService);
+  protected translationService = inject(TranslationService);
 
   protected prescriptions = signal<Refferal[]>([
     {

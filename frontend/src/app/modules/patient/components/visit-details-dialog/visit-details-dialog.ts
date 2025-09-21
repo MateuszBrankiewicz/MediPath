@@ -3,6 +3,7 @@ import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { Visit } from '../../models/visit-page.model';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-visit-details-dialog',
@@ -14,6 +15,7 @@ import { Visit } from '../../models/visit-page.model';
 export class VisitDetailsDialog {
   private ref = inject(DynamicDialogRef);
   private config = inject(DynamicDialogConfig);
+  protected translationService = inject(TranslationService);
 
   public readonly visitId = this.config.data?.visitId;
 

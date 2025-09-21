@@ -5,6 +5,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DashboardConfig } from '../../../shared/components/layout/dashboard-layout-component/dashboard-layout-component';
 import { DashboardService } from './service/dashboard-service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-patient-dashboard-component',
@@ -17,6 +18,7 @@ export class PatientDashboardComponent implements OnInit {
   readonly notificationCount = signal(3);
   private dashboardService = inject(DashboardService);
   private destroyRef = inject(DestroyRef);
+  protected translationService = inject(TranslationService);
   readonly dashboardConfig: DashboardConfig = {
     title: 'Dashboard',
     showSearch: true,

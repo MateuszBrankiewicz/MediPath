@@ -7,7 +7,7 @@
         </div>
         <div class="stat-content">
           <h4>{{ reminders().length }}</h4>
-          <p>Active Reminders</p>
+          <p>{{ translationService.translate('patient.reminders.activeReminders') }}</p>
         </div>
       </div>
       <div class="stat-card">
@@ -16,22 +16,22 @@
         </div>
         <div class="stat-content">
           <h4>{{ getTodayReminders() }}</h4>
-          <p>Today's Doses</p>
+          <p>{{ translationService.translate('patient.reminders.todaysDoses') }}</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">
-          <i class="pi pi-check-circle"></i>
+          <i class="pi pi-chart-bar"></i>
         </div>
         <div class="stat-content">
-          <h4>100%</h4>
-          <p>Compliance Rate</p>
+          <h4>95%</h4>
+          <p>{{ translationService.translate('patient.reminders.complianceRate') }}</p>
         </div>
       </div>
     </div>
   </div>
 
-  <h3>Reminders</h3>
+  <h3>{{ translationService.translate('patient.reminders.title') }}</h3>
 
   <div class="reminder-panel">
     <div class="reminder-list">
@@ -55,11 +55,11 @@
                 <div class="dropdown-menu">
                   <div class="menu-item" (click)="editReminder(record); openMenuId.set(null)">
                     <i class="pi pi-pencil"></i>
-                    <span>Edit</span>
+                    <span>{{ translationService.translate('patient.reminders.edit') }}</span>
                   </div>
                   <div class="menu-item delete-item" (click)="deleteReminder(record.id); openMenuId.set(null)">
                     <i class="pi pi-trash"></i>
-                    <span>Delete</span>
+                    <span>{{ translationService.translate('patient.reminders.delete') }}</span>
                   </div>
                 </div>
               }
@@ -72,7 +72,7 @@
 
   <div class="add-entry-container">
     <p-button
-      label="ADD REMINDER"
+      [label]="translationService.translate('patient.reminders.add')"
       icon="pi pi-plus"
       class="add-entry-button"
       (onClick)="addNewEntry()">

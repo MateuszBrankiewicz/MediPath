@@ -1,5 +1,6 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { TranslationService } from '../../../../../../../core/services/translation/translation.service';
 
 export interface Hospital {
   id: string;
@@ -17,6 +18,7 @@ export interface Hospital {
   styleUrl: './hospital-card.component.scss',
 })
 export class HospitalCardComponent {
+  protected translationService = inject(TranslationService);
   public readonly hospital = input.required<Hospital>();
   public readonly editClicked? = output<Hospital>();
   public readonly disable? = output<Hospital>();

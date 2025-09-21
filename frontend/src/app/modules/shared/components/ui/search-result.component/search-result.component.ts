@@ -22,6 +22,8 @@ import { DoctorCardComponent } from './components/doctor-card.component/doctor-c
 import { Doctor, BookAppointment, AddressChange } from './search-result.model';
 import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
 
 @Component({
   selector: 'app-search-result.component',
@@ -32,12 +34,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     DoctorCardComponent,
     BreadcumbComponent,
   ],
+  providers: [DialogService],
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.scss',
 })
 export class SearchResultComponent implements OnInit {
   private searchService = inject(SearchService);
   private route = inject(ActivatedRoute);
+  private readonly dialogService = inject(DialogService);
+  private destroyRef = inject(DestroyRef);
+  private dialogRef: DynamicDialogRef | null = null;
 
   protected readonly category = signal('');
 
@@ -58,8 +64,6 @@ export class SearchResultComponent implements OnInit {
     }
     return [];
   });
-
-  private destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
@@ -91,7 +95,22 @@ export class SearchResultComponent implements OnInit {
   }
 
   onBookAppointment(event: BookAppointment): void {
-    console.log('Book appointment:', event);
+    this.dialogRef = this.dialogService.open(ScheduleVisitDialog, {
+      data: {
+        availableTerms: event.doctor.schedule,
+        event,
+      },
+      header: 'Book Appointment',
+      width: '70%',
+      closable: true,
+      modal: true,
+      styleClass: 'schedule-visit-dialog',
+    });
+    this.dialogRef.onClose.subscribe((result) => {
+      if (result) {
+        console.log('Appointment booked:', result);
+      }
+    });
   }
 
   onShowMoreInfo(doctor: Doctor): void {

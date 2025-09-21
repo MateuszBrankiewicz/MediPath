@@ -4,6 +4,7 @@ import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { StarRatingOption } from '../../models/review-page.model';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-review-visit-dialog',
@@ -14,6 +15,7 @@ import { StarRatingOption } from '../../models/review-page.model';
 export class ReviewVisitDialog {
   private ref = inject(DynamicDialogRef);
   private config = inject(DynamicDialogConfig);
+  protected translationService = inject(TranslationService);
 
   comments = '';
   doctorRating: number | null = null;

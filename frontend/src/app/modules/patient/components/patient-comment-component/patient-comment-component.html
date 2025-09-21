@@ -6,7 +6,7 @@
     </div>
     <div class="date-with-review-grade">
       <span class="date"
-        >Date of visit: <span>{{ comment().dateOfVisit | date }} </span></span
+        >{{ translationService.translate('patient.comments.dateOfVisit') }} <span>{{ comment().dateOfVisit | date }} </span></span
       >
       <div class="stars">
         Review:
@@ -19,7 +19,7 @@
     </div>
   </div>
   <p class="institution">
-    <span>Institution:</span> {{ comment().visitedInstitution }}
+    <span>{{ translationService.translate('patient.comments.institution') }}</span> {{ comment().visitedInstitution }}
   </p>
   <span class="content"> {{ comment().content }}</span>
 </div>

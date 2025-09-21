@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import {
   Hospital,
@@ -6,6 +6,7 @@ import {
 } from '../../../shared/components/ui/search-result.component/components/hospital-card.component/hospital-card.component';
 import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 import { Comment } from '../../models/doctor.model';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-institution-page',
@@ -14,6 +15,8 @@ import { Comment } from '../../models/doctor.model';
   styleUrl: './institution-page.scss',
 })
 export class InstitutionPage {
+  protected translationService = inject(TranslationService);
+
   sampleHospital: Hospital = {
     id: '1',
     name: 'Szpital kliniczny',

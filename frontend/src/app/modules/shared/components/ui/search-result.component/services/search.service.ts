@@ -67,6 +67,7 @@ export class SearchService {
       })
       .pipe(
         map((response) => {
+          console.log('Raw search response:', response);
           if (searchQuery.category === SearchType.DOCTOR) {
             const doctors = (response.result as unknown[]).map((doc) =>
               this.mapApiDoctorToComponentFormat(doc as ApiDoctor),
@@ -141,6 +142,7 @@ export class SearchService {
             time: timeString,
             available: !slot.isBooked,
             booked: slot.isBooked,
+            id: slot.id,
           };
         }),
       };
