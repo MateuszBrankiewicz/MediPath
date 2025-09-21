@@ -172,7 +172,7 @@ export class TopBarComponent {
   }
 
   private navigateToSettings(): void {
-    this.router.navigate(['/settings']);
+    this.router.navigate(['/preferences']);
   }
 
   protected toggleUserMenu(event: Event): void {
