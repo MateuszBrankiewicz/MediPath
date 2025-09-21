@@ -29,7 +29,7 @@ public class SearchController {
     @Autowired
     ScheduleRepository scheduleRepository;
 
-    @GetMapping(value = {"/search/{query}", "/search"})
+    @GetMapping(value = {"/search/{query}", "/search", "/search/"})
     public ResponseEntity<Map<String, Object>> search(@PathVariable(required = false) String query, @RequestParam("type") String type, @RequestParam(value = "city", defaultValue = ".*") String city, @RequestParam(value = "specialisations", defaultValue = "") String specialisations) {
 
         if(query == null || query.isBlank()) {

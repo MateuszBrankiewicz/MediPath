@@ -15,6 +15,9 @@ public interface VisitRepository extends MongoRepository<Visit, String> {
     @Query("{'patient.patientId': ?0, 'time.startTime': { $gt: new Date() }}")
     ArrayList<Visit> getUpcomingVisits(String patientID);
 
-    @Aggregation({"{ $unwind: { path: \"$codes\" } }", " { $match: { \"patient.userId\": \"?0\", \"codes.isActive\": true } }", "{ $project:  { \"codes.codeType\": 1, \"codes.code\": 1, _id: 0 } }"})
-    ArrayList<Map<String, Object>> getActiveCodesForPatient(String patientID);
+    @Query("{'patient.patientId': ?0}")
+    ArrayList<Visit> getAllVisitsForPatient(String patientID);
+
+    @Aggregation({"{ $unwind: { path: \"$codes\" } }", " { $match: { \"patient.userId\": \"?0\" } }", "{ $project:  { \"codes.codeType\": 1, \"codes.code\": 1, _id: 0, date: { $dateToString: { format: \"%Y-%m-%dT%H:%M:%S.%LZ\", date: \"$time.endTime\" }}, doctor: {$concat: [\"$doctor.doctorName\", \" \", \"$doctor.doctorSurname\"]} } }"})
+    ArrayList<Map<String, Object>> getCodesForPatient(String patientID);
 }
