@@ -1,4 +1,5 @@
 export interface TimeSlot {
+  id: string;
   time: string;
   available: boolean;
   booked?: boolean;
@@ -32,6 +33,7 @@ export interface BookAppointment {
   doctor: Doctor;
   day: string;
   time: string;
+  slotId?: string;
 }
 
 export interface AddressChange {

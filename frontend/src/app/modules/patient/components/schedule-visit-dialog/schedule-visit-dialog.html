@@ -2,7 +2,10 @@
   <div class="dialog-content">
     <div class="left-section">
       <app-calendar-schedule
-        (dateTimeSelected)="onDateTimeSelected($event)">
+        (dateTimeSelected)="onDateTimeSelected($event)"
+        [availableAppointments]="availableDays()"
+        [initialSelectedDate]="rescheduleData().selectedDate || null"
+        [initialSelectedTime]="rescheduleData().selectedTime || null">
       </app-calendar-schedule>
     </div>
 

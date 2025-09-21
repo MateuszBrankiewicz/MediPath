@@ -23,7 +23,7 @@
         </div>
 
         <div class="day-names">
-          @for (dayName of dayNames; track dayName) {
+          @for (dayName of dayNames; track $index) {
             <div class="day-name">
               {{ dayName }}
             </div>
@@ -59,7 +59,7 @@
                 [class.selected]="selectedTime() === slot.time"
                 [class.unavailable]="!slot.available"
                 [disabled]="!slot.available"
-                (click)="onTimeSelect(slot.time)">
+                (click)="onTimeSelect(slot)">
                 {{ slot.time }}
               </button>
             }

@@ -42,6 +42,7 @@ export class DoctorCardComponent implements OnInit {
         doctor: this.doctor(),
         day: day.date,
         time: timeSlot.time,
+        slotId: timeSlot.id,
       });
     }
   }

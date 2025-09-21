@@ -32,5 +32,6 @@ export interface RescheduleData {
   institution: string;
   selectedDate?: Date;
   selectedTime?: string;
+  selectedSlotId?: string;
   patientRemarks?: string;
 }

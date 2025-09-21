@@ -1,18 +1,27 @@
-import { Component, computed, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  input,
+  output,
+  signal,
+  effect,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 
-interface TimeSlot {
+export interface TimeSlot {
+  id: string;
   time: string;
   available: boolean;
+  booked: boolean;
 }
 
-interface AvailableDay {
-  date: Date;
+export interface AvailableDay {
+  date: Date | string;
   slots: TimeSlot[];
 }
 
-interface CalendarDay {
+export interface CalendarDay {
   date: Date;
   isCurrentMonth: boolean;
   isToday: boolean;
@@ -27,40 +36,20 @@ interface CalendarDay {
   styleUrl: './calendar-schedule.scss',
 })
 export class CalendarSchedule {
-  public readonly dateTimeSelected = output<{ date: Date; time: string }>();
+  public readonly dateTimeSelected = output<{
+    date: Date;
+    time: string;
+    slotId?: string;
+  }>();
+
+  public readonly initialSelectedDate = input<Date | string | null>(null);
+  public readonly initialSelectedTime = input<string | null>(null);
 
   public readonly selectedDate = signal<Date | null>(null);
   public readonly selectedTime = signal<string | null>(null);
   public readonly currentMonth = signal<Date>(new Date());
 
-  private readonly availableAppointments = signal<AvailableDay[]>([
-    {
-      date: new Date(2025, 8, 16),
-      slots: [
-        { time: '8:00 am', available: true },
-        { time: '8:20 am', available: true },
-        { time: '8:40 am', available: true },
-        { time: '9:20 am', available: true },
-        { time: '10:40 am', available: true },
-        { time: '11:20 am', available: true },
-        { time: '11:40 am', available: true },
-        { time: '12:00 am', available: false },
-        { time: '1:20 pm', available: true },
-        { time: '1:40 pm', available: true },
-      ],
-    },
-    {
-      date: new Date(2025, 8, 17),
-      slots: [
-        { time: '8:00 am', available: true },
-        { time: '9:00 am', available: true },
-        { time: '10:00 am', available: false },
-        { time: '11:00 am', available: true },
-        { time: '2:00 pm', available: true },
-        { time: '3:00 pm', available: true },
-      ],
-    },
-  ]);
+  public readonly availableAppointments = input<AvailableDay[]>([]);
 
   public readonly monthNames = [
     'January',
@@ -80,6 +69,55 @@ export class CalendarSchedule {
   public readonly dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   public Math = Math;
+
+  constructor() {
+    effect(() => {
+      const appointments = this.availableAppointments();
+      const initialDate = this.initialSelectedDate();
+      const initialTime = this.initialSelectedTime();
+
+      if (initialDate) {
+        const date =
+          typeof initialDate === 'string' ? new Date(initialDate) : initialDate;
+        this.selectedDate.set(date);
+        this.selectedTime.set(initialTime);
+      }
+
+      if (appointments.length > 0) {
+        const targetDate = initialDate
+          ? typeof initialDate === 'string'
+            ? new Date(initialDate)
+            : initialDate
+          : this.findFirstAvailableDate(appointments);
+
+        if (targetDate) {
+          this.navigateToMonth(targetDate);
+        }
+      }
+    });
+  }
+
+  private findFirstAvailableDate(appointments: AvailableDay[]): Date | null {
+    if (appointments.length === 0) return null;
+
+    const sortedAppointments = [...appointments].sort((a, b) => {
+      const dateA = typeof a.date === 'string' ? new Date(a.date) : a.date;
+      const dateB = typeof b.date === 'string' ? new Date(b.date) : b.date;
+      return dateA.getTime() - dateB.getTime();
+    });
+
+    const firstDate = sortedAppointments[0].date;
+    return typeof firstDate === 'string' ? new Date(firstDate) : firstDate;
+  }
+
+  private navigateToMonth(targetDate: Date): void {
+    const targetMonth = new Date(
+      targetDate.getFullYear(),
+      targetDate.getMonth(),
+      1,
+    );
+    this.currentMonth.set(targetMonth);
+  }
 
   public readonly calendarDays = computed(() => {
     const currentMonth = this.currentMonth();
@@ -135,9 +173,11 @@ export class CalendarSchedule {
     const selected = this.selectedDate();
     if (!selected) return [];
 
-    const appointment = this.availableAppointments().find(
-      (app) => app.date.toDateString() === selected.toDateString(),
-    );
+    const appointment = this.availableAppointments().find((app) => {
+      const appDate =
+        typeof app.date === 'string' ? new Date(app.date) : app.date;
+      return appDate.toDateString() === selected.toDateString();
+    });
 
     return appointment?.slots || [];
   });
@@ -174,11 +214,6 @@ export class CalendarSchedule {
       return;
     }
 
-    if (!calendarDay.isCurrentMonth) {
-      console.log('Date is not in current month');
-      return;
-    }
-
     console.log('Setting selected date to:', calendarDay.date);
     this.selectedDate.set(calendarDay.date);
     this.selectedTime.set(null);
@@ -186,22 +221,32 @@ export class CalendarSchedule {
     console.log('Selected date is now:', this.selectedDate());
   }
 
-  public onTimeSelect(time: string): void {
+  public onTimeSelect(slot: TimeSlot): void {
     if (!this.selectedDate()) return;
 
-    this.selectedTime.set(time);
+    this.selectedTime.set(slot.time);
+
+    console.log('Calendar onTimeSelect - slot:', slot);
+    console.log('Emitting slotId:', slot.id);
 
     this.dateTimeSelected.emit({
       date: this.selectedDate()!,
-      time: time,
+      time: slot.time,
+      slotId: slot.id,
     });
   }
 
-  public isDateAvailable = (date: Date): boolean => {
-    return this.availableAppointments().some(
-      (app) => app.date.toDateString() === date.toDateString(),
-    );
-  };
+  protected isDateAvailable(date: Date): boolean {
+    return this.availableAppointments().some((app) => {
+      const appDate =
+        typeof app.date === 'string' ? new Date(app.date) : app.date;
+      if (!(appDate instanceof Date) || isNaN(appDate.getTime())) {
+        return false;
+      }
+
+      return appDate.toDateString() === date.toDateString();
+    });
+  }
 
   public isDateSelected(calendarDay: CalendarDay): boolean {
     const selected = this.selectedDate();
