@@ -1,0 +1,8 @@
+.breadcrumb{
+    --p-breadcrumb-background: transparent !important;
+        --p-breadcrumb-color: var(--p-text-color);
+
+  .p-breadcrumb-home-item{
+    display: none;
+  }
+}

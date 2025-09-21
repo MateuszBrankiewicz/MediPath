@@ -1,0 +1,73 @@
+<div class="calendar-schedule">
+  <div class="schedule-layout">
+    <div class="date-selection">
+      <h3>Select date</h3>
+
+      <div class="custom-calendar">
+        <div class="calendar-header">
+          <p-button
+            icon="pi pi-chevron-left"
+            styleClass="nav-button"
+            (onClick)="previousMonth()"
+            [text]="true">
+          </p-button>
+
+          <span class="month-year">{{ monthYearDisplay() }}</span>
+
+          <p-button
+            icon="pi pi-chevron-right"
+            styleClass="nav-button"
+            (onClick)="nextMonth()"
+            [text]="true">
+          </p-button>
+        </div>
+
+        <div class="day-names">
+          @for (dayName of dayNames; track dayName) {
+            <div class="day-name">
+              {{ dayName }}
+            </div>
+          }
+        </div>
+
+        <div class="calendar-grid">
+          @for (calendarDay of calendarDays(); track calendarDay.dayNumber + '-' + calendarDay.isCurrentMonth) {
+            <div
+              class="calendar-day"
+              [class.other-month]="!calendarDay.isCurrentMonth"
+              [class.today]="calendarDay.isToday"
+              [class.has-appointments]="calendarDay.hasAppointments"
+              [class.selected]="isDateSelected(calendarDay)"
+              [class.selectable]="calendarDay.hasAppointments"
+              (click)="onDateSelect(calendarDay)">
+              {{ calendarDay.dayNumber }}
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="time-selection">
+      <h3>Available terms</h3>
+
+      @if (selectedDate()) {
+        <div class="time-slots">
+          <div class="time-grid">
+            @for (slot of availableTimes(); track slot.time) {
+              <button
+                class="time-slot"
+                [class.selected]="selectedTime() === slot.time"
+                [class.unavailable]="!slot.available"
+                [disabled]="!slot.available"
+                (click)="onTimeSelect(slot.time)">
+                {{ slot.time }}
+              </button>
+            }
+          </div>
+        </div>
+      } @else {
+        <p class="no-date-message">Please select a date to see available times</p>
+      }
+    </div>
+  </div>
+</div>

@@ -18,7 +18,7 @@
   overflow: hidden;
 
   .primary-content {
-    min-width: 0; // Pozwala na shrinking
+    min-width: 0;
   }
 
   .secondary-content {
@@ -29,7 +29,7 @@
     }
 
     @media (max-width: 768px) {
-      display: none; // Ukryj na mobile
+      display: none;
     }
   }
 }
@@ -39,7 +39,6 @@
   padding: 1rem 2rem 1.5rem;
 }
 
-// Responsive layout
 @media (max-width: 768px) {
   .dashboard-header {
     padding: 1rem;

@@ -1,0 +1,228 @@
+.review-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 500px;
+  min-height: 450px;
+
+  h3 {
+    color: #2c3e50;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 8px 0;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 16px;
+  }
+
+  .content-row {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+
+    .left-section {
+      flex: 1;
+    }
+
+    .right-section {
+      flex: 0 0 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    label {
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .comments-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #2c3e50;
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+
+      &:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+      }
+
+      &::placeholder {
+        color: #7f8c8d;
+        font-style: italic;
+      }
+    }
+
+    :deep(.star-select) {
+      .p-select {
+        width: 100%;
+
+        .p-select-label {
+          padding: 12px 16px;
+          font-size: 14px;
+          color: #2c3e50;
+          border: 2px solid #e9ecef;
+          border-radius: 8px;
+
+          &.p-placeholder {
+            color: #7f8c8d;
+            font-style: italic;
+          }
+        }
+
+        &:not(.p-disabled):hover .p-select-label {
+          border-color: #007bff;
+        }
+
+        &.p-focus .p-select-label {
+          border-color: #007bff;
+          box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+      }
+
+      .p-select-overlay {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+        .p-select-list {
+          padding: 8px 0;
+
+          .p-select-option {
+            padding: 10px 16px;
+            font-size: 18px;
+            color: #2c3e50;
+
+            &:hover {
+              background-color: #f8f9fa;
+            }
+
+            &.p-selected {
+              background-color: #007bff;
+              color: white;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+    padding-top: 24px;
+    border-top: 1px solid #e9ecef;
+
+    :deep(.cancel-btn) {
+      .p-button {
+        padding: 12px 32px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        background-color: #6c757d;
+        border: 2px solid #6c757d;
+        color: white;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background-color: #5a6268;
+          border-color: #5a6268;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+
+    :deep(.submit-btn) {
+      .p-button {
+        padding: 12px 32px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border: 2px solid #007bff;
+        color: white;
+        transition: all 0.2s ease;
+
+        &:hover:not(:disabled) {
+          background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+          border-color: #0056b3;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .review-container {
+    min-width: auto;
+    padding: 16px;
+
+    h3 {
+      font-size: 20px;
+    }
+
+    .content-row {
+      flex-direction: column;
+      gap: 20px;
+
+      .right-section {
+        flex: 1;
+        gap: 16px;
+      }
+    }
+
+    .dialog-actions {
+      flex-direction: column;
+      gap: 12px;
+
+      :deep(.cancel-btn),
+      :deep(.submit-btn) {
+        .p-button {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+:host ::ng-deep .p-dialog .p-dialog-header {
+  display: none;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-content {
+  padding: 0;
+  border-radius: 12px;
+}

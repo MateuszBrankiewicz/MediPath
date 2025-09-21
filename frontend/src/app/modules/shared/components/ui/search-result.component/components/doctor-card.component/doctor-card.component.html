@@ -40,12 +40,14 @@
       </div>
 
       <div class="current-address">
-        {{ doctor().addresses[selectedAddressIndex()] }}
+        {{ doctor().addresses[selectedAddressIndex()].address | addressFormat}}
+        <p>{{ doctor().addresses[selectedAddressIndex()].institution }}</p>
       </div>
     </div>
   </div>
 
   <div class="schedule-section">
+    @if(doctor().schedule && doctor().schedule.length > 0) {
     <div class="schedule-days">
       @for (day of doctor().schedule; track day) {
         <div class="day-column">
@@ -74,7 +76,11 @@
           </div>
         </div>
       }
+
     </div>
+  } @else {
+      <div class="no-schedule">No schedule available</div>
+    }
 
     <button class="next-btn">
       <span class="arrow">→</span>

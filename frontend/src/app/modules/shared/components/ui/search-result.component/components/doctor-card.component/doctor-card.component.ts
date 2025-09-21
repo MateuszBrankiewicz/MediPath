@@ -7,10 +7,11 @@ import {
   Doctor,
   TimeSlot,
 } from '../../search-result.model';
+import { AddressFormatPipe } from '../../../../../../../core/pipes/address-format-pipe';
 
 @Component({
   selector: 'app-doctor-card',
-  imports: [CommonModule],
+  imports: [CommonModule, AddressFormatPipe],
   templateUrl: './doctor-card.component.html',
   styleUrl: './doctor-card.component.scss',
 })
@@ -62,7 +63,6 @@ export class DoctorCardComponent implements OnInit {
   }
 
   onShowMoreHours(day: DaySchedule): void {
-    // Logika do pokazania więcej godzin
     console.log('Show more hours for', day.dayName);
   }
 }
