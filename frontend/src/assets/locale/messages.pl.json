@@ -282,5 +282,56 @@
   "doctor.dashboard.selectDate": "Wybierz datę",
   "doctor.dashboard.availableTerms": "Dostępne terminy",
   "doctor.dashboard.pleaseSelectDate": "Wybierz datę aby zobaczyć dostępne godziny",
-  "doctor.dashboard.today": "Dzisiaj"
+  "doctor.dashboard.today": "Dzisiaj",
+  "doctor.schedule.day": "Harmonogram",
+  "doctor.schedule.thursday": "Czwartek",
+  "doctor.schedule.rescheduleVisit": "PRZEŁÓŻ WIZYTĘ",
+  "doctor.schedule.cancelVisit": "ANULUJ WIZYTĘ",
+
+  "months.january": "Styczeń",
+  "months.february": "Luty",
+  "months.march": "Marzec",
+  "months.april": "Kwiecień",
+  "months.may": "Maj",
+  "months.june": "Czerwiec",
+  "months.july": "Lipiec",
+  "months.august": "Sierpień",
+  "months.september": "Wrzesień",
+  "months.october": "Październik",
+  "months.november": "Listopad",
+  "months.december": "Grudzień",
+
+  "weekdays.monday": "Poniedziałek",
+  "weekdays.tuesday": "Wtorek",
+  "weekdays.wednesday": "Środa",
+  "weekdays.thursday": "Czwartek",
+  "weekdays.friday": "Piątek",
+  "weekdays.saturday": "Sobota",
+  "weekdays.sunday": "Niedziela",
+
+  "weekdays.short.monday": "PON",
+  "weekdays.short.tuesday": "WTO",
+  "weekdays.short.wednesday": "ŚRO",
+  "weekdays.short.thursday": "CZW",
+  "weekdays.short.friday": "PIĄ",
+  "weekdays.short.saturday": "SOB",
+  "weekdays.short.sunday": "NIE",
+
+  "doctor.schedule.patientRemarks": "Uwagi pacjenta:",
+
+  "doctor.visits.title": "Historia wizyt",
+  "doctor.visits.allStatuses": "Wszystkie statusy",
+  "doctor.visits.scheduled": "Zaplanowane",
+  "doctor.visits.completed": "Zakończone",
+  "doctor.visits.canceled": "Anulowane",
+  "doctor.visits.searchPatient": "Szukaj pacjenta...",
+  "doctor.visits.patientDetails": "Szczegóły pacjenta",
+  "doctor.visits.cancel": "Anuluj",
+
+  "doctor.patients.title": "Ostatni pacjenci",
+  "doctor.patients.lastVisit": "Ostatnia wizyta:",
+  "doctor.patients.viewProfile": "ZOBACZ PROFIL",
+
+  "doctor.visits.noVisits": "Brak wizyt",
+  "doctor.visits.noVisitsMessage": "Nie znaleziono wizyt spełniających wybrane kryteria."
 }

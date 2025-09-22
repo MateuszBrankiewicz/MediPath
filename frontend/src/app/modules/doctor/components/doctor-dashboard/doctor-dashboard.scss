@@ -11,8 +11,13 @@
   grid-template-columns: 2fr 1fr;
   gap: 1.25rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, var(--p-surface-50) 0%, var(--p-surface-100) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--p-surface-50) 0%,
+    var(--p-surface-100) 100%
+  );
   max-width: 100%;
+  align-content: center;
   width: 100%;
   margin: 0;
 
@@ -103,7 +108,6 @@
     height: 100%;
 
     ::ng-deep .stats-card {
-
       .p-card-body {
         height: 100%;
         display: flex;
@@ -272,7 +276,7 @@
       }
 
       &.has-appointments::after {
-        content: '';
+        content: "";
         position: absolute;
         bottom: 3px;
         right: 3px;
@@ -299,7 +303,7 @@
   min-height: 140px;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;

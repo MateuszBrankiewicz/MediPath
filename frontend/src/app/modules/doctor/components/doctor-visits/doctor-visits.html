@@ -1,0 +1,64 @@
+<div class="visits-container">
+  <div class="visits-header">
+    <h2 class="visits-title">
+      {{ translationService.translate("doctor.visits.title") }}
+    </h2>
+    <div class="visits-filters">
+      <select
+        class="status-filter"
+        (change)="onStatusChange($event)"
+        [value]="selectedStatus"
+      >
+        <option value="">
+          {{ translationService.translate("doctor.visits.allStatuses") }}
+        </option>
+        <option value="scheduled">
+          {{ translationService.translate("doctor.visits.scheduled") }}
+        </option>
+        <option value="completed">
+          {{ translationService.translate("doctor.visits.completed") }}
+        </option>
+        <option value="canceled">
+          {{ translationService.translate("doctor.visits.canceled") }}
+        </option>
+      </select>
+      <div class="search-box">
+        <input
+          type="text"
+          [placeholder]="
+            translationService.translate('doctor.visits.searchPatient')
+          "
+          class="search-input"
+          (input)="onSearchChange($event)"
+          [value]="searchTerm"
+        />
+        <i class="search-icon pi pi-search"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="visits-grid">
+    @for (visit of filteredVisits; track visit.id) {
+      <app-appointment-card
+        [appointment]="visit"
+        (patientDetailsClick)="viewPatientDetails($event)"
+        (cancelVisitClick)="cancelVisit($event)"
+      >
+      </app-appointment-card>
+    }
+  </div>
+  @if (filteredVisits.length === 0) {
+    <div class="no-visits">
+      <div class="no-visits-content">
+        <i
+          class="pi pi-calendar"
+          style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem"
+        ></i>
+        <h3>{{ translationService.translate("doctor.visits.noVisits") }}</h3>
+        <p>
+          {{ translationService.translate("doctor.visits.noVisitsMessage") }}
+        </p>
+      </div>
+    </div>
+  }
+</div>

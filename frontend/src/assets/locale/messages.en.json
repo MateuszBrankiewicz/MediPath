@@ -281,5 +281,57 @@
   "doctor.dashboard.selectDate": "Select a date",
   "doctor.dashboard.availableTerms": "Available times",
   "doctor.dashboard.pleaseSelectDate": "Please select a date to see available times",
-  "doctor.dashboard.today": "Today"
+  "doctor.dashboard.today": "Today",
+
+  "doctor.schedule.day": "Day",
+  "doctor.schedule.thursday": "Thursday",
+  "doctor.schedule.rescheduleVisit": "RESCHEDULE VISIT",
+  "doctor.schedule.cancelVisit": "CANCEL VISIT",
+
+  "months.january": "January",
+  "months.february": "February",
+  "months.march": "March",
+  "months.april": "April",
+  "months.may": "May",
+  "months.june": "June",
+  "months.july": "July",
+  "months.august": "August",
+  "months.september": "September",
+  "months.october": "October",
+  "months.november": "November",
+  "months.december": "December",
+
+  "weekdays.monday": "Monday",
+  "weekdays.tuesday": "Tuesday",
+  "weekdays.wednesday": "Wednesday",
+  "weekdays.thursday": "Thursday",
+  "weekdays.friday": "Friday",
+  "weekdays.saturday": "Saturday",
+  "weekdays.sunday": "Sunday",
+
+  "weekdays.short.monday": "MON",
+  "weekdays.short.tuesday": "TUE",
+  "weekdays.short.wednesday": "WED",
+  "weekdays.short.thursday": "THU",
+  "weekdays.short.friday": "FRI",
+  "weekdays.short.saturday": "SAT",
+  "weekdays.short.sunday": "SUN",
+
+  "doctor.schedule.patientRemarks": "Patient's remarks:",
+
+  "doctor.visits.title": "Visits History",
+  "doctor.visits.allStatuses": "All Statuses",
+  "doctor.visits.scheduled": "Scheduled",
+  "doctor.visits.completed": "Completed",
+  "doctor.visits.canceled": "Canceled",
+  "doctor.visits.searchPatient": "Search patient...",
+  "doctor.visits.patientDetails": "Patient Details",
+  "doctor.visits.cancel": "Cancel",
+
+  "doctor.patients.title": "Recent patients",
+  "doctor.patients.lastVisit": "Last visit:",
+  "doctor.patients.viewProfile": "VIEW PROFILE",
+
+  "doctor.visits.noVisits": "No visits",
+  "doctor.visits.noVisitsMessage": "No visits found matching the selected criteria."
 }
