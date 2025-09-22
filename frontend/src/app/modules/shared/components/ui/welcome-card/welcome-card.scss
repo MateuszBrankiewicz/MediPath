@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.welcome-card {
+  border-radius: 16px;
+  border: none;
+  color: white;
+
+  ::ng-deep .p-card-body {
+    padding: 1.5rem;
+  }
+
+  &--default {
+    background: var(--p-primary-color);
+  }
+
+  &--gradient {
+    background: linear-gradient(135deg, var(--p-primary-color), var(--p-primary-600));
+  }
+}
+
+.welcome-content {
+  .welcome-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: white;
+    line-height: 1.3;
+
+    @media (max-width: 768px) {
+      font-size: 1.25rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.125rem;
+    }
+  }
+
+  .welcome-subtitle {
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.9;
+    color: white;
+    line-height: 1.4;
+
+    @media (max-width: 768px) {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+/* Animation on hover */
+.welcome-card {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+}

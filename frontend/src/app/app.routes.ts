@@ -30,6 +30,13 @@ export const routes: Routes = [
       import('./modules/patient/patient.routes').then((m) => m.PATIENT_ROUTES),
   },
   {
+    path: 'doctor',
+    canActivate: [authGuard, roleGuard([UserRoles.DOCTOR])],
+    loadChildren: () =>
+      import('./modules/doctor/doctor.routes').then((m) => m.AUTH_ROUTES),
+  },
+
+  {
     path: '**',
     redirectTo: '/auth/login',
   },
