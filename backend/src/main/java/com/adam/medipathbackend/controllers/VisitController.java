@@ -157,6 +157,40 @@ public class VisitController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PutMapping(value = {"/{visitid}/complete/", "/{visitid}/complete"})
+    public ResponseEntity<Map<String, String>> completeVisit(@PathVariable String visitid, @RequestBody CompleteVisitForm completionForm, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Visit> optVisit = visitRepository.findById(visitid);
+        if(optVisit.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Visit visit = optVisit.get();
+        if(!visit.getDoctor().getUserId().equals(loggedUserID)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(visit.getStatus().equals("Completed")) {
+            return new ResponseEntity<>(Map.of("message", "this visit is already completed"), HttpStatus.BAD_REQUEST);
+        }
+        if(visit.getStatus().equals("Cancelled")) {
+            return new ResponseEntity<>(Map.of("message", "this visit is already cancelled"), HttpStatus.BAD_REQUEST);
+        }
+        visit.setStatus("Completed");
+        ArrayList<Code> codes = new ArrayList<>();
+        for(String prescriptionCode: completionForm.getPrescriptions()) {
+            codes.add(new Code(Code.CodeType.PRESCRIPTION, prescriptionCode, true));
+        }
+        for(String prescriptionCode: completionForm.getReferrals()) {
+            codes.add(new Code(Code.CodeType.REFERRAL, prescriptionCode, true));
+        }
+        visit.setCodes(codes);
+        visit.setNote(completionForm.getNote());
+        visitRepository.save(visit);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @GetMapping(value = {"/{visitid}", "/{visitid}/"})
     public ResponseEntity<Map<String, Object>> getVisitDetails(@PathVariable String visitid, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
