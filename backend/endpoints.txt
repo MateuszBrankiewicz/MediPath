@@ -642,3 +642,23 @@ Fields:
 Reason: successfully retrieved all comments authored by the user
 
 
+/visits/{visitid]/complete
+Method: PUT
+
+Path variables:
+    visitid - object id of the visit
+
+Body:
+    prescriptions: Array of strings containing codes for prescriptions
+    referrals: Array of strings containing codes for referrals
+    note: String containing a note for the patient from the doctor
+
+Returns:
+    401 - Not logged in
+    403 - When visit id invalid or user does not have access (not logged in as the doctor in charge of a visit)
+    400 - When visit is already completed or cancelled
+    200 - Success
+
+
+
+
