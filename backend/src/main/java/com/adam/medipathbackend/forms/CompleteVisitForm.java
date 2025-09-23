@@ -1,4 +1,4 @@
-package com.adam.medipathbackend.models;
+package com.adam.medipathbackend.forms;
 
 import java.util.ArrayList;
 

@@ -1,5 +1,8 @@
 package com.adam.medipathbackend.controllers;
 
+import com.adam.medipathbackend.forms.LoginForm;
+import com.adam.medipathbackend.forms.RegistrationForm;
+import com.adam.medipathbackend.forms.ResetForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.CommentRepository;
 import com.adam.medipathbackend.repository.PasswordResetEntryRepository;

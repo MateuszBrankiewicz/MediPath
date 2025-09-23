@@ -1,5 +1,7 @@
 package com.adam.medipathbackend.controllers;
 
+import com.adam.medipathbackend.forms.AddVisitForm;
+import com.adam.medipathbackend.forms.CompleteVisitForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
@@ -12,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
