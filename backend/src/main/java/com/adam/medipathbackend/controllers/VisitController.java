@@ -61,8 +61,6 @@ public class VisitController {
         Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(), time,foundSchedule.getInstitution(), visit.getPatientRemarks());
         foundSchedule.setBooked(true);
         ArrayList<Code> codes = new ArrayList<>();
-        codes.add(new Code(Code.CodeType.PRESCRIPTION, "1234", true));
-        codes.add(new Code(Code.CodeType.REFERRAL, "12345", true));
         newVisit.setCodes(codes);
         visitRepository.save(newVisit);
         scheduleRepository.save(foundSchedule);
