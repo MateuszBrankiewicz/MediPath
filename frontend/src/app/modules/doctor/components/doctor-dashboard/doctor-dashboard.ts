@@ -1,8 +1,17 @@
-import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { Component, inject, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
+import { Router } from '@angular/router';
+import {
+  AvailableDay,
+  TimeSlot,
+} from '../../../shared/components/calendar-schedule/calendar-schedule';
+import {
+  AppointmentItem,
+  AppointmentsList,
+} from '../../../shared/components/ui/appointments-list/appointments-list';
 import {
   StatsCard,
   StatsCardData,
@@ -11,14 +20,6 @@ import {
   WelcomeCard,
   WelcomeCardData,
 } from '../../../shared/components/ui/welcome-card/welcome-card';
-import {
-  AppointmentsList,
-  AppointmentItem,
-} from '../../../shared/components/ui/appointments-list/appointments-list';
-import {
-  AvailableDay,
-  TimeSlot,
-} from '../../../shared/components/calendar-schedule/calendar-schedule';
 
 interface CalendarDay {
   date: number | null;
@@ -46,6 +47,7 @@ interface LocalTimeSlot extends TimeSlot {
 })
 export class DoctorDashboard {
   protected translationService = inject(TranslationService);
+  protected router = inject(Router);
 
   protected readonly doctorName = signal('Jan');
   protected readonly currentDate = signal(new Date());
@@ -249,7 +251,7 @@ export class DoctorDashboard {
   }
 
   protected onViewCurrentVisit(): void {
-    console.log('View current visit clicked');
+    this.router.navigate(['/doctor/current-visit', '1']);
   }
 
   protected onAppointmentClick(appointment: AppointmentItem): void {

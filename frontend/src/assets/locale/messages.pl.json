@@ -333,5 +333,15 @@
   "doctor.patients.viewProfile": "ZOBACZ PROFIL",
 
   "doctor.visits.noVisits": "Brak wizyt",
-  "doctor.visits.noVisitsMessage": "Nie znaleziono wizyt spełniających wybrane kryteria."
+  "doctor.visits.noVisitsMessage": "Nie znaleziono wizyt spełniających wybrane kryteria.",
+
+  "doctor.currentVisit.prescriptions": "Recepty:",
+  "doctor.currentVisit.referrals": "Skierowania:",
+  "doctor.currentVisit.notes": "Notatki:",
+  "doctor.currentVisit.medicalHistory": "Historia medyczna",
+  "doctor.currentVisit.finishVisit": "ZAKOŃCZ WIZYTĘ",
+  "doctor.currentVisit.pinNumber": "Numer PIN",
+
+  "shared.edit": "EDYTUJ",
+  "shared.save": "ZAPISZ"
 }

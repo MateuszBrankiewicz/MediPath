@@ -333,5 +333,15 @@
   "doctor.patients.viewProfile": "VIEW PROFILE",
 
   "doctor.visits.noVisits": "No visits",
-  "doctor.visits.noVisitsMessage": "No visits found matching the selected criteria."
+  "doctor.visits.noVisitsMessage": "No visits found matching the selected criteria.",
+
+  "doctor.currentVisit.prescriptions": "Prescriptions:",
+  "doctor.currentVisit.referrals": "Referrals:",
+  "doctor.currentVisit.notes": "Notes:",
+  "doctor.currentVisit.medicalHistory": "Medical history",
+  "doctor.currentVisit.finishVisit": "FINISH VISIT",
+  "doctor.currentVisit.pinNumber": "Pin Number",
+
+  "shared.edit": "EDIT",
+  "shared.save": "SAVE"
 }

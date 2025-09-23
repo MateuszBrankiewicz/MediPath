@@ -1,0 +1,144 @@
+<div class="current-visit">
+  <div class="breadcrumbs">
+    <span>{{ translationService.translate("navigation.visits") }}</span>
+    <span>›</span>
+    <span class="patient-name">{{ patientName() }}</span>
+  </div>
+
+  <section class="top-cards">
+    <div class="card patient-card">
+      <div class="card-body">
+        <h3 class="name">{{ patientName() }}</h3>
+      </div>
+    </div>
+    <div class="card info-card">
+      <div class="card-body">
+        <div class="label">
+          {{
+            translationService.translate("doctor.currentVisit.prescriptions")
+          }}
+        </div>
+        <div class="value">{{ prescriptions().join(",") }}</div>
+        <button class="btn" type="button" (click)="openEditor('prescriptions')">
+          {{ translationService.translate("shared.edit") }}
+        </button>
+      </div>
+    </div>
+    <div class="card info-card">
+      <div class="card-body">
+        <div class="label">
+          {{ translationService.translate("doctor.currentVisit.referrals") }}
+        </div>
+        <div class="value">{{ referrals().join(",") }}</div>
+        <button class="btn" type="button" (click)="openEditor('referrals')">
+          {{ translationService.translate("shared.edit") }}
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="main-grid">
+    <div class="card notes-card">
+      <div class="card-header">
+        {{ translationService.translate("doctor.currentVisit.notes") }}
+      </div>
+      <div class="card-body">
+        <textarea
+          class="notes-textarea"
+          [value]="notes()"
+          (input)="onNotesChange($event)"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="card history-card">
+      <div class="card-header">
+        {{ translationService.translate("doctor.currentVisit.medicalHistory") }}
+      </div>
+      <div class="card-body">
+        <div class="history-list">
+          @for (item of medicalHistory(); track item.date + item.title) {
+            <div class="history-row">
+              <div class="history-text">{{ item.date }} - {{ item.title }}</div>
+              <button class="icon-btn" type="button" aria-label="details">
+                <i class="pi pi-search"></i>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <button class="primary-btn" type="button" (click)="finishVisit()">
+      {{ translationService.translate("doctor.currentVisit.finishVisit") }}
+    </button>
+  </footer>
+
+  @if (editSidebar() !== "none") {
+    <div class="side-panel-backdrop" (click)="closeEditor()"></div>
+    <aside class="side-panel">
+      <div class="panel-header">
+        <h3>
+          @if (editSidebar() === "prescriptions") {
+            {{
+              translationService.translate("doctor.currentVisit.prescriptions")
+            }}
+          } @else {
+            {{ translationService.translate("doctor.currentVisit.referrals") }}
+          }
+        </h3>
+        <button class="icon-btn" type="button" (click)="closeEditor()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="panel-body">
+        <input
+          class="pin-input"
+          type="text"
+          [placeholder]="
+            translationService.translate('doctor.currentVisit.pinNumber')
+          "
+          [value]="pinDraft()"
+          (input)="onPinDraftChange($event)"
+          (keydown.enter)="addPin()"
+        />
+
+        <div class="pin-list">
+          @if (editSidebar() === "prescriptions") {
+            @for (pin of prescriptions(); track pin + $index) {
+              <div class="pin-row">
+                <span>{{ pin }}</span>
+                <button
+                  class="icon-btn"
+                  type="button"
+                  (click)="removePin($index)"
+                >
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            }
+          } @else {
+            @for (pin of referrals(); track pin + $index) {
+              <div class="pin-row">
+                <span>{{ pin }}</span>
+                <button
+                  class="icon-btn"
+                  type="button"
+                  (click)="removePin($index)"
+                >
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            }
+          }
+        </div>
+
+        <button class="primary-btn" type="button" (click)="saveEditor()">
+          {{ translationService.translate("shared.save") }}
+        </button>
+      </div>
+    </aside>
+  }
+</div>
