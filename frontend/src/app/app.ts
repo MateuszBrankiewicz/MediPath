@@ -1,12 +1,12 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import { filter, map, startWith } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
+import { filter, map, startWith } from 'rxjs';
+import { AuthenticationService } from './core/services/authentication/authentication';
+import { UserRoles } from './core/services/authentication/authentication.model';
 import { NavigationComponent } from './modules/shared/components/ui/navigation/navigation.component';
 import { TopBarComponent } from './modules/shared/components/ui/top-bar-component/top-bar-component';
-import { UserRoles } from './core/services/authentication/authentication.model';
-import { AuthenticationService } from './core/services/authentication/authentication';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +14,7 @@ import { AuthenticationService } from './core/services/authentication/authentica
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App implements OnInit {
+export class App {
   protected readonly router = inject(Router);
   protected readonly authService = inject(AuthenticationService);
 
@@ -44,15 +44,4 @@ export class App implements OnInit {
     const guestRoutes = ['/auth', '/'];
     return !guestRoutes.some((route) => url?.startsWith(route));
   });
-
-  ngOnInit() {
-    this.authService.checkAuthStatus().subscribe({
-      next: () => {
-        console.log('Auth status checked on app start');
-      },
-      error: () => {
-        console.log('Auth check failed - user not authenticated');
-      },
-    });
-  }
 }

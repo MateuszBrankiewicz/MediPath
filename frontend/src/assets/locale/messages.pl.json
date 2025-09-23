@@ -259,9 +259,8 @@
   "accountSettings.deactivateAccount": "DEZAKTYWUJ KONTO",
   "accountSettings.setDefault": "USTAW DOMYŚLNE",
   "accountSettings.saveChanges": "ZAPISZ ZMIANY",
-  "accountSettings.saveChanges": "ZAPISZ ZMIANY"
 
-  
+
   "doctor.dashboard.title": "Panel główny",
   "doctor.dashboard.welcomeBack": "Witaj ponownie",
   "doctor.dashboard.haveNiceDay": "Miłego dnia!",
@@ -345,6 +344,16 @@
   "doctor.currentVisit.pinNumber": "Numer PIN",
 
   "shared.edit": "EDYTUJ",
-  "shared.save": "ZAPISZ"
+  "shared.save": "ZAPISZ",
+
+  "patient.dashboard.loading.prescriptions": "Ładowanie recept...",
+  "patient.dashboard.loading.referrals": "Ładowanie skierowań...",
+  "patient.dashboard.loading.visits": "Ładowanie wizyt...",
+  "patient.dashboard.empty.prescriptions": "Brak dostępnych recept",
+  "patient.dashboard.empty.referrals": "Brak dostępnych skierowań",
+  "patient.dashboard.empty.visits": "Brak nadchodzących wizyt",
+  "patient.dashboard.empty.prescriptionsMessage": "Nie masz obecnie żadnych aktywnych recept.",
+  "patient.dashboard.empty.referralsMessage": "Nie masz obecnie żadnych aktywnych skierowań.",
+  "patient.dashboard.empty.visitsMessage": "Nie masz zaplanowanych wizyt w najbliższym czasie."
 
 }

@@ -257,7 +257,6 @@
   "accountSettings.visitsReminders": "Visits reminders",
   "accountSettings.deactivateAccount": "DEACTIVATE ACCOUNT",
   "accountSettings.setDefault": "SET DEFAULT",
-   "accountSettings.saveChanges": "SAVE CHANGES"
   "accountSettings.saveChanges": "SAVE CHANGES",
 
   "doctor.dashboard.title": "Dashboard",
@@ -344,6 +343,16 @@
   "doctor.currentVisit.pinNumber": "Pin Number",
 
   "shared.edit": "EDIT",
-  "shared.save": "SAVE"
+  "shared.save": "SAVE",
+
+  "patient.dashboard.loading.prescriptions": "Loading prescriptions...",
+  "patient.dashboard.loading.referrals": "Loading referrals...",
+  "patient.dashboard.loading.visits": "Loading visits...",
+  "patient.dashboard.empty.prescriptions": "No prescriptions available",
+  "patient.dashboard.empty.referrals": "No referrals available",
+  "patient.dashboard.empty.visits": "No upcoming visits",
+  "patient.dashboard.empty.prescriptionsMessage": "You don't have any active prescriptions at the moment.",
+  "patient.dashboard.empty.referralsMessage": "You don't have any active referrals at the moment.",
+  "patient.dashboard.empty.visitsMessage": "You don't have any scheduled visits in the near future."
 
 }

@@ -5,8 +5,8 @@ import {
   ForgotPasswordRequest,
   RegisterUser,
 } from '../../../modules/auth/models/auth.constants';
-import { API_URL } from '../../../utils/constants';
 import { SelectOption } from '../../../modules/shared/components/forms/input-for-auth/select-with-search/select-with-search';
+import { API_URL } from '../../../utils/constants';
 import {
   ApiUserResponse,
   getRoleFromCode,
@@ -61,6 +61,7 @@ export class AuthenticationService {
           };
           userInfo.userSettings.lastPanel = lastPanel;
           this.user.set(userInfo);
+          sessionStorage.setItem('userId', response.user.id.toString());
         }),
         catchError((error) => {
           this.user.set(null);
@@ -92,8 +93,8 @@ export class AuthenticationService {
       })
       .pipe(
         tap(() => {
-          console.log('User logged out successfully');
           this.user.set(null);
+          sessionStorage.removeItem('userId');
         }),
       );
   }
