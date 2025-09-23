@@ -1,6 +1,8 @@
 package com.adam.medipathbackend.forms;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -8,8 +10,11 @@ public class AddNotificationForm {
     private String userId;
     private String content;
     private String title;
+    @JsonFormat(pattern="HH:mm", timezone="Europe/Warsaw")
     private LocalTime reminderTime;
+    @JsonFormat(pattern="yyyy-MM-dd", timezone="Europe/Warsaw")
     private LocalDate startDate;
+    @JsonFormat(pattern="yyyy-MM-dd", timezone="Europe/Warsaw")
     private LocalDate endDate;
 
     public AddNotificationForm(String userId, String content, String title, LocalTime reminderTime, LocalDate startDate, LocalDate endDate) {
