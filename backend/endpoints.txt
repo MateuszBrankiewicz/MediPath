@@ -642,6 +642,7 @@ Fields:
 Reason: successfully retrieved all comments authored by the user
 
 
+
 /visits/{visitid]/complete
 Method: PUT
 
@@ -666,3 +667,4 @@ Returns:
 Type: Websocket
 
 Subscribe to this websocket to receive notifications
+

@@ -122,14 +122,12 @@
   }
 }
 
-// Success variant styling
 :host(.success-dialog) {
   .dialog-content {
     background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
   }
 }
 
-// Error variant styling
 :host(.error-dialog) {
   .dialog-content {
     background: linear-gradient(135deg, #fef2f2 0%, #fdf2f2 100%);

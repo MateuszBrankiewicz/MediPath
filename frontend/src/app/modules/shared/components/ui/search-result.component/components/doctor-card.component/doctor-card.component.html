@@ -10,7 +10,7 @@
 
         <div class="doctor-specialization">
           <span>{{ doctor().specialisation }}</span>
-          <button class="more-btn" (click)="onShowMore()">More</button>
+          <button class="more-btn" (click)="onShowMore()">{{ translationService.translate('shared.doctorCard.more') }}</button>
         </div>
 
         <div class="doctor-rating">
@@ -21,7 +21,7 @@
               >
             }
           </div>
-          <span class="reviews-count">{{ doctor().reviewsCount }} opinion</span>
+          <span class="reviews-count">{{ doctor().reviewsCount }} {{ translationService.translate('shared.doctorCard.opinion') }}</span>
         </div>
       </div>
     </div>
@@ -34,18 +34,20 @@
             [class.active]="i === selectedAddressIndex()"
             (click)="onAddressTabClick(i)"
           >
-            Adres {{ i + 1 }}
+            {{ translationService.translate('shared.doctorCard.address') }} {{ i + 1 }}
           </button>
         }
       </div>
 
       <div class="current-address">
-        {{ doctor().addresses[selectedAddressIndex()] }}
+        {{ doctor().addresses[selectedAddressIndex()].address | addressFormat}}
+        <p>{{ doctor().addresses[selectedAddressIndex()].institution }}</p>
       </div>
     </div>
   </div>
 
   <div class="schedule-section">
+    @if(doctor().schedule && doctor().schedule.length > 0) {
     <div class="schedule-days">
       @for (day of doctor().schedule; track day) {
         <div class="day-column">
@@ -69,12 +71,17 @@
             }
 
             <button class="more-hours-btn" (click)="onShowMoreHours(day)">
-              More hours ⌄
+              {{ translationService.translate('shared.doctorCard.moreHours') }} ⌄
             </button>
           </div>
         </div>
       }
+
+
     </div>
+  } @else {
+      <div class="no-schedule">{{ translationService.translate('shared.doctorCard.noSchedule') }}</div>
+    }
 
     <button class="next-btn">
       <span class="arrow">→</span>

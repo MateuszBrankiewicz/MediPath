@@ -41,9 +41,10 @@ export class NavigationComponent {
 
   readonly menuItems = computed(() => {
     const items = this.navigationService.getMenuItemsForRole(
-      typeof this.user()?.roleCode === 'number'
+      typeof this.user()?.userSettings.lastPanel === 'number'
         ? UserRoles.GUEST
-        : ((this.user()?.roleCode as UserRoles) ?? UserRoles.GUEST),
+        : ((this.user()?.userSettings.lastPanel as UserRoles) ??
+            UserRoles.GUEST),
     );
     return this.convertToPrimeMenuItems(items);
   });

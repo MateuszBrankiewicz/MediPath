@@ -1,8 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { TranslationService } from '../../../../../../../core/services/translation/translation.service';
 
 export interface Hospital {
-  id: number;
+  id: string;
   name: string;
   address: string;
   specialisation: string[];
@@ -17,6 +18,7 @@ export interface Hospital {
   styleUrl: './hospital-card.component.scss',
 })
 export class HospitalCardComponent {
+  protected translationService = inject(TranslationService);
   public readonly hospital = input.required<Hospital>();
   public readonly editClicked? = output<Hospital>();
   public readonly disable? = output<Hospital>();
@@ -36,6 +38,9 @@ export class HospitalCardComponent {
   }
 
   protected getSpecialisationText(): string {
+    if (!this.hospital().specialisation) {
+      return '';
+    }
     return this.hospital().specialisation.join(', ');
   }
 }

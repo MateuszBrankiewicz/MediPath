@@ -1,12 +1,14 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { MediPathMenuItem } from './navigation.model';
 import { UserRoles } from '../../../../../core/services/authentication/authentication.model';
+import { TranslationService } from '../../../../../core/services/translation/translation.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NavigationService {
   private readonly _menuItems = signal<MediPathMenuItem[]>([]);
+  private translationService = inject(TranslationService);
 
   public readonly menuItems = this._menuItems.asReadonly();
 
@@ -45,25 +47,27 @@ export class NavigationService {
             role: UserRoles.DOCTOR,
             menuItems: [
               {
-                label: 'Dashboard',
+                label: this.translationService.translate(
+                  'navigation.dashboard',
+                ),
                 icon: 'pi pi-home',
                 routerLink: '/doctor/dashboard',
                 visible: true,
               },
               {
-                label: 'Schedule',
+                label: this.translationService.translate('navigation.schedule'),
                 icon: 'pi pi-calendar',
                 routerLink: '/doctor/schedule',
                 visible: true,
               },
               {
-                label: 'Visits',
+                label: this.translationService.translate('navigation.visits'),
                 icon: 'pi pi-file-medical',
                 routerLink: '/doctor/visits',
                 visible: true,
               },
               {
-                label: 'Patients',
+                label: this.translationService.translate('navigation.patients'),
                 icon: 'pi pi-users',
                 routerLink: '/doctor/patients',
                 visible: true,
@@ -78,45 +82,55 @@ export class NavigationService {
             role: UserRoles.PATIENT,
             menuItems: [
               {
-                label: 'Dashboard',
+                label: this.translationService.translate(
+                  'navigation.dashboard',
+                ),
                 icon: 'pi pi-home',
                 routerLink: '/patient/dashboard',
                 visible: true,
               },
               {
-                label: 'Visits',
-                icon: 'pi pi-calendar',
-                routerLink: '/patient/appointments',
+                label: this.translationService.translate('navigation.visits'),
+                icon: 'pi pi-list',
+                routerLink: '/patient/visits',
                 visible: true,
               },
               {
-                label: 'Prescriptions',
-                icon: 'pi pi-file-medical',
-                routerLink: '/patient/records',
+                label: this.translationService.translate(
+                  'navigation.prescriptions',
+                ),
+                icon: 'pi pi-receipt',
+                routerLink: '/patient/prescriptions',
                 visible: true,
               },
               {
-                label: 'Referrals',
-                icon: 'pi pi-user',
-                routerLink: '/patient/profile',
+                label: this.translationService.translate(
+                  'navigation.referrals',
+                ),
+                icon: 'pi pi-file-plus',
+                routerLink: '/patient/referrals',
                 visible: true,
               },
               {
-                label: 'Medical History',
-                icon: 'pi pi-user',
-                routerLink: '/patient/profile',
+                label: this.translationService.translate(
+                  'navigation.medicalHistory',
+                ),
+                icon: 'pi pi-history',
+                routerLink: '/patient/medical-history',
                 visible: true,
               },
               {
-                label: 'Comments',
-                icon: 'pi pi-user',
-                routerLink: '/patient/profile',
+                label: this.translationService.translate('navigation.comments'),
+                icon: 'pi pi-comments',
+                routerLink: '/patient/comments',
                 visible: true,
               },
               {
-                label: 'Reminders',
-                icon: 'pi pi-user',
-                routerLink: '/patient/profile',
+                label: this.translationService.translate(
+                  'navigation.reminders',
+                ),
+                icon: 'pi pi-bell',
+                routerLink: '/patient/reminders',
                 visible: true,
               },
             ],

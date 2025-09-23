@@ -3,8 +3,14 @@ import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { UserRoles } from './core/services/authentication/authentication.model';
 import { roleGuard } from './core/guards/role.guard';
+import { SearchResultComponent } from './modules/shared/components/ui/search-result.component/search-result.component';
+import { EditUserProfile } from './modules/shared/components/edit-user-profile/edit-user-profile';
+import { AccountSettings } from './modules/shared/components/account-settings/account-settings';
 
 export const routes: Routes = [
+  { path: 'search', component: SearchResultComponent },
+  { path: 'profile', component: EditUserProfile },
+  { path: 'preferences', component: AccountSettings },
   {
     path: 'auth',
     canActivate: [guestGuard],

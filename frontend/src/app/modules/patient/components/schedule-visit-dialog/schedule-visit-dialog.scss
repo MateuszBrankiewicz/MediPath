@@ -1,0 +1,128 @@
+.reschedule-dialog {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  .dialog-content {
+    display: flex;
+    gap: 32px;
+    padding: 24px;
+    background: #f8f9fa;
+    flex: 1;
+
+    .left-section {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      app-calendar-schedule {
+        height: 100%;
+      }
+    }
+
+    .right-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+
+      .doctor-info {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+        h3 {
+          font-size: 14px;
+          color: #7f8c8d;
+          margin: 0 0 8px 0;
+          font-weight: 500;
+        }
+
+        .doctor-name,
+        .institution-name {
+          font-size: 16px;
+          font-weight: 600;
+          color: #2c3e50;
+          margin: 0 0 16px 0;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+
+      .patient-remarks {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        flex: 1;
+
+        h3 {
+          font-size: 14px;
+          color: #7f8c8d;
+          margin: 0 0 12px 0;
+          font-weight: 500;
+        }
+
+        .remarks-textarea {
+          width: 100%;
+          border: 1px solid #e9ecef;
+          border-radius: 8px;
+          padding: 12px;
+          font-size: 14px;
+          color: #5a6c7d;
+          line-height: 1.5;
+          resize: vertical;
+          min-height: 120px;
+          font-family: inherit;
+
+          &:focus {
+            outline: none;
+            border-color: #4a6fa5;
+            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.1);
+          }
+
+          &::placeholder {
+            color: #adb5bd;
+          }
+        }
+      }
+    }
+  }
+
+  .dialog-footer {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+      --p-button-padding-x: 3rem;
+    --p-button-padding-y: 1rem;
+
+  }
+}
+
+@media (max-width: 768px) {
+  .reschedule-dialog {
+    .dialog-content {
+      flex-direction: column;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .dialog-footer {
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+
+      :deep(.confirm-btn),
+      :deep(.cancel-btn) {
+        width: 100%;
+      }
+    }
+  }
+}

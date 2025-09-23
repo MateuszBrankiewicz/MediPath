@@ -1,1 +1,60 @@
-<p>prescription-page works!</p>
+
+<h2>{{ translationService.translate('patient.prescriptions.title') }}</h2>
+<div class="prescriptions-list">
+  @for (prescription of prescriptions(); track prescription.id) {
+    <p-card class="prescription-card">
+      <div class="prescription-content">
+        <div class="prescription-icon">
+          <i class="pi pi-file-pdf"></i>
+        </div>
+        <div class="prescription-info">
+          <h3 class="prescription-title">{{ translationService.translate('patient.prescriptions.prescriptionTitle') }}</h3>
+          <div class="prescription-meta">
+            <div class="meta-item">
+              <i class="pi pi-key"></i>
+              <span>{{ translationService.translate('patient.prescriptions.pin') }} {{ prescription.prescriptionPin }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-user"></i>
+              <span>{{ prescription.doctorName }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-calendar"></i>
+              <span>{{ prescription.date | date:'dd.MM.yyyy HH:mm' }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="pi pi-clock"></i>
+              <span>{{ translationService.translate('patient.prescriptions.validUntil') }} {{ getValidityDate(prescription.date) | date:'dd.MM.yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="prescription-actions">
+          <p-button
+          class="copy-pin-button"
+            icon="pi pi-copy"
+            [text]="true"
+            (click)="copyToClipboard(prescription.prescriptionPin)"
+            title="Copy PIN">
+          </p-button>
+          @if(prescription.status === 'UNUSED'){
+            <p-button
+              severity="success"
+              icon="pi pi-check"
+              [rounded]="true"
+              [label]="translationService.translate('patient.prescriptions.markAsUsed')"
+              size="small" />
+          }@else {
+            <span class="status-chip used">{{ translationService.translate('patient.prescriptions.used') }}</span>
+          }
+          <p-button
+            severity="danger"
+            icon="pi pi-trash"
+            [rounded]="true"
+            [label]="translationService.translate('patient.prescriptions.delete')"
+            size="small" />
+        </div>
+      </div>
+    </p-card>
+  }
+</div>
+

@@ -1,0 +1,171 @@
+<div class="edit-profile-container">
+  <h1 class="page-title">{{ translationService.translate('editProfile.title') }}</h1>
+
+  <form [formGroup]="profileFormGroup" (ngSubmit)="onSubmit()" class="edit-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="name">{{ translationService.translate('editProfile.form.name') }}</label>
+        <input
+          type="text"
+          id="name"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.name"
+          placeholder="{{ translationService.translate('editProfile.placeholders.name') }}"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="surname">{{ translationService.translate('editProfile.form.surname') }}</label>
+        <input
+          type="text"
+          id="surname"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.surname"
+          placeholder="{{ translationService.translate('editProfile.placeholders.surname') }}"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">{{ translationService.translate('editProfile.form.email') }}</label>
+        <input
+          type="email"
+          id="email"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.email"
+          placeholder="{{ translationService.translate('editProfile.placeholders.email') }}"
+        />
+      </div>
+    </div>
+
+    <!-- Row 2: Birth Date, Phone, Government ID -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="birthDate">{{ translationService.translate('editProfile.form.birthDate') }}</label>
+        <input
+          type="text"
+          id="birthDate"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.birthDate"
+          placeholder="{{ translationService.translate('editProfile.placeholders.birthDate') }}"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="phoneNumber">{{ translationService.translate('editProfile.form.phoneNumber') }}</label>
+        <input
+          type="text"
+          id="phoneNumber"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.phoneNumber"
+          placeholder="{{ translationService.translate('editProfile.placeholders.phoneNumber') }}"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="governmentId">{{ translationService.translate('editProfile.form.governmentId') }}</label>
+        <input
+          type="text"
+          id="governmentId"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.governmentId"
+          placeholder="{{ translationService.translate('editProfile.placeholders.governmentId') }}"
+        />
+      </div>
+    </div>
+
+    <!-- Change Password Button -->
+    <div class="change-password-section">
+      <button
+        type="button"
+        class="change-password-btn"
+        (click)="onChangePassword()"
+      >
+        {{ translationService.translate('editProfile.changePassword') }}
+      </button>
+    </div>
+
+    <!-- Separator line -->
+    <div class="separator"></div>
+
+    <!-- Address Section -->
+    <h3 class="section-title">{{ translationService.translate('editProfile.addressTitle') }}</h3>
+
+    <!-- Row 3: Province, Postal Code, City -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="province">{{ translationService.translate('editProfile.form.province') }}</label>
+        <input
+          type="text"
+          id="province"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.province"
+          placeholder="{{ translationService.translate('editProfile.placeholders.province') }}"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="postalCode">{{ translationService.translate('editProfile.form.postalCode') }}</label>
+        <input
+          type="text"
+          id="postalCode"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.postalCode"
+          placeholder="{{ translationService.translate('editProfile.placeholders.postalCode') }}"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="city">{{ translationService.translate('editProfile.form.city') }}</label>
+        <input
+          type="text"
+          id="city"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.city"
+          placeholder="{{ translationService.translate('editProfile.placeholders.city') }}"
+        />
+      </div>
+    </div>
+
+    <!-- Row 4: Number, Street -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="number">{{ translationService.translate('editProfile.form.number') }}</label>
+        <input
+          type="text"
+          id="number"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.number"
+          placeholder="{{ translationService.translate('editProfile.placeholders.number') }}"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="street">{{ translationService.translate('editProfile.form.street') }}</label>
+        <input
+          type="text"
+          id="street"
+          class="form-input"
+          [formControl]="profileFormGroup.controls.street"
+          placeholder="{{ translationService.translate('editProfile.placeholders.street') }}"
+        />
+      </div>
+
+      <div class="form-group"></div> <!-- Empty for layout -->
+    </div>
+
+    <!-- Save Button -->
+    <div class="save-section">
+      <button
+        type="submit"
+        class="save-btn"
+        [disabled]="isSubmitting() || !profileFormGroup.valid"
+      >
+        @if (isSubmitting()) {
+          <span class="loading-text">{{ translationService.translate('editProfile.saving') }}</span>
+        } @else {
+          {{ translationService.translate('editProfile.saveChanges') }}
+        }
+      </button>
+    </div>
+  </form>
+</div>

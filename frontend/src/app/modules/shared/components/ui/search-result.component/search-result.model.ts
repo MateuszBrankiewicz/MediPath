@@ -1,4 +1,5 @@
 export interface TimeSlot {
+  id: string;
   time: string;
   available: boolean;
   booked?: boolean;
@@ -12,21 +13,27 @@ export interface DaySchedule {
 }
 
 export interface Doctor {
-  id: number;
+  id: string;
   name: string;
   specialisation: string;
   rating: number;
   reviewsCount: number;
   photoUrl: string;
-  addresses: string[];
+  addresses: AddressWithInstitution[];
   currentAddressIndex: number;
   schedule: DaySchedule[];
+}
+
+export interface AddressWithInstitution {
+  address: string;
+  institution: string;
 }
 
 export interface BookAppointment {
   doctor: Doctor;
   day: string;
   time: string;
+  slotId?: string;
 }
 
 export interface AddressChange {

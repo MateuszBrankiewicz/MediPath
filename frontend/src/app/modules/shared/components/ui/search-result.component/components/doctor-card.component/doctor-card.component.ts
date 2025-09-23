@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, OnInit, output, signal } from '@angular/core';
+import {
+  Component,
+  input,
+  OnInit,
+  output,
+  signal,
+  inject,
+} from '@angular/core';
 import {
   AddressChange,
   BookAppointment,
@@ -7,14 +14,18 @@ import {
   Doctor,
   TimeSlot,
 } from '../../search-result.model';
+import { AddressFormatPipe } from '../../../../../../../core/pipes/address-format-pipe';
+import { TranslationService } from '../../../../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-doctor-card',
-  imports: [CommonModule],
+  imports: [CommonModule, AddressFormatPipe],
   templateUrl: './doctor-card.component.html',
   styleUrl: './doctor-card.component.scss',
 })
 export class DoctorCardComponent implements OnInit {
+  public readonly translationService = inject(TranslationService);
+
   onShowMore() {
     throw new Error('Method not implemented.');
   }
@@ -41,6 +52,7 @@ export class DoctorCardComponent implements OnInit {
         doctor: this.doctor(),
         day: day.date,
         time: timeSlot.time,
+        slotId: timeSlot.id,
       });
     }
   }
@@ -62,7 +74,6 @@ export class DoctorCardComponent implements OnInit {
   }
 
   onShowMoreHours(day: DaySchedule): void {
-    // Logika do pokazania więcej godzin
     console.log('Show more hours for', day.dayName);
   }
 }

@@ -35,10 +35,10 @@
   &--without-heder {
     .button {
       margin-top: 2rem;
-      --p-button-lg-padding-x: 12rem; // większy przycisk
-      --p-button-lg-padding-y: 1.3rem; // wyższy przycisk
+      --p-button-lg-padding-x: 12rem;
+      --p-button-lg-padding-y: 1.3rem;
       --p-button-border-radius: 2rem;
-      font-size: 1.5rem; // większy tekst
+      font-size: 1.5rem;
       white-space: nowrap;
     }
   }

@@ -81,16 +81,13 @@ export class Login {
         .subscribe({
           next: () => {
             this.isLoading.set(false);
-            // Pokaż toast sukcesu
             this.toastService.showSuccess('toast.login.success');
-            // Przekieruj na dashboard na podstawie roli użytkownika
             const dashboardRoute = this.authService.getDashboardRoute();
             this.router.navigate([dashboardRoute]);
           },
           error: (error) => {
             this.isLoading.set(false);
             console.error('Login failed', error);
-            // Pokaż toast błędu
             this.toastService.showError('login.error');
             this.hasError.set({
               haveError: true,

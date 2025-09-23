@@ -1,0 +1,172 @@
+.visit-details {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 500px;
+
+
+  .visit-info {
+     background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    .date-section {
+      text-align: right;
+      margin-bottom: 24px;
+
+      .date-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-right: 8px;
+        font-size: 16px;
+      }
+
+      .date-value {
+        font-size: 16px;
+        color: #7f8c8d;
+        font-weight: 500;
+      }
+    }
+
+    .content-row {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 24px;
+
+      .left-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .right-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+    }
+
+    .doctor-card, .institution-card {
+
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .doctor-photo, .institution-photo {
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .doctor-info, .institution-info {
+      flex: 1;
+
+      .doctor-label, .institution-label {
+        font-size: 13px;
+        color: #7f8c8d;
+        margin-bottom: 4px;
+        font-weight: 500;
+      }
+
+      .doctor-name, .institution-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 12px;
+      }
+
+      .doctor-specialisation, .institution-address {
+        font-size: 14px;
+        color: #5a6c7d;
+        line-height: 1.4;
+      }
+    }
+
+    .pins-section {
+
+      .pin-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        .pin-label {
+          font-weight: 600;
+          color: #2c3e50;
+          font-size: 14px;
+        }
+
+        .pin-value {
+          font-size: 16px;
+          color: #7f8c8d;
+          font-weight: 600;
+        }
+      }
+    }
+
+    .notes-section {
+
+
+      .notes-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 12px;
+        font-size: 14px;
+      }
+
+      .notes-content {
+        line-height: 1.6;
+        color: #5a6c7d;
+        font-size: 14px;
+        text-align: justify;
+      }
+    }
+  }
+
+  .footer {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    background: #f5f6fa;
+    border-top: 1px solid #e9ecef;
+    --p-button-padding-x: 3rem;
+    --p-button-padding-y: 1rem;
+
+
+  }
+}
+
+@media (max-width: 768px) {
+  .visit-details {
+    .visit-info {
+      padding: 16px;
+
+      .content-row {
+        flex-direction: column;
+        gap: 16px;
+      }
+    }
+
+    .footer {
+      padding: 16px;
+      flex-direction: column;
+      gap: 12px;
+
+      :deep(.close-btn),
+      :deep(.review-btn) {
+        width: 100%;
+      }
+    }
+  }
+}

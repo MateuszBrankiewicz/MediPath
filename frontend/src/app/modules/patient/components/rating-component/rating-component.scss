@@ -1,0 +1,37 @@
+:host ::ng-deep{
+  .p-panel-header{
+    display: none;
+  }
+ .p-rating-option-active .p-rating-icon {
+    font-size: 1.5rem;
+    color: #ffb400 !important;
+  }
+}
+.rating-panel{
+  margin: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  .header-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ratings{
+    display: flex;
+    gap: 200px;
+    align-items: center;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+  }
+  .comment{
+    padding-top: 10px;
+    display: flex;
+    font-size: 1rem;
+    color: #666;
+  }
+  span{
+      font-size: 1rem;
+      color: #333;
+      font-weight: 500;
+    }
+}

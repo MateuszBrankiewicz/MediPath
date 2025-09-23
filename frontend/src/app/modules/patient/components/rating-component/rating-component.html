@@ -1,0 +1,30 @@
+<div class="rating-container">
+  <h3>{{ translationService.translate('patient.rating.title') }}</h3>
+
+  @for (rating of comments; track rating.id) {
+    <p-panel class="rating-panel">
+      <div class="header-row">
+        <h4>Rating: {{ rating.doctorName }} and {{ rating.institutionName }}</h4>
+        <p-button
+          icon="pi pi-eye"
+          class="view-button"
+          [text]="true"
+          (onClick)="viewRatings(rating.id)"
+          pTooltip="View details"
+        >
+        </p-button>
+      </div>
+      <div class="ratings">
+        <div class="rating-item">
+          <p>{{ translationService.translate('patient.rating.institutionRating') }}</p>
+          <p-rating [(ngModel)]="rating.institutionRating" [readonly]="true"></p-rating>
+        </div>
+        <div class="rating-item">
+          <p>{{ translationService.translate('patient.rating.doctorRating') }}</p>
+          <p-rating [(ngModel)]="rating.doctorRating" [readonly]="true"></p-rating>
+        </div>
+      </div>
+      <span class="comment"><span>{{ translationService.translate('patient.rating.comment') }}</span> {{ rating.comment }}</span>
+    </p-panel>
+  }
+</div>

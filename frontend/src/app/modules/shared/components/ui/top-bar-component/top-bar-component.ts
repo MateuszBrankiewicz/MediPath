@@ -1,4 +1,3 @@
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -19,8 +18,11 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { Menu, MenuModule } from 'primeng/menu';
 import { SelectModule } from 'primeng/select';
+import { TranslationService } from '../../../../../core/services/translation/translation.service';
+
 import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
 import { ToastService } from '../../../../../core/services/toast/toast.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export interface TopBarConfig {
   showSearch?: boolean;
@@ -58,23 +60,75 @@ export class TopBarComponent {
 
   private readonly toastService = inject(ToastService);
 
-  readonly roleOptions = computed<RoleOption[]>(() => [
+  protected readonly translationService = inject(TranslationService);
+
+  protected readonly selectedSearchType = signal('institution');
+
+  protected readonly selectedCategory = signal('');
+  protected readonly locationQuery = signal('');
+  protected readonly specializationQuery = signal('');
+
+  protected readonly isSearchExpanded = signal(false);
+
+  protected readonly categoryOptions = computed(() => [
+    { label: '-- Category --', value: '' },
+    {
+      label: this.translationService.translate('topBar.doctor'),
+      value: 'doctor',
+    },
+    {
+      label: this.translationService.translate('topBar.institution'),
+      value: 'institution',
+    },
+  ]);
+
+  protected readonly roleOptions = computed<RoleOption[]>(() => [
     { label: 'Doctor', value: 'doctor' },
     { label: 'Nurse', value: 'nurse' },
     { label: 'Admin', value: 'admin' },
     { label: 'Patient', value: 'patient' },
   ]);
 
-  readonly config = input<TopBarConfig>({
+  public readonly config = input<TopBarConfig>({
     showSearch: false,
     showNotifications: false,
   });
 
-  readonly isMenuOpen = signal(false);
+  protected toggleSearchExpanded(): void {
+    this.isSearchExpanded.update((expanded) => !expanded);
+  }
 
-  readonly user = computed(() => this.authService.getUser());
+  protected search() {
+    const query = this.query().trim();
+    const category = this.selectedCategory();
+    const location = this.locationQuery().trim();
+    const specialization = this.specializationQuery().trim();
 
-  readonly menuItems = computed<MenuItem[]>(() => [
+    if (!category) {
+      return;
+    }
+
+    const searchParams = {
+      query,
+      category,
+      location,
+      specialization,
+    };
+
+    this.toggleSearchExpanded();
+
+    this.router.navigate(['/search'], {
+      queryParams: searchParams,
+    });
+  }
+
+  protected readonly query = signal('');
+
+  protected readonly isMenuOpen = signal(false);
+
+  protected readonly user = computed(() => this.authService.getUser());
+
+  protected readonly menuItems = computed<MenuItem[]>(() => [
     {
       label: 'Edit profile',
       icon: 'pi pi-user',
@@ -99,15 +153,29 @@ export class TopBarComponent {
     },
   ]);
 
+  searchMenuItems: MenuItem[] = [
+    {
+      label: 'Szukaj po instytucji',
+      icon: 'pi pi-building',
+      command: () => this.onSearchType('institution'),
+    },
+    {
+      label: 'Szukaj po lekarzu',
+      icon: 'pi pi-user',
+      command: () => this.onSearchType('doctor'),
+      style: { 'font-size': '1.1rem' },
+    },
+  ];
+
   private navigateToProfile(): void {
     this.router.navigate(['/profile']);
   }
 
   private navigateToSettings(): void {
-    this.router.navigate(['/settings']);
+    this.router.navigate(['/preferences']);
   }
 
-  toggleUserMenu(event: Event): void {
+  protected toggleUserMenu(event: Event): void {
     const menu = this.userMenu();
     if (menu) {
       menu.toggle(event);
@@ -129,5 +197,42 @@ export class TopBarComponent {
           this.toastService.showError('toast.logout.error');
         },
       });
+  }
+
+  protected onSearchType(type: string): void {
+    this.selectedSearchType.set(type);
+    console.log(type);
+  }
+
+  protected getSearchPlaceholder(): string {
+    switch (this.selectedSearchType()) {
+      case 'institution':
+        return 'Szukaj instytucji...';
+      case 'doctor':
+        return 'Szukaj lekarza...';
+      default:
+        return 'Szukaj...';
+    }
+  }
+
+  protected updateMenuItems() {
+    this.searchMenuItems = this.searchMenuItems.map((item) => ({
+      ...item,
+      styleClass:
+        item.command && item.label?.includes(this.getTypeLabel())
+          ? 'active-menu-item'
+          : '',
+    }));
+  }
+
+  private getTypeLabel(): string {
+    switch (this.selectedSearchType()) {
+      case 'institution':
+        return 'instytucji';
+      case 'doctor':
+        return 'lekarzu';
+      default:
+        return 'Wszystkie';
+    }
   }
 }

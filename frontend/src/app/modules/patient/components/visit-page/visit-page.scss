@@ -1,99 +1,128 @@
+
 :host {
   display: flex;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
   width: 100%;
   height: 100%;
-  justify-content: center;
 }
 
 h2 {
   align-self: flex-start;
-  text-align: right;
   margin-left: 140px;
   font-size: 30px;
+  margin-bottom: 10px;
 }
 
-p-table {
-  margin-top: 20px;
+
+
+.visits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   width: 85%;
-  height: 100%;
+  margin-top: 20px;
+}
 
-  th {
-    background-color: var(--p-primary-color) !important;
-    color: var(--p-surface-50) !important;
-    border: 1px solid black !important;
-    text-align: center !important;
-  }
+.visit-card {
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  background: var(--p-surface-0);
+  padding: 0;
+}
 
-  td {
-    border: 1px solid black !important;
-    text-align: center !important;
+.visit-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+}
 
-    &.options-cell {
-      position: relative;
-      overflow: visible !important;
-      // Zapobiegaj propagacji kliknięć z komórki tabeli
-      pointer-events: none;
+.visit-main-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 16px;
+}
 
-      p-button {
-        pointer-events: all;
-      }
+.visit-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-      p-menu {
-        pointer-events: all;
-      }
-    }
-  }
+.details-icon {
+  color: var(--p-primary-color);
+  font-size: 20px;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #eaf0fa;
+  color: #4f69c6;
+}
+
+.status-chip.completed {
+  background: #d4f7dc;
+  color: #2e7d32;
+}
+.status-chip.cancelled {
+  background: #ffeaea;
+  color: #c62828;
 }
 
 .menu-options {
   display: flex;
   flex-direction: column;
-  background: #4f69c6; // niebieski kolor z obrazka
+  background: #4f69c6;
   border-radius: 12px;
   padding: 0;
   min-width: 140px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+}
 
-  .menu-item {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.75rem;
-    padding: 12px 16px;
-    border: none;
-    background: transparent;
-    color: white;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    text-align: left;
-    width: 100%;
-    transition: background-color 0.2s ease;
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: left;
+  width: 100%;
+  transition: background-color 0.2s ease;
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
 
-    &:active {
-      background: rgba(255, 255, 255, 0.2);
-    }
+  &:active {
+    background: rgba(255, 255, 255, 0.2);
+  }
 
-    i {
-      font-size: 16px;
-      width: 16px;
-    }
+  i {
+    font-size: 16px;
+    width: 16px;
+  }
 
-    // Separator line between items (except last)
-    &:not(:last-child) {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
-// Style dla przycisku opcji (trzy kropki)
 .options-button {
   border: none !important;
 

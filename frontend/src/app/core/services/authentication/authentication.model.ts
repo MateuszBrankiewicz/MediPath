@@ -13,6 +13,7 @@ export interface UserBasicInfo {
   roleCode: number | UserRoles;
   notifications: Notification[];
   email: string;
+  userSettings: UserSettings;
 }
 
 export interface Notification {
@@ -23,6 +24,13 @@ export interface Notification {
   createdAt: Date;
 }
 
+export interface UserSettings {
+  language: string;
+  lastPanel: number | UserRoles;
+  systemNotifications: boolean;
+  emailNotifications: boolean;
+}
+
 export interface ApiUserResponse {
   user: {
     id: string;
@@ -31,16 +39,18 @@ export interface ApiUserResponse {
     roleCode: number;
     notifications: Notification[];
     email: string;
+    userSettings: UserSettings;
   };
 }
 
 export const RoleCodeMapping: Record<number, UserRoles> = {
   0: UserRoles.GUEST,
   1: UserRoles.PATIENT,
+  2: UserRoles.DOCTOR,
+  3: UserRoles.STAFF,
+  4: UserRoles.ADMIN,
 };
 
 export function getRoleFromCode(roleCode: number): UserRoles {
-  console.log('Mapping role code:', roleCode);
-  console.log('Mapped role:', RoleCodeMapping[roleCode]);
   return RoleCodeMapping[roleCode] || UserRoles.GUEST;
 }

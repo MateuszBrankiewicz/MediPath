@@ -1,0 +1,129 @@
+<div class="account-settings-container">
+  <div class="account-settings">
+    <div class="account-settings__header">
+      <h1 class="account-settings__title">{{ translate('accountSettings.title') }}</h1>
+    </div>
+
+  <div class="account-settings__content">
+    <!-- Preferences Section -->
+    <div class="preferences-section">
+      <div class="preferences-section__header">
+        <h2 class="preferences-section__title">{{ translate('accountSettings.preferences') }}</h2>
+      </div>
+
+      <div class="preferences-section__content">
+        <!-- Language Setting -->
+        <div class="setting-item">
+          <div class="setting-item__icon">
+            <i class="pi pi-globe"></i>
+          </div>
+          <div class="setting-item__content">
+            <label for="language-select" class="setting-item__label">{{ translate('accountSettings.language') }}</label>
+            <div class="setting-item__control">
+              <div class="language-dropdown-wrapper">
+                <select
+                  id="language-select"
+                  class="language-dropdown"
+                  [ngModel]="settings().language"
+                  (ngModelChange)="onLanguageChange({ code: $event, name: $event === 'en' ? 'English' : 'Polski' })">
+                  <option value="en">English</option>
+                  <option value="pl">Polski</option>
+                </select>
+                <i class="language-dropdown__arrow pi pi-chevron-down"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dark Mode Setting -->
+        <div class="setting-item">
+          <div class="setting-item__icon">
+            <i class="pi pi-moon"></i>
+          </div>
+          <div class="setting-item__content">
+            <span class="setting-item__label">{{ translate('accountSettings.darkMode') }}</span>
+            <div class="setting-item__control">
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  [checked]="settings().darkMode"
+                  (change)="onToggleChange('darkMode', $any($event.target).checked)">
+                <span class="toggle-switch__slider" [class.toggle-switch__slider--active]="settings().darkMode"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Reminders Setting -->
+        <div class="setting-item">
+          <div class="setting-item__icon">
+            <i class="pi pi-bell"></i>
+          </div>
+          <div class="setting-item__content">
+            <span class="setting-item__label">{{ translate('accountSettings.personalReminders') }}</span>
+            <div class="setting-item__control">
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  [checked]="settings().personalReminders"
+                  (change)="onToggleChange('personalReminders', $any($event.target).checked)">
+                <span class="toggle-switch__slider" [class.toggle-switch__slider--active]="settings().personalReminders"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visits Reminders Setting -->
+        <div class="setting-item">
+          <div class="setting-item__icon">
+            <i class="pi pi-calendar"></i>
+          </div>
+          <div class="setting-item__content">
+            <span class="setting-item__label">{{ translate('accountSettings.visitsReminders') }}</span>
+            <div class="setting-item__control">
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  [checked]="settings().visitsReminders"
+                  (change)="onToggleChange('visitsReminders', $any($event.target).checked)">
+                <span class="toggle-switch__slider" [class.toggle-switch__slider--active]="settings().visitsReminders"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deactivate Account Setting -->
+        <div class="setting-item setting-item--danger">
+          <div class="setting-item__content setting-item__content--full">
+            <button
+              type="button"
+              class="btn btn--danger btn--inline"
+              (click)="onDeactivateAccount()">
+              {{ translate('accountSettings.deactivateAccount') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button
+        type="button"
+        class="btn btn--secondary"
+        (click)="onSetDefault()">
+        {{ translate('accountSettings.setDefault') }}
+      </button>
+
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="isLoading()"
+        (click)="onSaveChanges()">
+        <span *ngIf="isLoading()" class="btn__spinner"></span>
+        {{ translate('accountSettings.saveChanges') }}
+      </button>
+    </div>
+  </div>
+</div>
+</div>
