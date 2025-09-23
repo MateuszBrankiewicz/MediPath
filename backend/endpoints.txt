@@ -661,4 +661,8 @@ Returns:
 
 
 
+/ws/user/notifications
 
+Type: Websocket
+
+Subscribe to this websocket to receive notifications
