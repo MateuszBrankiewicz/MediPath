@@ -13,9 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.zone.ZoneRulesProvider;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/visits")
@@ -35,6 +37,7 @@ public class VisitController {
 
     @PostMapping(value = {"/add", "/add/"})
     public ResponseEntity<Map<String, Object>> add(@RequestBody AddVisitForm visit) {
+
         ArrayList<String> missingFields = new ArrayList<>();
 
         if(visit.getPatientID() == null || visit.getPatientID().isBlank()) {
@@ -62,8 +65,23 @@ public class VisitController {
         foundSchedule.setBooked(true);
         ArrayList<Code> codes = new ArrayList<>();
         newVisit.setCodes(codes);
+        if(foundUser.getUserSettings().isSystemNotifications()) {
+            String content, title;
+
+            if(foundUser.getUserSettings().getLanguage().equals("PL")) {
+                content = String.format("Przypominamy o wizycie w ośrodku %s dnia %s o godzinie %s", foundSchedule.getInstitution().getInstitutionName(), foundSchedule.getStartHour().toLocalDate(), foundSchedule.getStartHour().toLocalTime());
+                title = "Przypomnienie o wizycie";
+            } else {
+                content = String.format("We would like to remind you of your upcoming visit in %s on the day %s at %s", foundSchedule.getInstitution().getInstitutionName(), foundSchedule.getStartHour().toLocalDate(), foundSchedule.getStartHour().toLocalTime());
+                title = "Visit reminder";
+            }
+            Notification notification = new Notification(title,  content, foundSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
+            foundUser.addNotification(notification);
+            userRepository.save(foundUser);
+        }
         visitRepository.save(newVisit);
         scheduleRepository.save(foundSchedule);
+
         return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.CREATED);
     }
 
@@ -102,6 +120,10 @@ public class VisitController {
         if(visitToCancel.getStatus().equals("Cancelled")) {
             return new ResponseEntity<>(Map.of("message", "this visit is already cancelled"), HttpStatus.BAD_REQUEST);
         }
+        Optional<User> userOptional = userRepository.findById(visitToCancel.getPatient().getUserId());
+        if(userOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         visitToCancel.setStatus("Cancelled");
         Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToCancel.getTime().getScheduleId());
         if(scheduleOptional.isEmpty()) {
@@ -109,6 +131,16 @@ public class VisitController {
         }
         Schedule oldSchedule = scheduleOptional.get();
         oldSchedule.setBooked(false);
+        User patient = userOptional.get();
+        int foundIndex = 0;
+        for(int i = 0; i < patient.getNotifications().size(); i++) {
+            Notification notification = patient.getNotifications().get(i);
+            if(notification.getTimestamp().isEqual(oldSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0)) && notification.isSystem()) {
+                foundIndex = i;
+            }
+        }
+        patient.removeNotification(patient.getNotifications().get(foundIndex));
+        userRepository.save(patient);
         scheduleRepository.save(oldSchedule);
         visitRepository.save(visitToCancel);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -146,7 +178,33 @@ public class VisitController {
         if(scheduleOptional.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        Optional<User> userOptional = userRepository.findById(visitToReschedule.getPatient().getUserId());
+        if(userOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         Schedule oldSchedule = scheduleOptional.get();
+        User patient = userOptional.get();
+        if(patient.getUserSettings().isSystemNotifications()) {
+            int foundIndex = 0;
+            for(int i = 0; i < patient.getNotifications().size(); i++) {
+                Notification notification = patient.getNotifications().get(i);
+                if(notification.getTimestamp().isEqual(oldSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0)) && notification.isSystem()) {
+                    foundIndex = i;
+                }
+            }
+            patient.removeNotification(patient.getNotifications().get(foundIndex));
+            String content, title;
+            if(patient.getUserSettings().getLanguage().equals("PL")) {
+                content = String.format("Przypominamy o wizycie w ośrodku %s dnia %s o godzinie %s", newSchedule.getInstitution().getInstitutionName(), newSchedule.getStartHour().toLocalDate(), newSchedule.getStartHour().toLocalTime());
+                title = "Przypomnienie o wizycie";
+            } else {
+                content = String.format("We would like to remind you of your upcoming visit in %s on the day %s at %s", newSchedule.getInstitution().getInstitutionName(), newSchedule.getStartHour().toLocalDate(), newSchedule.getStartHour().toLocalTime());
+                title = "Visit reminder";
+            }
+            Notification notification = new Notification(title,  content, newSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
+            patient.addNotification(notification);
+        }
+        userRepository.save(patient);
         oldSchedule.setBooked(false);
         newSchedule.setBooked(true);
         visitToReschedule.setTime(new VisitTime(newSchedule.getId(), newSchedule.getStartHour(), newSchedule.getEndHour()));
