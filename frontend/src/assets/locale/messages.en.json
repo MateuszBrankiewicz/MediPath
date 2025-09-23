@@ -257,6 +257,7 @@
   "accountSettings.visitsReminders": "Visits reminders",
   "accountSettings.deactivateAccount": "DEACTIVATE ACCOUNT",
   "accountSettings.setDefault": "SET DEFAULT",
+   "accountSettings.saveChanges": "SAVE CHANGES"
   "accountSettings.saveChanges": "SAVE CHANGES",
 
   "doctor.dashboard.title": "Dashboard",
@@ -344,4 +345,5 @@
 
   "shared.edit": "EDIT",
   "shared.save": "SAVE"
+
 }

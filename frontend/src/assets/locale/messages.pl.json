@@ -259,7 +259,9 @@
   "accountSettings.deactivateAccount": "DEZAKTYWUJ KONTO",
   "accountSettings.setDefault": "USTAW DOMYŚLNE",
   "accountSettings.saveChanges": "ZAPISZ ZMIANY",
+  "accountSettings.saveChanges": "ZAPISZ ZMIANY"
 
+  
   "doctor.dashboard.title": "Panel główny",
   "doctor.dashboard.welcomeBack": "Witaj ponownie",
   "doctor.dashboard.haveNiceDay": "Miłego dnia!",
@@ -344,4 +346,5 @@
 
   "shared.edit": "EDYTUJ",
   "shared.save": "ZAPISZ"
+
 }
