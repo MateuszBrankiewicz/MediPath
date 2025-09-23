@@ -75,23 +75,23 @@ public class SearchController {
 
     }
 
-    private ArrayList<Pair<String, String>> getAddressesForDoctor(String userId) {
+    private ArrayList<Pair<InstitutionDigest, String>> getAddressesForDoctor(String userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if(userOptional.isEmpty()) {
             return new ArrayList<>();
         }
         User user = userOptional.get();
-        ArrayList<Pair<String, String>> addresses = new ArrayList<>();
+        ArrayList<Pair<InstitutionDigest ,String>> addresses = new ArrayList<>();
         for(InstitutionDigest digest: user.getEmployers()) {
             Optional<Institution> institutionOptional = institutionRepository.findById(digest.getInstitutionId());
             if(institutionOptional.isEmpty()) continue;
-            addresses.add(Pair.of(institutionOptional.get().getName(), institutionOptional.get().getAddress().toString()));
+            addresses.add(Pair.of(digest, institutionOptional.get().getAddress().toString()));
         }
         return addresses;
     }
 
     private Object getSchedulesTruncatedForDoctor(String userid) {
         ArrayList<Schedule> schedules = scheduleRepository.getUpcomingSchedulesByDoctor(userid);
-        return schedules.stream().map(schedule -> Map.of("id", schedule.getId(), "startTime", schedule.getStartHour().toString(), "isBooked", schedule.isBooked())).toList();
+        return schedules.stream().map(schedule -> Map.of("id", schedule.getId(), "startTime", schedule.getStartHour().toString(), "isBooked", schedule.isBooked(), "institution", schedule.getInstitution())).toList();
     }
 }

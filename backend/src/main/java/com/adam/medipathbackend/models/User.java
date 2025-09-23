@@ -196,10 +196,13 @@ public class User {
         return notifications;
     }
 
-    public void setNotifications(ArrayList<Notification> notifications) {
-        this.notifications = notifications;
+    public void addNotification(Notification notification) {
+        this.notifications.add(notification);
     }
 
+    public boolean removeNotification(Notification notification) {
+        return this.notifications.remove(notification);
+    }
     public float getRating() {
         return rating;
     }

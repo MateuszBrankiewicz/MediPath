@@ -28,7 +28,7 @@ public class Visit {
 
     private String patientRemarks;
 
-    public Visit(PatientDigest patient, DoctorDigest doctor, VisitTime time, InstitutionDigest institution) {
+    public Visit(PatientDigest patient, DoctorDigest doctor, VisitTime time, InstitutionDigest institution, String patientRemarks) {
         this.status = "Upcoming";
         this.note = "";
         this.codes = new ArrayList<>();
@@ -37,6 +37,7 @@ public class Visit {
         this.time = time;
         this.institution = institution;
         this.patientRemarks = "";
+        this.patientRemarks = patientRemarks;
     }
 
     public String getId() { return id; }

@@ -1,6 +1,7 @@
 package com.adam.medipathbackend.controllers;
 
 import com.adam.medipathbackend.config.Utils;
+import com.adam.medipathbackend.forms.AddScheduleForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;

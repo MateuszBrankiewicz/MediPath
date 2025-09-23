@@ -1,5 +1,7 @@
 package com.adam.medipathbackend.controllers;
 
+
+import com.adam.medipathbackend.forms.AddCommentForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.CommentRepository;
 import com.adam.medipathbackend.repository.InstitutionRepository;

@@ -1,12 +1,23 @@
-package com.adam.medipathbackend.models;
+package com.adam.medipathbackend.forms;
 
 public class AddVisitForm {
     private String scheduleID;
     private String patientID;
 
-    public AddVisitForm(String scheduleID, String patientID) {
+    public String getPatientRemarks() {
+        return patientRemarks;
+    }
+
+    public void setPatientRemarks(String patientRemarks) {
+        this.patientRemarks = patientRemarks;
+    }
+
+    private String patientRemarks;
+
+    public AddVisitForm(String scheduleID, String patientID, String patientRemarks) {
         this.scheduleID = scheduleID;
         this.patientID = patientID;
+        this.patientRemarks = patientRemarks;
     }
 
     public String getScheduleID() {

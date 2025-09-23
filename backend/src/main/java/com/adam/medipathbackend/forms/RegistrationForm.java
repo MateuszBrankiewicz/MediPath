@@ -1,6 +1,4 @@
-package com.adam.medipathbackend.models;
-
-import java.time.LocalDate;
+package com.adam.medipathbackend.forms;
 
 public class RegistrationForm {
     private final String city;
