@@ -1,0 +1,109 @@
+<div class="doctor-schedule-container">
+  <h1 class="page-title">{{ translationService.translate('navigation.schedule') }}</h1>
+
+  <div class="schedule-layout">
+    <div class="day-schedule">
+      <div class="day-header">
+        <h2 class="day-title">{{ translationService.translate('doctor.schedule.day') }}</h2>
+
+        <div class="current-day">
+          <div class="day-number">{{ currentDayNumber }}</div>
+          <div class="day-info">
+            <div class="day-name">{{ currentDayName }}</div>
+            <div class="date">{{ currentMonthYear() }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="appointments-list">
+        @for (appointment of todayAppointments; track appointment.id) {
+          <div class="appointment-slot available"
+               (click)="changeSelectedAppointment(appointment)">
+            <span class="appointment-time">{{ appointment.time }}</span>
+            <span class="appointment-patient">{{ appointment.patientName }}</span>
+          </div>
+        }
+
+        @for (slot of unavailableSlots; track slot.id) {
+          <div class="appointment-slot unavailable"
+               (click)="changeSelectedAppointment(slot)">
+            <span class="appointment-time">{{ slot.time }}</span>
+            <span class="appointment-patient">{{ slot.patientName }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="monthly-calendar">
+      <div class="calendar-header">
+        <p-button
+          icon="pi pi-chevron-left"
+          styleClass="nav-button"
+          (onClick)="previousMonth()"
+          [text]="true">
+        </p-button>
+
+        <span class="month-year">{{ currentMonthYear() }}</span>
+
+        <p-button
+          icon="pi pi-chevron-right"
+          styleClass="nav-button"
+          (onClick)="nextMonth()"
+          [text]="true">
+        </p-button>
+      </div>
+
+      <div class="calendar-weekdays">
+        @for (day of weekdays; track day) {
+          <div class="weekday">{{ day }}</div>
+        }
+      </div>
+
+      <div class="calendar-grid">
+        @for (day of calendarDays(); track day.date.getTime()) {
+          <div
+            class="calendar-day"
+            [class.other-month]="!day.isCurrentMonth"
+            [class.today]="day.isToday"
+            [class.has-appointments]="day.hasAppointments"
+            [class.selected]="day.isSelected"
+            (click)="selectDate(day)">
+            {{ day.dayNumber }}
+            @if (day.hasAppointments) {
+              <div class="appointment-indicators">
+                @for (indicator of day.appointments; track indicator.id) {
+                  <div class="appointment-indicator"></div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed-appointment-card">
+    <div class="appointment-card-content">
+      <div class="appointment-details">
+        <div class="time-patient">{{ selectedAppointment()?.time }} - {{ selectedAppointment()?.patientName }} </div>
+        <div class="patient-remarks">
+          {{ translationService.translate('doctor.schedule.patientRemarks') }} {{ selectedAppointment()?.remarks }}
+        </div>
+      </div>
+
+      <div class="appointment-actions">
+        <p-button
+          [label]="translationService.translate('doctor.schedule.rescheduleVisit')"
+          styleClass="reschedule-btn-fixed"
+          (onClick)="rescheduleVisit()">
+        </p-button>
+
+        <p-button
+          [label]="translationService.translate('doctor.schedule.cancelVisit')"
+          styleClass="cancel-btn-fixed"
+          (onClick)="cancelVisit()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+</div>

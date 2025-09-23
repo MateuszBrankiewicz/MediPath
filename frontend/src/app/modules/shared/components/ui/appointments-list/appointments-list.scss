@@ -1,0 +1,180 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.appointments-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: none;
+
+  ::ng-deep .p-card-body {
+    padding: 1.5rem;
+  }
+}
+
+.appointments-content {
+  .appointments-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--p-text-color);
+    margin: 0 0 1rem 0;
+  }
+}
+
+.current-appointment {
+  background: var(--p-surface-50);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--p-primary-color);
+
+  .appointment-time {
+    font-size: 0.875rem;
+    color: var(--p-text-color);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .appointment-patient {
+    font-size: 0.875rem;
+    color: var(--p-text-muted-color);
+    margin-bottom: 1rem;
+  }
+
+  .view-button {
+    ::ng-deep .p-button {
+      background: var(--p-primary-color);
+      border: none;
+      border-radius: 20px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+
+      &:hover {
+        background: var(--p-primary-600);
+      }
+    }
+  }
+}
+
+/* Appointments list styling */
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  .appointment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--p-surface-border);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--p-surface-hover);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .appointment-time {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--p-text-color);
+      flex-shrink: 0;
+    }
+
+    .appointment-person {
+      font-size: 0.875rem;
+      color: var(--p-text-muted-color);
+      flex: 1;
+      text-align: center;
+
+      @media (max-width: 768px) {
+        text-align: left;
+        margin-left: 1rem;
+      }
+    }
+
+    .appointment-status {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &.status-scheduled {
+        background: var(--p-blue-100);
+        color: var(--p-blue-600);
+      }
+
+      &.status-completed {
+        background: var(--p-green-100);
+        color: var(--p-green-600);
+      }
+
+      &.status-cancelled,
+      &.status-canceled {
+        background: var(--p-red-100);
+        color: var(--p-red-600);
+      }
+
+      &.status-pending {
+        background: var(--p-yellow-100);
+        color: var(--p-yellow-600);
+      }
+    }
+  }
+}
+
+/* No appointments message */
+.no-appointments {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--p-text-muted-color);
+  font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .appointments-content .appointments-title {
+    font-size: 0.875rem;
+  }
+
+  .current-appointment {
+    padding: 0.75rem;
+
+    .appointment-time,
+    .appointment-patient {
+      font-size: 0.8rem;
+    }
+
+    .view-button ::ng-deep .p-button {
+      font-size: 0.7rem;
+      padding: 0.4rem 1rem;
+    }
+  }
+
+  .appointments-list .appointment-item {
+    padding: 0.5rem 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+
+    .appointment-time,
+    .appointment-person {
+      font-size: 0.8rem;
+    }
+
+    .appointment-status {
+      align-self: flex-end;
+    }
+  }
+}

@@ -1,0 +1,197 @@
+.appointment-card {
+  background: #ffffff;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.15s ease;
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    border-color: #d1d5db;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+  }
+
+  .appointment-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+
+    .patient-info {
+      display: flex;
+      gap: 0.875rem;
+      align-items: center;
+
+      .patient-avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: #f3f4f6;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+          font-size: 1rem;
+          color: #6b7280;
+        }
+      }
+
+      .patient-details {
+        .patient-name {
+          font-size: 1rem;
+          font-weight: 600;
+          margin: 0 0 0.25rem;
+          color: #111827;
+        }
+
+        .appointment-date {
+          font-size: 0.875rem;
+          color: #6b7280;
+        }
+      }
+    }
+
+    .appointment-status {
+      .status-badge {
+        padding: 0.25rem 0.625rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: 1px solid;
+      }
+
+      &.scheduled .status-badge {
+        background: #f0fdf4;
+        color: #16a34a;
+        border-color: #bbf7d0;
+      }
+
+      &.completed .status-badge {
+        background: #eff6ff;
+        color: #2563eb;
+        border-color: #bfdbfe;
+      }
+
+      &.canceled .status-badge {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fecaca;
+      }
+    }
+  }
+
+  .appointment-card-body {
+    padding: 1.5rem;
+
+    .institution-info,
+    .appointment-time {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.875rem;
+
+      i {
+        width: 1rem;
+        color: #9ca3af;
+        font-size: 0.875rem;
+      }
+
+      span {
+        color: #374151;
+        font-size: 0.875rem;
+        font-weight: 400;
+      }
+    }
+
+    .appointment-time {
+      margin-bottom: 0;
+    }
+  }
+
+  .appointment-card-actions {
+    padding: 1rem 1.5rem 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+    border-top: 1px solid #f3f4f6;
+
+    button {
+      flex: 1;
+      padding: 0.625rem 0.875rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+
+      i {
+        font-size: 0.75rem;
+      }
+
+      &.btn-details {
+        background: #ffffff;
+        color: #374151;
+        border: 1px solid #d1d5db;
+
+        &:hover:not(:disabled) {
+          background: #f9fafb;
+        }
+      }
+
+      &.btn-cancel {
+        background: #ffffff;
+        color: #dc2626;
+        border: 1px solid #d1d5db;
+
+        &:hover:not(:disabled) {
+          background: #fef2f2;
+        }
+
+        &:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+      }
+
+      &:focus {
+        outline: none;
+        border-color: #6b7280;
+      }
+    }
+
+    // When only one button is visible, make it full width
+    &:has(button:only-child) button {
+      flex: 1;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 480px) {
+  .appointment-card {
+    .appointment-card-header {
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .appointment-card-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      button {
+        flex: none;
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+<div class="patients-page">
+  <h1 class="page-title">
+    {{ translationService.translate("doctor.patients.title") }}
+  </h1>
+
+  <div class="patients-grid">
+    @for (patient of filteredPatients(); track patient.id) {
+      <app-patient-card
+        [patient]="patient"
+        (viewProfile)="onViewPatientProfile($event)"
+      >
+      </app-patient-card>
+    }
+  </div>
+</div>

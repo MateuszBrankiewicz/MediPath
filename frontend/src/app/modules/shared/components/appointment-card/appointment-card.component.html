@@ -1,0 +1,49 @@
+<div class="appointment-card">
+  <div class="appointment-card-header">
+    <div class="patient-info">
+      <div class="patient-avatar">
+        <i class="pi pi-user"></i>
+      </div>
+      <div class="patient-details">
+        <h3 class="patient-name">{{ appointment().patientName }}</h3>
+        <span class="visit-date">{{ appointment().visitDate }}</span>
+      </div>
+    </div>
+    <div class="appointment-status" [class]="statusClass()">
+      <span class="status-badge">
+        {{ statusText() }}
+      </span>
+    </div>
+  </div>
+
+  <div class="appointment-card-body">
+    <div class="institution-info">
+      <i class="pi pi-building"></i>
+      <span>{{ appointment().institutionName }}</span>
+    </div>
+    <div class="appointment-time">
+      <i class="pi pi-clock"></i>
+      <span>{{ appointment().visitTime }}</span>
+    </div>
+  </div>
+
+  <div class="appointment-card-actions">
+    @if (showPatientDetails()) {
+      <p-button
+        [label]="actionButtonText()"
+        icon="pi pi-user"
+        styleClass="btn-details p-button-outlined"
+        (onClick)="onPatientDetailsClick()"
+      />
+    }
+    @if (showCancelButton()) {
+      <p-button
+        [label]="cancelButtonText()"
+        icon="pi pi-times"
+        styleClass="btn-cancel p-button-danger"
+        [disabled]="isCancelDisabled()"
+        (onClick)="onCancelVisitClick()"
+      />
+    }
+  </div>
+</div>

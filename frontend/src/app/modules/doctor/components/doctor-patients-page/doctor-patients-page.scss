@@ -1,0 +1,54 @@
+.patients-page {
+  padding: 32px 24px;
+  background: #f8f9fb;
+  min-height: calc(100vh - 120px);
+
+  .page-title {
+    color: #1f2937;
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 32px 0;
+    text-align: left;
+  }
+
+  .patients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+// Responsywność
+@media (max-width: 768px) {
+  .patients-page {
+    padding: 24px 16px;
+
+    .page-title {
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    .patients-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .patients-page {
+    padding: 20px 12px;
+
+    .page-title {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .patients-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+}

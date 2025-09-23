@@ -235,4 +235,25 @@ export class TopBarComponent {
         return 'Wszystkie';
     }
   }
+  protected onRoleChange(newRole: string): void {
+    console.log('Role changed to:', newRole);
+    switch (newRole) {
+      case 'doctor':
+        this.authService.setNewRole(newRole);
+        console.log(this.authService.getUser());
+        break;
+      case 'nurse':
+        this.router.navigate(['/nurse']);
+        break;
+      case 'admin':
+        this.router.navigate(['/admin']);
+        break;
+      case 'patient':
+        this.router.navigate(['/patient']);
+        break;
+      default:
+        this.router.navigate(['/']);
+        break;
+    }
+  }
 }

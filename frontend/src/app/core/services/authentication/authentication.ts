@@ -154,4 +154,29 @@ export class AuthenticationService {
     const prefix = this.routePrefix();
     return prefix === '/' ? '/auth/login' : prefix;
   }
+
+  public setNewRole(role: string) {
+    if (!this.user()) {
+      return;
+    }
+    switch (role) {
+      case 'doctor':
+        this.user()!.userSettings.lastPanel = UserRoles.DOCTOR;
+        break;
+
+      case 'admin':
+        this.user()!.userSettings.lastPanel = UserRoles.ADMIN;
+        break;
+      case 'patient':
+        this.user()!.userSettings.lastPanel = UserRoles.PATIENT;
+        break;
+      default:
+        this.user()!.userSettings.lastPanel = UserRoles.PATIENT;
+        break;
+    }
+    const currentUser = this.user();
+    if (currentUser) {
+      this.user.set({ ...currentUser });
+    }
+  }
 }
