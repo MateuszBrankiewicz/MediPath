@@ -721,3 +721,16 @@ Returns:
     403 - User does not have access to this role
     400 - Invalid panel id (panel id is not either 1, 2, 4 or 8)
     200 - Success
+
+
+/users/me/resetpassword/
+Method: POST
+
+Body:
+    currentPassword - current password belonging to the logged-in user
+    newPassword - new password to set to the currently logged-in user
+
+Returns:
+    401 - User is not logged in or currentPassword is invalid
+    503 - Mail service threw an error
+    200 - Password successfully reset

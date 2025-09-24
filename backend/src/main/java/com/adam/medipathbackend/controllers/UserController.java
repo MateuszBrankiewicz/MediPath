@@ -1,9 +1,6 @@
 package com.adam.medipathbackend.controllers;
 
-import com.adam.medipathbackend.forms.LoginForm;
-import com.adam.medipathbackend.forms.RegistrationForm;
-import com.adam.medipathbackend.forms.ResetForm;
-import com.adam.medipathbackend.forms.UpdateUserForm;
+import com.adam.medipathbackend.forms.*;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.CommentRepository;
 import com.adam.medipathbackend.repository.PasswordResetEntryRepository;
@@ -276,6 +273,57 @@ public class UserController {
         user.setPasswordHash(passwordHash);
         userRepository.save(user);
         return new ResponseEntity<>(Map.of("message", "password reset successfully"), HttpStatus.OK);
+    }
+
+    @PostMapping(value = {"/me/resetpassword", "/me/resetpassword/"})
+    public ResponseEntity<Map<String, Object>> resetMyPassword(@RequestBody ResetMyPasswordForm form, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+        if(userOpt.isEmpty() || !argon2PasswordEncoder.matches(form.getCurrentPassword(), userOpt.get().getPasswordHash())) {
+            return new ResponseEntity<>(Map.of("message", "invalid password"), HttpStatus.UNAUTHORIZED);
+        }
+
+        String passwordHash = argon2PasswordEncoder.encode(form.getNewPassword());
+        User user = userOpt.get();
+        user.setPasswordHash(passwordHash);
+        try {
+
+            MimeMessage message = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message);
+            helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
+            helper.setSubject("Password reset request");
+            helper.setTo(user.getEmail());
+            SecureRandom secureRandom = new SecureRandom();
+            String token = Long.toHexString(secureRandom.nextLong());
+            String content = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "    <meta charset=\"UTF-8\" />\n" +
+                    "    <title>Password Reset</title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "    <h2>MediPath</h2>\n" +
+                    "    <p>The password to your account has been successfully reset.</p>\n" +
+                    "    <br>\n" +
+                    "    <p>If you have not reset your password recently, please reset your password via the \"Forgot password\" form on the login screen, as your account may be at risk.</p>\n" +
+                    "    <p>-MediPath development team</p>\n" +
+                    "    \n" +
+                    "</body>\n" +
+                    "</html>";
+
+            helper.setText(content);
+            sender.send(message);
+
+        } catch (MailException | MessagingException | UnsupportedEncodingException e) {
+            return new ResponseEntity<>(Map.of("message", "the mail service threw an error", "error", e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        userRepository.save(user);
+        session.invalidate();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping(value = {"/me/defaultpanel/{value}", "/me/defaultpanel/{value}/"})
