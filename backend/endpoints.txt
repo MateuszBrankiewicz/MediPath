@@ -668,3 +668,56 @@ Type: Websocket
 
 Subscribe to this websocket to receive notifications
 
+
+
+/users/me/settings
+Method: GET
+
+Returns:
+    401 - User is not logged in
+    200 - Success
+
+
+/users/me/settings
+Method: PUT
+
+Body:
+     language: Code of the language (such as PL or EN)
+     systemNotifications - boolean. Marks whether to allow system notifications (such as visit reminders)
+     userNotifications - boolean. Marks whether to allow other notifications (reminders created by the user or doctor)
+
+Returns:
+    401 - User is not logged in
+    200 - Successfully updated settings or no changes made
+
+
+
+/users/me/update
+Method: PUT
+
+Body:
+    city - city name
+    name - first name
+    surname - last name
+    province - province of the address
+    postalCode - zip code
+    number - street number
+    street - street name
+    phoneNumber - phone number
+
+Returns:
+    401 - User is not logged in
+    200 - Success or no changes
+
+
+/users/me/defaultpanel/{panel}
+Method: PUT
+
+Path variables:
+    panel - integer describing the default panel to display. Same as the role code (1 - patient, 2 - doctor, 4 - staff, 8 - admin)
+
+Returns:
+    401 - User is not logged in
+    403 - User does not have access to this role
+    400 - Invalid panel id (panel id is not either 1, 2, 4 or 8)
+    200 - Success

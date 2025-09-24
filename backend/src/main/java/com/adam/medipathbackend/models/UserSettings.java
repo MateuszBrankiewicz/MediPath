@@ -1,5 +1,7 @@
 package com.adam.medipathbackend.models;
 
+import java.util.Objects;
+
 public class UserSettings {
     private String language;
 
@@ -48,5 +50,16 @@ public class UserSettings {
 
     public void setLastPanel(int lastPanel) {
         this.lastPanel = lastPanel;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof UserSettings settings)) return false;
+        return systemNotifications == settings.systemNotifications && userNotifications == settings.userNotifications && lastPanel == settings.lastPanel && Objects.equals(language, settings.language);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(language, systemNotifications, userNotifications, lastPanel);
     }
 }

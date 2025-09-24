@@ -3,6 +3,7 @@ package com.adam.medipathbackend.controllers;
 import com.adam.medipathbackend.forms.LoginForm;
 import com.adam.medipathbackend.forms.RegistrationForm;
 import com.adam.medipathbackend.forms.ResetForm;
+import com.adam.medipathbackend.forms.UpdateUserForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.CommentRepository;
 import com.adam.medipathbackend.repository.PasswordResetEntryRepository;
@@ -275,6 +276,124 @@ public class UserController {
         user.setPasswordHash(passwordHash);
         userRepository.save(user);
         return new ResponseEntity<>(Map.of("message", "password reset successfully"), HttpStatus.OK);
+    }
+
+    @PutMapping(value = {"/me/defaultpanel/{value}", "/me/defaultpanel/{value}/"})
+    public ResponseEntity<Map<String, Object>> setDefaultPanel(@PathVariable String value, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        int panel;
+        try {
+           panel = Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return new ResponseEntity<>(Map.of("message", "invalid panel ID"), HttpStatus.BAD_REQUEST);
+        }
+        if(panel != 1 && panel != 2 && panel != 4 && panel != 8) {
+            return new ResponseEntity<>(Map.of("message", "invalid panel ID"), HttpStatus.BAD_REQUEST);
+        }
+        User user = userOpt.get();
+        if((user.getRoleCode() & panel) == 0) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        UserSettings settings = user.getUserSettings();
+        settings.setLastPanel(panel);
+        user.setUserSettings(settings);
+        userRepository.save(user);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping(value = {"/me/update", "/me/update/"})
+    public ResponseEntity<Map<String, Object>> updateData(@RequestBody UpdateUserForm updateUserForm, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        User user = userOpt.get();
+        boolean anyChanges = false;
+        boolean addressChanged = false;
+        Address userAddress = user.getAddress();
+        if(updateUserForm.getCity() != null && !updateUserForm.getCity().isBlank()) {
+            userAddress.setCity(updateUserForm.getCity());
+            addressChanged = true;
+        }
+        if(updateUserForm.getStreet() != null && !updateUserForm.getStreet().isBlank()) {
+            userAddress.setStreet(updateUserForm.getStreet());
+            addressChanged = true;
+        }
+        if(updateUserForm.getNumber() != null && !updateUserForm.getNumber().isBlank()) {
+            userAddress.setNumber(updateUserForm.getNumber());
+            addressChanged = true;
+        }
+        if(updateUserForm.getPostalCode() != null && !updateUserForm.getPostalCode().isBlank()) {
+            userAddress.setPostalCode(updateUserForm.getPostalCode());
+            addressChanged = true;
+        }
+        if(updateUserForm.getProvince() != null && !updateUserForm.getProvince().isBlank()) {
+            userAddress.setProvince(updateUserForm.getProvince());
+            addressChanged = true;
+        }
+        if(addressChanged) {
+            user.setAddress(userAddress);
+            anyChanges = true;
+        }
+        if(updateUserForm.getName() != null && !updateUserForm.getName().isBlank()) {
+            user.setName(updateUserForm.getName());
+            anyChanges = true;
+        }
+        if(updateUserForm.getSurname() != null && !updateUserForm.getSurname().isBlank()) {
+            user.setSurname(updateUserForm.getSurname());
+            anyChanges = true;
+        }
+        if(updateUserForm.getPhoneNumber() != null && !updateUserForm.getPhoneNumber().isBlank()) {
+            user.setPhoneNumber(updateUserForm.getPhoneNumber());
+            anyChanges = true;
+        }
+        if(anyChanges) userRepository.save(user);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping(value = {"/me/settings", "/me/settings/"})
+    public ResponseEntity<Map<String, Object>> updateSettings(@RequestBody UserSettings userSettings, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        User user = userOpt.get();
+        if(userSettings.getLanguage() == null || userSettings.getLanguage().isBlank()) {
+            userSettings.setLanguage(user.getUserSettings().getLanguage());
+        }
+
+        if(!user.getUserSettings().equals(userSettings))  {
+            user.setUserSettings(userSettings);
+            userRepository.save(user);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @GetMapping(value = {"/me/settings", "/me/settings/"})
+    public ResponseEntity<Map<String, Object>> getSettings(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(Map.of("settings", userOpt.get().getUserSettings()), HttpStatus.OK);
     }
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {
