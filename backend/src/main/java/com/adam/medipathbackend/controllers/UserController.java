@@ -2,10 +2,7 @@ package com.adam.medipathbackend.controllers;
 
 import com.adam.medipathbackend.forms.*;
 import com.adam.medipathbackend.models.*;
-import com.adam.medipathbackend.repository.CommentRepository;
-import com.adam.medipathbackend.repository.PasswordResetEntryRepository;
-import com.adam.medipathbackend.repository.UserRepository;
-import com.adam.medipathbackend.repository.VisitRepository;
+import com.adam.medipathbackend.repository.*;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -42,6 +39,9 @@ public class UserController {
 
     @Autowired
     CommentRepository commentRepository;
+
+    @Autowired
+    MedicalHistoryRepository mhRepository;
 
     @Autowired
     private JavaMailSender sender;
@@ -442,6 +442,15 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity<>(Map.of("settings", userOpt.get().getUserSettings()), HttpStatus.OK);
+    }
+
+    @GetMapping(value = {"/me/medicalhistory", "/me/medicalhistory/"})
+    public ResponseEntity<Map<String, Object>> getMedicalHistory(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(Map.of("medicalhistories", mhRepository.getEntriesForPatient(loggedUserID)), HttpStatus.OK);
     }
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {

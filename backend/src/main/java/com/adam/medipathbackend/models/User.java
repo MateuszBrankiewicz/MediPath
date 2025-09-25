@@ -180,8 +180,11 @@ public class User {
         return latestMedicalHistory;
     }
 
-    public void setLatestMedicalHistory(LinkedList<MedicalHistory> latestMedicalHistory) {
-        this.latestMedicalHistory = latestMedicalHistory;
+    public void addLatestMedicalHistory(MedicalHistory medicalHistory) {
+        if(latestMedicalHistory.size() >= 5) {
+            latestMedicalHistory.remove();
+        }
+        latestMedicalHistory.add(medicalHistory);
     }
 
     public int getRoleCode() {
