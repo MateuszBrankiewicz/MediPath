@@ -116,7 +116,16 @@ public class UserController {
         if(opt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(Map.of("user", opt.get()), HttpStatus.OK);
+        User user = opt.get();
+        HashMap<String, Object> data = new java.util.HashMap<>(Map.of("name", user.getName(), "surname", user.getSurname(),
+                "govId", user.getGovId(), "birthDate", user.getBirthDate(),
+                "address", user.getAddress(), "phoneNumber", user.getPhoneNumber(),
+                "licenceNumber", user.getLicenceNumber(), "specialisations", user.getSpecialisations(),
+                "latestMedicalHistory", user.getLatestMedicalHistory(), "roleCode", user.getRoleCode()));
+                data.putAll(Map.of("notifications", user.getNotifications(), "rating", user.getRating(),
+                        "employers", user.getEmployers(), "numOfRatings", user.getNumOfRatings(),
+                        "pfpImage", user.getPfpimage()));
+        return new ResponseEntity<>(Map.of("user", data), HttpStatus.OK);
     }
 
     @GetMapping(value = {"/resetpassword", "/resetpassword/"})
