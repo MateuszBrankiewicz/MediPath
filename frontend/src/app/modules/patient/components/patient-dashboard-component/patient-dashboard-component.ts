@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -8,6 +8,7 @@ import { catchError, map, of } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { DashboardConfig } from '../../../shared/components/layout/dashboard-layout-component/dashboard-layout-component';
 import { Refferal } from '../../models/refferal-page.model';
+import { VisitBasicInfo, VisitResponse } from '../../models/visit-page.model';
 import { PatientCodesService } from '../../services/patient-codes.service';
 import { PatientVisitsService } from '../../services/patient-visits.service';
 
@@ -17,7 +18,7 @@ import { PatientVisitsService } from '../../services/patient-visits.service';
   templateUrl: './patient-dashboard-component.html',
   styleUrl: './patient-dashboard-component.scss',
 })
-export class PatientDashboardComponent implements OnInit {
+export class PatientDashboardComponent {
   readonly searchQuery = signal('');
   private codesService = inject(PatientCodesService);
   private patientVisitsService = inject(PatientVisitsService);
@@ -60,21 +61,24 @@ export class PatientDashboardComponent implements OnInit {
     () => this.codesData()?.referrals || [],
   );
 
-  ngOnInit(): void {
-    this.patientVisitsService.getUpcomingVisits().subscribe((data) => {
-      console.log(data);
-    });
-  }
-
-  constructor() {
-    this.patientVisitsService.getUpcomingVisits().subscribe((data) => {
-      console.log(data);
-    });
-  }
-
-  protected readonly upcomingVisits = signal([
-    { id: 1, time: '8:00 am', doctor: 'Kazimierz Nowak' },
-    { id: 2, time: '10:00 am', doctor: 'Jan Kowalski' },
-    { id: 3, time: '1:00 pm', doctor: 'Piotr Nowak' },
-  ]);
+  protected readonly upcomingVisits = toSignal(
+    this.patientVisitsService.getUpcomingVisits().pipe(
+      map((visits: VisitResponse[]) => {
+        return visits.map((visit: VisitResponse): VisitBasicInfo => {
+          const [year, month, day, hour, minute] = visit.time.startTime;
+          const dateString = `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year} ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          return {
+            id: visit.id,
+            doctorName: `${visit.doctor.doctorName} ${visit.doctor.doctorSurname}`,
+            date: dateString,
+          };
+        });
+      }),
+      catchError(() => {
+        this.isLoading.set(false);
+        return of([] as VisitBasicInfo[]);
+      }),
+    ),
+    { initialValue: [] as VisitBasicInfo[] },
+  );
 }

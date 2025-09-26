@@ -22,7 +22,6 @@ export class PatientCodesService {
       .pipe(
         map((response): Refferal[] => {
           const codes = response?.codes;
-          console.log(codes);
           if (!Array.isArray(codes)) return [];
           return codes.map((item, idx) => ({
             id: idx + 1,

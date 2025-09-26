@@ -1,16 +1,17 @@
-import { CardModule } from 'primeng/card';
-import { Component, inject, signal } from '@angular/core';
-import { TableModule } from 'primeng/table';
-import { VisitPageModel, VisitStatus } from '../../models/visit-page.model';
 import { CommonModule } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuModule } from 'primeng/menu';
 import { PopoverModule } from 'primeng/popover';
-import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
-import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
+import { TableModule } from 'primeng/table';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { VisitPageModel, VisitStatus } from '../../models/visit-page.model';
+import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
+import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
+import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog';
 
 @Component({
   selector: 'app-visit-page',
@@ -28,36 +29,14 @@ import { TranslationService } from '../../../../core/services/translation/transl
 })
 export class VisitPage {
   protected readonly showVisitDetailsDialog = signal(false);
-  protected readonly selectedVisitId = signal<number | null>(null);
+  protected readonly selectedVisitId = signal<string | null>(null);
 
   private dialogService = inject(DialogService);
   protected translationService = inject(TranslationService);
 
   private ref: DynamicDialogRef | undefined;
 
-  visits: VisitPageModel[] = [
-    {
-      id: 1,
-      doctorName: 'Dr. Smith',
-      institution: 'City Hospital',
-      date: new Date('2024-06-01'),
-      status: VisitStatus.Scheduled,
-    },
-    {
-      id: 2,
-      doctorName: 'Dr. Johnson',
-      institution: 'Health Clinic',
-      date: new Date('2024-05-20'),
-      status: VisitStatus.Completed,
-    },
-    {
-      id: 3,
-      doctorName: 'Dr. Lee',
-      institution: 'Downtown Medical Center',
-      date: new Date('2024-06-10'),
-      status: VisitStatus.Canceled,
-    },
-  ];
+  protected readonly visitPageModel = toSignal<VisitPageModel[]>();
 
   protected cancelVisit() {
     console.log('cancel');
@@ -85,7 +64,7 @@ export class VisitPage {
   protected editVisit() {
     console.log('edit');
   }
-  protected openVisitDialog(id: number): void {
+  protected openVisitDialog(id: string): void {
     this.selectedVisitId.set(id);
 
     this.ref = this.dialogService.open(VisitDetailsDialog, {
@@ -106,7 +85,7 @@ export class VisitPage {
     });
   }
 
-  protected openRescheduleDialog(id: number): void {
+  protected openRescheduleDialog(id: string): void {
     this.ref = this.dialogService.open(ScheduleVisitDialog, {
       data: { visitId: id },
       header: this.translationService.translate(
@@ -126,7 +105,7 @@ export class VisitPage {
     });
   }
 
-  private openReviewDialog(id: number) {
+  private openReviewDialog(id: string): void {
     this.ref = this.dialogService.open(ReviewVisitDialog, {
       data: { visitId: id },
       header: this.translationService.translate('patient.visits.reviewTitle'),
