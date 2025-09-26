@@ -1,13 +1,19 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  ReactiveFormsModule,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import {
   FormControl,
   FormGroup,
+  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 export interface UserProfile {
   name: string;
@@ -28,6 +34,7 @@ export interface UserProfile {
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './edit-user-profile.html',
   styleUrl: './edit-user-profile.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditUserProfile implements OnInit {
   public translationService = inject(TranslationService);
@@ -35,7 +42,6 @@ export class EditUserProfile implements OnInit {
 
   public isSubmitting = signal(false);
 
-  // Form controls with mock data - in real app this would come from a service
   public profileFormGroup = new FormGroup({
     name: new FormControl('Jan', [
       Validators.required,

@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -15,6 +15,7 @@ import { PatientCodesService } from '../../services/patient-codes.service';
   imports: [CommonModule, TableModule, ButtonModule, CardModule, DatePipe],
   templateUrl: './refferals-page.html',
   styleUrl: './refferals-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RefferalsPage {
   private toastService = inject(ToastService);

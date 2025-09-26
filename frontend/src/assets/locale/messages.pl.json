@@ -138,9 +138,13 @@
   "patient.medicalHistory.addEntry": "DODAJ NOWY WPIS",
 
   "patient.reviewVisit.title": "Zostaw opinię",
+  "patient.reviewVisit.editTitle": "Edytuj opinię",
+  "patient.reviewVisit.subtitle": "Podziel się wrażeniami z ostatniej wizyty.",
   "patient.reviewVisit.comments": "Komentarze o Twojej wizycie:",
   "patient.reviewVisit.rateDoctor": "Oceń lekarza:",
   "patient.reviewVisit.rateInstitution": "Oceń instytucję:",
+  "patient.reviewVisit.submitReview": "Zapisz opinię",
+  "patient.reviewVisit.updateReview": "Zaktualizuj opinię",
 
   "patient.addReminder.title": "Tytuł: *",
   "patient.addReminder.reminderTime": "Czas przypomnienia:",

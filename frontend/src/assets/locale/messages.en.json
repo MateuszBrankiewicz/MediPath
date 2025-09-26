@@ -137,9 +137,13 @@
   "patient.medicalHistory.addEntry": "ADD NEW ENTRY",
 
   "patient.reviewVisit.title": "Leave a Review",
+  "patient.reviewVisit.editTitle": "Edit Review",
+  "patient.reviewVisit.subtitle": "Share feedback about your recent visit.",
   "patient.reviewVisit.comments": "Comments about your visit:",
   "patient.reviewVisit.rateDoctor": "Rate the doctor:",
   "patient.reviewVisit.rateInstitution": "Rate the institution:",
+  "patient.reviewVisit.submitReview": "Submit Review",
+  "patient.reviewVisit.updateReview": "Update Review",
 
   "patient.addReminder.title": "Title: *",
   "patient.addReminder.reminderTime": "Reminder Time:",

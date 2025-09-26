@@ -1,6 +1,6 @@
 <h2>{{ translationService.translate("patient.visits.title") }}</h2>
 <div class="visits-list">
-  @for (visit of visits; track visit.id) {
+  @for (visit of visits(); track visit.id) {
     <p-card class="visit-card">
       <div class="visit-card-content">
         <div class="visit-main-info">

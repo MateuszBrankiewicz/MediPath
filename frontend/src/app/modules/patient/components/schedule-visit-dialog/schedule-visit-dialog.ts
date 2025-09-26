@@ -1,19 +1,25 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 import {
   AvailableDay,
   CalendarSchedule,
 } from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { RescheduleData } from '../../models/visit-page.model';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-schedule-visit-dialog',
   imports: [ButtonModule, CommonModule, CalendarSchedule],
   templateUrl: './schedule-visit-dialog.html',
   styleUrl: './schedule-visit-dialog.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScheduleVisitDialog {
   private ref = inject(DynamicDialogRef);

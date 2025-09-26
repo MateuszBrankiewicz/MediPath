@@ -1,9 +1,14 @@
-import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
-  TranslationService,
   SupportedLanguage,
+  TranslationService,
 } from '../../../../core/services/translation/translation.service';
 
 interface LanguageOption {
@@ -23,6 +28,7 @@ interface AccountSettingsForm {
   imports: [CommonModule, FormsModule],
   templateUrl: './account-settings.html',
   styleUrl: './account-settings.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountSettings {
   private translationService = inject(TranslationService);

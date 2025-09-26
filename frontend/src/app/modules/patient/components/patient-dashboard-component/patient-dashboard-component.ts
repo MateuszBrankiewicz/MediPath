@@ -1,4 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -17,6 +23,7 @@ import { PatientVisitsService } from '../../services/patient-visits.service';
   imports: [InputTextModule, ButtonModule, CardModule, ProgressSpinnerModule],
   templateUrl: './patient-dashboard-component.html',
   styleUrl: './patient-dashboard-component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PatientDashboardComponent {
   readonly searchQuery = signal('');

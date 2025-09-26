@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -15,6 +15,7 @@ import { ToastService } from './../../../../core/services/toast/toast.service';
   imports: [ButtonModule, TableModule, DatePipe, CardModule, CommonModule],
   templateUrl: './prescription-page.html',
   styleUrl: './prescription-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PrescriptionPage {
   private toastService = inject(ToastService);

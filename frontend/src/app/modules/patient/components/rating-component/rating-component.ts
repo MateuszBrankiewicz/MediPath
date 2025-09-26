@@ -1,9 +1,14 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Component, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { DialogService } from 'primeng/dynamicdialog';
 import { PanelModule } from 'primeng/panel';
 import { RatingModule } from 'primeng/rating';
+import { map } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { PatientCommentService } from '../../services/patient-comment.service';
+import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
 
 export interface CommentWithRating {
   id: string;
@@ -19,38 +24,34 @@ export interface CommentWithRating {
   imports: [FormsModule, ButtonModule, PanelModule, RatingModule],
   templateUrl: './rating-component.html',
   styleUrl: './rating-component.scss',
+  providers: [DialogService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RatingComponent {
   protected translationService = inject(TranslationService);
+  private dialogService = inject(DialogService);
 
-  protected viewRatings(id: string): void {
-    console.log('Viewing ratings for ID:', id);
+  protected viewRatings(comment: CommentWithRating): void {
+    this.dialogService.open(ReviewVisitDialog, {
+      width: '70%',
+      height: 'auto',
+      data: comment,
+    });
   }
+  private commentService = inject(PatientCommentService);
 
-  protected comments = [
-    {
-      id: '1',
-      comment: 'Excellent care and attention.',
-      doctorName: 'Dr. Smith',
-      institutionName: 'City Hospital',
-      doctorRating: 5,
-      institutionRating: 4,
-    },
-    {
-      id: '2',
-      comment: 'Very professional and kind.',
-      doctorName: 'Dr. Johnson',
-      institutionName: 'Green Clinic',
-      doctorRating: 4,
-      institutionRating: 5,
-    },
-    {
-      id: '3',
-      comment: 'Average experience.',
-      doctorName: 'Dr. Lee',
-      institutionName: 'Downtown Medical Center',
-      doctorRating: 3,
-      institutionRating: 3,
-    },
-  ] as CommentWithRating[];
+  protected readonly comments = toSignal<CommentWithRating[]>(
+    this.commentService.getUsersComments().pipe(
+      map((response) =>
+        response.comments.map((comment) => ({
+          id: comment.id,
+          comment: comment.content,
+          doctorName: comment.doctor,
+          institutionName: comment.institution,
+          doctorRating: comment.doctorRating,
+          institutionRating: comment.institutionRating,
+        })),
+      ),
+    ),
+  );
 }

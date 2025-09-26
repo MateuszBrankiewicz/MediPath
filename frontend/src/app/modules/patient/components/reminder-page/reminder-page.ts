@@ -1,12 +1,17 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { PanelModule } from 'primeng/panel';
 import { TooltipModule } from 'primeng/tooltip';
-import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder-dialog';
-import { Reminder } from '../../models/reminder-page.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { Reminder } from '../../models/reminder-page.model';
+import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder-dialog';
 
 @Component({
   selector: 'app-reminder-page',
@@ -14,6 +19,7 @@ import { TranslationService } from '../../../../core/services/translation/transl
   templateUrl: './reminder-page.html',
   styleUrl: './reminder-page.scss',
   providers: [DialogService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReminderPage {
   private dialogService = inject(DialogService);
