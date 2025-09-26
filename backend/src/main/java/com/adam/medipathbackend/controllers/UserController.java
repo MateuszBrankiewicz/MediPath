@@ -150,7 +150,7 @@ public class UserController {
                 "latestMedicalHistory", user.getLatestMedicalHistory(), "roleCode", user.getRoleCode()));
                 data.putAll(Map.of("notifications", user.getNotifications(), "rating", user.getRating(),
                         "employers", user.getEmployers(), "numOfRatings", user.getNumOfRatings(),
-                        "pfpImage", user.getPfpimage()));
+                        "pfpImage", user.getPfpimage(), "userSettings", user.getUserSettings()));
         return new ResponseEntity<>(Map.of("user", data), HttpStatus.OK);
     }
 
