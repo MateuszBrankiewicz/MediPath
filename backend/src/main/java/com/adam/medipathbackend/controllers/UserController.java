@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -105,6 +106,31 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping(value = {"/patients/{patientid}", "/patients/{patientid}"})
+    public ResponseEntity<Map<String, Object>> getPatient(@PathVariable String patientid, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> doctorStaffOpt = userRepository.findDoctorOrStaffById(loggedUserID);
+        if(doctorStaffOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        boolean isAnyPresent = false;
+        Optional<User> patientOpt = userRepository.findById(patientid);
+        User doctor = doctorStaffOpt.get();
+        for(InstitutionDigest digest: doctor.getEmployers()) {
+            isAnyPresent |= !visitRepository.getAllVisitsForPatientInInstitution(patientid, digest.getInstitutionId()).isEmpty();
+        }
+        if(patientOpt.isEmpty() || !isAnyPresent) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        User patient = patientOpt.get();
+        return new ResponseEntity<>(Map.of("name", patient.getName(), "surname", patient.getSurname(),
+                "govId", patient.getGovId(), "birthDate", patient.getBirthDate(),
+                "phoneNumber", patient.getPhoneNumber(), "pfp", patient.getPfpimage(),
+                "medicalHistory", mhRepository.getEntriesForPatient(patientid)), HttpStatus.OK);
+    }
 
     @GetMapping(value = {"/profile", "/profile/"})
     public ResponseEntity<Map<String, Object>> getProfile(HttpSession session) {

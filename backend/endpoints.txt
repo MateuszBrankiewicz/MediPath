@@ -760,3 +760,15 @@ Method: GET
 Returns:
     401 - User not logged in
     200 - Success
+
+
+/users/patients/{patientid}
+Method: GET
+
+Path Variables:
+    patientid - object id of the patient's profile
+
+Returns:
+    401 - User is not logged in
+    403 - Patient's profile does not exist, User is not a doctor or staff or patient has not visited any institution where user is employed
+    200 - Success
