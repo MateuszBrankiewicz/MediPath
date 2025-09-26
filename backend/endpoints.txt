@@ -217,44 +217,6 @@ Reason: visit booked successfully
 
 
 
-/visits/getupcoming/{userid}
-Method: GET
-Path variables:
-    userid: doctor's userID
-
-Returns:
-
-Status code: 400
-Message: invalid user id
-
-Reason: user id of the doctor is invalid
-
-Status code: 200
-Fields:
-    visits: upcoming visits for a given user
-
-Reason: successfully retrieved doctor's upcoming schedules
-
-
-/visits/getactivecodes/{userid}
-Method: GET
-Path variables:
-    userid: patient's userID
-
-Returns:
-
-Status code: 400
-Message: invalid user id
-
-Reason: user id of the patient is invalid
-
-Status code: 200
-Fields:
-    codes: given users' codes
-
-Reason: successfully retrieved user's codes
-
-
 /schedules/add
 Method: POST
 
@@ -668,3 +630,145 @@ Type: Websocket
 
 Subscribe to this websocket to receive notifications
 
+
+
+/users/me/settings
+Method: GET
+
+Returns:
+    401 - User is not logged in
+    200 - Success
+
+
+/users/me/settings
+Method: PUT
+
+Body:
+     language: Code of the language (such as PL or EN)
+     systemNotifications - boolean. Marks whether to allow system notifications (such as visit reminders)
+     userNotifications - boolean. Marks whether to allow other notifications (reminders created by the user or doctor)
+
+Returns:
+    401 - User is not logged in
+    200 - Successfully updated settings or no changes made
+
+
+
+/users/me/update
+Method: PUT
+
+Body:
+    city - city name
+    name - first name
+    surname - last name
+    province - province of the address
+    postalCode - zip code
+    number - street number
+    street - street name
+    phoneNumber - phone number
+
+Returns:
+    401 - User is not logged in
+    200 - Success or no changes
+
+
+/users/me/defaultpanel/{panel}
+Method: PUT
+
+Path variables:
+    panel - integer describing the default panel to display. Same as the role code (1 - patient, 2 - doctor, 4 - staff, 8 - admin)
+
+Returns:
+    401 - User is not logged in
+    403 - User does not have access to this role
+    400 - Invalid panel id (panel id is not either 1, 2, 4 or 8)
+    200 - Success
+
+
+/users/me/resetpassword/
+Method: POST
+
+Body:
+    currentPassword - current password belonging to the logged-in user
+    newPassword - new password to set to the currently logged-in user
+
+Returns:
+    401 - User is not logged in or currentPassword is invalid
+    503 - Mail service threw an error
+    200 - Password successfully reset
+
+
+/medicalhistory/{id}
+Method: DELETE
+
+Path variables;
+    id - object id of the medical history entry to delete
+
+Returns:
+    401 - User not logged in
+    403 - Entry does not exist, user does not have access or entry is created by doctor
+    200 - Success
+
+
+/medicalhistory/{id}
+Method: PUT
+
+Path variables;
+    id - object id of the medical history entry to modify
+
+Body:
+     title - title of the visit
+     note - note attached to the visit
+     date - date of adding - yyyy-mm-dd
+
+
+Returns:
+    401 - User not logged in
+    403 - Entry does not exist, user does not have access or entry is created by doctor
+    200 - Success
+
+
+/medicalhistory/add
+Method: POST
+
+Path variables;
+    id - object id of the medical history entry to delete
+
+Returns:
+    401 - User not logged in
+    403 - Entry does not exist, user does not have access or entry is created by doctor
+    200 - Success
+
+
+/medicalhistory/{id}
+Method: PUT
+
+Body:
+     title - title of the visit
+     note - note attached to the visit
+     date - date of adding - yyyy-mm-dd
+
+Returns:
+    401 - User not logged in
+    400 - Missing fields in request body
+    403 - User specified in entry does not exist, user is not logged in as specified patient/doctor or doctor has not had any visits with the patient
+    200 - Success
+
+/users/me/medicalhistory
+Method: GET
+
+Returns:
+    401 - User not logged in
+    200 - Success
+
+
+/users/patients/{patientid}
+Method: GET
+
+Path Variables:
+    patientid - object id of the patient's profile
+
+Returns:
+    401 - User is not logged in
+    403 - Patient's profile does not exist, User is not a doctor or staff or patient has not visited any institution where user is employed
+    200 - Success
