@@ -1,11 +1,14 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { TableModule } from 'primeng/table';
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { TableModule } from 'primeng/table';
+import { map } from 'rxjs';
 import { ToastService } from '../../../../core/services/toast/toast.service';
-import { Refferal, UsedState } from '../../models/refferal-page.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { Refferal } from '../../models/refferal-page.model';
+import { PatientCodesService } from '../../services/patient-codes.service';
 
 @Component({
   selector: 'app-refferals-page',
@@ -16,22 +19,16 @@ import { TranslationService } from '../../../../core/services/translation/transl
 export class RefferalsPage {
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
-  protected referrals = signal<Refferal[]>([
-    {
-      id: 1,
-      doctorName: 'Dr. Smith',
-      prescriptionPin: 12345,
-      status: UsedState.UNUSED,
-      date: new Date('2023-10-01'),
-    },
-    {
-      id: 2,
-      doctorName: 'Dr. Johnson',
-      prescriptionPin: 67890,
-      status: UsedState.USED,
-      date: new Date('2023-09-15'),
-    },
-  ]);
+  private codeService = inject(PatientCodesService);
+  protected referrals = toSignal<Refferal[]>(
+    this.codeService
+      .getPrescriptions()
+      .pipe(
+        map((results: Refferal[]) =>
+          results.filter((code) => code.codeType?.toLowerCase() === 'referral'),
+        ),
+      ),
+  );
 
   protected copyToClipboard(pin: number): void {
     navigator.clipboard

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -9,6 +9,7 @@ import { TranslationService } from '../../../../core/services/translation/transl
 import { DashboardConfig } from '../../../shared/components/layout/dashboard-layout-component/dashboard-layout-component';
 import { Refferal } from '../../models/refferal-page.model';
 import { PatientCodesService } from '../../services/patient-codes.service';
+import { PatientVisitsService } from '../../services/patient-visits.service';
 
 @Component({
   selector: 'app-patient-dashboard-component',
@@ -16,9 +17,10 @@ import { PatientCodesService } from '../../services/patient-codes.service';
   templateUrl: './patient-dashboard-component.html',
   styleUrl: './patient-dashboard-component.scss',
 })
-export class PatientDashboardComponent {
+export class PatientDashboardComponent implements OnInit {
   readonly searchQuery = signal('');
   private codesService = inject(PatientCodesService);
+  private patientVisitsService = inject(PatientVisitsService);
   protected translationService = inject(TranslationService);
 
   readonly dashboardConfig: DashboardConfig = {
@@ -57,6 +59,18 @@ export class PatientDashboardComponent {
   protected readonly refferals = computed(
     () => this.codesData()?.referrals || [],
   );
+
+  ngOnInit(): void {
+    this.patientVisitsService.getUpcomingVisits().subscribe((data) => {
+      console.log(data);
+    });
+  }
+
+  constructor() {
+    this.patientVisitsService.getUpcomingVisits().subscribe((data) => {
+      console.log(data);
+    });
+  }
 
   protected readonly upcomingVisits = signal([
     { id: 1, time: '8:00 am', doctor: 'Kazimierz Nowak' },

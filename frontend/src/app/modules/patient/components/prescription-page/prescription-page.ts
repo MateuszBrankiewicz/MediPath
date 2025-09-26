@@ -1,11 +1,14 @@
-import { ToastService } from './../../../../core/services/toast/toast.service';
-import { Component, inject, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
-import { DatePipe, CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
-import { Refferal, UsedState } from '../../models/refferal-page.model';
+import { TableModule } from 'primeng/table';
+import { map } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { Refferal } from '../../models/refferal-page.model';
+import { PatientCodesService } from '../../services/patient-codes.service';
+import { ToastService } from './../../../../core/services/toast/toast.service';
 
 @Component({
   selector: 'app-prescription-page',
@@ -16,23 +19,19 @@ import { TranslationService } from '../../../../core/services/translation/transl
 export class PrescriptionPage {
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
+  protected codeService = inject(PatientCodesService);
 
-  protected prescriptions = signal<Refferal[]>([
-    {
-      id: 1,
-      doctorName: 'Dr. Smith',
-      prescriptionPin: 12345,
-      status: UsedState.UNUSED,
-      date: new Date('2023-10-01'),
-    },
-    {
-      id: 2,
-      doctorName: 'Dr. Johnson',
-      prescriptionPin: 67890,
-      status: UsedState.USED,
-      date: new Date('2023-09-15'),
-    },
-  ]);
+  protected prescriptions = toSignal<Refferal[]>(
+    this.codeService
+      .getPrescriptions()
+      .pipe(
+        map((results: Refferal[]) =>
+          results.filter(
+            (code) => code.codeType?.toLowerCase() === 'prescription',
+          ),
+        ),
+      ),
+  );
 
   protected copyToClipboard(pin: number): void {
     navigator.clipboard
