@@ -1,5 +1,6 @@
 package com.adam.medipathbackend.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,7 +16,7 @@ public class MedicalHistory {
     private String title;
 
     private String note;
-
+    @JsonFormat(pattern="yyyy-MM-dd", timezone="Europe/Warsaw")
     private LocalDate date;
 
     private DoctorDigest doctor;

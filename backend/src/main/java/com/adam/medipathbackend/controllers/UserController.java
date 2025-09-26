@@ -1,13 +1,8 @@
 package com.adam.medipathbackend.controllers;
 
-import com.adam.medipathbackend.forms.LoginForm;
-import com.adam.medipathbackend.forms.RegistrationForm;
-import com.adam.medipathbackend.forms.ResetForm;
+import com.adam.medipathbackend.forms.*;
 import com.adam.medipathbackend.models.*;
-import com.adam.medipathbackend.repository.CommentRepository;
-import com.adam.medipathbackend.repository.PasswordResetEntryRepository;
-import com.adam.medipathbackend.repository.UserRepository;
-import com.adam.medipathbackend.repository.VisitRepository;
+import com.adam.medipathbackend.repository.*;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -24,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -44,6 +40,9 @@ public class UserController {
 
     @Autowired
     CommentRepository commentRepository;
+
+    @Autowired
+    MedicalHistoryRepository mhRepository;
 
     @Autowired
     private JavaMailSender sender;
@@ -107,6 +106,31 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping(value = {"/patients/{patientid}", "/patients/{patientid}"})
+    public ResponseEntity<Map<String, Object>> getPatient(@PathVariable String patientid, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> doctorStaffOpt = userRepository.findDoctorOrStaffById(loggedUserID);
+        if(doctorStaffOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        boolean isAnyPresent = false;
+        Optional<User> patientOpt = userRepository.findById(patientid);
+        User doctor = doctorStaffOpt.get();
+        for(InstitutionDigest digest: doctor.getEmployers()) {
+            isAnyPresent |= !visitRepository.getAllVisitsForPatientInInstitution(patientid, digest.getInstitutionId()).isEmpty();
+        }
+        if(patientOpt.isEmpty() || !isAnyPresent) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        User patient = patientOpt.get();
+        return new ResponseEntity<>(Map.of("name", patient.getName(), "surname", patient.getSurname(),
+                "govId", patient.getGovId(), "birthDate", patient.getBirthDate(),
+                "phoneNumber", patient.getPhoneNumber(), "pfp", patient.getPfpimage(),
+                "medicalHistory", mhRepository.getEntriesForPatient(patientid)), HttpStatus.OK);
+    }
 
     @GetMapping(value = {"/profile", "/profile/"})
     public ResponseEntity<Map<String, Object>> getProfile(HttpSession session) {
@@ -118,7 +142,16 @@ public class UserController {
         if(opt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(Map.of("user", opt.get()), HttpStatus.OK);
+        User user = opt.get();
+        HashMap<String, Object> data = new java.util.HashMap<>(Map.of("name", user.getName(), "surname", user.getSurname(),
+                "govId", user.getGovId(), "birthDate", user.getBirthDate(),
+                "address", user.getAddress(), "phoneNumber", user.getPhoneNumber(),
+                "licenceNumber", user.getLicenceNumber(), "specialisations", user.getSpecialisations(),
+                "latestMedicalHistory", user.getLatestMedicalHistory(), "roleCode", user.getRoleCode()));
+                data.putAll(Map.of("notifications", user.getNotifications(), "rating", user.getRating(),
+                        "employers", user.getEmployers(), "numOfRatings", user.getNumOfRatings(),
+                        "pfpImage", user.getPfpimage()));
+        return new ResponseEntity<>(Map.of("user", data), HttpStatus.OK);
     }
 
     @GetMapping(value = {"/resetpassword", "/resetpassword/"})
@@ -275,6 +308,184 @@ public class UserController {
         user.setPasswordHash(passwordHash);
         userRepository.save(user);
         return new ResponseEntity<>(Map.of("message", "password reset successfully"), HttpStatus.OK);
+    }
+
+    @PostMapping(value = {"/me/resetpassword", "/me/resetpassword/"})
+    public ResponseEntity<Map<String, Object>> resetMyPassword(@RequestBody ResetMyPasswordForm form, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+        if(userOpt.isEmpty() || !argon2PasswordEncoder.matches(form.getCurrentPassword(), userOpt.get().getPasswordHash())) {
+            return new ResponseEntity<>(Map.of("message", "invalid password"), HttpStatus.UNAUTHORIZED);
+        }
+
+        String passwordHash = argon2PasswordEncoder.encode(form.getNewPassword());
+        User user = userOpt.get();
+        user.setPasswordHash(passwordHash);
+        try {
+
+            MimeMessage message = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message);
+            helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
+            helper.setSubject("Password reset request");
+            helper.setTo(user.getEmail());
+            SecureRandom secureRandom = new SecureRandom();
+            String token = Long.toHexString(secureRandom.nextLong());
+            String content = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "    <meta charset=\"UTF-8\" />\n" +
+                    "    <title>Password Reset</title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "    <h2>MediPath</h2>\n" +
+                    "    <p>The password to your account has been successfully reset.</p>\n" +
+                    "    <br>\n" +
+                    "    <p>If you have not reset your password recently, please reset your password via the \"Forgot password\" form on the login screen, as your account may be at risk.</p>\n" +
+                    "    <p>-MediPath development team</p>\n" +
+                    "    \n" +
+                    "</body>\n" +
+                    "</html>";
+
+            helper.setText(content);
+            sender.send(message);
+
+        } catch (MailException | MessagingException | UnsupportedEncodingException e) {
+            return new ResponseEntity<>(Map.of("message", "the mail service threw an error", "error", e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        userRepository.save(user);
+        session.invalidate();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping(value = {"/me/defaultpanel/{value}", "/me/defaultpanel/{value}/"})
+    public ResponseEntity<Map<String, Object>> setDefaultPanel(@PathVariable String value, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        int panel;
+        try {
+           panel = Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return new ResponseEntity<>(Map.of("message", "invalid panel ID"), HttpStatus.BAD_REQUEST);
+        }
+        if(panel != 1 && panel != 2 && panel != 4 && panel != 8) {
+            return new ResponseEntity<>(Map.of("message", "invalid panel ID"), HttpStatus.BAD_REQUEST);
+        }
+        User user = userOpt.get();
+        if((user.getRoleCode() & panel) == 0) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        UserSettings settings = user.getUserSettings();
+        settings.setLastPanel(panel);
+        user.setUserSettings(settings);
+        userRepository.save(user);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping(value = {"/me/update", "/me/update/"})
+    public ResponseEntity<Map<String, Object>> updateData(@RequestBody UpdateUserForm updateUserForm, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        User user = userOpt.get();
+        boolean anyChanges = false;
+        boolean addressChanged = false;
+        Address userAddress = user.getAddress();
+        if(updateUserForm.getCity() != null && !updateUserForm.getCity().isBlank()) {
+            userAddress.setCity(updateUserForm.getCity());
+            addressChanged = true;
+        }
+        if(updateUserForm.getStreet() != null && !updateUserForm.getStreet().isBlank()) {
+            userAddress.setStreet(updateUserForm.getStreet());
+            addressChanged = true;
+        }
+        if(updateUserForm.getNumber() != null && !updateUserForm.getNumber().isBlank()) {
+            userAddress.setNumber(updateUserForm.getNumber());
+            addressChanged = true;
+        }
+        if(updateUserForm.getPostalCode() != null && !updateUserForm.getPostalCode().isBlank()) {
+            userAddress.setPostalCode(updateUserForm.getPostalCode());
+            addressChanged = true;
+        }
+        if(updateUserForm.getProvince() != null && !updateUserForm.getProvince().isBlank()) {
+            userAddress.setProvince(updateUserForm.getProvince());
+            addressChanged = true;
+        }
+        if(addressChanged) {
+            user.setAddress(userAddress);
+            anyChanges = true;
+        }
+        if(updateUserForm.getName() != null && !updateUserForm.getName().isBlank()) {
+            user.setName(updateUserForm.getName());
+            anyChanges = true;
+        }
+        if(updateUserForm.getSurname() != null && !updateUserForm.getSurname().isBlank()) {
+            user.setSurname(updateUserForm.getSurname());
+            anyChanges = true;
+        }
+        if(updateUserForm.getPhoneNumber() != null && !updateUserForm.getPhoneNumber().isBlank()) {
+            user.setPhoneNumber(updateUserForm.getPhoneNumber());
+            anyChanges = true;
+        }
+        if(anyChanges) userRepository.save(user);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping(value = {"/me/settings", "/me/settings/"})
+    public ResponseEntity<Map<String, Object>> updateSettings(@RequestBody UserSettings userSettings, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        User user = userOpt.get();
+        if(userSettings.getLanguage() == null || userSettings.getLanguage().isBlank()) {
+            userSettings.setLanguage(user.getUserSettings().getLanguage());
+        }
+
+        if(!user.getUserSettings().equals(userSettings))  {
+            user.setUserSettings(userSettings);
+            userRepository.save(user);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @GetMapping(value = {"/me/settings", "/me/settings/"})
+    public ResponseEntity<Map<String, Object>> getSettings(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(Map.of("settings", userOpt.get().getUserSettings()), HttpStatus.OK);
+    }
+
+    @GetMapping(value = {"/me/medicalhistory", "/me/medicalhistory/"})
+    public ResponseEntity<Map<String, Object>> getMedicalHistory(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(Map.of("medicalhistories", mhRepository.getEntriesForPatient(loggedUserID)), HttpStatus.OK);
     }
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {

@@ -21,7 +21,7 @@ public class NotificationSender {
     @Autowired
     NotificationService notificationService;
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 60*60000)
     public void pushNotifications() {
         List<User> users = userRepository.findAll();
         for(User user: users) {
