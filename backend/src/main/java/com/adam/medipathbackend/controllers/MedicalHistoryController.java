@@ -40,44 +40,53 @@ public class MedicalHistoryController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         ArrayList<String> missingFields = new ArrayList<>();
-        if(medicalHistory.getUserId() == null || medicalHistory.getUserId().isBlank()) {
-            missingFields.add("userId");
-        }
-        if(medicalHistory.getDate() == null) {
+        if (medicalHistory.getDate() == null) {
             missingFields.add("date");
         }
-        if(medicalHistory.getNote() == null || medicalHistory.getNote().isBlank()) {
+        if (medicalHistory.getNote() == null || medicalHistory.getNote().isBlank()) {
             missingFields.add("note");
         }
-        if(medicalHistory.getTitle() == null || medicalHistory.getTitle().isBlank()) {
+        if (medicalHistory.getTitle() == null || medicalHistory.getTitle().isBlank()) {
             missingFields.add("title");
         }
-        if(!missingFields.isEmpty()) {
+        if (!missingFields.isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
-        Optional<User> userOpt = userRepository.findById(medicalHistory.getUserId());
-        if(userOpt.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        if (!medicalHistory.getUserId().equals(loggedUserID)) {
-            if (medicalHistory.getDoctor() == null || medicalHistory.getDoctor().getUserId() == null || medicalHistory.getDoctor().getUserId().isBlank()) {
-                return new ResponseEntity<>(Map.of("message", "doctor digest must be included when adding for a patient"), HttpStatus.BAD_REQUEST);
-            } else if (!medicalHistory.getDoctor().getUserId().equals(loggedUserID)
-                      || visitRepository.getAllVisitsForPatientWithDoctor(medicalHistory.getUserId(), medicalHistory.getDoctor().getUserId()).isEmpty()) {
+        Optional<User> userOpt;
 
+        if (medicalHistory.getUserId() == null || medicalHistory.getUserId().isBlank()) {
+            //If userID is ommitted, user is adding an entry for themselves
+
+            userOpt = userRepository.findById(loggedUserID);
+            if (userOpt.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            } else {
-                Optional<User> doctorOpt = userRepository.findById(medicalHistory.getDoctor().getUserId());
-                if(doctorOpt.isEmpty()) {
-                    return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-                }
-                User doctor = doctorOpt.get();
-                medicalHistory.setDoctor(new DoctorDigest(doctor.getId(), doctor.getName(), doctor.getSurname(), doctor.getSpecialisations()));
             }
+            medicalHistory.setDoctor(null);
 
         } else {
-            medicalHistory.setDoctor(null);
+            //If not then a doctor is adding for them
+            if (medicalHistory.getDoctor() == null || medicalHistory.getDoctor().getUserId() == null || medicalHistory.getDoctor().getUserId().isBlank()) {
+                return new ResponseEntity<>(Map.of("message", "doctor digest must be included when adding for a patient"), HttpStatus.BAD_REQUEST);
+            }
+            userOpt = userRepository.findById(medicalHistory.getUserId());
+            if (userOpt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+            if (!medicalHistory.getDoctor().getUserId().equals(loggedUserID)
+                    || visitRepository.getAllVisitsForPatientWithDoctor(medicalHistory.getUserId(), medicalHistory.getDoctor().getUserId()).isEmpty()) {
+
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+            }
+            Optional<User> doctorOpt = userRepository.findById(medicalHistory.getDoctor().getUserId());
+            if (doctorOpt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+            User doctor = doctorOpt.get();
+            medicalHistory.setDoctor(new DoctorDigest(doctor.getId(), doctor.getName(), doctor.getSurname(), doctor.getSpecialisations()));
         }
+
+
         User patient = userOpt.get();
         patient.addLatestMedicalHistory(medicalHistory);
         medicalHistoryRepository.save(medicalHistory);
@@ -89,24 +98,24 @@ public class MedicalHistoryController {
     public ResponseEntity<Map<String, Object>> modifyMedHisEntry(@PathVariable String med_his_id, @RequestBody MedicalHistory medicalHistory, HttpSession session) {
 
         String loggedUserID = (String) session.getAttribute("id");
-        if(loggedUserID == null) {
+        if (loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         Optional<User> userOpt = userRepository.findById(loggedUserID);
-        if(userOpt.isEmpty()) {
+        if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         Optional<MedicalHistory> oldMedHisOpt = medicalHistoryRepository.findById(med_his_id);
-        if(oldMedHisOpt.isEmpty()) {
+        if (oldMedHisOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         MedicalHistory oldMedicalHistory = oldMedHisOpt.get();
-        if(!oldMedicalHistory.getUserId().equals(loggedUserID)) {
+        if (!oldMedicalHistory.getUserId().equals(loggedUserID)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        if(oldMedicalHistory.getDoctor() != null) {
+        if (oldMedicalHistory.getDoctor() != null) {
             return new ResponseEntity<>(Map.of("message", "entries added by doctors cannot be changed"), HttpStatus.FORBIDDEN);
         }
 
@@ -116,15 +125,15 @@ public class MedicalHistoryController {
         User user = userOpt.get();
         LinkedList<MedicalHistory> histories = user.getLatestMedicalHistory();
         boolean foundInLatest = false;
-        for(int i = 0; i < histories.size(); i++) {
-            if(histories.get(i).getId().equals(med_his_id)) {
+        for (int i = 0; i < histories.size(); i++) {
+            if (histories.get(i).getId().equals(med_his_id)) {
                 histories.set(i, oldMedicalHistory);
                 foundInLatest = true;
             }
         }
 
         medicalHistoryRepository.save(oldMedicalHistory);
-        if(foundInLatest) userRepository.save(user);
+        if (foundInLatest) userRepository.save(user);
         return new ResponseEntity<>(HttpStatus.OK);
 
     }
@@ -133,24 +142,24 @@ public class MedicalHistoryController {
     public ResponseEntity<Map<String, Object>> deleteMedHisEntry(@PathVariable String med_his_id, HttpSession session) {
 
         String loggedUserID = (String) session.getAttribute("id");
-        if(loggedUserID == null) {
+        if (loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         Optional<User> userOpt = userRepository.findById(loggedUserID);
-        if(userOpt.isEmpty()) {
+        if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         Optional<MedicalHistory> oldMedHisOpt = medicalHistoryRepository.findById(med_his_id);
-        if(oldMedHisOpt.isEmpty()) {
+        if (oldMedHisOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         MedicalHistory oldMedicalHistory = oldMedHisOpt.get();
-        if(!oldMedicalHistory.getUserId().equals(loggedUserID)) {
+        if (!oldMedicalHistory.getUserId().equals(loggedUserID)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        if(oldMedicalHistory.getDoctor() != null) {
+        if (oldMedicalHistory.getDoctor() != null) {
             return new ResponseEntity<>(Map.of("message", "entries added by doctors cannot be deleted"), HttpStatus.FORBIDDEN);
         }
 
@@ -159,7 +168,7 @@ public class MedicalHistoryController {
         boolean foundInLatest = histories.removeIf(history -> history.getId().equals(med_his_id));
 
         medicalHistoryRepository.deleteById(med_his_id);
-        if(foundInLatest) userRepository.save(user);
+        if (foundInLatest) userRepository.save(user);
         return new ResponseEntity<>(HttpStatus.OK);
 
     }
