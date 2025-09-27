@@ -7,11 +7,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,7 +32,6 @@ class AppointmentBookingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val doctorId = intent.getStringExtra("doctor_id") ?: ""
         val doctorName = intent.getStringExtra("doctor_name") ?: ""
 
         setContent {
@@ -57,19 +58,9 @@ fun AppointmentBookingScreen(
     var selectedInstitution by remember { mutableStateOf("") }
     var patientNotes by remember { mutableStateOf("") }
 
-    val availableDates = remember {
-        (0..30).map { LocalDate.now().plusDays(it.toLong()) }
-    }
+    val availableDates = remember { mutableListOf<LocalDate>() }
 
-    val availableTimes = remember {
-        val times = mutableListOf<LocalTime>()
-        var time = LocalTime.of(8, 0)
-        while (time.isBefore(LocalTime.of(18, 0))) {
-            times.add(time)
-            time = time.plusMinutes(30)
-        }
-        times
-    }
+    val availableTimes = remember { mutableListOf<LocalTime>() }
 
     val institutions = listOf("Klinia GPS Zalas", "Medical Center", "Health Plus")
 
@@ -85,7 +76,7 @@ fun AppointmentBookingScreen(
             ) {
                 IconButton(onClick = onBackClick) {
                     Icon(
-                        Icons.Default.ArrowBack,
+                        Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -123,7 +114,7 @@ fun AppointmentBookingScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp)
+                    .padding(vertical = 2.dp)
                     .clickable { selectedInstitution = institution }
                     .border(
                         width = if (selectedInstitution == institution) 2.dp else 0.dp,
@@ -209,10 +200,10 @@ fun AppointmentBookingScreen(
         }
 
         if (selectedDate != null) {
-            items(availableTimes.chunked(3)) { timeRow ->
+            items(availableTimes.chunked(4)) { timeRow ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     timeRow.forEach { time ->
                         Card(
@@ -236,7 +227,7 @@ fun AppointmentBookingScreen(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
             }
         }
 
@@ -274,7 +265,7 @@ fun AppointmentBookingScreen(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Cancel")
+                        Text("CANCEL")
                     }
 
                     Button(
@@ -283,7 +274,7 @@ fun AppointmentBookingScreen(
                         shape = RoundedCornerShape(8.dp),
                         enabled = selectedDate != null && selectedTime != null && selectedInstitution.isNotEmpty()
                     ) {
-                        Text("Confirm")
+                        Text("CONFIRM")
                     }
                 }
 

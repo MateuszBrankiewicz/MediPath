@@ -6,10 +6,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,69 +20,262 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.data.api.SearchResult
+import com.medipath.viewmodels.SearchViewModel
+import com.medipath.ui.theme.LocalCustomColors
+import androidx.compose.material3.MenuAnchorType
 
-data class Institution(
-    val id: String,
-    val name: String,
-    val type: String,
-    val rating: Float,
-    val location: String,
-    val distance: String,
-    val openHours: String
-)
+enum class InstitutionSortOption(val displayName: String) {
+    DEFAULT("Default"),
+    RATING_DESC("Rating (high to low)"),
+    RATING_ASC("Rating (low to high)"),
+    NUM_RATINGS_DESC("Reviews (most to least)"),
+    NUM_RATINGS_ASC("Reviews (least to most)")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InstitutionSearchResultsScreen(
     searchQuery: String,
+    city: String,
+    specialisation: String,
     onBackClick: () -> Unit = {},
-    onInstitutionClick: (Institution) -> Unit = {}
+    onInstitutionClick: (SearchResult) -> Unit = {}
 ) {
-    val institutions = remember {
-        listOf(
-            Institution("1", "Szpital Centralny", "Szpital", 4.3f, "Warszawa", "1.2 km", "24h"),
-            Institution("2", "Przychodnia Familia", "Przychodnia", 4.6f, "Kraków", "0.8 km", "8:00-20:00"),
-            Institution("3", "Centrum Medyczne Lux", "Prywatna klinika", 4.9f, "Gdańsk", "2.5 km", "7:00-22:00")
-        )
+    val viewModel: SearchViewModel = viewModel()
+    val searchResults by viewModel.searchResults.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    var selectedSortOption by remember { mutableStateOf(InstitutionSortOption.DEFAULT) }
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.search(searchQuery, "institution", city, specialisation)
+    }
+
+    val sortedResults = remember(searchResults, selectedSortOption) {
+        when (selectedSortOption) {
+            InstitutionSortOption.DEFAULT -> searchResults
+            InstitutionSortOption.RATING_DESC -> searchResults.sortedByDescending { it.rating }
+            InstitutionSortOption.RATING_ASC -> searchResults.sortedBy { it.rating }
+            InstitutionSortOption.NUM_RATINGS_DESC -> searchResults.sortedByDescending { it.numOfRatings }
+            InstitutionSortOption.NUM_RATINGS_ASC -> searchResults.sortedBy { it.numOfRatings }
+        }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.secondary)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .background(LocalCustomColors.current.blue900),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
                 Icon(
-                    Icons.Default.ArrowBack,
-                    contentDescription = "Wstecz",
-                    tint = MaterialTheme.colorScheme.primary
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.background
                 )
             }
             Text(
-                text = "Wyniki wyszukiwania: \"$searchQuery\"",
-                fontSize = 20.sp,
+                text = "Institution Results",
+                fontSize = 23.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = 8.dp)
+                color = MaterialTheme.colorScheme.background,
+                modifier = Modifier.padding(vertical = 30.dp)
             )
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            items(institutions) { institution ->
-                InstitutionCard(
-                    institution = institution,
-                    onClick = { onInstitutionClick(institution) }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val searchCriteria = buildList {
+                if (searchQuery.isNotBlank()) add("\"$searchQuery\"")
+                if (city.isNotBlank()) add("City: $city")
+                if (specialisation.isNotBlank()) add("Services: $specialisation")
+            }.joinToString(" • ")
+
+            if (searchCriteria.isNotEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Searching for: $searchCriteria",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+
+            if (!isLoading && searchResults.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Sort by:",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = " (${searchResults.size} results)",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+
+                        ExposedDropdownMenuBox(
+                            expanded = isDropdownExpanded,
+                            onExpandedChange = { isDropdownExpanded = !isDropdownExpanded }
+                        ) {
+                            OutlinedTextField(
+                                value = selectedSortOption.displayName,
+                                onValueChange = {},
+                                readOnly = true,
+                                trailingIcon = {
+                                    Icon(
+                                        Icons.Default.ArrowDropDown,
+                                        contentDescription = "Dropdown",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                },
+                                modifier = Modifier
+                                    .width(180.dp)
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+
+                            ExposedDropdownMenu(
+                                expanded = isDropdownExpanded,
+                                onDismissRequest = { isDropdownExpanded = false }
+                            ) {
+                                InstitutionSortOption.entries.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = option.displayName,
+                                                fontSize = 12.sp
+                                            )
+                                        },
+                                        onClick = {
+                                            selectedSortOption = option
+                                            isDropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+
+                searchResults.isEmpty() -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Business,
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No institutions found",
+                                fontSize = 18.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Try adjusting your search criteria",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                fontWeight = FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(sortedResults) { institution ->
+                            InstitutionCard(
+                                institution = institution,
+                                onClick = { onInstitutionClick(institution) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -88,7 +283,7 @@ fun InstitutionSearchResultsScreen(
 
 @Composable
 fun InstitutionCard(
-    institution: Institution,
+    institution: SearchResult,
     onClick: () -> Unit
 ) {
     Card(
@@ -107,79 +302,83 @@ fun InstitutionCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.Business,
-                        contentDescription = "Instytucja",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = institution.name,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray
                     )
-                    Column(
-                        modifier = Modifier.padding(start = 12.dp)
-                    ) {
+
+                    Text(
+                        text = if (institution.isPublic == true) "Public Institution" else "Private Institution",
+                        fontSize = 13.sp,
+                        color = if (institution.isPublic == true) Color(0xFF4CAF50) else Color(0xFF2196F3),
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+
+                    if (!institution.types.isNullOrEmpty()) {
                         Text(
-                            text = institution.name,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Gray
-                        )
-                        Text(
-                            text = institution.type,
+                            text = institution.types.joinToString(", "),
                             fontSize = 14.sp,
-                            color = Color.Gray
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.Star,
-                        contentDescription = "Ocena",
-                        tint = Color(0xFFFFB000),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = institution.rating.toString(),
-                        fontSize = 14.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = "Rating",
+                            tint = Color(0xFFFFB000),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "${institution.rating} (${institution.numOfRatings})",
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = "Lokalizacja",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = "${institution.location} • ${institution.distance}",
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
+            if (!institution.address.isNullOrEmpty()) {
+                val addressParts = institution.address.split(",")
+                if (addressParts.size >= 5) {
+                    val province = addressParts[0]
+                    val city = addressParts[1]
+                    val street = if (addressParts[3] != "null") addressParts[3] else ""
+                    val postalCode = addressParts[4]
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = "Location",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        val displayAddress = if (street.isNotEmpty()) {
+                            "$province, $street, $city • $postalCode"
+                        } else {
+                            "$city • $postalCode"
+                        }
+                        Text(
+                            text = displayAddress,
+                            fontSize = 12.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
                 }
-
-                Text(
-                    text = "Godziny: ${institution.openHours}",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
             }
         }
     }

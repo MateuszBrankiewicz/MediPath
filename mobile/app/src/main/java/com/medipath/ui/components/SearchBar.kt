@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.content.Intent
+import android.util.Log
 import com.medipath.data.api.RetrofitInstance
 import com.medipath.ui.search.SearchResultsActivity
 import kotlinx.coroutines.launch
@@ -40,7 +41,7 @@ fun SearchBar() {
     var query by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf("doctor") }
     var city by remember { mutableStateOf("") }
-    var specialisations by remember { mutableStateOf("") }
+    var specialisation by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var showAdvanced by remember { mutableStateOf(false) }
 
@@ -137,8 +138,8 @@ fun SearchBar() {
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = specialisations,
-                onValueChange = { specialisations = it },
+                value = specialisation,
+                onValueChange = { specialisation = it },
                 label = { Text("Specialisation (optional)") },
                 placeholder = { Text("e.g. cardiologist,neurology") },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -158,19 +159,26 @@ fun SearchBar() {
         Button(
             onClick = {
                 scope.launch {
+                    Log.d("SearchBar", "Searching for $query in $selectedType, $city, $specialisation")
                     try {
+                        Log.d("SearchBar", "Initiating search API call")
                         val response = apiService.search(
                             query = query.ifBlank { "" },
                             type = selectedType,
                             city = if (city.isBlank()) null else city,
-                            specialisations = if (specialisations.isBlank()) null else specialisations
+                            specialisation = if (specialisation.isBlank()) null else specialisation
                         )
+                        Log.d("SearchBar", "API call completed with response: $response")
 
                         if (response.isSuccessful) {
                             val intent = Intent(context, SearchResultsActivity::class.java)
                             intent.putExtra("search_query", query)
                             intent.putExtra("search_type", selectedType)
+                            intent.putExtra("search_city", city)
+                            intent.putExtra("search_specialisation", specialisation)
                             context.startActivity(intent)
+                        } else {
+                            Log.e("SearchBar", "Search API call failed: ${response.errorBody()?.string()}")
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()

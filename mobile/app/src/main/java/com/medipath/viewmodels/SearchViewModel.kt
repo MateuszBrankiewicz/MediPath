@@ -1,5 +1,6 @@
 package com.medipath.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.medipath.data.api.RetrofitInstance
@@ -15,13 +16,16 @@ class SearchViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    fun searchDoctors(query: String) {
+    fun search(query: String, type: String, city: String, specialisation: String) {
+        Log.d("SearchViewModel", "Searching with query: $query, type: $type, city: $city, specialisation: $specialisation")
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 val response = RetrofitInstance.api.search(
                     query = query,
-                    type = "doctor"
+                    type = type,
+                    city = city,
+                    specialisation = specialisation
                 )
                 if (response.isSuccessful) {
                     _searchResults.value = response.body()?.result ?: emptyList()

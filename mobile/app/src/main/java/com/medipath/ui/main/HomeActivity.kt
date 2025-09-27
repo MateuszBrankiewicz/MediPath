@@ -23,9 +23,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Comment
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Comment
-import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.MedicalInformation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.Alignment
@@ -148,7 +148,7 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             MenuCard(
-                                icon = Icons.Outlined.List,
+                                icon = Icons.AutoMirrored.Outlined.List,
                                 title = "Visits",
                                 onClick = { println("Visits clicked!") },
                                 backgroundColor = colors.purple800,
@@ -164,7 +164,7 @@ fun HomeScreen(
                             )
 
                             MenuCard(
-                                icon = Icons.Outlined.Comment,
+                                icon = Icons.AutoMirrored.Outlined.Comment,
                                 title = "Opinions",
                                 onClick = { println("Opinions clicked!") },
                                 backgroundColor = colors.orange800,
