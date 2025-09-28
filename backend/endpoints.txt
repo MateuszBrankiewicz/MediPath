@@ -772,3 +772,67 @@ Returns:
     401 - User is not logged in
     403 - Patient's profile does not exist, User is not a doctor or staff or patient has not visited any institution where user is employed
     200 - Success
+
+
+/users/me/schedules
+Method: GET
+
+Returns:
+    401 - User is not logged in
+    403 - User is not a doctor
+    200 - Success
+
+
+/visits/code
+Method: PUT
+
+Body:
+    codeType - PRESCRIPTION or REFERRAL
+    code - 4 digit code
+
+
+Returns:
+    401 - User is not logged in
+    404 - Code not found
+    200 - Success
+
+
+/visits/code
+Method: DELETE
+
+Body:
+    codeType - PRESCRIPTION or REFERRAL
+    code - 4 digit code
+
+
+Returns:
+    401 - User is not logged in
+    404 - Code not found
+    200 - Success
+
+
+/comments/{id}
+Method: PUT
+
+Body:
+    institutionRating - new rating of the institution. Same rules as when adding
+    doctorRating- new rating of the doctor. Same rules as when adding
+    comment - text comment
+
+Returns:
+    401 - User not logged in
+    400 - Invalid grade
+    403 - comment by this id does not exist or does not belong to the user
+    500 - institution or doctor ID referenced by the comment are invalid. Possible data corruption
+    200 - Success
+
+
+
+/comments/{id}
+Method: DELETE
+
+Returns:
+    401 - User not logged in
+    403 - comment by this id does not exist or does not belong to the user
+    500 - institution or doctor ID referenced by the comment are invalid. Possible data corruption
+    200 - Success
