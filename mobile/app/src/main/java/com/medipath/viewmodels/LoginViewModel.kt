@@ -21,15 +21,34 @@ class LoginViewModel(
     private val _loginSuccess = mutableStateOf(false)
     val loginSuccess: State<Boolean> = _loginSuccess
 
+    private val _sessionId = mutableStateOf("")
+    val sessionId: State<String> = _sessionId
+
     fun loginUser(request: LoginRequest) {
         viewModelScope.launch {
             _loginError.value = ""
             _loginSuccess.value = false
+            _sessionId.value = ""
 
             try {
                 val response = apiService.loginUser(request)
-                _loginSuccess.value = true
-                Log.d("LoginViewModel", "Successful: $response")
+                if (response.isSuccessful) {
+                    val sessionId = response.headers()["Set-Cookie"]?.let { cookie ->
+                        Log.d("LoginViewModel", "Full cookie: '$cookie'")
+                        cookie.split(";")
+                            .map { it.trim() }
+                            .firstOrNull { it.startsWith("SESSION=") }
+                            ?.substringAfter("SESSION=")
+                            ?.also {
+                                Log.d("LoginViewModel", "Extracted SESSION: '$it'")
+                            }
+                    }
+                    _sessionId.value = sessionId ?: ""
+                    _loginSuccess.value = true
+                    Log.d("LoginViewModel", "Login successful, session ID: $sessionId")
+                } else {
+                    _loginError.value = "Invalid credentials"
+                }
             } catch (e: HttpException) {
                 when (e.code()) {
                     400 -> {
