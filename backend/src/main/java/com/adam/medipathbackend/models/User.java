@@ -203,8 +203,8 @@ public class User {
         this.notifications.add(notification);
     }
 
-    public boolean removeNotification(Notification notification) {
-        return this.notifications.remove(notification);
+    public void removeNotification(Notification notification) {
+        this.notifications.remove(notification);
     }
     public float getRating() {
         return rating;
@@ -215,6 +215,20 @@ public class User {
         this.numOfRatings++;
     }
 
+    public void editRating(float newRating, float oldRating) {
+        this.rating = ((this.rating * this.numOfRatings) - oldRating + newRating) / this.numOfRatings;
+    }
+
+    public void subtractRating(float newRating) {
+        if(numOfRatings - 1 == 0) {
+            this.rating = 0;
+            this.numOfRatings = 0;
+        } else {
+            this.rating = ((this.rating * this.numOfRatings) - newRating) / (this.numOfRatings - 1);
+            this.numOfRatings -= 1;
+        }
+
+    }
 
     public boolean isActive() {
         return isActive;
