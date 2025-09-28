@@ -10,10 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.data.models.CodeData
+import com.medipath.ui.theme.LocalCustomColors
 
 @Composable
 fun CodeCard(
@@ -21,10 +21,12 @@ fun CodeCard(
     onCopyClick: (String) -> Unit,
     isCopied: Boolean = false
 ) {
+    val customColors = LocalCustomColors.current
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
         Row(
             modifier = Modifier
@@ -48,7 +50,7 @@ fun CodeCard(
                     Text(
                         text = codeData.code,
                         fontSize = 20.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -59,7 +61,7 @@ fun CodeCard(
                 Icon(
                     Icons.Default.ContentCopy,
                     contentDescription = "Copy Code",
-                    tint = if (isCopied) Color.Green else MaterialTheme.colorScheme.primary
+                    tint = if (isCopied) customColors.green800 else MaterialTheme.colorScheme.primary
                 )
             }
         }

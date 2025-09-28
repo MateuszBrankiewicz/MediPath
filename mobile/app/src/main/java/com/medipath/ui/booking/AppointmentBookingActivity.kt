@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -122,13 +121,13 @@ fun AppointmentBookingScreen(
                         shape = RoundedCornerShape(8.dp)
                     ),
                 shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
             ) {
                 Text(
                     text = institution,
                     modifier = Modifier.padding(16.dp),
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -158,7 +157,7 @@ fun AppointmentBookingScreen(
                                 shape = RoundedCornerShape(8.dp)
                             ),
                         shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
                     ) {
                         Column(
                             modifier = Modifier.padding(12.dp),
@@ -167,18 +166,18 @@ fun AppointmentBookingScreen(
                             Text(
                                 text = date.format(DateTimeFormatter.ofPattern("MMM")),
                                 fontSize = 12.sp,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = date.dayOfMonth.toString(),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = date.format(DateTimeFormatter.ofPattern("EEE")),
                                 fontSize = 12.sp,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -216,13 +215,13 @@ fun AppointmentBookingScreen(
                                     shape = RoundedCornerShape(8.dp)
                                 ),
                             shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
                         ) {
                             Text(
                                 text = time.format(DateTimeFormatter.ofPattern("HH:mm")),
                                 modifier = Modifier.padding(12.dp),
                                 fontSize = 14.sp,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }

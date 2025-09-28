@@ -113,7 +113,7 @@ class HomeViewModel(
     }
 
     fun getCurrentUserId(): String {
-        return _userId.value ?: ""
+        return _userId.value
     }
 
     fun cancelVisit(visitId: String, sessionManager: DataStoreSessionManager) {

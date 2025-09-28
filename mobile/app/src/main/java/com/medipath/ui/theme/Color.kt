@@ -1,6 +1,5 @@
 package com.medipath.ui.theme
 
-import androidx.compose.material.darkColors
 import androidx.compose.ui.graphics.Color
 
 sealed class ThemeColors(
@@ -15,12 +14,12 @@ sealed class ThemeColors(
 ) {
     object Light : ThemeColors(
         primary = Color(0xFF000000),
-        disabledBtn = Color.Gray,
+        disabledBtn = Color(0xFF9E9E9E),
         background = Color(0xFFFFFFFF),
         subtitle = Color(0xFF284662),
         inputBgPrimary = Color(0xFFD9D9D9),
         placeholder = Color(0xFF5D5D5D),
-        error = Color.Red,
+        error = Color(0xFFDE2E2E),
         secondBackground = Color(0xFFE8E8E8)
     )
 

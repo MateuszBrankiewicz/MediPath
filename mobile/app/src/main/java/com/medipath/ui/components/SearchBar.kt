@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,6 +33,7 @@ import android.util.Log
 import com.medipath.data.api.RetrofitInstance
 import com.medipath.ui.search.SearchResultsActivity
 import kotlinx.coroutines.launch
+import androidx.compose.material3.MenuAnchorType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,16 +67,15 @@ fun SearchBar() {
                 label = { Text("Search type") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedTextColor = Color.Gray,
-                    unfocusedTextColor = Color.Gray
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(25.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor()
-            )
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)            )
 
             ExposedDropdownMenu(
                 expanded = expanded,
@@ -101,10 +100,10 @@ fun SearchBar() {
             onValueChange = { query = it },
             label = { Text("Search...") },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedTextColor = Color.Gray,
-                unfocusedTextColor = Color.Gray
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
             ),
             shape = RoundedCornerShape(25.dp),
             modifier = Modifier.fillMaxWidth(),
@@ -125,10 +124,10 @@ fun SearchBar() {
                 label = { Text("City (optional)") },
                 placeholder = { Text("e.g. Lublin, Kraków") },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedTextColor = Color.Gray,
-                    unfocusedTextColor = Color.Gray
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(25.dp),
                 modifier = Modifier.fillMaxWidth(),
@@ -143,10 +142,10 @@ fun SearchBar() {
                 label = { Text("Specialisation (optional)") },
                 placeholder = { Text("e.g. cardiologist,neurology") },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedTextColor = Color.Gray,
-                    unfocusedTextColor = Color.Gray
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(25.dp),
                 modifier = Modifier.fillMaxWidth(),
@@ -166,7 +165,7 @@ fun SearchBar() {
                             query = query.ifBlank { "" },
                             type = selectedType,
                             city = if (city.isBlank()) null else city,
-                            specialisation = if (specialisation.isBlank()) null else specialisation
+                            specialisations = if (specialisation.isBlank()) null else specialisation
                         )
                         Log.d("SearchBar", "API call completed with response: $response")
 

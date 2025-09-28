@@ -14,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,6 +25,7 @@ import android.content.Intent
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import com.medipath.ui.booking.AppointmentBookingActivity
 import com.medipath.ui.theme.LocalCustomColors
+import androidx.compose.material3.MenuAnchorType
 
 enum class SortOption(val displayName: String) {
     DEFAULT("Default"),
@@ -84,7 +84,7 @@ fun DoctorSearchResultsScreen(
                 )
             }
             Text(
-                text = "Search Results",
+                text = "Doctor Results",
                 fontSize = 23.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.background,
@@ -108,7 +108,7 @@ fun DoctorSearchResultsScreen(
             if (searchCriteria.isNotEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
@@ -138,7 +138,7 @@ fun DoctorSearchResultsScreen(
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
@@ -182,7 +182,7 @@ fun DoctorSearchResultsScreen(
                                 },
                                 modifier = Modifier
                                     .width(180.dp)
-                                    .menuAnchor(),
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable),
                                 textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -230,7 +230,7 @@ fun DoctorSearchResultsScreen(
                 searchResults.isEmpty() -> {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                         shape = RoundedCornerShape(12.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
@@ -297,7 +297,7 @@ fun DoctorCard(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
         onClick = onClick
     ) {
         Column(
@@ -313,12 +313,12 @@ fun DoctorCard(
                         text = "${doctor.name} ${doctor.surname}",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = doctor.specialisations?.joinToString(", ") ?: "",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -328,13 +328,13 @@ fun DoctorCard(
                     Icon(
                         Icons.Default.Star,
                         contentDescription = "Rating",
-                        tint = Color(0xFFFFB000),
+                        tint = LocalCustomColors.current.orange800,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         text = "${doctor.rating} (${doctor.numOfRatings})",
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(start = 4.dp)
                     )
                 }
@@ -349,13 +349,13 @@ fun DoctorCard(
                     Icon(
                         Icons.Default.LocationOn,
                         contentDescription = "Location",
-                        tint = Color.Gray,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         text = "${address.first} • ${address.second}",
                         fontSize = 12.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(start = 4.dp)
                     )
                 }

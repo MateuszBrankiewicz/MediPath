@@ -43,7 +43,7 @@ interface ApiService {
     suspend fun cancelVisit(@Path("visitid") visitId: String, @Header("Cookie") cookie: String): Response<Unit>
 
     @GET("/api/search/{query}")
-    suspend fun search(@Path("query") query: String, @Query("type") type: String, @Query("city") city: String? = null, @Query("specialisation") specialisation: String? = null): Response<SearchResponse>
+    suspend fun search(@Path("query") query: String, @Query("type") type: String, @Query("city") city: String? = null, @Query("specialisations") specialisations: String? = null): Response<SearchResponse>
 
     @GET("api/visits/getactivecodes/{userid}")
     suspend fun getActiveCodes(@Path("userid") userId: String): Response<CodesResponse>

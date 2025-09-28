@@ -16,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -135,7 +134,7 @@ class CodesActivity : ComponentActivity() {
                         ) {
                             Text(
                                 text = "Code copied to clipboard",
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.padding(16.dp),
                                 fontSize = 14.sp
                             )

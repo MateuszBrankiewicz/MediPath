@@ -25,7 +25,7 @@ class SearchViewModel : ViewModel() {
                     query = query,
                     type = type,
                     city = city,
-                    specialisation = specialisation
+                    specialisations = specialisation
                 )
                 if (response.isSuccessful) {
                     _searchResults.value = response.body()?.result ?: emptyList()

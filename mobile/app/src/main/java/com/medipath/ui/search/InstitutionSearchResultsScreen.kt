@@ -16,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -107,7 +106,7 @@ fun InstitutionSearchResultsScreen(
             if (searchCriteria.isNotEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
@@ -137,7 +136,7 @@ fun InstitutionSearchResultsScreen(
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
@@ -229,7 +228,7 @@ fun InstitutionSearchResultsScreen(
                 searchResults.isEmpty() -> {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                         shape = RoundedCornerShape(12.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
@@ -291,7 +290,7 @@ fun InstitutionCard(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
         onClick = onClick
     ) {
         Column(
@@ -307,13 +306,13 @@ fun InstitutionCard(
                         text = institution.name,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(
                         text = if (institution.isPublic == true) "Public Institution" else "Private Institution",
                         fontSize = 13.sp,
-                        color = if (institution.isPublic == true) Color(0xFF4CAF50) else Color(0xFF2196F3),
+                        color = if (institution.isPublic == true) LocalCustomColors.current.green800 else LocalCustomColors.current.blue800,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(top = 2.dp)
                     )
@@ -322,7 +321,7 @@ fun InstitutionCard(
                         Text(
                             text = institution.types.joinToString(", "),
                             fontSize = 14.sp,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
@@ -334,13 +333,13 @@ fun InstitutionCard(
                         Icon(
                             Icons.Default.Star,
                             contentDescription = "Rating",
-                            tint = Color(0xFFFFB000),
+                            tint = LocalCustomColors.current.orange800,
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
                             text = "${institution.rating} (${institution.numOfRatings})",
                             fontSize = 14.sp,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(start = 4.dp)
                         )
                     }
@@ -363,7 +362,7 @@ fun InstitutionCard(
                         Icon(
                             Icons.Default.LocationOn,
                             contentDescription = "Location",
-                            tint = Color.Gray,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(16.dp)
                         )
                         val displayAddress = if (street.isNotEmpty()) {
@@ -374,7 +373,7 @@ fun InstitutionCard(
                         Text(
                             text = displayAddress,
                             fontSize = 12.sp,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(start = 4.dp)
                         )
                     }
