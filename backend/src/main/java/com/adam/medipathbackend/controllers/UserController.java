@@ -1,5 +1,6 @@
 package com.adam.medipathbackend.controllers;
 
+import com.adam.medipathbackend.config.Utils;
 import com.adam.medipathbackend.forms.*;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.*;
@@ -43,6 +44,9 @@ public class UserController {
 
     @Autowired
     MedicalHistoryRepository mhRepository;
+
+    @Autowired
+    ScheduleRepository scheduleRepository;
 
     @Autowired
     private JavaMailSender sender;
@@ -253,6 +257,19 @@ public class UserController {
 
     }
 
+    @GetMapping(value = {"/me/schedules", "/me/schedules/"})
+    public ResponseEntity<Map<String, Object>> getMySchedules(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(userRepository.findDoctorById(loggedUserID).isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        ArrayList<Schedule> schedules = scheduleRepository.getSchedulesByDoctor(loggedUserID);
+        return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
+    }
+
     @GetMapping(value = {"/me/comments", "/me/comments/"})
     public ResponseEntity<Map<String, Object>> getMyComments(HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
@@ -330,10 +347,8 @@ public class UserController {
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message);
             helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
-            helper.setSubject("Password reset request");
+            helper.setSubject("Password reset");
             helper.setTo(user.getEmail());
-            SecureRandom secureRandom = new SecureRandom();
-            String token = Long.toHexString(secureRandom.nextLong());
             String content = "<!DOCTYPE html>\n" +
                     "<html>\n" +
                     "<head>\n" +
