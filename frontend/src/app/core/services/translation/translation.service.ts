@@ -1,27 +1,30 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-
-export type SupportedLanguage = 'en' | 'pl';
+import { UserSettingsService } from '../authentication/user-settings.service';
+import { DEFAULT_LANGUAGE, SupportedLanguage } from './language.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TranslationService {
-  private currentLanguage = signal<SupportedLanguage>('pl');
+  private currentLanguage = signal<SupportedLanguage>(DEFAULT_LANGUAGE);
   private translations = signal<Record<string, string>>({});
   public readonly isLoading = signal(false);
   private http = inject(HttpClient);
+  private userSettingsService = inject(UserSettingsService);
+
   constructor() {
-    const currentLanguageLs: SupportedLanguage = localStorage.getItem(
-      'LANGUAGE_KEY',
-    ) as SupportedLanguage;
-    if (currentLanguageLs) {
-      this.currentLanguage.set(currentLanguageLs);
-    } else {
-      localStorage.setItem('LANGUAGE_KEY', this.currentLanguage());
-    }
-    this.loadTranslations(this.currentLanguage());
+    this.applyLanguage(DEFAULT_LANGUAGE, true);
+    this.userSettingsService.ensureSettingsLoaded().subscribe({
+      next: (settings) => this.applyLanguage(settings.language),
+      error: () => this.applyLanguage(DEFAULT_LANGUAGE),
+    });
+
+    effect(() => {
+      const language = this.userSettingsService.language();
+      this.applyLanguage(language);
+    });
   }
 
   get language() {
@@ -29,10 +32,14 @@ export class TranslationService {
   }
 
   async setLanguage(lang: SupportedLanguage) {
-    this.currentLanguage.set(lang);
-    localStorage.setItem('LANGUAGE_KEY', this.currentLanguage());
-
-    await this.loadTranslations(lang);
+    const currentSettings = this.userSettingsService.settings();
+    if (currentSettings) {
+      this.userSettingsService.setLocalSettings({
+        ...currentSettings,
+        language: lang,
+      });
+    }
+    await this.setLanguageAndLoad(lang, true);
   }
 
   private async loadTranslations(lang: SupportedLanguage) {
@@ -70,5 +77,22 @@ export class TranslationService {
       { code: 'en' as const, name: 'English' },
       { code: 'pl' as const, name: 'Polski' },
     ];
+  }
+
+  private async setLanguageAndLoad(language: SupportedLanguage, force = false) {
+    if (
+      !force &&
+      language === this.currentLanguage() &&
+      Object.keys(this.translations()).length > 0
+    ) {
+      return;
+    }
+
+    this.currentLanguage.set(language);
+    await this.loadTranslations(language);
+  }
+
+  private applyLanguage(language: SupportedLanguage, force = false) {
+    void this.setLanguageAndLoad(language, force);
   }
 }

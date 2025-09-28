@@ -1,6 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 import {
   ForgotPasswordRequest,
   RegisterUser,
@@ -13,6 +21,13 @@ import {
   UserBasicInfo,
   UserRoles,
 } from './authentication.model';
+import {
+  GetUserProfileResponse,
+  LocalDateTuple,
+  UpdateUserProfileRequest,
+  UserProfileEntity,
+  UserProfileFormValue,
+} from './profile.model';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +36,7 @@ export class AuthenticationService {
   private http = inject(HttpClient);
 
   private readonly user = signal<UserBasicInfo | null>(null);
+  public readonly userChanges = this.user.asReadonly();
 
   public registerUser(userToRegister: RegisterUser) {
     return this.http.post(API_URL + '/users/register', userToRegister);
@@ -61,7 +77,6 @@ export class AuthenticationService {
           };
           userInfo.userSettings.lastPanel = lastPanel;
           this.user.set(userInfo);
-          sessionStorage.setItem('userId', response.user.id.toString());
         }),
         catchError((error) => {
           this.user.set(null);
@@ -82,6 +97,21 @@ export class AuthenticationService {
 
   public getUserRoleFromApi() {
     return this.http.get<ApiUserResponse>(API_URL + '/users/profile', {
+      withCredentials: true,
+    });
+  }
+
+  public getUserProfile(): Observable<UserProfileFormValue> {
+    return this.http
+      .get<GetUserProfileResponse>(API_URL + '/users/profile', {
+        withCredentials: true,
+      })
+      .pipe(map((response) => this.mapUserProfile(response.user)));
+  }
+
+  public updateUserProfile(formValue: UserProfileFormValue): Observable<void> {
+    const payload = this.buildUpdateProfilePayload(formValue);
+    return this.http.put<void>(API_URL + '/users/me/update', payload, {
       withCredentials: true,
     });
   }
@@ -156,28 +186,128 @@ export class AuthenticationService {
     return prefix === '/' ? '/auth/login' : prefix;
   }
 
-  public setNewRole(role: string) {
-    if (!this.user()) {
-      return;
-    }
-    switch (role) {
-      case 'doctor':
-        this.user()!.userSettings.lastPanel = UserRoles.DOCTOR;
-        break;
+  public changeLastPanel(newRole: UserRoles): Observable<UserRoles | null> {
+    const roleEndpoints: Partial<Record<UserRoles, number>> = {
+      [UserRoles.PATIENT]: 1,
+      [UserRoles.DOCTOR]: 2,
+    };
 
-      case 'admin':
-        this.user()!.userSettings.lastPanel = UserRoles.ADMIN;
-        break;
-      case 'patient':
-        this.user()!.userSettings.lastPanel = UserRoles.PATIENT;
-        break;
-      default:
-        this.user()!.userSettings.lastPanel = UserRoles.PATIENT;
-        break;
-    }
     const currentUser = this.user();
-    if (currentUser) {
-      this.user.set({ ...currentUser });
+    if (!currentUser) {
+      return of(null);
     }
+
+    const updateUser = (role: UserRoles) => {
+      const latestUser = this.user();
+      if (!latestUser) {
+        return;
+      }
+      this.user.set({
+        ...latestUser,
+        userSettings: {
+          ...latestUser.userSettings,
+          lastPanel: role,
+        },
+      });
+    };
+
+    const endpoint = roleEndpoints[newRole];
+    if (endpoint === undefined) {
+      updateUser(newRole);
+      return of(newRole);
+    }
+
+    return this.http
+      .put(
+        `${API_URL}/users/me/defaultpanel/${endpoint}`,
+        {},
+        { withCredentials: true },
+      )
+      .pipe(
+        tap(() => updateUser(newRole)),
+        map(() => newRole),
+        catchError((error) => throwError(() => error)),
+      );
+  }
+
+  private mapUserProfile(user: UserProfileEntity): UserProfileFormValue {
+    const address = user.address ?? {
+      province: '',
+      city: '',
+      street: '',
+      number: '',
+      postalCode: '',
+    };
+
+    return {
+      name: user.name ?? '',
+      surname: user.surname ?? '',
+      birthDate: this.formatDateTuple(user.birthDate),
+      phoneNumber: user.phoneNumber ?? '',
+      governmentId: user.govId ?? '',
+      province: address.province ?? '',
+      postalCode: address.postalCode ?? '',
+      city: address.city ?? '',
+      number: address.number ?? '',
+      street: address.street ?? '',
+    };
+  }
+
+  private buildUpdateProfilePayload(
+    formValue: UserProfileFormValue,
+  ): UpdateUserProfileRequest {
+    return {
+      name: formValue.name.trim(),
+      surname: formValue.surname.trim(),
+      phoneNumber: this.buildOptionalString(formValue.phoneNumber),
+      birthDate: this.parseBirthDate(formValue.birthDate),
+
+      province: formValue.province.trim(),
+      city: formValue.city.trim(),
+      street: formValue.street.trim(),
+      number: formValue.number.trim(),
+      postalCode: formValue.postalCode.trim(),
+    };
+  }
+
+  private buildOptionalString(value: string): string | null {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  private parseBirthDate(value: string): LocalDateTuple | null {
+    const normalized = value.trim();
+    if (!normalized) {
+      return null;
+    }
+
+    const parts = normalized.split('-');
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    const [year, month, day] = parts.map((part) => Number(part));
+    if ([year, month, day].some((part) => Number.isNaN(part))) {
+      return null;
+    }
+
+    return [year, month, day];
+  }
+
+  private formatDateTuple(date?: LocalDateTuple | null): string {
+    if (!date) {
+      return '';
+    }
+
+    const [year, month, day] = date;
+    if (!year || !month || !day) {
+      return '';
+    }
+
+    return `${year}-${this.padNumber(month)}-${this.padNumber(day)}`;
+  }
+
+  private padNumber(value: number): string {
+    return value.toString().padStart(2, '0');
   }
 }

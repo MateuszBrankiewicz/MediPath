@@ -106,6 +106,135 @@
   --p-button-sm-font-size: 1.5rem;
   --p-button-sm-padding-x: 1.5rem;
 }
+
+:host ::ng-deep .notifications-popover {
+  width: 320px;
+  max-width: 90vw;
+
+  .p-popover-content {
+    padding: 0;
+  }
+}
+
+.notifications-popover__container {
+  display: flex;
+  flex-direction: column;
+  max-height: 360px;
+}
+
+.notifications-popover__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--p-surface-200);
+}
+
+.notifications-popover__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--p-surface-900);
+}
+
+.notifications-popover__mark-all {
+  border: none;
+  background: transparent;
+  color: var(--p-primary-color);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:disabled {
+    cursor: not-allowed;
+    color: var(--p-surface-400);
+  }
+
+  &:not(:disabled):hover {
+    color: var(--p-primary-600);
+  }
+}
+
+.notifications-popover__empty {
+  margin: 0;
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--p-surface-500);
+}
+
+.notifications-popover__list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+  overflow-y: auto;
+}
+
+.notifications-popover__item {
+  border-bottom: 1px solid var(--p-surface-200);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &--unread {
+    background: var(--p-primary-50);
+  }
+}
+
+.notifications-popover__item-button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--p-surface-100);
+  }
+}
+
+.notifications-popover__message {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--p-surface-900);
+}
+
+.notifications-popover__meta {
+  font-size: 0.75rem;
+  color: var(--p-surface-500);
+}
+
+.notifications-popover__view-all {
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1.25rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--p-primary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+
+  i {
+    font-size: 0.75rem;
+  }
+
+  &:hover {
+    color: var(--p-primary-600);
+  }
+}
 .search-menu-addon {
   position: relative;
 }
@@ -394,4 +523,3 @@
     }
   }
 }
-

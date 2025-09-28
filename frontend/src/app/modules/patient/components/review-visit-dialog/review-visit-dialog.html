@@ -1,26 +1,53 @@
 <div class="dialog-shell">
-  <header class="dialog-header">
-    <span class="dialog-header__icon">
-      <i class="pi pi-comments"></i>
-    </span>
-    <div class="dialog-header__titles">
-      <h3 class="dialog-header__title">
-        {{
-          isEditing()
-            ? translationService.translate("patient.reviewVisit.editTitle")
-            : translationService.translate("patient.reviewVisit.title")
-        }}
-      </h3>
-      <p class="dialog-header__subtitle">
-        {{
-          translationService.translate("patient.reviewVisit.subtitle") ||
-            translationService.translate("patient.reviewVisit.comments")
-        }}
-      </p>
-    </div>
-  </header>
-
   <form class="dialog-body" (ngSubmit)="onSubmit()">
+    <section class="dialog-intro">
+      <div class="dialog-intro__titles">
+        <h3 class="dialog-intro__title">
+          {{
+            isEditing()
+              ? translationService.translate("patient.reviewVisit.editTitle")
+              : translationService.translate("patient.reviewVisit.title")
+          }}
+        </h3>
+        <p class="dialog-intro__subtitle">
+          {{
+            translationService.translate("patient.reviewVisit.subtitle") ||
+              translationService.translate("patient.reviewVisit.comments")
+          }}
+        </p>
+      </div>
+
+      <div class="dialog-intro__meta">
+        @if (doctorName()) {
+          <p class="dialog-intro__meta-item">
+            <span class="dialog-intro__meta-label">
+              {{
+                translationService.translate(
+                  "patient.reviewVisit.doctorNameLabel"
+                )
+              }}
+            </span>
+            <span class="dialog-intro__meta-value">{{ doctorName() }}</span>
+          </p>
+        }
+
+        @if (institutionName()) {
+          <p class="dialog-intro__meta-item">
+            <span class="dialog-intro__meta-label">
+              {{
+                translationService.translate(
+                  "patient.reviewVisit.institutionNameLabel"
+                )
+              }}
+            </span>
+            <span class="dialog-intro__meta-value">
+              {{ institutionName() }}
+            </span>
+          </p>
+        }
+      </div>
+    </section>
+
     <section class="form-section">
       <label class="form-label" for="comments">
         {{ translationService.translate("patient.reviewVisit.comments") }}

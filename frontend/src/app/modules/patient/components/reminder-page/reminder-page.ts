@@ -1,109 +1,135 @@
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
+  computed,
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { PanelModule } from 'primeng/panel';
-import { TooltipModule } from 'primeng/tooltip';
+import { TagModule } from 'primeng/tag';
+import { finalize } from 'rxjs';
+import { UserNotification } from '../../../../core/services/notifications/user-notifications.model';
+import { UserNotificationsService } from '../../../../core/services/notifications/user-notifications.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { Reminder } from '../../models/reminder-page.model';
-import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder-dialog';
 
 @Component({
   selector: 'app-reminder-page',
-  imports: [PanelModule, ButtonModule, DatePipe, TooltipModule],
+  imports: [CommonModule, ButtonModule, TagModule, DatePipe],
   templateUrl: './reminder-page.html',
   styleUrl: './reminder-page.scss',
-  providers: [DialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReminderPage {
-  private dialogService = inject(DialogService);
-  private ref: DynamicDialogRef | undefined;
-  protected translationService = inject(TranslationService);
+  private readonly notificationsService = inject(UserNotificationsService);
+  private readonly toastService = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  reminders = signal<Reminder[]>([
-    {
-      id: '1',
-      date: new Date('2024-06-01'),
-      hour: '08:00',
-      title: 'Morning Medication',
-      description: 'Take blood pressure medicine.',
-    },
-    {
-      id: '2',
-      date: new Date('2024-06-01'),
-      hour: '20:00',
-      title: 'Evening Medication',
-      description: 'Take cholesterol medicine.',
-    },
-    {
-      id: '3',
-      date: new Date('2024-06-02'),
-      hour: '12:30',
-      title: 'Lunch Supplement',
-      description: 'Take vitamin D supplement with food.',
-    },
-  ]);
+  protected readonly translationService = inject(TranslationService);
 
-  protected openMenuId = signal<string | null>(null);
+  protected readonly notifications = this.notificationsService.notifications;
+  protected readonly unreadCount = this.notificationsService.unreadCount;
 
-  protected addNewEntry(): void {
-    this.ref = this.dialogService.open(AddReminderDialog, {
-      header: 'Add New Reminder',
-      width: '70%',
-      height: 'auto',
-      closable: true,
-      modal: true,
-      styleClass: 'add-reminder-dialog',
-    });
+  protected readonly totalCount = computed(() => this.notifications().length);
 
-    this.ref.onClose.subscribe((result) => {
-      if (result) {
-        console.log('Visit rescheduled:', result);
-      }
-    });
-  }
-
-  protected deleteReminder(reminderId: string): void {
-    const currentReminders = this.reminders();
-    this.reminders.set(
-      currentReminders.filter((reminder) => reminder.id !== reminderId),
-    );
-  }
-
-  protected viewReminder(reminder: Reminder): void {
-    console.log('Viewing reminder:', reminder);
-  }
-
-  protected getTodayReminders(): number {
-    const today = new Date();
-    const todayString = today.toDateString();
-
-    return this.reminders().filter(
-      (reminder) => reminder.date.toDateString() === todayString,
+  protected readonly todayCount = computed(() => {
+    return this.notifications().filter((notification) =>
+      this.isToday(notification.createdAt),
     ).length;
-  }
+  });
 
-  protected editReminder(reminder: Reminder): void {
-    console.log('Editing reminder:', reminder);
-  }
-
-  protected toggleMenu(event: Event, reminder: Reminder): void {
-    event.stopPropagation();
-    const currentId = this.openMenuId();
-    if (currentId === reminder.id) {
-      this.openMenuId.set(null);
-    } else {
-      this.openMenuId.set(reminder.id);
+  protected readonly readRate = computed(() => {
+    const total = this.totalCount();
+    if (total === 0) {
+      return 0;
     }
+
+    const read = total - this.unreadCount();
+    return Math.round((read / total) * 100);
+  });
+
+  protected readonly hasNotifications = computed(() => this.totalCount() > 0);
+
+  protected readonly isRefreshing = signal(false);
+  protected readonly isMarkingAll = signal(false);
+
+  protected onRefresh(): void {
+    if (this.isRefreshing()) {
+      return;
+    }
+
+    this.isRefreshing.set(true);
+
+    this.notificationsService
+      .refresh()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isRefreshing.set(false)),
+      )
+      .subscribe({
+        error: (error: unknown) => {
+          console.error('Failed to refresh notifications', error);
+          this.toastService.showError('notifications.refreshError');
+        },
+      });
   }
 
-  isMenuOpen(reminderId: string): boolean {
-    return this.openMenuId() === reminderId;
+  protected onMarkAsRead(notification: UserNotification): void {
+    if (notification.read) {
+      return;
+    }
+
+    this.notificationsService
+      .markAsRead(notification.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: (error: unknown) => {
+          console.error('Failed to mark notification as read', error);
+          this.toastService.showError('notifications.markSingleError');
+        },
+      });
+  }
+
+  protected onMarkAllAsRead(): void {
+    if (this.isMarkingAll() || this.unreadCount() === 0) {
+      return;
+    }
+
+    this.isMarkingAll.set(true);
+
+    this.notificationsService
+      .markAllAsRead()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isMarkingAll.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess('notifications.markAllSuccess');
+        },
+        error: (error: unknown) => {
+          console.error('Failed to mark all notifications as read', error);
+          this.toastService.showError('notifications.markAllError');
+        },
+      });
+  }
+
+  protected translate(
+    key: string,
+    params?: Record<string, string | number>,
+  ): string {
+    return this.translationService.translate(key, params);
+  }
+
+  private isToday(date: Date): boolean {
+    const today = new Date();
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
   }
 }

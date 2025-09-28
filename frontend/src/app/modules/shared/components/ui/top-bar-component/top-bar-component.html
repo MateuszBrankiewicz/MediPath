@@ -82,13 +82,78 @@
   <div class="header-actions">
     @if (config().showNotifications) {
       <p-button
+        type="button"
         [size]="'small'"
         icon="pi pi-bell"
         [text]="true"
         [rounded]="true"
-        [badge]="'3'"
+        [badge]="unreadBadge() ?? undefined"
         class="notification-button"
+        (onClick)="onNotificationsButtonClick($event)"
       />
+      <p-popover
+        #notificationsPopover
+        appendTo="body"
+        styleClass="notifications-popover"
+        [dismissable]="true"
+      >
+        <div class="notifications-popover__container">
+          <div class="notifications-popover__header">
+            <h3 class="notifications-popover__title">
+              {{ translate("notifications.title") }}
+            </h3>
+            @if (unreadCount() > 0) {
+              <button
+                type="button"
+                class="notifications-popover__mark-all"
+                [disabled]="isMarkingAll()"
+                (click)="onMarkAllAsRead()"
+              >
+                {{ translate("notifications.markAllAsRead") }}
+              </button>
+            }
+          </div>
+
+          @if (notifications().length === 0) {
+            <p class="notifications-popover__empty">
+              {{ translate("notifications.empty") }}
+            </p>
+          } @else {
+            <ul class="notifications-popover__list">
+              @for (notification of notifications(); track notification.id) {
+                <li
+                  class="notifications-popover__item"
+                  [class.notifications-popover__item--unread]="
+                    !notification.read
+                  "
+                >
+                  <button
+                    type="button"
+                    class="notifications-popover__item-button"
+                    (click)="onNotificationSelect(notification)"
+                  >
+                    <span class="notifications-popover__message">
+                      {{ notification.title || notification.message }}
+                    </span>
+                    <span class="notifications-popover__meta">
+                      {{ notification.createdAt | date: "short" }}
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+
+            <button
+              type="button"
+              class="notifications-popover__view-all"
+              (click)="navigateToNotifications()"
+            >
+              <span>{{ translate("notifications.viewAll") }}</span>
+              <i class="pi pi-arrow-right"></i>
+            </button>
+          }
+        </div>
+      </p-popover>
     }
 
     <div class="user-info" (click)="toggleUserMenu($event)">
@@ -108,7 +173,7 @@
         <div class="role-select-container">
           <p-select
             [options]="roleOptions()"
-            [ngModel]="user()?.roleCode"
+            [ngModel]="selectedRole()"
             (ngModelChange)="onRoleChange($event)"
             optionLabel="label"
             optionValue="value"
