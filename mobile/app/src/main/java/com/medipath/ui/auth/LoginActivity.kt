@@ -28,14 +28,19 @@ import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.lifecycleScope
+import com.medipath.data.api.DataStoreSessionManager
 import com.medipath.data.models.LoginRequest
+import com.medipath.ui.main.HomeActivity
 import com.medipath.viewmodels.LoginViewModel
+import kotlinx.coroutines.launch
 
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val sessionManager = DataStoreSessionManager(this)
         setContent {
             MediPathTheme { LoginScreen(
                 onSignUpClick = {
@@ -43,11 +48,14 @@ class LoginActivity : ComponentActivity() {
                     startActivity(intent)
                     finish()
                 },
-                onLoginSuccess = {
+                onLoginSuccess = { sessionId ->
+                    lifecycleScope.launch {
+                        sessionManager.saveSessionId(sessionId)
+                    }
                     Toast.makeText(this, "Login successful!", Toast.LENGTH_LONG).show()
-//                    val intent = Intent(this, MainActivity::class.java)
-//                    startActivity(intent)
-//                    finish()
+                    val intent = Intent(this, HomeActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 },
                 onForgotClick = {
                     val intent = Intent(this, ResetPasswordActivity::class.java)
@@ -61,14 +69,15 @@ class LoginActivity : ComponentActivity() {
 
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSignUpClick: () -> Unit = {}, onForgotClick: () -> Unit = {}, onLoginSuccess: () -> Unit = {}) {
+fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSignUpClick: () -> Unit = {}, onForgotClick: () -> Unit = {}, onLoginSuccess: (String) -> Unit = {}) {
 
     val loginError by viewModel.loginError
     val loginSuccess by viewModel.loginSuccess
+    val sessionId by viewModel.sessionId
 
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess) {
-            onLoginSuccess()
+    LaunchedEffect(loginSuccess, sessionId) {
+        if (loginSuccess && sessionId.isNotEmpty()) {
+            onLoginSuccess(sessionId)
         }
     }
 
