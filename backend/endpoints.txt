@@ -836,3 +836,15 @@ Returns:
     403 - comment by this id does not exist or does not belong to the user
     500 - institution or doctor ID referenced by the comment are invalid. Possible data corruption
     200 - Success
+
+
+/users/{id}/getpfp
+Method: GET
+
+Path variables:
+    id - target user's id
+
+Returns:
+    401 - User is not logged in
+    200 - User's profile picture or empty if user does not exist or does not have one
+
