@@ -842,3 +842,21 @@ Returns:
     401 - User is not logged in
     200 - User's profile picture or empty if user does not exist or does not have one
 
+
+/schedules/addmany
+Method: POST
+
+
+Body:
+    doctorID: doctor's user id
+    institutionID: institution's ID
+    startTime: start time (yyyy-MM-dd HH:mm:ss)
+    endTime: end time (yyyy-MM-dd HH:mm:ss)
+    interval: length of the visit (HH:mm:ss)
+
+Returns:
+    401 - User not logged in
+    403 - Doctor id invalid, institution id invalid, user is not staff of institution or doctor does not belong to institution
+    409 - doctor is booked at this hour
+    201 - success
+

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -104,10 +103,11 @@ public class ScheduleController {
         LocalDateTime start = schedule.getStartHour();
         ArrayList<Schedule> newSchedules = new ArrayList<>();
         User doctor = optUser.get();
-        if(isScheduleOverlapping(schedule.getStartHour(), schedule.getEndHour(), schedule.getDoctorID(), null)) {
-            return new ResponseEntity<>(Map.of("message", "this doctor is booked at in this time frame"), HttpStatus.CONFLICT);
-        }
-        while(start.plusSeconds(schedule.getInterval().toSecondOfDay()).isBefore(schedule.getEndHour()) || start.plusSeconds(schedule.getInterval().toSecondOfDay()).isEqual(schedule.getEndHour())) {
+        while(start.plusSeconds(schedule.getInterval().toSecondOfDay()).isBefore(schedule.getEndHour())) {
+            Optional<Schedule> isDoctorBookedThen = scheduleRepository.checkScheduleDuplicate(schedule.getStartHour(), schedule.getDoctorID());
+            if(isDoctorBookedThen.isPresent()) {
+                return new ResponseEntity<>(Map.of("message", "this doctor is booked at in this time frame"), HttpStatus.CONFLICT);
+            }
             newSchedules.add(new Schedule(start, start.plusSeconds(schedule.getInterval().toSecondOfDay()), new DoctorDigest(schedule.getDoctorID(), doctor.getName(), doctor.getSurname(), doctor.getSpecialisations()), new InstitutionDigest(schedule.getInstitutionID(), optInst.get().getName())));
             start = start.plusSeconds(schedule.getInterval().toSecondOfDay());
         }
@@ -115,6 +115,8 @@ public class ScheduleController {
         return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.CREATED);
 
     }
+
+
 
     private static ArrayList<String> getMissingFields(AddScheduleForm schedule) {
         ArrayList<String> missingFields = new ArrayList<>();
@@ -125,7 +127,9 @@ public class ScheduleController {
         if(schedule.getDoctorID() == null || schedule.getDoctorID().isBlank()) {
             missingFields.add("doctor");
         }
-
+        if(schedule.getStartHour() == null) {
+            missingFields.add("startHour");
+        }
         if(schedule.getInstitutionID() == null || schedule.getInstitutionID().isBlank()) {
             missingFields.add("institution");
         }
@@ -141,66 +145,10 @@ public class ScheduleController {
         return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
     }
 
-    @PutMapping(value = {"/{scheduleid}", "/{scheduleid}/"})
-    public ResponseEntity<Map<String, Object>> updateSchedule(@PathVariable String scheduleid, @RequestBody AddScheduleForm newSchedule, HttpSession session) {
-        String loggedUserID = (String) session.getAttribute("id");
-        if(loggedUserID == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        Optional<Schedule> scheduleOpt = scheduleRepository.findById(scheduleid);
-        if(scheduleOpt.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        Schedule schedule = scheduleOpt.get();
-
-        if(!isLoggedAsEmployeeOfInstitution(loggedUserID, schedule.getInstitution().getInstitutionId())) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        ArrayList<String> missingFields = new ArrayList<>();
-        if(newSchedule.getEndHour() == null) {
-            missingFields.add("endHour");
-        }
-        if(newSchedule.getStartHour() == null) {
-            missingFields.add("startHour");
-        }
-        if(!missingFields.isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
-        }
-        if(schedule.isBooked()) {
-            return new ResponseEntity<>(Map.of("message", "schedule is already booked"), HttpStatus.BAD_REQUEST);
-        }
-        if(isScheduleOverlapping(newSchedule.getStartHour(), newSchedule.getEndHour(), schedule.getDoctor().getUserId(), schedule.getId())) {
-            return new ResponseEntity<>(Map.of("message", "this doctor is booked at this hour"), HttpStatus.CONFLICT);
-        }
-        schedule.setStartHour(newSchedule.getStartHour());
-        schedule.setEndHour(newSchedule.getEndHour());
-        scheduleRepository.save(schedule);
-        return new ResponseEntity<>(HttpStatus.OK);
-
-    }
-
-    @DeleteMapping(value = {"/{scheduleid}", "/{scheduleid}/"})
-    public ResponseEntity<Map<String, Object>> deleteSchedule(@PathVariable String scheduleid, HttpSession session) {
-        String loggedUserID = (String) session.getAttribute("id");
-        if(loggedUserID == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        Optional<Schedule> scheduleOpt = scheduleRepository.findById(scheduleid);
-        if(scheduleOpt.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        Schedule schedule = scheduleOpt.get();
-
-        if(!isLoggedAsEmployeeOfInstitution(loggedUserID, schedule.getInstitution().getInstitutionId())) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        if(schedule.isBooked()) {
-            return new ResponseEntity<>(Map.of("message", "schedule is already booked"), HttpStatus.BAD_REQUEST);
-        }
-        scheduleRepository.delete(schedule);
-        return new ResponseEntity<>(HttpStatus.OK);
-
-    }
+//    @PutMapping(value = {"/{scheduleid}", "/{scheduleid}/"})
+//    public ResponseEntity<Map<String, Object>> updateSchedule(@PathVariable String scheduleid, @RequestBody AddScheduleForm newSchedule, HttpSession session) {
+//
+//    }
 
     private boolean isLoggedAsDoctorOfInstitution(String userID, String institutionID) {
         if(!Utils.isValidMongoOID(userID) || !Utils.isValidMongoOID(institutionID)) {
@@ -214,22 +162,5 @@ public class ScheduleController {
         }
         return institutionRepository.findStaffById(userID, institutionID).isPresent();
     }
-
-    private boolean isScheduleOverlapping(LocalDateTime start, LocalDateTime end, String userId, String omitID) {
-        ArrayList<Schedule> schedules = scheduleRepository.getSchedulesByDoctor(userId);
-        for(Schedule schedule: schedules) {
-            if(schedule.getId().equals(omitID)) continue;
-            if(!schedule.getStartHour().toLocalDate().isEqual(start.toLocalDate())) {
-                continue;
-            }
-            boolean startOrEndSame = schedule.getStartHour().isEqual(start) || schedule.getEndHour().isEqual(end);
-            boolean startBetween = start.isAfter(schedule.getStartHour())  && start.isBefore(schedule.getEndHour());
-            boolean endBetween = end.isBefore(schedule.getEndHour()) && end.isAfter(schedule.getStartHour());
-            boolean completeOverlap = start.isBefore(schedule.getStartHour()) && end.isAfter(schedule.getEndHour());
-            if(startOrEndSame || startBetween || endBetween || completeOverlap) return true;
-        }
-        return false;
-    }
-
 
 }
