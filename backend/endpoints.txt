@@ -228,15 +228,9 @@ Body:
 
 Returns:
 
-Status code: 400
-Message: invalid doctor id
+Status code: 403
 
-Reason: doctor's user id is invalid
-
-Status code: 400
-Message: invalid institution id
-
-Reason: institution id is invalid
+Reason: doctor's user id is invalid, institution id is invalid, user is not logged in as staff of institution or doctor does not belong to institution
 
 Status code: 409
 Message: this doctor is booked at this hour
@@ -847,4 +841,22 @@ Path variables:
 Returns:
     401 - User is not logged in
     200 - User's profile picture or empty if user does not exist or does not have one
+
+
+/schedules/addmany
+Method: POST
+
+
+Body:
+    doctorID: doctor's user id
+    institutionID: institution's ID
+    startTime: start time (yyyy-MM-dd HH:mm:ss)
+    endTime: end time (yyyy-MM-dd HH:mm:ss)
+    interval: length of the visit (HH:mm:ss)
+
+Returns:
+    401 - User not logged in
+    403 - Doctor id invalid, institution id invalid, user is not staff of institution or doctor does not belong to institution
+    409 - doctor is booked at this hour
+    201 - success
 

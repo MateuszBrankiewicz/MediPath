@@ -3,6 +3,7 @@ package com.adam.medipathbackend.forms;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class AddScheduleForm {
     private String doctorID;
@@ -11,13 +12,16 @@ public class AddScheduleForm {
     private LocalDateTime startHour;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Europe/Warsaw")
     private LocalDateTime endHour;
+    @JsonFormat(pattern="HH:mm:ss", timezone="Europe/Warsaw")
+    private LocalTime interval;
 
 
-    public AddScheduleForm(String doctorID, String institutionID, LocalDateTime startHour, LocalDateTime endHour) {
+    public AddScheduleForm(String doctorID, String institutionID, LocalDateTime startHour, LocalDateTime endHour, LocalTime interval) {
         this.doctorID = doctorID;
         this.institutionID = institutionID;
         this.startHour = startHour;
         this.endHour = endHour;
+        this.interval = interval;
     }
 
     public String getDoctorID() {
@@ -52,4 +56,11 @@ public class AddScheduleForm {
         this.endHour = endHour;
     }
 
+    public LocalTime getInterval() {
+        return interval;
+    }
+
+    public void setInterval(LocalTime interval) {
+        this.interval = interval;
+    }
 }
