@@ -257,4 +257,78 @@ public class VisitController {
         return institutionRepository.findStaffORDoctorById(userid, institutionID).isPresent();
     }
 
+    @PutMapping(value = {"/code", "/code/"})
+    public ResponseEntity<Map<String, Object>> deleteCode(@RequestBody Code code, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        ArrayList<String> missingfields = new ArrayList<>();
+        if(code.getCode() == null || code.getCode().isBlank()) {
+            missingfields.add("code");
+        }
+        if(code.getCodeType() == null) {
+            missingfields.add("codeType");
+        }
+        if(!missingfields.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingfields), HttpStatus.BAD_REQUEST);
+        }
+        ArrayList<Visit> visits = visitRepository.getAllVisitsForPatient(loggedUserID);
+        boolean found = false;
+        for(Visit visit: visits) {
+            ArrayList<Code> codes = visit.getCodes();
+            for(int i = 0; i < codes.size(); i++) {
+                if(codes.get(i).getCodeType() == code.getCodeType() && codes.get(i).getCode().equals(code.getCode())) {
+                    codes.set(i, new Code(code.getCodeType(), code.getCode(), false));
+                    found = true;
+                    break;
+                }
+            }
+            if(found) {
+                visit.setCodes(codes);
+                visitRepository.save(visit);
+                break;
+            }
+        }
+        return new ResponseEntity<>(found ? HttpStatus.OK : HttpStatus.NOT_FOUND);
+
+    }
+
+    @DeleteMapping(value = {"/code", "/code/"})
+    public ResponseEntity<Map<String, Object>> updateCode(@RequestBody Code code, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        ArrayList<String> missingfields = new ArrayList<>();
+        if(code.getCode() == null || code.getCode().isBlank()) {
+            missingfields.add("code");
+        }
+        if(code.getCodeType() == null) {
+            missingfields.add("codeType");
+        }
+        if(!missingfields.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingfields), HttpStatus.BAD_REQUEST);
+        }
+        ArrayList<Visit> visits = visitRepository.getAllVisitsForPatient(loggedUserID);
+        boolean found = false;
+        for(Visit visit: visits) {
+            ArrayList<Code> codes = visit.getCodes();
+            for(int i = 0; i < codes.size(); i++) {
+                if(codes.get(i).getCodeType() == code.getCodeType() && codes.get(i).getCode().equals(code.getCode())) {
+                    codes.remove(i);
+                    found = true;
+                    break;
+                }
+            }
+            if(found) {
+                visit.setCodes(codes);
+                visitRepository.save(visit);
+                break;
+            }
+        }
+        return new ResponseEntity<>(found ? HttpStatus.OK : HttpStatus.NOT_FOUND);
+
+    }
+
 }

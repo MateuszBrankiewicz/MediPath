@@ -100,7 +100,19 @@ public class Institution {
         this.numOfRatings += 1;
     }
 
+    public void editRating(float newRating, float oldRating) {
+        this.rating = ((this.rating * this.numOfRatings) - oldRating + newRating) / this.numOfRatings;
+    }
 
+    public void subtractRating(float newRating) {
+        if(numOfRatings - 1 == 0) {
+            this.rating = 0;
+            this.numOfRatings = 0;
+        } else {
+            this.rating = ((this.rating * this.numOfRatings) - newRating) / (this.numOfRatings - 1);
+            this.numOfRatings -= 1;
+        }
+    }
 
     public String getImage() {
         return image;

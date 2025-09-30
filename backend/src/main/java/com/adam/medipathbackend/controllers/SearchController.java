@@ -30,15 +30,23 @@ public class SearchController {
     ScheduleRepository scheduleRepository;
 
     @GetMapping(value = {"/search/{query}", "/search", "/search/"})
-    public ResponseEntity<Map<String, Object>> search(@PathVariable(required = false) String query, @RequestParam("type") String type, @RequestParam(value = "city", defaultValue = ".*") String city, @RequestParam(value = "specialisations", defaultValue = "") String specialisations) {
+    public ResponseEntity<Map<String, Object>> search(@PathVariable(required = false) String query, @RequestParam("type") String type, @RequestParam(value = "city", defaultValue = ".*") String city, @RequestParam(value = "specialisations") String[] specialisations) {
 
         if(query == null || query.isBlank()) {
             query = ".*";
         }
+        if(specialisations == null) {
+            System.out.println("IS NULL");
+        } else {
+            for(String elem: specialisations) {
+                System.out.print(" " + elem + " ");
+            }
+            System.out.println();
+        }
         if(type.equals("institution")) {
             ArrayList<Institution> institutions;
 
-            if(specialisations.isBlank()) {
+            if(specialisations == null) {
                 institutions = institutionRepository.findInstitutionByCity(city + ".*", query);
             } else {
                 institutions = institutionRepository.findInstitutionByCityAndSpec(city + ".*", query, specialisations);
@@ -51,7 +59,7 @@ public class SearchController {
         } else if(type.equals("doctor")) {
             ArrayList<StaffDigest> doctors;
 
-            if(specialisations.isBlank()) {
+            if(specialisations == null) {
                 doctors = institutionRepository.findDoctorsByCity(city + ".*", query);
             } else {
                 doctors = institutionRepository.findDoctorsByCityAndSpec(city + ".*", query, specialisations);

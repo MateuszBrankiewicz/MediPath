@@ -82,6 +82,93 @@ public class CommentController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @PutMapping(value = {"/{commentid}", "/{commentid}/"})
+    public ResponseEntity<Map<String, Object>> editComment(@RequestBody AddCommentForm commentForm, @PathVariable String commentid,  HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(Stream.of(1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f).noneMatch(validGrade -> validGrade == commentForm.getDoctorRating())) {
+            return new ResponseEntity<>(Map.of("message", "invalid doctor rating"), HttpStatus.BAD_REQUEST);
+        }
+        if(Stream.of(1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f).noneMatch(validGrade -> validGrade == commentForm.getInstitutionRating())) {
+            return new ResponseEntity<>(Map.of("message", "invalid institution rating"), HttpStatus.BAD_REQUEST);
+        }
+        Optional<Comment> commentOpt = commentRepository.findById(commentid);
+        if(commentOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Comment comment = commentOpt.get();
+        if(!comment.getAuthor().getUserId().equals(loggedUserID)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        Optional<Institution> institutionOpt = institutionRepository.findById(comment.getInstitution().getInstitutionId());
+        Optional<User> doctorOpt = userRepository.findById(comment.getDoctorDigest().getUserId());
+
+        if(institutionOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if(doctorOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        User doctor = doctorOpt.get();
+        Institution institution = institutionOpt.get();
+
+        doctor.editRating(commentForm.getDoctorRating(), comment.getDoctorRating());
+        institution.editRating(commentForm.getInstitutionRating(), comment.getInstitutionRating());
+
+        comment.setContent(commentForm.getComment());
+        comment.setDoctorRating(commentForm.getDoctorRating());
+        comment.setInstitutionRating(commentForm.getInstitutionRating());
+
+        institutionRepository.save(institution);
+        userRepository.save(doctor);
+        commentRepository.save(comment);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(value = {"/{commentid}", "/{commentid}/"})
+    public ResponseEntity<Map<String, Object>> deleteComment(@PathVariable String commentid,  HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Comment> commentOpt = commentRepository.findById(commentid);
+        if(commentOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Comment comment = commentOpt.get();
+        if(!comment.getAuthor().getUserId().equals(loggedUserID)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        Optional<Institution> institutionOpt = institutionRepository.findById(comment.getInstitution().getInstitutionId());
+        Optional<User> doctorOpt = userRepository.findById(comment.getDoctorDigest().getUserId());
+
+        if(institutionOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if(doctorOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        User doctor = doctorOpt.get();
+        Institution institution = institutionOpt.get();
+
+        doctor.subtractRating(comment.getDoctorRating());
+        institution.subtractRating(comment.getInstitutionRating());
+
+
+        institutionRepository.save(institution);
+        userRepository.save(doctor);
+        commentRepository.delete(comment);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @GetMapping(value = {"/{id}", "/{id}/"})
     public ResponseEntity<Map<String, Object>> add(@PathVariable String id, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
