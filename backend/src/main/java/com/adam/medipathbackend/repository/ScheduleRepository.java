@@ -9,6 +9,9 @@ import java.util.ArrayList;
 
 public interface ScheduleRepository extends MongoRepository<Schedule, String> {
 
+    @Query("{$or: [{'startHour': {$gt: ?0, $lt: ?1}}, {'endHour': {$gt: ?0, $lt: ?1}}] 'doctor.userId': ?2}")
+    Optional<Schedule> checkScheduleDuplicate(LocalDateTime startHour, LocalDateTime endHour, String userId);
+
     @Query("{'doctor.userId': ?0 }")
     ArrayList<Schedule> getSchedulesByDoctor(String doctorID);
 
