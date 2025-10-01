@@ -1,19 +1,13 @@
 package com.adam.medipathbackend.repository;
 
 import com.adam.medipathbackend.models.Schedule;
-import com.adam.medipathbackend.models.Visit;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Optional;
 
 public interface ScheduleRepository extends MongoRepository<Schedule, String> {
-
-    @Query("{$or: [{'startHour': {$gt: ?0, $lt: ?1}}, {'endHour': {$gt: ?0, $lt: ?1}}] 'doctor.userId': ?2}")
-    Optional<Schedule> checkScheduleDuplicate(LocalDateTime startHour, LocalDateTime endHour, String userId);
 
     @Query("{'doctor.userId': ?0 }")
     ArrayList<Schedule> getSchedulesByDoctor(String doctorID);
