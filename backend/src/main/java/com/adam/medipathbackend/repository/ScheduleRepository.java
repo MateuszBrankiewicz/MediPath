@@ -12,8 +12,8 @@ import java.util.Optional;
 
 public interface ScheduleRepository extends MongoRepository<Schedule, String> {
 
-    @Query("{'startHour': ?0, 'doctor.userId': ?1}")
-    Optional<Schedule> checkScheduleDuplicate(LocalDateTime startHour, String userId);
+    @Query("{$or: [{'startHour': {$gt: ?0, $lt: ?1}}, {'endHour': {$gt: ?0, $lt: ?1}}] 'doctor.userId': ?2}")
+    Optional<Schedule> checkScheduleDuplicate(LocalDateTime startHour, LocalDateTime endHour, String userId);
 
     @Query("{'doctor.userId': ?0 }")
     ArrayList<Schedule> getSchedulesByDoctor(String doctorID);
