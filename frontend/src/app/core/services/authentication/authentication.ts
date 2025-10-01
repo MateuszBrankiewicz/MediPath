@@ -16,10 +16,13 @@ import {
 import { SelectOption } from '../../../modules/shared/components/forms/input-for-auth/select-with-search/select-with-search';
 import { API_URL } from '../../../utils/constants';
 import {
+  ApiNotification,
   ApiUserResponse,
   getRoleFromCode,
+  Notification,
   UserBasicInfo,
   UserRoles,
+  UserSettings,
 } from './authentication.model';
 import {
   GetUserProfileResponse,
@@ -66,16 +69,24 @@ export class AuthenticationService {
           const lastPanel = getRoleFromCode(
             response.user.userSettings.lastPanel as number,
           );
+          const normalizedSettings = this.normalizeUserSettings(
+            response.user.userSettings,
+          );
+          const notifications = this.normalizeNotifications(
+            response.user.notifications ?? [],
+          );
           const userInfo: UserBasicInfo = {
             id: response.user.id,
             name: response.user.name,
             surname: response.user.surname,
             roleCode: getRoleFromCode(response.user.roleCode),
-            notifications: response.user.notifications,
+            notifications,
             email: response.user.email,
-            userSettings: response.user.userSettings,
+            userSettings: {
+              ...normalizedSettings,
+              lastPanel,
+            },
           };
-          userInfo.userSettings.lastPanel = lastPanel;
           this.user.set(userInfo);
         }),
         catchError((error) => {
@@ -150,16 +161,24 @@ export class AuthenticationService {
         const lastPanel = getRoleFromCode(
           response.user.userSettings.lastPanel as number,
         );
+        const normalizedSettings = this.normalizeUserSettings(
+          response.user.userSettings,
+        );
+        const notifications = this.normalizeNotifications(
+          response.user.notifications ?? [],
+        );
         const userInfo: UserBasicInfo = {
           id: response.user.id,
           name: response.user.name,
           surname: response.user.surname,
           roleCode: getRoleFromCode(response.user.roleCode),
-          notifications: response.user.notifications,
+          notifications,
           email: response.user.email,
-          userSettings: response.user.userSettings,
+          userSettings: {
+            ...normalizedSettings,
+            lastPanel,
+          },
         };
-        userInfo.userSettings.lastPanel = lastPanel;
         this.user.set(userInfo);
       }),
       catchError(() => {
@@ -273,6 +292,89 @@ export class AuthenticationService {
   private buildOptionalString(value: string): string | null {
     const trimmed = value.trim();
     return trimmed.length > 0 ? trimmed : null;
+  }
+
+  private normalizeUserSettings(settings: UserSettings): UserSettings {
+    return {
+      ...settings,
+      userNotifications:
+        typeof settings.userNotifications === 'boolean'
+          ? settings.userNotifications
+          : false,
+    };
+  }
+
+  private normalizeNotifications(
+    apiNotifications: ApiNotification[],
+  ): Notification[] {
+    if (!Array.isArray(apiNotifications)) {
+      return [];
+    }
+
+    return apiNotifications
+      .map((notification) => this.mapNotification(notification))
+      .filter(
+        (notification): notification is Notification => notification !== null,
+      );
+  }
+
+  private mapNotification(
+    notification: ApiNotification | null | undefined,
+  ): Notification | null {
+    if (!notification) {
+      return null;
+    }
+
+    const createdAt = this.parseIsoDate(notification.timestamp);
+    if (!createdAt) {
+      return null;
+    }
+
+    const title = (notification.title ?? '').trim();
+    const content = (notification.content ?? '').trim();
+    const normalizedTitle = title || content || 'Notification';
+    const normalizedContent = content || normalizedTitle;
+
+    return {
+      id: this.buildNotificationId(
+        normalizedTitle,
+        normalizedContent,
+        createdAt,
+      ),
+      title: normalizedTitle,
+      content: normalizedContent,
+      type: notification.system ? 'system' : 'info',
+      read: Boolean(notification.read),
+      createdAt,
+      system: Boolean(notification.system),
+    };
+  }
+
+  private parseIsoDate(value?: string | null): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private buildNotificationId(
+    title: string,
+    content: string,
+    createdAt: Date,
+  ): string {
+    const base = `${createdAt.getTime()}|${title}|${content}`;
+    return `notif-${createdAt.getTime()}-${this.hashString(base)}`;
+  }
+
+  private hashString(value: string): string {
+    let hash = 0;
+    for (let index = 0; index < value.length; index += 1) {
+      hash = (hash << 5) - hash + value.charCodeAt(index);
+      hash |= 0;
+    }
+    return Math.abs(hash).toString(36);
   }
 
   private parseBirthDate(value: string): LocalDateTuple | null {

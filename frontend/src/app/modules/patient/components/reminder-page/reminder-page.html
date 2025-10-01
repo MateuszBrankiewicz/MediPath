@@ -4,7 +4,7 @@
       <span class="notifications-page__stat-label">
         {{ translate("notifications.total") }}
       </span>
-      <span class="notifications-page__stat-value">{{ totalCount() }}</span>
+      <span class="notifications-page__stat-value">{{ 0 }}</span>
       <i class="pi pi-bell notifications-page__stat-icon"></i>
     </article>
 
@@ -12,7 +12,7 @@
       <span class="notifications-page__stat-label">
         {{ translate("notifications.unread") }}
       </span>
-      <span class="notifications-page__stat-value">{{ unreadCount() }}</span>
+      <span class="notifications-page__stat-value">{{ 0 }}</span>
       <i class="pi pi-inbox notifications-page__stat-icon"></i>
     </article>
 
@@ -20,7 +20,7 @@
       <span class="notifications-page__stat-label">
         {{ translate("notifications.today") }}
       </span>
-      <span class="notifications-page__stat-value">{{ todayCount() }}</span>
+      <span class="notifications-page__stat-value">{{ 0 }}</span>
       <i class="pi pi-calendar notifications-page__stat-icon"></i>
     </article>
 
@@ -28,7 +28,7 @@
       <span class="notifications-page__stat-label">
         {{ translate("notifications.readRate") }}
       </span>
-      <span class="notifications-page__stat-value">{{ readRate() }}%</span>
+      <span class="notifications-page__stat-value">{{ 0}}%</span>
       <i class="pi pi-chart-line notifications-page__stat-icon"></i>
     </article>
   </section>
@@ -40,16 +40,13 @@
       icon="pi pi-refresh"
       [label]="translate('notifications.refresh')"
       [loading]="isRefreshing()"
-      (onClick)="onRefresh()"
     ></p-button>
     <p-button
       type="button"
       class="notifications-page__toolbar-button"
       icon="pi pi-envelope-open"
       [label]="translate('notifications.markAllAsRead')"
-      [disabled]="unreadCount() === 0 || isMarkingAll()"
       [loading]="isMarkingAll()"
-      (onClick)="onMarkAllAsRead()"
     ></p-button>
   </section>
 
@@ -66,7 +63,7 @@
         >
           <div class="notifications-page__item-header">
             <span class="notifications-page__item-title">
-              {{ notification.title || notification.message }}
+              {{ notification.title || notification.content }}
             </span>
             <span class="notifications-page__item-date">
               {{ notification.createdAt | date: "medium" }}
@@ -74,10 +71,10 @@
           </div>
 
           @if (
-            !notification.title || notification.title !== notification.message
+            !notification.title || notification.title !== notification.content
           ) {
             <p class="notifications-page__item-message">
-              {{ notification.message }}
+              {{ notification.content }}
             </p>
           }
 
@@ -88,7 +85,7 @@
                 icon="pi pi-check"
                 size="small"
                 [label]="translate('notifications.markAsRead')"
-                (onClick)="onMarkAsRead(notification)"
+
               ></p-button>
             } @else {
               <p-tag

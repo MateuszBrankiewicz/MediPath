@@ -6,6 +6,7 @@ import {
   DestroyRef,
   inject,
   input,
+  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
@@ -22,7 +23,6 @@ import { SelectModule } from 'primeng/select';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
 import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
 import {
   getRoleFromCode,
@@ -58,7 +58,7 @@ interface RoleOption {
     FormsModule,
   ],
 })
-export class TopBarComponent {
+export class TopBarComponent implements OnInit {
   private readonly userMenu = viewChild<Menu>('userMenu');
   private readonly notificationsPopover = viewChild<Popover>(
     'notificationsPopover',
@@ -80,8 +80,33 @@ export class TopBarComponent {
   protected readonly selectedCategory = signal('');
   protected readonly locationQuery = signal('');
   protected readonly specializationQuery = signal('');
-
+  protected readonly notifications = signal([
+    {
+      id: '1',
+      title: 'Nowa wiadomość',
+      createdAt: new Date(),
+      read: false,
+      message: 'Masz nową wiadomość od Dr. Smith.',
+      type: 'info',
+      content: '',
+      system: false,
+    },
+    {
+      id: '2',
+      title: 'Przypomnienie o wizycie',
+      createdAt: new Date(Date.now() - 3600 * 1000),
+      read: true,
+      type: 'reminder',
+      message: 'Masz wizytę u Dr. Johnson jutro o 10:00.',
+      content: '',
+      system: false,
+    },
+  ]);
   protected readonly isSearchExpanded = signal(false);
+
+  protected readonly unreadCount = signal(1);
+
+  private readonly notificationService = inject(UserNotificationsService);
 
   protected readonly categoryOptions = computed(() => [
     { label: '-- Category --', value: '' },
@@ -148,10 +173,8 @@ export class TopBarComponent {
 
   protected readonly user = computed(() => this.authService.getUser());
 
-  protected readonly notifications = this.notificationsService.notifications;
-  protected readonly unreadCount = this.notificationsService.unreadCount;
   protected readonly unreadBadge = computed<string | undefined>(() => {
-    const count = this.unreadCount();
+    const count = 0;
     if (count <= 0) {
       return undefined;
     }
@@ -198,6 +221,14 @@ export class TopBarComponent {
       style: { 'font-size': '1.1rem' },
     },
   ];
+
+  ngOnInit(): void {
+    this.notificationService.notifications$.subscribe((message) => {
+      const title = message?.title || 'Nowa notyfikacja';
+      const content = message?.content || '';
+      this.toastService.showInfo(title, content);
+    });
+  }
 
   private navigateToProfile(): void {
     this.router.navigate(['/profile']);
@@ -277,17 +308,7 @@ export class TopBarComponent {
   }
 
   protected onNotificationSelect(notification: UserNotification): void {
-    if (!notification.read) {
-      this.notificationsService
-        .markAsRead(notification.id)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          error: (error: unknown) => {
-            console.error('Failed to mark notification as read', error);
-            this.toastService.showError('notifications.markSingleError');
-          },
-        });
-    }
+    console.log('Selected notification:', notification);
   }
 
   protected onMarkAllAsRead(): void {
@@ -296,22 +317,6 @@ export class TopBarComponent {
     }
 
     this.isMarkingAll.set(true);
-
-    this.notificationsService
-      .markAllAsRead()
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isMarkingAll.set(false)),
-      )
-      .subscribe({
-        next: () => {
-          this.toastService.showSuccess('notifications.markAllSuccess');
-        },
-        error: (error: unknown) => {
-          console.error('Failed to mark all notifications as read', error);
-          this.toastService.showError('notifications.markAllError');
-        },
-      });
   }
 
   protected navigateToNotifications(): void {
