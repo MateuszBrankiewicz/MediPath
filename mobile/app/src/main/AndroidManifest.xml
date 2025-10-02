@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:name=".ui.splash.MyApplication"
+        android:name=".MediPathApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:usesCleartextTraffic="true"
@@ -17,7 +17,7 @@
         android:theme="@style/Theme.MediPath"
         tools:targetApi="31">
         <activity
-            android:name=".ui.splash.SplashActivity"
+            android:name=".SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.MediPath">
             <intent-filter>
@@ -27,20 +27,20 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.auth.RegisterActivity"
+            android:name=".modules.shared.auth.ui.RegisterActivity"
             android:exported="false" />
-        <activity android:name=".ui.auth.LoginActivity"
+        <activity android:name=".modules.shared.auth.ui.LoginActivity"
             android:exported="false" />
-        <activity android:name=".ui.auth.ResetPasswordActivity"
+        <activity android:name=".modules.shared.auth.ui.ResetPasswordActivity"
             android:exported="false" />
-        <activity android:name=".ui.main.HomeActivity"
+        <activity android:name=".modules.patient.home.ui.HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.codes.CodesActivity"
+            android:name=".modules.patient.codes.ui.CodesActivity"
             android:exported="false" />
-        <activity android:name=".ui.search.SearchResultsActivity"
+        <activity android:name=".modules.patient.search.ui.SearchResultsActivity"
             android:exported="false" />
-        <activity android:name=".ui.booking.AppointmentBookingActivity"
+        <activity android:name=".modules.patient.booking.ui.AppointmentBookingActivity"
             android:exported="false" />
     </application>
 
