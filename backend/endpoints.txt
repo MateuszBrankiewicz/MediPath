@@ -228,15 +228,9 @@ Body:
 
 Returns:
 
-Status code: 400
-Message: invalid doctor id
+Status code: 403
 
-Reason: doctor's user id is invalid
-
-Status code: 400
-Message: invalid institution id
-
-Reason: institution id is invalid
+Reason: doctor's user id is invalid, institution id is invalid, user is not logged in as staff of institution or doctor does not belong to institution
 
 Status code: 409
 Message: this doctor is booked at this hour
@@ -836,3 +830,67 @@ Returns:
     403 - comment by this id does not exist or does not belong to the user
     500 - institution or doctor ID referenced by the comment are invalid. Possible data corruption
     200 - Success
+
+
+/users/{id}/getpfp
+Method: GET
+
+Path variables:
+    id - target user's id
+
+Returns:
+    401 - User is not logged in
+    200 - User's profile picture or empty if user does not exist or does not have one
+
+
+/schedules/addmany
+Method: POST
+
+
+Body:
+    doctorID: doctor's user id
+    institutionID: institution's ID
+    startTime: start time (yyyy-MM-dd HH:mm:ss)
+    endTime: end time (yyyy-MM-dd HH:mm:ss)
+    interval: length of the visit (HH:mm:ss)
+
+Returns:
+    401 - User not logged in
+    403 - Doctor id invalid, institution id invalid, user is not staff of institution or doctor does not belong to institution
+    409 - doctor is booked at this hour
+    201 - success
+
+
+
+/schedules/{scheduleid}
+Method: PUT
+
+Body:
+    startTime - new start time
+    endTime - new end time
+
+Path variables
+    scheduleid - object id of the schedule
+
+
+Returns:
+    401 - User is not logged in
+    403 - Schedule id does not exist or user does not have access to it
+    400 - missing fields in request body or schedule is already booked
+    409 - doctor already has schedules within this timeframe
+    200 - success
+
+
+/schedules/{scheduleid}
+Method: DELETE
+
+Path variables
+    scheduleid - object id of the schedule
+
+
+Returns:
+    401 - User is not logged in
+    403 - Schedule id does not exist or user does not have access to it
+    400 - schedule is already booked
+    200 - success
+

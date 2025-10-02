@@ -503,6 +503,21 @@ public class UserController {
         return new ResponseEntity<>(Map.of("medicalhistories", mhRepository.getEntriesForPatient(loggedUserID)), HttpStatus.OK);
     }
 
+
+    @GetMapping(value = {"/{userid}/getpfp", "/{userid}/getpfp/"})
+    public ResponseEntity<Map<String, Object>> getPfp(@PathVariable String userid, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(userid);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(Map.of("pfp", ""), HttpStatus.OK);
+        }
+        User user = userOpt.get();
+        return new ResponseEntity<>(Map.of("pfp", user.getPfpimage()), HttpStatus.OK);
+    }
+
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {
         ArrayList<String> missingFields = new ArrayList<>();
         if(registrationForm.getName() == null || registrationForm.getName().isBlank()) {
