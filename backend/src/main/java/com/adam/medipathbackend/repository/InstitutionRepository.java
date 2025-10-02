@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 
 public interface InstitutionRepository extends MongoRepository<Institution, String> {
@@ -60,4 +61,25 @@ public interface InstitutionRepository extends MongoRepository<Institution, Stri
             "{ \"$project\": { \"_id\": 1, \"name\": \"$employees.name\", \"surname\": \"$employees.surname\", \"specialisations\": \"$employees.specialisations\", \"userId\": \"$employees.userId\", \"roleCode\": \"$employees.roleCode\", \"pfpimage\": \"$employees.pfpimage\"} }"
     })
     Optional<StaffDigest> findDoctorById(String staffid, String institutionid);
+
+    @Aggregation({
+            "{ \"$unwind\": \"$employees\" }",
+            "{ \"$match\": { \"_id\": {$oid: ?0}, \"employees.roleCode\": { \"$in\": [2, 3, 6, 7, 10, 11, 14, 15] } } }",
+            "{ \"$project\": { \"_id\": 1, \"name\": \"$employees.name\", \"surname\": \"$employees.surname\", \"specialisations\": \"$employees.specialisations\", \"userId\": \"$employees.userId\", \"roleCode\": \"$employees.roleCode\", \"pfpimage\": \"$employees.pfpimage\"} }"
+    })
+    ArrayList<StaffDigest> findDoctorsInInstitution(String institutionid);
+
+    @Aggregation({
+            "{ \"$unwind\": \"$employees\" }",
+            "{ \"$match\": { \"employees.userId\": ?0, \"_id\": {$oid: ?1}, \"employees.roleCode\": { \"$in\": [8, 9, 10, 11, 12, 13, 14, 15] } } }",
+            "{ \"$project\": { \"_id\": 1, \"name\": \"$employees.name\", \"surname\": \"$employees.surname\", \"specialisations\": \"$employees.specialisations\", \"userId\": \"$employees.userId\", \"roleCode\": \"$employees.roleCode\", \"pfpimage\": \"$employees.pfpimage\"} }"
+    })
+    Optional<StaffDigest> findAdminById(String adminid, String institutionid);
+
+    @Aggregation({
+            "{ \"$unwind\": \"$employees\" }",
+            "{ \"$match\": { \"employees.userId\": ?0 } }",
+            "{ \"$project\": { \"_id\": 1, \"roleCode\": \"$employees.roleCode\"} }"
+    })
+    ArrayList<Map<String, Object>> getRoleCodes(String userId);
 }

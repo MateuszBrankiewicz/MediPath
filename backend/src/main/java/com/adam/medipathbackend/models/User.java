@@ -246,6 +246,8 @@ public class User {
         this.employers.add(digest);
     }
 
+    public void setEmployers(ArrayList<InstitutionDigest> employers) {this.employers = employers; }
+
     public String getId() {
         return id;
     }
