@@ -39,12 +39,9 @@ export class PatientDashboardComponent {
     userRole: 'Patient',
   };
 
-  protected readonly isLoading = signal(true);
-
   protected readonly codesData = toSignal(
     this.codesService.getPrescriptions().pipe(
       map((results: Refferal[]) => {
-        this.isLoading.set(false);
         return {
           prescriptions: results.filter(
             (code) => code.codeType?.toLowerCase() === 'prescription',
@@ -55,7 +52,6 @@ export class PatientDashboardComponent {
         };
       }),
       catchError(() => {
-        this.isLoading.set(false);
         return of({ prescriptions: [], referrals: [] });
       }),
     ),
@@ -82,7 +78,6 @@ export class PatientDashboardComponent {
         });
       }),
       catchError(() => {
-        this.isLoading.set(false);
         return of([] as VisitBasicInfo[]);
       }),
     ),

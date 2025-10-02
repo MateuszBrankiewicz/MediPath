@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
 import {
   ApiCodesResponse,
@@ -35,14 +35,15 @@ export class PatientCodesService {
       );
   }
 
-  public getUpcomingVisits() {
+  public useCode(code: {
+    codeNumber: number;
+    codeType: string;
+  }): Observable<boolean> {
     return this.http
-      .get(
-        `${API_URL}/visits/getupcoming/${sessionStorage.getItem('userId')}`,
-        {
-          withCredentials: true,
-        },
-      )
-      .pipe(map((response) => response));
+      .put(`${API_URL}/visits/code`, code, { withCredentials: true })
+      .pipe(
+        map(() => true),
+        catchError(() => of(false)),
+      );
   }
 }

@@ -1,68 +1,26 @@
 <div class="dashboard-content">
-  @if (isLoading()) {
-    <p-progressSpinner
-      [style]="{ width: '30%', height: '30%' }"
-      strokeWidth="2"
-    >
-    </p-progressSpinner>
-  } @else {
-    <div class="top-content">
-      <div class="prescriptions-content">
-        <p-card class="prescriptions">
-          <ng-template #header>
-            <span class="header-span">{{
-              translationService.translate("patient.dashboard.prescriptions")
-            }}</span>
-          </ng-template>
-          <div class="items-content">
-            @if (prescriptions().length === 0) {
-              <div class="empty-state">
-                <div class="empty-icon">📋</div>
-                <p class="empty-message">
-                  {{
-                    translationService.translate(
-                      "patient.dashboard.empty.prescriptionsMessage"
-                    )
-                  }}
-                </p>
-              </div>
-            } @else {
-              @for (refferal of prescriptions(); track refferal.id) {
-                <div class="single-item">
-                  <span class="name">{{ refferal.doctorName }}</span>
-                  <span>{{ refferal.prescriptionPin }}</span>
-                </div>
-              }
-            }
-          </div>
-          <ng-template #footer>
-            <div class="footer">
-              <p-button icon="pi pi-chevron-down" [text]="true" />
-            </div>
-          </ng-template>
-        </p-card>
-      </div>
-
-      <p-card class="refferals">
+  <div class="top-content">
+    <div class="prescriptions-content">
+      <p-card class="prescriptions">
         <ng-template #header>
           <span class="header-span">{{
-            translationService.translate("patient.dashboard.referrals")
+            translationService.translate("patient.dashboard.prescriptions")
           }}</span>
         </ng-template>
         <div class="items-content">
-          @if (refferals().length === 0) {
+          @if (prescriptions().length === 0) {
             <div class="empty-state">
-              <div class="empty-icon">🩺</div>
+              <div class="empty-icon">📋</div>
               <p class="empty-message">
                 {{
                   translationService.translate(
-                    "patient.dashboard.empty.referralsMessage"
+                    "patient.dashboard.empty.prescriptionsMessage"
                   )
                 }}
               </p>
             </div>
           } @else {
-            @for (refferal of refferals(); track refferal.id) {
+            @for (refferal of prescriptions(); track refferal.id) {
               <div class="single-item">
                 <span class="name">{{ refferal.doctorName }}</span>
                 <span>{{ refferal.prescriptionPin }}</span>
@@ -70,7 +28,6 @@
             }
           }
         </div>
-
         <ng-template #footer>
           <div class="footer">
             <p-button icon="pi pi-chevron-down" [text]="true" />
@@ -78,49 +35,84 @@
         </ng-template>
       </p-card>
     </div>
-    <div class="visits-content">
-      <span>
-        <i class="pi pi-calendar"></i>
-        {{
-          translationService.translate("patient.dashboard.upcomingVisits")
-        }}</span
-      >
 
-      <p-card
-        [header]="
-          translationService.translate('patient.dashboard.upcomingVisits')
-        "
-        class="upcoming-visits-card"
-        class="visits-card"
-      >
-        @if (upcomingVisits().length === 0) {
+    <p-card class="refferals">
+      <ng-template #header>
+        <span class="header-span">{{
+          translationService.translate("patient.dashboard.referrals")
+        }}</span>
+      </ng-template>
+      <div class="items-content">
+        @if (refferals().length === 0) {
           <div class="empty-state">
-            <div class="empty-icon">📅</div>
+            <div class="empty-icon">🩺</div>
             <p class="empty-message">
               {{
                 translationService.translate(
-                  "patient.dashboard.empty.visitsMessage"
+                  "patient.dashboard.empty.referralsMessage"
                 )
               }}
             </p>
           </div>
         } @else {
-          @for (visit of upcomingVisits(); track visit.id) {
-            <div class="visit-item">
-              <span class="visit-time">{{ visit.date }}</span>
-              <span class="visit-doctor">{{ visit.doctorName }}</span>
-              <p-button
-                [label]="
-                  translationService.translate('patient.dashboard.cancelVisit')
-                "
-                severity="danger"
-                [outlined]="true"
-                size="small"
-              />
+          @for (refferal of refferals(); track refferal.id) {
+            <div class="single-item">
+              <span class="name">{{ refferal.doctorName }}</span>
+              <span>{{ refferal.prescriptionPin }}</span>
             </div>
           }
         }
-      </p-card>
-    </div>
-  }
+      </div>
+
+      <ng-template #footer>
+        <div class="footer">
+          <p-button icon="pi pi-chevron-down" [text]="true" />
+        </div>
+      </ng-template>
+    </p-card>
+  </div>
+  <div class="visits-content">
+    <span>
+      <i class="pi pi-calendar"></i>
+      {{
+        translationService.translate("patient.dashboard.upcomingVisits")
+      }}</span
+    >
+
+    <p-card
+      [header]="
+        translationService.translate('patient.dashboard.upcomingVisits')
+      "
+      class="upcoming-visits-card"
+      class="visits-card"
+    >
+      @if (upcomingVisits().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <p class="empty-message">
+            {{
+              translationService.translate(
+                "patient.dashboard.empty.visitsMessage"
+              )
+            }}
+          </p>
+        </div>
+      } @else {
+        @for (visit of upcomingVisits(); track visit.id) {
+          <div class="visit-item">
+            <span class="visit-time">{{ visit.date }}</span>
+            <span class="visit-doctor">{{ visit.doctorName }}</span>
+            <p-button
+              [label]="
+                translationService.translate('patient.dashboard.cancelVisit')
+              "
+              severity="danger"
+              [outlined]="true"
+              size="small"
+            />
+          </div>
+        }
+      }
+    </p-card>
+  </div>
 </div>

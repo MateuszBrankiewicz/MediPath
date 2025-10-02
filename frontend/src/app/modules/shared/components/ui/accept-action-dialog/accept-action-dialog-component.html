@@ -1,0 +1,15 @@
+<div>
+  <p>{{ data.message }}</p>
+  <div class="dialog-actions">
+    <p-button
+      (click)="onCancel()"
+      [label]="data.cancelText || 'Cancel'"
+      [severity]="data.cancelSeverity || 'danger'"
+    />
+    <p-button
+      (click)="onAccept()"
+      [label]="data.acceptText || 'Accept'"
+      [severity]="data.acceptSeverity || 'primary'"
+    ></p-button>
+  </div>
+</div>
