@@ -170,6 +170,8 @@
 - image: Base64 image of the institution
 
 #### Returns:
+- 401 - user is not logged in
+- 403 - user is not admin
 - 400 - missing fields in request body
 - 409 - this institution is a possible duplicate - An institution with the same name and a very close address is already registered
 - 201 - success
@@ -602,4 +604,62 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 403 - Schedule id does not exist or user does not have access to it
 - 400 - schedule is already booked
 - 200 - success
+
+
+### /institution/{institutionid}
+#### Method: PUT
+
+#### Path Variables:
+- institutionid - object id of the institution
+
+#### Returns:
+- 401 - User is not logged in
+- 403 - Institution does not exist or user is not administrator of institution
+- 400 - missing fields in request body
+- 410 - Institution with the same name and similar address exists
+- 200 - success
+
+
+### /institution/{institutionid}/employee/{userid}
+#### Method: DELETE
+
+#### Path variables:
+- institutionid - institution's object id
+- userid - employee's user id
+
+#### Returns:
+- 401 - User is not logged in
+- 403 - Institution does not exist, user is not administrator of institution, employee does not exist or employee is not in institution
+- 400 - User is trying to delete himself from employee list
+- 200 - success
+
+
+### /institution/{institutionid}/employee/
+#### Method: PUT
+
+#### Path variables:
+- institutionid - institution's object id
+
+#### Body:
+- userID - id of the user to edit
+- roleCode - code of the role to give to the user within the institution
+- specialisations - specialisations to give to the doctor within institution
+
+#### Returns:
+- 401 - User is not logged in
+- 403 - Institution does not exist, user is not administrator of institution, employee does not exist or employee is not in institution
+- 400 - User is trying to remove his administrator privileges
+- 200 - success
+
+### /institution/{institutionid}/doctors/
+#### Method: GET
+
+#### Path variables:
+- institutionid - institution's object id
+
+
+#### Returns:
+- 400 - invalid institution id
+- 200 - success, returns doctors and schedules
+
 
