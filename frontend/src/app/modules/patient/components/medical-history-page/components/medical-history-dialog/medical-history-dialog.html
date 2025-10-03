@@ -1,0 +1,102 @@
+<div class="dialog-shell">
+  <form [formGroup]="form" class="dialog-body" (ngSubmit)="submit()">
+    <section class="info-card">
+      <div class="title-date-section">
+        <div class="info-field">
+          <label class="info-label" for="history-title">Title:</label>
+          @if (isReadOnly()) {
+            <p class="info-value">{{ form.controls.title.value || "—" }}</p>
+          } @else {
+            <input
+              id="history-title"
+              pInputText
+              formControlName="title"
+              placeholder="Enter visit name"
+              class="info-input"
+            />
+          }
+        </div>
+
+        <div class="info-field">
+          <label class="info-label" for="history-date">Date of visit:</label>
+          @if (isReadOnly()) {
+            <p class="info-value">{{ formattedDate() || "—" }}</p>
+          } @else {
+            <p-datepicker
+              formControlName="date"
+              inputId="history-date"
+              [showIcon]="true"
+              iconDisplay="input"
+              dateFormat="dd/mm/yy"
+              appendTo="body"
+              class="info-input"
+            ></p-datepicker>
+          }
+        </div>
+      </div>
+      <div class="info-field">
+        <label class="info-label" for="doctor-name">Doctor:</label>
+        @if (isReadOnly()) {
+          <p class="info-value">
+            {{ form.controls.doctorName.value }}
+            {{ form.controls.doctorSurname.value }}
+          </p>
+        } @else {
+          <div class="doctor-inputs">
+            <input
+              id="doctor-name"
+              pInputText
+              formControlName="doctorName"
+              placeholder="First name"
+              class="info-input"
+            />
+            <input
+              id="doctor-surname"
+              pInputText
+              formControlName="doctorSurname"
+              placeholder="Surname"
+              class="info-input"
+            />
+          </div>
+        }
+      </div>
+
+      <div class="info-field info-field--notes">
+        <label class="info-label" for="history-notes">Notes:</label>
+        @if (isReadOnly()) {
+          <p class="info-note">
+            {{ form.controls.notes.value || "No additional notes provided." }}
+          </p>
+        } @else {
+          <textarea
+            id="history-notes"
+            formControlName="notes"
+            rows="5"
+            pTextarea
+            placeholder="Add visit notes"
+            class="info-input"
+          ></textarea>
+        }
+      </div>
+    </section>
+
+    <div class="dialog-actions">
+      @if (!isReadOnly()) {
+        <p-button
+          type="submit"
+          class="dialog-actions__confirm"
+          [label]="confirmLabel()"
+          [disabled]="form.invalid"
+        />
+      }
+
+      <p-button
+        type="button"
+        class="dialog-actions__close"
+        label="Close"
+        severity="danger"
+        (onClick)="closeDialog()"
+      />
+    </div>
+  </form>
+</div>

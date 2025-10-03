@@ -1,81 +1,101 @@
-<div class="medical-reminder-container">
-  <div class="stats-section">
-    <div class="stats-cards">
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-bell"></i>
-        </div>
-        <div class="stat-content">
-          <h4>{{ reminders().length }}</h4>
-          <p>{{ translationService.translate('patient.reminders.activeReminders') }}</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-calendar"></i>
-        </div>
-        <div class="stat-content">
-          <h4>{{ getTodayReminders() }}</h4>
-          <p>{{ translationService.translate('patient.reminders.todaysDoses') }}</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-chart-bar"></i>
-        </div>
-        <div class="stat-content">
-          <h4>95%</h4>
-          <p>{{ translationService.translate('patient.reminders.complianceRate') }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="notifications-page">
+  <section class="notifications-page__stats">
+    <article class="notifications-page__stat-card">
+      <span class="notifications-page__stat-label">
+        {{ translate("notifications.total") }}
+      </span>
+      <span class="notifications-page__stat-value">{{ 0 }}</span>
+      <i class="pi pi-bell notifications-page__stat-icon"></i>
+    </article>
 
-  <h3>{{ translationService.translate('patient.reminders.title') }}</h3>
+    <article class="notifications-page__stat-card">
+      <span class="notifications-page__stat-label">
+        {{ translate("notifications.unread") }}
+      </span>
+      <span class="notifications-page__stat-value">{{ 0 }}</span>
+      <i class="pi pi-inbox notifications-page__stat-icon"></i>
+    </article>
 
-  <div class="reminder-panel">
-    <div class="reminder-list">
-      @for (record of reminders(); track record.id; let i = $index) {
-        <div class="reminder-item">
-          <div class="reminder-content">
-            <span class="reminder-text">{{ record.date | date: 'dd.MM.yyyy' }} {{ record.hour }} - {{ record.title }} - {{ record.description }}</span>
-          </div>
-          <div class="reminder-actions">
-            <div class="menu-container">
-              <p-button
-                icon="pi pi-ellipsis-v"
-                class="menu-button"
-                [text]="true"
-                size="small"
-                (onClick)="toggleMenu($event, record)"
-                pTooltip="More options">
-              </p-button>
+    <article class="notifications-page__stat-card">
+      <span class="notifications-page__stat-label">
+        {{ translate("notifications.today") }}
+      </span>
+      <span class="notifications-page__stat-value">{{ 0 }}</span>
+      <i class="pi pi-calendar notifications-page__stat-icon"></i>
+    </article>
 
-              @if (isMenuOpen(record.id)) {
-                <div class="dropdown-menu">
-                  <div class="menu-item" (click)="editReminder(record); openMenuId.set(null)">
-                    <i class="pi pi-pencil"></i>
-                    <span>{{ translationService.translate('patient.reminders.edit') }}</span>
-                  </div>
-                  <div class="menu-item delete-item" (click)="deleteReminder(record.id); openMenuId.set(null)">
-                    <i class="pi pi-trash"></i>
-                    <span>{{ translationService.translate('patient.reminders.delete') }}</span>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-  </div>
+    <article class="notifications-page__stat-card">
+      <span class="notifications-page__stat-label">
+        {{ translate("notifications.readRate") }}
+      </span>
+      <span class="notifications-page__stat-value">{{ 0}}%</span>
+      <i class="pi pi-chart-line notifications-page__stat-icon"></i>
+    </article>
+  </section>
 
-  <div class="add-entry-container">
+  <section class="notifications-page__toolbar">
     <p-button
-      [label]="translationService.translate('patient.reminders.add')"
-      icon="pi pi-plus"
-      class="add-entry-button"
-      (onClick)="addNewEntry()">
-    </p-button>
-  </div>
+      type="button"
+      class="notifications-page__toolbar-button"
+      icon="pi pi-refresh"
+      [label]="translate('notifications.refresh')"
+      [loading]="isRefreshing()"
+    ></p-button>
+    <p-button
+      type="button"
+      class="notifications-page__toolbar-button"
+      icon="pi pi-envelope-open"
+      [label]="translate('notifications.markAllAsRead')"
+      [loading]="isMarkingAll()"
+    ></p-button>
+  </section>
+
+  @if (!hasNotifications()) {
+    <p class="notifications-page__empty">
+      {{ translate("notifications.empty") }}
+    </p>
+  } @else {
+    <ul class="notifications-page__list">
+      @for (notification of notifications(); track notification.id) {
+        <li
+          class="notifications-page__item"
+          [class.notifications-page__item--unread]="!notification.read"
+        >
+          <div class="notifications-page__item-header">
+            <span class="notifications-page__item-title">
+              {{ notification.title || notification.content }}
+            </span>
+            <span class="notifications-page__item-date">
+              {{ notification.createdAt | date: "medium" }}
+            </span>
+          </div>
+
+          @if (
+            !notification.title || notification.title !== notification.content
+          ) {
+            <p class="notifications-page__item-message">
+              {{ notification.content }}
+            </p>
+          }
+
+          <div class="notifications-page__item-actions">
+            @if (!notification.read) {
+              <p-button
+                type="button"
+                icon="pi pi-check"
+                size="small"
+                [label]="translate('notifications.markAsRead')"
+
+              ></p-button>
+            } @else {
+              <p-tag
+                severity="success"
+                [value]="translate('notifications.read')"
+              ></p-tag>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
 </div>

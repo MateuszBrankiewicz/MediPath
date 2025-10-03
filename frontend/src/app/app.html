@@ -4,14 +4,38 @@
       [config]="navigationConfig()"
     ></app-top-bar-component>
     <app-navigation />
-    <main [class]="'app-content'">
-      <router-outlet />
+    <main class="app-content">
+      <div
+        class="app-content__inner"
+        [class.app-content__inner--hidden]="spinnerService.isLoading()"
+      >
+        <router-outlet />
+      </div>
+      @if (spinnerService.isLoading()) {
+        <div class="spinner-overlay" aria-hidden="true">
+          <p-progress-spinner
+            [style]="{ width: '20%', height: '20%' }"
+            strokeWidth="2"
+          />
+        </div>
+      }
+      @if (spinnerService.isOperatorLoading()) {
+        <div class="operation-spinner-overlay" aria-hidden="true">
+          <p-progress-spinner
+            [style]="{ width: '20%', height: '20%' }"
+            strokeWidth="3"
+          />
+        </div>
+      }
     </main>
   </div>
 } @else {
-  <main [class]="'guest-content'">
+  <main class="guest-content">
     <router-outlet />
   </main>
 }
 
-<p-toast position="bottom-right" [breakpoints]="{ '920px': { width: '100%', right: '0', left: '0' } }" />
+<p-toast
+  position="bottom-right"
+  [breakpoints]="{ '920px': { width: '100%', right: '0', left: '0' } }"
+/>

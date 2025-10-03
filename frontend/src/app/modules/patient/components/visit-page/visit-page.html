@@ -1,17 +1,34 @@
-
-<h2>{{ translationService.translate('patient.visits.title') }}</h2>
+<h2>{{ translationService.translate("patient.visits.title") }}</h2>
 <div class="visits-list">
-  @for (visit of visits; track visit.id) {
+  @for (visit of visits(); track visit.id) {
     <p-card class="visit-card">
       <div class="visit-card-content">
         <div class="visit-main-info">
-          <div class="visit-doctor">{{ translationService.translate('patient.visits.doctor') }} <b>{{ visit.doctorName }}</b></div>
-          <div class="visit-institution">{{ translationService.translate('patient.visits.institution') }} <b>{{ visit.institution }}</b></div>
-          <div class="visit-date">{{ translationService.translate('patient.visits.date') }} <b>{{ visit.date | date:'dd.MM.yyyy HH:mm' }}</b></div>
-          <div class="visit-status">{{ translationService.translate('patient.visits.status') }} <span class="status-chip" [ngClass]="visit.status">{{ getStatusTranslation(visit.status) }}</span></div>
+          <div class="visit-doctor">
+            {{ translationService.translate("patient.visits.doctor") }}
+            <b>{{ visit.doctorName }}</b>
+          </div>
+          <div class="visit-institution">
+            {{ translationService.translate("patient.visits.institution") }}
+            <b>{{ visit.institution }}</b>
+          </div>
+          <div class="visit-date">
+            {{ translationService.translate("patient.visits.date") }}
+            <b>{{ visit.date | date: "dd.MM.yyyy HH:mm" }}</b>
+          </div>
+          <div class="visit-status">
+            {{ translationService.translate("patient.visits.status") }}
+            <span class="status-chip" [ngClass]="visit.status">{{
+              getStatusTranslation(visit.status)
+            }}</span>
+          </div>
         </div>
         <div class="visit-actions">
-          <i (click)="openVisitDialog(visit.id)" class="pi pi-file-export details-icon" [title]="translationService.translate('patient.visits.details')"></i>
+          <i
+            (click)="openVisitDialog(visit.id)"
+            class="pi pi-file-export details-icon"
+            [title]="translationService.translate('patient.visits.details')"
+          ></i>
           <p-button
             icon="pi pi-ellipsis-v"
             size="large"
@@ -27,14 +44,18 @@
                 class="menu-item"
                 (click)="openRescheduleDialog(visit.id); op.hide()"
               >
-                <span>{{ translationService.translate('patient.visits.reschedule') }}</span>
+                <span>{{
+                  translationService.translate("patient.visits.reschedule")
+                }}</span>
               </button>
               <button
                 type="button"
                 class="menu-item"
                 (click)="cancelVisit(); op.hide()"
               >
-                <span>{{ translationService.translate('patient.visits.cancel') }}</span>
+                <span>{{
+                  translationService.translate("patient.visits.cancel")
+                }}</span>
               </button>
             </div>
           </p-popover>
@@ -43,5 +64,3 @@
     </p-card>
   }
 </div>
-
-

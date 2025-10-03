@@ -6,24 +6,24 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 import { DataViewModule } from 'primeng/dataview';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
+import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
+import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
+import {
+  Hospital,
+  HospitalCardComponent,
+} from './components/hospital-card.component/hospital-card.component';
+import { AddressChange, BookAppointment, Doctor } from './search-result.model';
 import {
   SearchQuery,
   SearchResponse,
   SearchService,
 } from './services/search.service';
-import { ActivatedRoute } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import {
-  Hospital,
-  HospitalCardComponent,
-} from './components/hospital-card.component/hospital-card.component';
-import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
-import { Doctor, BookAppointment, AddressChange } from './search-result.model';
-import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
 
 @Component({
   selector: 'app-search-result.component',
@@ -106,6 +106,9 @@ export class SearchResultComponent implements OnInit {
       modal: true,
       styleClass: 'schedule-visit-dialog',
     });
+    if (!this.dialogRef) {
+      return;
+    }
     this.dialogRef.onClose.subscribe((result) => {
       if (result) {
         console.log('Appointment booked:', result);

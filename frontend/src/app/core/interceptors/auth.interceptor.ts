@@ -1,32 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  HttpErrorResponse,
-  HttpEvent,
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest,
-} from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, Observable, throwError } from 'rxjs';
-import { AuthenticationService } from '../services/authentication/authentication';
+import { catchError, throwError } from 'rxjs';
 
-@Injectable()
-export class ErrorInterceptor implements HttpInterceptor {
-  private authenticationService = inject(AuthenticationService);
-  private router = inject(Router);
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler,
-  ): Observable<HttpEvent<any>> {
-    return next.handle(req).pipe(
-      catchError((err: HttpErrorResponse) => {
-        if (err.status === 401) {
-          //this.authenticationService.logout() //to do
-          this.router.navigate(['/login']);
-        }
-        return throwError(() => err);
-      }),
-    );
-  }
-}
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  const router = inject(Router);
+  console.log('Error Interceptor');
+  return next(req).pipe(
+    catchError((err) => {
+      if (err.status === 401) {
+        console.log('Redirecting to login due to 401 error');
+        router.navigate(['/auth/login']);
+      }
+      return throwError(() => err);
+    }),
+  );
+};

@@ -1,18 +1,24 @@
-import { Component, signal, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { CardModule } from 'primeng/card';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 import {
   Hospital,
   HospitalCardComponent,
 } from '../../../shared/components/ui/search-result.component/components/hospital-card.component/hospital-card.component';
-import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 import { Comment } from '../../models/doctor.model';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 
 @Component({
   selector: 'app-institution-page',
   imports: [CardModule, HospitalCardComponent, PatientCommentComponent],
   templateUrl: './institution-page.html',
   styleUrl: './institution-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstitutionPage {
   protected translationService = inject(TranslationService);

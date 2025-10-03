@@ -1,7 +1,7 @@
-import { Injectable, signal, inject } from '@angular/core';
-import { MediPathMenuItem } from './navigation.model';
+import { inject, Injectable, signal } from '@angular/core';
 import { UserRoles } from '../../../../../core/services/authentication/authentication.model';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
+import { MediPathMenuItem } from './navigation.model';
 
 @Injectable({
   providedIn: 'root',
@@ -127,7 +127,7 @@ export class NavigationService {
               },
               {
                 label: this.translationService.translate(
-                  'navigation.reminders',
+                  'navigation.notifications',
                 ),
                 icon: 'pi pi-bell',
                 routerLink: '/patient/reminders',

@@ -1,19 +1,33 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Textarea } from 'primeng/textarea';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 import {
   AvailableDay,
   CalendarSchedule,
 } from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { RescheduleData } from '../../models/visit-page.model';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-schedule-visit-dialog',
-  imports: [ButtonModule, CommonModule, CalendarSchedule],
+  imports: [
+    ButtonModule,
+    CommonModule,
+    CalendarSchedule,
+    Textarea,
+    FormsModule,
+  ],
   templateUrl: './schedule-visit-dialog.html',
   styleUrl: './schedule-visit-dialog.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScheduleVisitDialog {
   private ref = inject(DynamicDialogRef);
@@ -47,19 +61,16 @@ export class ScheduleVisitDialog {
           booked?: boolean;
         }[];
       }) => ({
-        date: term.date, // Keep as string, calendar will handle conversion
+        date: term.date,
         slots:
           term.slots?.map((slot) => {
-            // Handle different slot formats from backend
             let time: string;
 
             if (slot.startTime) {
-              // Extract time from ISO string (e.g., "2026-02-01T14:00" -> "14:00")
               time = slot.startTime.includes('T')
                 ? slot.startTime.split('T')[1]
                 : slot.startTime;
             } else if (slot.time) {
-              // Use direct time format
               time = slot.time;
             } else {
               console.warn('Slot missing time information:', slot);
@@ -104,10 +115,11 @@ export class ScheduleVisitDialog {
     }));
   }
 
-  protected onRemarksChange(remarks: string): void {
+  protected onRemarksChange(remarks: string | null): void {
+    console.log(remarks);
     this.rescheduleData.update((data) => ({
       ...data,
-      patientRemarks: remarks,
+      patientRemarks: remarks || '',
     }));
   }
 

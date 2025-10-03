@@ -1,38 +1,42 @@
-import { ToastService } from './../../../../core/services/toast/toast.service';
-import { Component, inject, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
-import { DatePipe, CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
-import { Refferal, UsedState } from '../../models/refferal-page.model';
+import { DialogService } from 'primeng/dynamicdialog';
+import { TableModule } from 'primeng/table';
+import { catchError, map } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { Refferal, UsedState } from '../../models/refferal-page.model';
+import { PatientCodesService } from '../../services/patient-codes.service';
+import { ToastService } from './../../../../core/services/toast/toast.service';
+import { PatientCodeDialogService } from './../../services/paitent-code-dialog.service';
 
 @Component({
   selector: 'app-prescription-page',
   imports: [ButtonModule, TableModule, DatePipe, CardModule, CommonModule],
   templateUrl: './prescription-page.html',
   styleUrl: './prescription-page.scss',
+  providers: [DialogService, PatientCodeDialogService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PrescriptionPage {
   private toastService = inject(ToastService);
+  private manageDialogCodeService = inject(PatientCodeDialogService);
   protected translationService = inject(TranslationService);
+  protected codeService = inject(PatientCodesService);
 
-  protected prescriptions = signal<Refferal[]>([
-    {
-      id: 1,
-      doctorName: 'Dr. Smith',
-      prescriptionPin: 12345,
-      status: UsedState.UNUSED,
-      date: new Date('2023-10-01'),
-    },
-    {
-      id: 2,
-      doctorName: 'Dr. Johnson',
-      prescriptionPin: 67890,
-      status: UsedState.USED,
-      date: new Date('2023-09-15'),
-    },
-  ]);
+  protected prescriptions = toSignal<Refferal[]>(
+    this.codeService
+      .getPrescriptions()
+      .pipe(
+        map((results: Refferal[]) =>
+          results.filter(
+            (code) => code.codeType?.toLowerCase() === 'prescription',
+          ),
+        ),
+      ),
+  );
 
   protected copyToClipboard(pin: number): void {
     navigator.clipboard
@@ -49,5 +53,42 @@ export class PrescriptionPage {
     const validityDate = new Date(prescriptionDate);
     validityDate.setDate(validityDate.getDate() + 30);
     return validityDate;
+  }
+
+  protected markAsUsed(referral: Refferal): void {
+    console.log('Attempting to mark referral as used:', referral);
+    if (referral.status === 'USED') {
+      this.toastService.showInfo('This referral is already marked as used.');
+      return;
+    }
+    this.manageDialogCodeService
+      .useCode({
+        codeNumber: referral.prescriptionPin,
+        codeType: 'referral',
+      })
+      .subscribe((success) => {
+        if (success) {
+          this.codeService
+            .useCode({
+              code: referral.prescriptionPin,
+              codeType: referral.codeType ?? '',
+            })
+            .pipe(
+              catchError((err) => {
+                console.log(err);
+                throw err;
+              }),
+            )
+            .subscribe(() => {
+              this.prescriptions()?.filter((prescription) => {
+                if (prescription.prescriptionPin === referral.prescriptionPin) {
+                  prescription.status = UsedState.USED;
+                }
+                return prescription;
+              });
+              this.toastService.showSuccess('Referral marked as used.');
+            });
+        }
+      });
   }
 }

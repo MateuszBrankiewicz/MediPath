@@ -79,6 +79,7 @@
   "toast.login.success": "Zalogowano pomyślnie",
   "toast.logout.success": "Wylogowano pomyślnie",
   "toast.logout.error": "Wylogowanie nie powiodło się. Spróbuj ponownie.",
+  "toast.changePanel.error": "Nie udało się przełączyć panelu. Spróbuj ponownie.",
   "toast.error.title": "Błąd",
   "toast.success.title": "Sukces",
 
@@ -138,9 +139,15 @@
   "patient.medicalHistory.addEntry": "DODAJ NOWY WPIS",
 
   "patient.reviewVisit.title": "Zostaw opinię",
+  "patient.reviewVisit.editTitle": "Edytuj opinię",
+  "patient.reviewVisit.subtitle": "Podziel się wrażeniami z ostatniej wizyty.",
   "patient.reviewVisit.comments": "Komentarze o Twojej wizycie:",
   "patient.reviewVisit.rateDoctor": "Oceń lekarza:",
   "patient.reviewVisit.rateInstitution": "Oceń instytucję:",
+  "patient.reviewVisit.doctorNameLabel": "Lekarz",
+  "patient.reviewVisit.institutionNameLabel": "Placówka",
+  "patient.reviewVisit.submitReview": "Zapisz opinię",
+  "patient.reviewVisit.updateReview": "Zaktualizuj opinię",
 
   "patient.addReminder.title": "Tytuł: *",
   "patient.addReminder.reminderTime": "Czas przypomnienia:",
@@ -237,6 +244,8 @@
   "editProfile.saveChanges": "ZAPISZ ZMIANY",
   "editProfile.saving": "Zapisywanie...",
   "editProfile.success": "Profil został zaktualizowany pomyślnie",
+  "editProfile.error.load": "Nie udało się załadować profilu. Spróbuj ponownie.",
+  "editProfile.error.save": "Nie udało się zaktualizować profilu. Spróbuj ponownie.",
   "editProfile.error.validation": "Sprawdź formularz pod kątem błędów",
   "editProfile.placeholders.name": "Jan",
   "editProfile.placeholders.surname": "Kowalski",
@@ -253,15 +262,31 @@
   "accountSettings.title": "Ustawienia",
   "accountSettings.preferences": "PREFERENCJE",
   "accountSettings.language": "Język",
-  "accountSettings.darkMode": "Tryb ciemny",
-  "accountSettings.personalReminders": "Przypomnienia osobiste",
-  "accountSettings.visitsReminders": "Przypomnienia o wizytach",
+  "accountSettings.systemNotifications": "Powiadomienia systemowe",
+  "accountSettings.userNotifications": "Powiadomienia użytkownika",
   "accountSettings.deactivateAccount": "DEZAKTYWUJ KONTO",
   "accountSettings.setDefault": "USTAW DOMYŚLNE",
   "accountSettings.saveChanges": "ZAPISZ ZMIANY",
-  "accountSettings.saveChanges": "ZAPISZ ZMIANY"
+  "accountSettings.saveSuccess": "Ustawienia zostały zaktualizowane pomyślnie",
+  "accountSettings.saveError": "Nie udało się zapisać ustawień. Spróbuj ponownie.",
 
-  
+  "notifications.title": "Powiadomienia",
+  "notifications.empty": "Brak nowych powiadomień",
+  "notifications.total": "Łącznie powiadomień",
+  "notifications.unread": "Nieprzeczytane powiadomienia",
+  "notifications.today": "Dzisiejsze powiadomienia",
+  "notifications.readRate": "Wskaźnik odczytu",
+  "notifications.refresh": "Odśwież",
+  "notifications.markAsRead": "Oznacz jako przeczytane",
+  "notifications.read": "Przeczytane",
+  "notifications.refreshError": "Nie udało się odświeżyć powiadomień. Spróbuj ponownie.",
+  "notifications.markAllAsRead": "Oznacz wszystkie jako przeczytane",
+  "notifications.viewAll": "Zobacz wszystkie powiadomienia",
+  "notifications.markAllSuccess": "Wszystkie powiadomienia oznaczono jako przeczytane",
+  "notifications.markAllError": "Nie udało się zaktualizować powiadomień. Spróbuj ponownie.",
+  "notifications.markSingleError": "Nie udało się zaktualizować powiadomienia. Spróbuj ponownie.",
+
+
   "doctor.dashboard.title": "Panel główny",
   "doctor.dashboard.welcomeBack": "Witaj ponownie",
   "doctor.dashboard.haveNiceDay": "Miłego dnia!",
@@ -345,6 +370,16 @@
   "doctor.currentVisit.pinNumber": "Numer PIN",
 
   "shared.edit": "EDYTUJ",
-  "shared.save": "ZAPISZ"
+  "shared.save": "ZAPISZ",
+
+  "patient.dashboard.loading.prescriptions": "Ładowanie recept...",
+  "patient.dashboard.loading.referrals": "Ładowanie skierowań...",
+  "patient.dashboard.loading.visits": "Ładowanie wizyt...",
+  "patient.dashboard.empty.prescriptions": "Brak dostępnych recept",
+  "patient.dashboard.empty.referrals": "Brak dostępnych skierowań",
+  "patient.dashboard.empty.visits": "Brak nadchodzących wizyt",
+  "patient.dashboard.empty.prescriptionsMessage": "Nie masz obecnie żadnych aktywnych recept.",
+  "patient.dashboard.empty.referralsMessage": "Nie masz obecnie żadnych aktywnych skierowań.",
+  "patient.dashboard.empty.visitsMessage": "Nie masz zaplanowanych wizyt w najbliższym czasie."
 
 }

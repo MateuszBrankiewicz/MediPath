@@ -1,15 +1,21 @@
-import { Component, EventEmitter, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
-  Validators,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { signal } from '@angular/core';
+import { InputTextModule } from 'primeng/inputtext';
 import { TranslationService } from '../../../../../../core/services/translation/translation.service';
 
 export interface MedicationReminder {
@@ -26,6 +32,7 @@ export interface MedicationReminder {
   imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule],
   templateUrl: './add-reminder-dialog.html',
   styleUrl: './add-reminder-dialog.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddReminderDialog implements OnInit {
   private ref = inject(DynamicDialogRef);

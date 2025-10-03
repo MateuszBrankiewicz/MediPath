@@ -1,13 +1,14 @@
+import { CommonModule } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  inject,
   input,
   output,
   signal,
-  effect,
-  inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 
@@ -36,6 +37,7 @@ export interface CalendarDay {
   imports: [CommonModule, ButtonModule],
   templateUrl: './calendar-schedule.html',
   styleUrl: './calendar-schedule.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarSchedule {
   protected translationService = inject(TranslationService);

@@ -1,9 +1,14 @@
-import { Component, inject, signal } from '@angular/core';
-import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
-import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
-import { Visit } from '../../models/visit-page.model';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
+import { ButtonModule } from 'primeng/button';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { Visit } from '../../models/visit-page.model';
 
 @Component({
   selector: 'app-visit-details-dialog',
@@ -11,6 +16,7 @@ import { TranslationService } from '../../../../core/services/translation/transl
   imports: [ButtonModule, CommonModule],
   templateUrl: './visit-details-dialog.html',
   styleUrl: './visit-details-dialog.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VisitDetailsDialog {
   private ref = inject(DynamicDialogRef);

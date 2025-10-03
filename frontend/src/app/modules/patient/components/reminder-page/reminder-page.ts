@@ -1,103 +1,57 @@
-import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { PanelModule } from 'primeng/panel';
-import { TooltipModule } from 'primeng/tooltip';
-import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder-dialog';
-import { Reminder } from '../../models/reminder-page.model';
+import { TagModule } from 'primeng/tag';
+import { UserNotificationsService } from '../../../../core/services/notifications/user-notifications.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-reminder-page',
-  imports: [PanelModule, ButtonModule, DatePipe, TooltipModule],
+  imports: [CommonModule, ButtonModule, TagModule, DatePipe],
   templateUrl: './reminder-page.html',
   styleUrl: './reminder-page.scss',
-  providers: [DialogService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReminderPage {
-  private dialogService = inject(DialogService);
-  private ref: DynamicDialogRef | undefined;
-  protected translationService = inject(TranslationService);
+export class ReminderPage implements OnInit {
+  hasNotifications = signal(false);
+  private readonly notificationsService = inject(UserNotificationsService);
+  private readonly toastService = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  reminders = signal<Reminder[]>([
-    {
-      id: '1',
-      date: new Date('2024-06-01'),
-      hour: '08:00',
-      title: 'Morning Medication',
-      description: 'Take blood pressure medicine.',
-    },
-    {
-      id: '2',
-      date: new Date('2024-06-01'),
-      hour: '20:00',
-      title: 'Evening Medication',
-      description: 'Take cholesterol medicine.',
-    },
-    {
-      id: '3',
-      date: new Date('2024-06-02'),
-      hour: '12:30',
-      title: 'Lunch Supplement',
-      description: 'Take vitamin D supplement with food.',
-    },
-  ]);
+  protected readonly translationService = inject(TranslationService);
 
-  protected openMenuId = signal<string | null>(null);
+  protected readonly isRefreshing = signal(false);
+  protected readonly isMarkingAll = signal(false);
+  notifications: any;
 
-  protected addNewEntry(): void {
-    this.ref = this.dialogService.open(AddReminderDialog, {
-      header: 'Add New Reminder',
-      width: '70%',
-      height: 'auto',
-      closable: true,
-      modal: true,
-      styleClass: 'add-reminder-dialog',
-    });
+  protected translate(
+    key: string,
+    params?: Record<string, string | number>,
+  ): string {
+    return this.translationService.translate(key, params);
+  }
 
-    this.ref.onClose.subscribe((result) => {
-      if (result) {
-        console.log('Visit rescheduled:', result);
-      }
+  ngOnInit(): void {
+    this.notificationsService.notifications$.subscribe((message) => {
+      console.log(message);
     });
   }
 
-  protected deleteReminder(reminderId: string): void {
-    const currentReminders = this.reminders();
-    this.reminders.set(
-      currentReminders.filter((reminder) => reminder.id !== reminderId),
-    );
-  }
-
-  protected viewReminder(reminder: Reminder): void {
-    console.log('Viewing reminder:', reminder);
-  }
-
-  protected getTodayReminders(): number {
+  private isToday(date: Date): boolean {
     const today = new Date();
-    const todayString = today.toDateString();
-
-    return this.reminders().filter(
-      (reminder) => reminder.date.toDateString() === todayString,
-    ).length;
-  }
-
-  protected editReminder(reminder: Reminder): void {
-    console.log('Editing reminder:', reminder);
-  }
-
-  protected toggleMenu(event: Event, reminder: Reminder): void {
-    event.stopPropagation();
-    const currentId = this.openMenuId();
-    if (currentId === reminder.id) {
-      this.openMenuId.set(null);
-    } else {
-      this.openMenuId.set(reminder.id);
-    }
-  }
-
-  isMenuOpen(reminderId: string): boolean {
-    return this.openMenuId() === reminderId;
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
   }
 }

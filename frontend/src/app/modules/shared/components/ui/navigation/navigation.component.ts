@@ -11,10 +11,10 @@ import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { RippleModule } from 'primeng/ripple';
-import { MediPathMenuItem } from './navigation.model';
-import { NavigationService } from './navigation.service';
 import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
 import { UserRoles } from '../../../../../core/services/authentication/authentication.model';
+import { MediPathMenuItem } from './navigation.model';
+import { NavigationService } from './navigation.service';
 
 @Component({
   selector: 'app-navigation',

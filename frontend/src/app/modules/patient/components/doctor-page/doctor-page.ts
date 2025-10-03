@@ -1,15 +1,22 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { CardModule } from 'primeng/card';
-import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 import { DoctorPageModel } from '../../models/doctor.model';
+import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 @Component({
   selector: 'app-doctor-page',
   imports: [CardModule, BreadcrumbModule, PatientCommentComponent],
   templateUrl: './doctor-page.html',
   styleUrl: './doctor-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DoctorPage {
   private activatedRoute = inject(ActivatedRoute);

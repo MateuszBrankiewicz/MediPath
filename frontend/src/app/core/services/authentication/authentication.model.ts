@@ -18,10 +18,20 @@ export interface UserBasicInfo {
 
 export interface Notification {
   id: string;
-  message: string;
+  title: string;
+  content: string;
   type: string;
   read: boolean;
   createdAt: Date;
+  system: boolean;
+}
+
+export interface ApiNotification {
+  title: string;
+  content: string;
+  timestamp: string;
+  system: boolean;
+  read: boolean;
 }
 
 export interface UserSettings {
@@ -29,6 +39,7 @@ export interface UserSettings {
   lastPanel: number | UserRoles;
   systemNotifications: boolean;
   emailNotifications: boolean;
+  userNotifications?: boolean;
 }
 
 export interface ApiUserResponse {
@@ -37,7 +48,7 @@ export interface ApiUserResponse {
     name: string;
     surname: string;
     roleCode: number;
-    notifications: Notification[];
+    notifications: ApiNotification[];
     email: string;
     userSettings: UserSettings;
   };

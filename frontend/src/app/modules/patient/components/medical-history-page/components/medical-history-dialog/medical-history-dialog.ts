@@ -1,0 +1,169 @@
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { MedicalHistoryResponse } from '../../../../models/medical-history.model';
+
+type MedicalHistoryDialogMode = 'view' | 'edit';
+
+export interface MedicalHistoryDialogData {
+  mode?: MedicalHistoryDialogMode;
+  record?: MedicalHistoryResponse;
+}
+
+export interface MedicalHistoryDialogResult {
+  record: MedicalHistoryResponse;
+  mode: MedicalHistoryDialogMode;
+}
+
+interface MedicalHistoryFormModel {
+  id: FormControl<string>;
+  title: FormControl<string>;
+  date: FormControl<Date | null>;
+  doctorName: FormControl<string>;
+  doctorSurname: FormControl<string>;
+  notes: FormControl<string | null>;
+}
+
+type MedicalHistoryForm = FormGroup<MedicalHistoryFormModel>;
+
+@Component({
+  selector: 'app-medical-history-dialog',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonModule,
+    DatePickerModule,
+    InputTextModule,
+    TextareaModule,
+  ],
+  templateUrl: './medical-history-dialog.html',
+  styleUrl: './medical-history-dialog.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MedicalHistoryDialog {
+  private ref = inject(
+    DynamicDialogRef<MedicalHistoryDialogResult | undefined>,
+  );
+  private config = inject(DynamicDialogConfig<MedicalHistoryDialogData>);
+  private fb = inject(FormBuilder);
+
+  private readonly initialMode: MedicalHistoryDialogMode =
+    this.config.data?.mode ?? 'view';
+
+  private readonly initialRecord: MedicalHistoryResponse =
+    this.config.data?.record ?? this.createEmptyRecord();
+
+  protected readonly mode = signal<MedicalHistoryDialogMode>(this.initialMode);
+
+  readonly form: MedicalHistoryForm = this.createForm(this.initialRecord);
+
+  protected readonly isReadOnly = computed(() => this.mode() === 'view');
+
+  protected readonly dialogTitle = computed(() =>
+    this.mode() === 'view' ? 'Medical History' : 'Edit Medical History',
+  );
+
+  protected readonly confirmLabel = computed(() =>
+    this.initialRecord?.id ? 'Confirm' : 'Create',
+  );
+
+  protected readonly formattedDate = computed(() => {
+    const date = this.form.controls.date.value;
+    if (!date) {
+      return '';
+    }
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(date);
+  });
+
+  constructor() {
+    if (this.initialMode === 'view') {
+      this.form.disable({ emitEvent: false });
+    }
+  }
+
+  private createForm(record: MedicalHistoryResponse): MedicalHistoryForm {
+    return this.fb.nonNullable.group({
+      id: this.fb.nonNullable.control(record.id ?? ''),
+      title: this.fb.nonNullable.control(record.title, [Validators.required]),
+      date: this.fb.control(record.date ? new Date(record.date) : null, [
+        Validators.required,
+      ]),
+      doctorName: this.fb.nonNullable.control(record.doctor.doctorName, [
+        Validators.required,
+      ]),
+      doctorSurname: this.fb.nonNullable.control(record.doctor.doctorSurname, [
+        Validators.required,
+      ]),
+      notes: this.fb.control(record.note ?? '', [Validators.maxLength(2000)]),
+    }) as MedicalHistoryForm;
+  }
+
+  private createEmptyRecord(): MedicalHistoryResponse {
+    return {
+      id: '',
+      userId: '',
+      title: '',
+      date: new Date().toISOString(),
+      note: '',
+      doctor: {
+        doctorName: '',
+        doctorSurname: '',
+        userId: '',
+        specializations: [],
+        valid: true,
+      },
+    } satisfies MedicalHistoryResponse;
+  }
+
+  public closeDialog(): void {
+    this.ref.close();
+  }
+
+  public submit(): void {
+    if (this.isReadOnly() || this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const value = this.form.getRawValue();
+
+    const record: MedicalHistoryResponse = {
+      id: value.id,
+      userId: this.initialRecord.userId,
+      title: value.title.trim(),
+      date: value.date ? value.date.toISOString().split('T')[0] : '',
+      note: value.notes ?? '',
+      doctor: {
+        ...this.initialRecord.doctor,
+        doctorName: value.doctorName.trim(),
+        doctorSurname: value.doctorSurname.trim(),
+      },
+    };
+
+    this.ref.close({
+      mode: this.mode(),
+      record,
+    });
+  }
+}

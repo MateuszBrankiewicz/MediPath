@@ -1,13 +1,19 @@
-import { Component, input, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { Comment } from '../..//models/doctor.model';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+} from '@angular/core';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { Comment } from '../..//models/doctor.model';
 
 @Component({
   selector: 'app-patient-comment-component',
   imports: [DatePipe],
   templateUrl: './patient-comment-component.html',
   styleUrl: './patient-comment-component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PatientCommentComponent {
   public readonly comment = input.required<Comment>();
