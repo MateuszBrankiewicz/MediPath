@@ -2,7 +2,8 @@ package com.adam.medipathbackend.forms;
 
 public class AddVisitForm {
     private String scheduleID;
-    private String patientID;
+    private String patientRemarks;
+
 
     public String getPatientRemarks() {
         return patientRemarks;
@@ -12,11 +13,10 @@ public class AddVisitForm {
         this.patientRemarks = patientRemarks;
     }
 
-    private String patientRemarks;
+
 
     public AddVisitForm(String scheduleID, String patientID, String patientRemarks) {
         this.scheduleID = scheduleID;
-        this.patientID = patientID;
         this.patientRemarks = patientRemarks;
     }
 
@@ -28,11 +28,4 @@ public class AddVisitForm {
         this.scheduleID = scheduleID;
     }
 
-    public String getPatientID() {
-        return patientID;
-    }
-
-    public void setPatientID(String patientID) {
-        this.patientID = patientID;
-    }
 }
