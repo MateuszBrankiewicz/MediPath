@@ -1,12 +1,16 @@
 package com.adam.medipathbackend.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 
 public class VisitTime {
     private String scheduleId;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Europe/Warsaw")
     private LocalDateTime startTime;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Europe/Warsaw")
     private LocalDateTime endTime;
 
     public VisitTime(String scheduleId, LocalDateTime startTime, LocalDateTime endTime) {

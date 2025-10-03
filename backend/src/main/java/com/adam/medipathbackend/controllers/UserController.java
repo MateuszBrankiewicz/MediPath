@@ -148,7 +148,7 @@ public class UserController {
         }
         User user = opt.get();
         HashMap<String, Object> data = new java.util.HashMap<>(Map.of("name", user.getName(), "surname", user.getSurname(),
-                "govId", user.getGovId(), "birthDate", user.getBirthDate(),
+                "govId", user.getGovId(), "birthDate", user.getBirthDate().toString(),
                 "address", user.getAddress(), "phoneNumber", user.getPhoneNumber(),
                 "licenceNumber", user.getLicenceNumber(), "specialisations", user.getSpecialisations(),
                 "latestMedicalHistory", user.getLatestMedicalHistory(), "roleCode", user.getRoleCode()));
