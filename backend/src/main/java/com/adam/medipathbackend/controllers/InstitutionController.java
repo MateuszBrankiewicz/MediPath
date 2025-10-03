@@ -38,19 +38,22 @@ public class InstitutionController {
         }
 
         Optional<User> adminOpt = userRepository.findAdminById(loggedUserID);
-        ArrayList<String> missingFields = new ArrayList<>();
+
 
         if(adminOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         User admin = adminOpt.get();
-
+        ArrayList<String> missingFields = new ArrayList<>();
         if(institution.getAddress() == null || !institution.getAddress().isValid()) {
             missingFields.add("address");
         }
         if(institution.getName() == null || institution.getName().isBlank()) {
             missingFields.add("name");
+        }
+        if(institution.getImage() == null) {
+            institution.setImage("");
         }
 
         if(!missingFields.isEmpty()) {
@@ -172,6 +175,9 @@ public class InstitutionController {
         if(institution.getEmployees().stream().noneMatch(employee -> employee.getUserId().equals(employeeUpdate.getUserID()))) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+        if(employeeUpdate.getUserID().equals(loggedUserID) && employeeUpdate.getRoleCode() < 12) {
+            return new ResponseEntity<>(Map.of("message", "you cannot remove administrator privileges from your account"), HttpStatus.BAD_REQUEST);
+        }
         ArrayList<StaffDigest> employees = institution.getEmployees();
         for(int i = 0; i < employees.size(); i++) {
             StaffDigest current = employees.get(i);
@@ -212,11 +218,17 @@ public class InstitutionController {
         if(updatedUserOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+
         Institution institution = optionalInstitution.get();
         User updatedUser = updatedUserOpt.get();
         if(institution.getEmployees().stream().noneMatch(employee -> employee.getUserId().equals(userId))) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+
+        if(updatedUser.getId().equals(loggedUserID)) {
+            return new ResponseEntity<>(Map.of("message", "you cannot delete yourself from the employee list"), HttpStatus.BAD_REQUEST);
+        }
+
         ArrayList<StaffDigest> employees = institution.getEmployees();
         int index = 0;
         for(int i = 0; i < institution.getEmployees().size(); i++) {
@@ -298,7 +310,56 @@ public class InstitutionController {
         return new ResponseEntity<>(Map.of("institution", outputFields), HttpStatus.OK);
     }
 
+    @PutMapping(value = {"/{institutionid}", "/{institutionid}/"})
+    public ResponseEntity<Map<String, Object>> updateInstitution(@PathVariable String institutionid, @RequestBody Institution newInstitution, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<Institution> optionalInstitution = institutionRepository.findById(institutionid);
+        if(optionalInstitution.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        if(!isAdminOfInstitution(loggedUserID, institutionid)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Institution institution = optionalInstitution.get();
+        ArrayList<String> missingFields = new ArrayList<>();
+        if(newInstitution.getAddress() == null || !newInstitution.getAddress().isValid()) {
+            missingFields.add("address");
+        }
+        if(newInstitution.getName() == null || newInstitution.getName().isBlank()) {
+            missingFields.add("name");
+        }
+        if(newInstitution.getImage() == null) {
+            missingFields.add("image");
+        }
+        if(!missingFields.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
+        }
 
 
+
+        institution.setName(newInstitution.getName());
+        institution.setImage(newInstitution.getImage());
+        institution.setPublic(newInstitution.isPublic());
+        institution.setTypes(newInstitution.getTypes());
+        if(!newInstitution.getAddress().equals(institution.getAddress())) {
+            ArrayList<Institution> possibleDuplicates = institutionRepository.findInstitutionByName(institution.getName());
+            for(Institution dupl: possibleDuplicates) {
+                if(dupl.isSimilar(institution)) {
+                    return new ResponseEntity<>(Map.of("message", "This institution is a possible duplicate"), HttpStatus.CONFLICT);
+                }
+            }
+            institution.setAddress(newInstitution.getAddress());
+        }
+
+
+        institutionRepository.save(institution);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 }

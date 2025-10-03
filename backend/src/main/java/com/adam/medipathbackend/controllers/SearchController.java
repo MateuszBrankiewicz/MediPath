@@ -30,7 +30,7 @@ public class SearchController {
     ScheduleRepository scheduleRepository;
 
     @GetMapping(value = {"/search/{query}", "/search", "/search/"})
-    public ResponseEntity<Map<String, Object>> search(@PathVariable(required = false) String query, @RequestParam("type") String type, @RequestParam(value = "city", defaultValue = ".*") String city, @RequestParam(value = "specialisations") String[] specialisations) {
+    public ResponseEntity<Map<String, Object>> search(@PathVariable(required = false) String query, @RequestParam("type") String type, @RequestParam(value = "city", defaultValue = ".*") String city, @RequestParam(value = "specialisations", required = false) String[] specialisations) {
 
         if(query == null || query.isBlank()) {
             query = ".*";
