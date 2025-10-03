@@ -258,7 +258,7 @@ public class VisitController {
     }
 
     @PutMapping(value = {"/code", "/code/"})
-    public ResponseEntity<Map<String, Object>> deleteCode(@RequestBody Code code, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> updateCode(@RequestBody Code code, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -295,7 +295,7 @@ public class VisitController {
     }
 
     @DeleteMapping(value = {"/code", "/code/"})
-    public ResponseEntity<Map<String, Object>> updateCode(@RequestBody Code code, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> deleteeCode(@RequestBody Code code, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

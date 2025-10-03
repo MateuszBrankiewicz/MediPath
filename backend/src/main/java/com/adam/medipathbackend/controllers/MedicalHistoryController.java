@@ -62,7 +62,7 @@ public class MedicalHistoryController {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             medicalHistory.setDoctor(null);
-
+            medicalHistory.setUserId(loggedUserID);
         } else {
             //If not then a doctor is adding for them
             if (medicalHistory.getDoctor() == null || medicalHistory.getDoctor().getUserId() == null || medicalHistory.getDoctor().getUserId().isBlank()) {

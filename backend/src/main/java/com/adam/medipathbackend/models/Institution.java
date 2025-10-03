@@ -87,6 +87,8 @@ public class Institution {
         return employees;
     }
 
+    public void setEmployees(ArrayList<StaffDigest> employees) {this.employees = employees;}
+
     public void addEmployee(StaffDigest staff) {
         employees.add(staff);
     }
