@@ -1,6 +1,7 @@
 package com.adam.medipathbackend.models;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -26,6 +27,7 @@ public class User {
     @Indexed(unique = true)
     private String govId;
 
+    @JsonFormat(pattern="yyyy-MM-dd", timezone="Europe/Warsaw")
     private LocalDate birthDate;
 
     private Address address;
