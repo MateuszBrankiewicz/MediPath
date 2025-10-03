@@ -209,6 +209,8 @@ export class AuthenticationService {
     const roleEndpoints: Partial<Record<UserRoles, number>> = {
       [UserRoles.PATIENT]: 1,
       [UserRoles.DOCTOR]: 2,
+      [UserRoles.STAFF]: 4,
+      [UserRoles.ADMIN]: 8,
     };
 
     const currentUser = this.user();

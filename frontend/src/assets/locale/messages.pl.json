@@ -382,4 +382,10 @@
   "patient.dashboard.empty.referralsMessage": "Nie masz obecnie żadnych aktywnych skierowań.",
   "patient.dashboard.empty.visitsMessage": "Nie masz zaplanowanych wizyt w najbliższym czasie."
 
+  ,
+  "admin.dashboard.selectInstitution": "Wybierz instytucję",
+  "admin.dashboard.comments": "Komentarze",
+  "admin.dashboard.upcomingVisits": "Nadchodzące wizyty",
+  "admin.dashboard.changeDoctor": "Zmień lekarza"
+
 }

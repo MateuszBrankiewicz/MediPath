@@ -42,6 +42,12 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./modules/doctor/doctor.routes').then((m) => m.AUTH_ROUTES),
       },
+      {
+        path: 'admin',
+        canActivate: [authGuard, roleGuard([UserRoles.ADMIN, UserRoles.STAFF])],
+        loadChildren: () =>
+          import('./modules/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+      },
       { path: '**', redirectTo: '/auth/login' },
     ],
   },

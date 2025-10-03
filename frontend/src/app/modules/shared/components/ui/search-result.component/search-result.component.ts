@@ -11,7 +11,9 @@ import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DataViewModule } from 'primeng/dataview';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ToastService } from '../../../../../core/services/toast/toast.service';
 import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
+import { PatientVisitsService } from '../../../../patient/services/patient-visits.service';
 import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
 import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
 import {
@@ -44,7 +46,8 @@ export class SearchResultComponent implements OnInit {
   private readonly dialogService = inject(DialogService);
   private destroyRef = inject(DestroyRef);
   private dialogRef: DynamicDialogRef | null = null;
-
+  private patientVisitsService = inject(PatientVisitsService);
+  private toastService = inject(ToastService);
   protected readonly category = signal('');
 
   protected readonly values = signal<SearchResponse | null>(null);
@@ -111,7 +114,17 @@ export class SearchResultComponent implements OnInit {
     }
     this.dialogRef.onClose.subscribe((result) => {
       if (result) {
-        console.log('Appointment booked:', result);
+        this.patientVisitsService
+          .scheduleVisit(result.slotId, result.patientRemarks)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.toastService.showSuccess('Appointment booked successfully');
+            },
+            error: (err) => {
+              console.error('Error booking appointment:', err);
+            },
+          });
       }
     });
   }

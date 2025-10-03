@@ -29,6 +29,7 @@ export class PatientVisitsService {
       })
       .pipe(
         map((response) => {
+          console.log(response);
           return response.visits ?? [];
         }),
       );
@@ -42,7 +43,7 @@ export class PatientVisitsService {
 
   public scheduleVisit(scheduleId: string, patientRemarks: string) {
     return this.http.post(
-      `${API_URL}/visits//add`,
+      `${API_URL}/visits/add`,
       { patientRemarks, scheduleId },
       { withCredentials: true },
     );

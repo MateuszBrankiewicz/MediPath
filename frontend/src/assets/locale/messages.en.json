@@ -381,4 +381,10 @@
   "patient.dashboard.empty.referralsMessage": "You don't have any active referrals at the moment.",
   "patient.dashboard.empty.visitsMessage": "You don't have any scheduled visits in the near future."
 
+  ,
+  "admin.dashboard.selectInstitution": "Select Institution",
+  "admin.dashboard.comments": "Comments",
+  "admin.dashboard.upcomingVisits": "Upcoming visits",
+  "admin.dashboard.changeDoctor": "CHANGE DOCTOR"
+
 }

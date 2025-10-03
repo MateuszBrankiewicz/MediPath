@@ -14,7 +14,7 @@
           </div>
           <div class="visit-date">
             {{ translationService.translate("patient.visits.date") }}
-            <b>{{ visit.date | date: "dd.MM.yyyy HH:mm" }}</b>
+            <b>{{ visit.date | date }}</b>
           </div>
           <div class="visit-status">
             {{ translationService.translate("patient.visits.status") }}
