@@ -47,7 +47,7 @@ export class VisitPage {
   private dialogService = inject(DialogService);
   protected translationService = inject(TranslationService);
   private destroyRef = inject(DestroyRef);
-  private ref: DynamicDialogRef | undefined;
+  private ref: DynamicDialogRef | null = null;
 
   protected readonly visits = toSignal<VisitPageModel[]>(
     this.visitService.getAllVisits().pipe(
@@ -103,6 +103,10 @@ export class VisitPage {
       styleClass: 'visit-dialog',
     });
 
+    if (!this.ref) {
+      return;
+    }
+
     this.ref.onClose.subscribe((result) => {
       if (result === 'REVIEW') {
         this.openReviewDialog(id);
@@ -123,10 +127,14 @@ export class VisitPage {
       styleClass: 'reschedule-dialog',
     });
 
+    if (!this.ref) {
+      return;
+    }
+
     this.ref.onClose.subscribe((result) => {
       if (result) {
         this.visitService
-          .scheduleVisit(result)
+          .scheduleVisit(result.slotId, result.patientRemarks)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: () => {

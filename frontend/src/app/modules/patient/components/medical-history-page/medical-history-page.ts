@@ -49,6 +49,10 @@ export class MedicalHistoryPage implements OnInit {
       closable: true,
     });
 
+    if (!ref) {
+      return;
+    }
+
     ref.onClose
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((updated) => {
@@ -75,6 +79,10 @@ export class MedicalHistoryPage implements OnInit {
       },
       closable: true,
     });
+
+    if (!ref) {
+      return;
+    }
 
     ref.onClose
       .pipe(takeUntilDestroyed(this.destroyRef))

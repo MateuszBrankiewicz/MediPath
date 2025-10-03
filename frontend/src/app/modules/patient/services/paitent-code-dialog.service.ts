@@ -22,6 +22,12 @@ export class PatientCodeDialogService {
         },
       });
 
+      if (!ref) {
+        observer.next(false);
+        observer.complete();
+        return;
+      }
+
       ref.onClose.subscribe((confirmed: boolean) => {
         observer.next(!!confirmed);
         observer.complete();
