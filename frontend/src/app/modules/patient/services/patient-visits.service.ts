@@ -29,7 +29,6 @@ export class PatientVisitsService {
       })
       .pipe(
         map((response) => {
-          console.log('All visits response:', response);
           return response.visits ?? [];
         }),
       );
@@ -39,5 +38,21 @@ export class PatientVisitsService {
     return this.http.delete(`${API_URL}/visits/${visitId}`, {
       withCredentials: true,
     });
+  }
+
+  public scheduleVisit(scheduleId: string, patientRemarks: string) {
+    return this.http.post(
+      `${API_URL}/visits//add`,
+      { patientRemarks, scheduleId },
+      { withCredentials: true },
+    );
+  }
+
+  public rescheduleVisit(visitId: string, patientRemarks: string) {
+    return this.http.post(
+      `${API_URL}/visits/${visitId}/reschedule`,
+      { patientRemarks },
+      { withCredentials: true },
+    );
   }
 }

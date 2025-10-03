@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -45,7 +46,7 @@ export class VisitPage {
   private visitService = inject(PatientVisitsService);
   private dialogService = inject(DialogService);
   protected translationService = inject(TranslationService);
-
+  private destroyRef = inject(DestroyRef);
   private ref: DynamicDialogRef | undefined;
 
   protected readonly visits = toSignal<VisitPageModel[]>(
@@ -124,7 +125,17 @@ export class VisitPage {
 
     this.ref.onClose.subscribe((result) => {
       if (result) {
-        console.log('Visit rescheduled:', result);
+        this.visitService
+          .scheduleVisit(result)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              // Optionally refresh the visits list or provide feedback to the user
+            },
+            error: (error: unknown) => {
+              console.error('Failed to reschedule visit:', error);
+            },
+          });
       }
     });
   }
