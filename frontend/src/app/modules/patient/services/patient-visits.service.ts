@@ -27,6 +27,17 @@ export class PatientVisitsService {
       .get<UpcomingVisitsResponse>(`${API_URL}/users/me/visits`, {
         withCredentials: true,
       })
-      .pipe(map((response) => response.visits ?? []));
+      .pipe(
+        map((response) => {
+          console.log('All visits response:', response);
+          return response.visits ?? [];
+        }),
+      );
+  }
+
+  public cancelVisit(visitId: string) {
+    return this.http.delete(`${API_URL}/visits/${visitId}`, {
+      withCredentials: true,
+    });
   }
 }

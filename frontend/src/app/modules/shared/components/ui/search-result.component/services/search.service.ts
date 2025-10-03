@@ -1,9 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { API_URL } from '../../../../../../utils/constants';
-import { Doctor } from '../search-result.model';
-import { Hospital } from '../components/hospital-card.component/hospital-card.component';
 import { map } from 'rxjs';
+import { API_URL } from '../../../../../../utils/constants';
+import { Hospital } from '../components/hospital-card.component/hospital-card.component';
+import { Doctor } from '../search-result.model';
 
 export enum SearchType {
   INSTITUTION = 'institution',
@@ -60,14 +60,12 @@ export class SearchService {
     }
 
     const query = searchQuery.query || '';
-    console.log('Search query:', query, params);
     return this.http
       .get<SearchResponse>(`${API_URL}/search/${query}`, {
         params,
       })
       .pipe(
         map((response) => {
-          console.log('Raw search response:', response);
           if (searchQuery.category === SearchType.DOCTOR) {
             const doctors = (response.result as unknown[]).map((doc) =>
               this.mapApiDoctorToComponentFormat(doc as ApiDoctor),

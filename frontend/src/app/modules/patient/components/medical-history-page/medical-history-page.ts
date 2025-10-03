@@ -79,7 +79,27 @@ export class MedicalHistoryPage implements OnInit {
     ref.onClose
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((updated) => {
-        console.log(updated);
+        console.log('Dialog closed with data:', updated.record);
+        this.medicalHistoryService
+          .addMedicalHistoryEntry({
+            date: updated?.record.date,
+            title: updated?.record.title ?? '',
+            note: updated?.record.note ?? '',
+            doctor: {
+              doctorName: updated?.record.doctor.doctorName ?? '',
+              doctorSurname: updated?.record.doctor.doctorSurname ?? '',
+            },
+          })
+          .subscribe({
+            next: () => {
+              if (updated) {
+                this.loadMedicalHistory();
+              }
+            },
+            error: (err) => {
+              console.error('Failed to add medical history entry:', err);
+            },
+          });
       });
   }
 

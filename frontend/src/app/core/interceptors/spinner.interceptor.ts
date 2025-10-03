@@ -8,6 +8,12 @@ export const spinnerInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.url.includes('/auth') || req.url.includes('/ws/')) {
     return next(req);
   }
-  spinnerService.show();
-  return next(req).pipe(finalize(() => spinnerService.hide()));
+
+  if (req.method === 'GET') {
+    spinnerService.show();
+    return next(req).pipe(finalize(() => spinnerService.hide()));
+  } else {
+    spinnerService.showOperator();
+    return next(req).pipe(finalize(() => spinnerService.hideOperator()));
+  }
 };

@@ -19,6 +19,14 @@
           />
         </div>
       }
+      @if (spinnerService.isOperatorLoading()) {
+        <div class="operation-spinner-overlay" aria-hidden="true">
+          <p-progress-spinner
+            [style]="{ width: '20%', height: '20%' }"
+            strokeWidth="3"
+          />
+        </div>
+      }
     </main>
   </div>
 } @else {

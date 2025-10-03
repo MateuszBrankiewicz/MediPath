@@ -27,7 +27,7 @@ export class PatientCodesService {
             id: idx + 1,
             doctorName: item.doctor ?? '',
             prescriptionPin: Number(item.codes.code),
-            status: UsedState.UNUSED,
+            status: item.codes.isActive ? UsedState.USED : UsedState.UNUSED,
             date: new Date(item.date),
             codeType: item.codes.codeType,
           }));
@@ -36,7 +36,7 @@ export class PatientCodesService {
   }
 
   public useCode(code: {
-    codeNumber: number;
+    code: number;
     codeType: string;
   }): Observable<boolean> {
     return this.http

@@ -5,10 +5,10 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
-import { map } from 'rxjs';
+import { catchError, map } from 'rxjs';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { Refferal } from '../../models/refferal-page.model';
+import { Refferal, UsedState } from '../../models/refferal-page.model';
 import { PatientCodeDialogService } from '../../services/paitent-code-dialog.service';
 import { PatientCodesService } from '../../services/patient-codes.service';
 
@@ -70,12 +70,22 @@ export class RefferalsPage {
         if (success) {
           this.codeService
             .useCode({
-              codeNumber: referral.prescriptionPin,
-              codeType: 'referral',
+              code: referral.prescriptionPin,
+              codeType: referral.codeType ?? '',
             })
-            .subscribe((res) => {
-              console.log(res);
-              this.referrals();
+            .pipe(
+              catchError((err) => {
+                console.log(err);
+                throw err;
+              }),
+            )
+            .subscribe(() => {
+              this.referrals()?.filter((refferal) => {
+                if (refferal.prescriptionPin === referral.prescriptionPin) {
+                  refferal.status = UsedState.USED;
+                }
+                return refferal;
+              });
               this.toastService.showSuccess('Referral marked as used.');
             });
         }

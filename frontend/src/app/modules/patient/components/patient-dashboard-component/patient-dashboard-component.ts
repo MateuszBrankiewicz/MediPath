@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -25,11 +27,15 @@ import { PatientVisitsService } from '../../services/patient-visits.service';
   styleUrl: './patient-dashboard-component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PatientDashboardComponent {
+export class PatientDashboardComponent implements OnInit {
   readonly searchQuery = signal('');
   private codesService = inject(PatientCodesService);
   private patientVisitsService = inject(PatientVisitsService);
   protected translationService = inject(TranslationService);
+
+  private destroyRef = inject(DestroyRef);
+
+  protected readonly upcomingVisits = signal<VisitBasicInfo[]>([]);
 
   readonly dashboardConfig: DashboardConfig = {
     title: 'Dashboard',
@@ -38,6 +44,31 @@ export class PatientDashboardComponent {
     userDisplayName: 'Jan Kowalski',
     userRole: 'Patient',
   };
+
+  ngOnInit(): void {
+    this.patientVisitsService
+      .getUpcomingVisits()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map((visits: VisitResponse[]) => {
+          return visits.map((visit: VisitResponse): VisitBasicInfo => {
+            return {
+              id: visit.id,
+              doctorName: `${visit.doctor.doctorName} ${visit.doctor.doctorSurname}`,
+              date: visit.time.startTime,
+            };
+          });
+        }),
+      )
+      .subscribe({
+        next: (visits) => {
+          this.upcomingVisits.set(visits);
+        },
+        error: (error) => {
+          console.error('Failed to load upcoming visits:', error);
+        },
+      });
+  }
 
   protected readonly codesData = toSignal(
     this.codesService.getPrescriptions().pipe(
@@ -64,23 +95,17 @@ export class PatientDashboardComponent {
     () => this.codesData()?.referrals || [],
   );
 
-  protected readonly upcomingVisits = toSignal(
-    this.patientVisitsService.getUpcomingVisits().pipe(
-      map((visits: VisitResponse[]) => {
-        return visits.map((visit: VisitResponse): VisitBasicInfo => {
-          const [year, month, day, hour, minute] = visit.time.startTime;
-          const dateString = `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year} ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-          return {
-            id: visit.id,
-            doctorName: `${visit.doctor.doctorName} ${visit.doctor.doctorSurname}`,
-            date: dateString,
-          };
-        });
-      }),
-      catchError(() => {
-        return of([] as VisitBasicInfo[]);
-      }),
-    ),
-    { initialValue: [] as VisitBasicInfo[] },
-  );
+  protected cancelVisit(visitId: string): void {
+    this.patientVisitsService.cancelVisit(visitId).subscribe({
+      next: () => {
+        const newVisits = this.upcomingVisits().filter(
+          (visit) => visit.id !== visitId,
+        );
+        this.upcomingVisits.set(newVisits);
+      },
+      error: (error) => {
+        console.error('Failed to cancel visit:', error);
+      },
+    });
+  }
 }

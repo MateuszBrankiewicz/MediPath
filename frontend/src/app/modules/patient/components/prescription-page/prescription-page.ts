@@ -3,22 +3,26 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { DialogService } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
-import { map } from 'rxjs';
+import { catchError, map } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { Refferal } from '../../models/refferal-page.model';
+import { Refferal, UsedState } from '../../models/refferal-page.model';
 import { PatientCodesService } from '../../services/patient-codes.service';
 import { ToastService } from './../../../../core/services/toast/toast.service';
+import { PatientCodeDialogService } from './../../services/paitent-code-dialog.service';
 
 @Component({
   selector: 'app-prescription-page',
   imports: [ButtonModule, TableModule, DatePipe, CardModule, CommonModule],
   templateUrl: './prescription-page.html',
   styleUrl: './prescription-page.scss',
+  providers: [DialogService, PatientCodeDialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PrescriptionPage {
   private toastService = inject(ToastService);
+  private manageDialogCodeService = inject(PatientCodeDialogService);
   protected translationService = inject(TranslationService);
   protected codeService = inject(PatientCodesService);
 
@@ -49,5 +53,42 @@ export class PrescriptionPage {
     const validityDate = new Date(prescriptionDate);
     validityDate.setDate(validityDate.getDate() + 30);
     return validityDate;
+  }
+
+  protected markAsUsed(referral: Refferal): void {
+    console.log('Attempting to mark referral as used:', referral);
+    if (referral.status === 'USED') {
+      this.toastService.showInfo('This referral is already marked as used.');
+      return;
+    }
+    this.manageDialogCodeService
+      .useCode({
+        codeNumber: referral.prescriptionPin,
+        codeType: 'referral',
+      })
+      .subscribe((success) => {
+        if (success) {
+          this.codeService
+            .useCode({
+              code: referral.prescriptionPin,
+              codeType: referral.codeType ?? '',
+            })
+            .pipe(
+              catchError((err) => {
+                console.log(err);
+                throw err;
+              }),
+            )
+            .subscribe(() => {
+              this.prescriptions()?.filter((prescription) => {
+                if (prescription.prescriptionPin === referral.prescriptionPin) {
+                  prescription.status = UsedState.USED;
+                }
+                return prescription;
+              });
+              this.toastService.showSuccess('Referral marked as used.');
+            });
+        }
+      });
   }
 }

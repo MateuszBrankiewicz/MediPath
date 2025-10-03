@@ -59,8 +59,8 @@ export interface VisitResponse {
   };
   time: {
     scheduleId: string;
-    startTime: number[]; // [year, month, day, hour, minute]
-    endTime: number[]; // [year, month, day, hour, minute]
+    startTime: string;
+    endTime: string;
     valid: boolean;
   };
   institution: {
@@ -86,9 +86,6 @@ export type VisitResponseArray = VisitResponse[];
 export function convertVisitResponseToVisit(
   visitResponse: VisitResponse,
 ): Visit {
-  const [year, month, day, hour, minute] = visitResponse.time.startTime;
-  const visitDate = new Date(year, month - 1, day, hour, minute); // month is 0-indexed in JS Date
-
   const prescriptionCodes = visitResponse.codes.filter(
     (code) => code.codeType === 'PRESCRIPTION' && code.active,
   );
@@ -97,13 +94,13 @@ export function convertVisitResponseToVisit(
   );
 
   return {
-    id: visitResponse.id, // Keep as string
+    id: visitResponse.id,
     doctorName: `${visitResponse.doctor.doctorName} ${visitResponse.doctor.doctorSurname}`,
     specialisation:
       visitResponse.doctor.specialisations.join(', ') || 'Brak specjalizacji',
     institution: visitResponse.institution.institutionName,
-    address: '', // Not provided in API response
-    date: visitDate,
+    address: '',
+    date: new Date(visitResponse.time.startTime),
     status: visitResponse.status.toLowerCase(),
     notes: visitResponse.note || undefined,
     prescriptionPin:

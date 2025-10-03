@@ -24,6 +24,16 @@ export interface MedicalHistoryResponse {
   };
 }
 
+export interface MedicalHistoryApiRequest {
+  date: string;
+  note: string;
+  title: string;
+  doctor: {
+    doctorName: string;
+    doctorSurname: string;
+  };
+}
+
 export interface MedicalHistoryApiResponse {
   medicalhistories: MedicalHistoryResponse[];
 }

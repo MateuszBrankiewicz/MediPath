@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Client, StompSubscription, IMessage } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import { Observable, Subject } from 'rxjs';
 import SockJS from 'sockjs-client';
-import { Subject, Observable } from 'rxjs';
 import { NotificationMessage } from './user-notifications.model';
 
 export type ListenerCallBack = (data: unknown) => void;
@@ -24,14 +24,11 @@ export class UserNotificationsService implements OnDestroy {
     this.client = new Client({
       webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       reconnectDelay: 5000,
-      debug: (msg) => console.debug('[STOMP]', msg),
     });
 
     this.client.onConnect = (frame) => {
-      console.log('Connected: ', frame);
       this.client.subscribe('/user/notifications', (message: IMessage) => {
         const parsedMessage = JSON.parse(message.body) as NotificationMessage;
-        console.log('private:', parsedMessage);
         this.notificationSubject.next(parsedMessage);
       });
     };
@@ -40,18 +37,8 @@ export class UserNotificationsService implements OnDestroy {
       console.error('Broker error:', frame.headers['message'], frame.body);
     };
 
-    // start połączenia
     this.client.activate();
   }
-
-  // public send(notification: unknown): void {
-  //   if (this.client.connected) {
-  //     this.client.publish({
-  //       destination: '/app/notifications',
-  //       body: JSON.stringify(notification),
-  //     });
-  //   }
-  // }
 
   ngOnDestroy(): void {
     if (this.subscription) {

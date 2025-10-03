@@ -49,11 +49,11 @@ export class VisitPage {
   private ref: DynamicDialogRef | undefined;
 
   protected readonly visits = toSignal<VisitPageModel[]>(
-    this.visitService.getUpcomingVisits().pipe(
+    this.visitService.getAllVisits().pipe(
       map((visits: VisitResponseArray): VisitPageModel[] =>
         visits.map((visit) => ({
           id: visit.id,
-          date: this.formatDate(visit.time.startTime),
+          date: new Date(visit.time.startTime),
           doctorName: visit.doctor.doctorName,
           institution: visit.institution.institutionName,
           status: this.parseVisitStatus(visit.status),
@@ -144,16 +144,10 @@ export class VisitPage {
         return VisitStatus.Scheduled;
       case 'completed':
         return VisitStatus.Completed;
-      case 'canceled':
+      case 'cancelled':
         return VisitStatus.Canceled;
       default:
         return VisitStatus.Scheduled;
     }
-  }
-
-  private formatDate(array: number[]): Date {
-    const [year, month, day, hour, minute] = array;
-    const dateString = `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year} ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-    return new Date(dateString);
   }
 }
