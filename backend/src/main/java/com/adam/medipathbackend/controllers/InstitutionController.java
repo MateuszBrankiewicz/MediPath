@@ -6,6 +6,7 @@ import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
+import com.adam.medipathbackend.repository.VisitRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,9 @@ public class InstitutionController {
 
     @Autowired
     ScheduleRepository scheduleRepository;
+
+    @Autowired
+    VisitRepository visitRepository;
 
     @PostMapping(value = {"/add", "/add/"})
     public ResponseEntity<Map<String, Object>> addInstitution(@RequestBody Institution institution, HttpSession session) {
@@ -267,7 +271,7 @@ public class InstitutionController {
         return code;
     }
     @GetMapping(value = {"/{id}", "/{id}/"})
-    public ResponseEntity<Map<String, Object>> getInstitution(@PathVariable String id, @RequestParam(value = "fields", required = false) String[] fields) {
+    public ResponseEntity<Map<String, Object>> getInstitution(@PathVariable String id, @RequestParam(value = "fields", required = false) String[] fields, HttpSession session) {
         Optional<Institution> institutionOptional = institutionRepository.findById(id);
         if(institutionOptional.isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "invalid institution id"), HttpStatus.BAD_REQUEST);
@@ -298,8 +302,14 @@ public class InstitutionController {
             outputFields.put("types", institution.getTypes());
         }
         if(fieldsList.contains("employees")) {
-            int[] validDoctorCodes = {2, 3, 6, 7, 14, 15};
-            outputFields.put("employees", institution.getEmployees().stream().filter(employee -> IntStream.of(validDoctorCodes).anyMatch(x -> x == employee.getRoleCode())));
+            String loggedUserID = (String) session.getAttribute("id");
+            if(isLoggedAsEmployeeOfInstitution(loggedUserID, id)) {
+                outputFields.put("employees", institution.getEmployees());
+            } else {
+                int[] validDoctorCodes = {2, 3, 6, 7, 14, 15};
+                outputFields.put("employees", institution.getEmployees().stream().filter(employee -> IntStream.of(validDoctorCodes).anyMatch(x -> x == employee.getRoleCode())));
+            }
+
         }
         if(fieldsList.contains("rating")) {
             outputFields.put("rating", institution.getRating());
@@ -308,6 +318,26 @@ public class InstitutionController {
             outputFields.put("image", institution.getImage());
         }
         return new ResponseEntity<>(Map.of("institution", outputFields), HttpStatus.OK);
+    }
+
+
+    @GetMapping(value = {"/{institutionid}/upcomingvisits/", "/{institutionid}/upcomingvisits"})
+    public ResponseEntity<Map<String, Object>> getUpcomingVisitsForInstitution(@PathVariable String institutionid, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<Institution> optionalInstitution = institutionRepository.findById(institutionid);
+        if(optionalInstitution.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        if(!isLoggedAsEmployeeOfInstitution(loggedUserID, institutionid)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        ArrayList<Visit> visits = visitRepository.getUpcomingVisitsInInstitution(institutionid);
+        return new ResponseEntity<>(Map.of("visits", visits), HttpStatus.OK);
     }
 
     @PutMapping(value = {"/{institutionid}", "/{institutionid}/"})
@@ -362,4 +392,10 @@ public class InstitutionController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    private boolean isLoggedAsEmployeeOfInstitution(String userID, String institutionID) {
+        if(!Utils.isValidMongoOID(userID) || !Utils.isValidMongoOID(institutionID)) {
+            return false;
+        }
+        return institutionRepository.findStaffById(userID, institutionID).isPresent();
+    }
 }

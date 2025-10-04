@@ -663,3 +663,27 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 200 - success, returns doctors and schedules
 
 
+### /visits/{id}
+#### Method: GET
+
+#### Path Variables:
+- id - visit id
+
+#### Returns:
+- 401 - User is not logged in
+- 403 - visit id does not exist or user is not either the patient, doctor or staff
+- 200 - success
+
+
+### /institution/{institutionid}/upcomingvisits/
+#### Method: GET
+
+#### Path variables:
+- institutionid - institution's object id
+
+
+#### Returns:
+- 401 - User is not logged in
+- 403 - Institution does not exist or user is not staff in institution
+- 200 - success
+
