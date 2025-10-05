@@ -8,11 +8,11 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.medipath.core.models.LoginRequest
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.ApiService
+import com.medipath.core.services.AuthService
 import retrofit2.HttpException
 
 class LoginViewModel(
-    private val apiService: ApiService = RetrofitInstance.api
+    private val authService: AuthService = RetrofitInstance.authService
 ): ViewModel() {
 
     private val _loginError = mutableStateOf("")
@@ -31,8 +31,14 @@ class LoginViewModel(
             _sessionId.value = ""
 
             try {
-                val response = apiService.loginUser(request)
+                val response = authService.loginUser(request)
                 if (response.isSuccessful) {
+                    // Debug: sprawdź wszystkie headers
+                    Log.d("LoginViewModel", "All headers:")
+                    response.headers().forEach { (name, value) ->
+                        Log.d("LoginViewModel", "  $name: $value")
+                    }
+                    
                     val sessionId = response.headers()["Set-Cookie"]?.let { cookie ->
                         Log.d("LoginViewModel", "Full cookie: '$cookie'")
                         cookie.split(";")

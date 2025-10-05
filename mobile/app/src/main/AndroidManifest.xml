@@ -42,6 +42,8 @@
             android:exported="false" />
         <activity android:name=".modules.patient.booking.ui.AppointmentBookingActivity"
             android:exported="false" />
+        <activity android:name=".modules.patient.notifications.ui.NotificationsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.medipath.core.network.DataStoreSessionManager
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -32,7 +33,7 @@ class CodesActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val codeType = intent.getStringExtra("code_type") ?: "PRESCRIPTION"
-        val userId = intent.getStringExtra("user_id") ?: ""
+        val sessionManager = DataStoreSessionManager(this)
 
         setContent {
             MediPathTheme {
@@ -42,8 +43,14 @@ class CodesActivity : ComponentActivity() {
                 var copiedCode by remember { mutableStateOf("") }
 
                 LaunchedEffect(Unit) {
-                    if (userId.isNotEmpty()) {
-                        viewModel.fetchCodes(userId)
+                    val sessionToken = sessionManager.getSessionId()
+                    if (!sessionToken.isNullOrEmpty()) {
+                        val apiCodeType = when(codeType) {
+                            "PRESCRIPTION" -> "prescriptions"
+                            "REFERRAL" -> "referrals" 
+                            else -> null
+                        }
+                        viewModel.fetchCodes(sessionToken, apiCodeType)
                     }
                 }
 

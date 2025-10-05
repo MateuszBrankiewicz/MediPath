@@ -12,12 +12,20 @@ class MyCookieJar(private val sessionManager: DataStoreSessionManager, private v
     private val cookieStore = ConcurrentHashMap<HttpUrl, List<Cookie>>()
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+        android.util.Log.d("MyCookieJar", "saveFromResponse called with ${cookies.size} cookies for URL: $url")
+        cookies.forEach { cookie ->
+            android.util.Log.d("MyCookieJar", "Cookie: ${cookie.name} = ${cookie.value}")
+        }
+        
         val sessionCookie = cookies.find { it.name == "SESSION" }
         if (sessionCookie != null) {
+            android.util.Log.d("MyCookieJar", "Saving SESSION cookie: ${sessionCookie.value}")
             runBlocking {
                 sessionManager.saveSessionId(sessionCookie.value)
             }
             cookieStore[url] = listOf(sessionCookie)
+        } else {
+            android.util.Log.d("MyCookieJar", "No SESSION cookie found")
         }
     }
 

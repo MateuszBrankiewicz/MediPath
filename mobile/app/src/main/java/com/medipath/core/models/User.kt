@@ -17,5 +17,6 @@ data class User(
     val roleCode: Int,
     val rating: Double,
     val employers: List<Employer> = emptyList(),
-    val active: Boolean
+    val active: Boolean,
+        val notifications: List<Notification> = emptyList()
 )

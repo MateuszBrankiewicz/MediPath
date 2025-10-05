@@ -6,12 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.ApiService
+import com.medipath.core.services.AuthService
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
 class ResetPasswordViewModel(
-    private val apiService: ApiService = RetrofitInstance.api
+    private val authService: AuthService = RetrofitInstance.authService
 ): ViewModel() {
 
     private val _resetError = mutableStateOf("")
@@ -25,7 +25,7 @@ class ResetPasswordViewModel(
             _resetError.value = ""
             _resetSuccess.value = false
             try {
-                val response = apiService.resetPassword(email)
+                val response = authService.resetPassword(email)
                 _resetSuccess.value = true
                 Log.d("resetViewModel", "Successful: $response")
             } catch (e: HttpException) {

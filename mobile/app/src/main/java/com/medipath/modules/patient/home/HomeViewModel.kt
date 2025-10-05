@@ -7,12 +7,12 @@ import kotlinx.coroutines.launch
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.medipath.core.models.Visit
-import com.medipath.core.services.ApiService
+import com.medipath.core.services.UserService
 import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
 
 class HomeViewModel(
-    private val apiService: ApiService = RetrofitInstance.api
+    private val userService: UserService = RetrofitInstance.userService
 ) : ViewModel() {
 
     private val _firstName = mutableStateOf("")
@@ -44,7 +44,7 @@ class HomeViewModel(
                     return@launch
                 }
                 Log.d("HomeViewModel", "Using token: $token")
-                val userResponse = apiService.getUserProfile("SESSION=$token")
+                val userResponse = userService.getUserProfile("SESSION=$token")
                 _firstName.value = userResponse.user.name
                 _userId.value = userResponse.user.id
                 Log.d("HomeViewModel", "Fetched user profile: ${userResponse.user.name}, ID: ${userResponse.user.id}")
@@ -61,7 +61,7 @@ class HomeViewModel(
             Log.d("HomeViewModel", "Fetching upcoming visits")
             Log.d("HomeViewModel", "Full URL would be: /api/users/me/visits?upcoming=true")
 
-            val visitsResponse = apiService.getUpcomingVisits("true", "SESSION=$token")
+            val visitsResponse = userService.getUpcomingVisits("true", "SESSION=$token")
             _upcomingVisits.value = visitsResponse.visits
             Log.d("HomeViewModel", "Fetched ${visitsResponse.visits.size} upcoming visits")
         } catch (e: retrofit2.HttpException) {
@@ -79,7 +79,7 @@ class HomeViewModel(
 
     private suspend fun fetchActiveCodes(token: String) {
         try {
-            val codesResponse = apiService.getActiveCodes("SESSION=$token")
+            val codesResponse = userService.getAllUserCodes("SESSION=$token")
 
             if (codesResponse.isSuccessful) {
                 val codes = codesResponse.body()?.codes ?: emptyList()
@@ -119,7 +119,7 @@ class HomeViewModel(
                 }
 
                 Log.d("HomeViewModel", "Cancelling visit with ID: $visitId")
-                val response = apiService.cancelVisit(visitId, "SESSION=$token")
+                val response = userService.cancelVisit(visitId, "SESSION=$token")
 
                 if (response.isSuccessful) {
                     _deleteSuccess.value = true

@@ -46,7 +46,7 @@ fun SearchBar() {
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val apiService = RetrofitInstance.api
+    val searchService = RetrofitInstance.searchService
 
     val types = listOf("doctor", "institution")
 
@@ -158,7 +158,7 @@ fun SearchBar() {
             onClick = {
                 scope.launch {
                     try {
-                        val response = apiService.search(
+                        val response = searchService.search(
                             query = query.ifBlank { "" },
                             type = selectedType,
                             city = if (city.isBlank()) null else city,

@@ -1,7 +1,10 @@
 package com.medipath.core.network
 
 import android.content.Context
-import com.medipath.core.services.ApiService
+import com.medipath.core.services.AuthService
+import com.medipath.core.services.UserService
+import com.medipath.core.services.LocationService
+import com.medipath.core.services.SearchService
 import com.medipath.utils.MyCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -35,12 +38,28 @@ object RetrofitInstance {
             .build()
     }
 
-    val api: ApiService by lazy {
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ApiService::class.java)
+    }
+
+    val authService: AuthService by lazy {
+        retrofit.create(AuthService::class.java)
+    }
+
+    val userService: UserService by lazy {
+        retrofit.create(UserService::class.java)
+    }
+
+    val locationService: LocationService by lazy {
+        retrofit.create(LocationService::class.java)
+    }
+
+    val searchService: SearchService by lazy {
+        retrofit.create(SearchService::class.java)
     }
 
     fun getSessionManager(): DataStoreSessionManager {

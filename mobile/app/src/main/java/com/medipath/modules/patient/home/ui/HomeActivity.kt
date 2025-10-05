@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import com.medipath.core.theme.MediPathTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +46,7 @@ import com.medipath.modules.shared.components.MenuCard
 import com.medipath.modules.shared.components.Navigation
 import com.medipath.modules.shared.components.SearchBar
 import com.medipath.modules.shared.components.VisitItem
+import com.medipath.modules.patient.notifications.ui.NotificationsActivity
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.patient.home.HomeViewModel
 //import io.reactivex.disposables.CompositeDisposable
@@ -67,7 +69,6 @@ class HomeActivity : ComponentActivity() {
             try {
 //                notificationsService = UserNotificationsService()
 //
-//                // Subscribe to notifications on background thread and switch to main for UI updates
 //                val notificationSubscription = notificationsService.notifications
 //                    .subscribeOn(Schedulers.io())
 //                    .observeOn(AndroidSchedulers.mainThread())
@@ -77,7 +78,6 @@ class HomeActivity : ComponentActivity() {
 //                    }
 //                activityDisposable.add(notificationSubscription)
 //
-//                // Connect to WebSocket on background thread
 //                notificationsService.connect("http://10.0.2.2:8080/ws")
             } catch (e: Exception) {
                 Log.e("HomeActivity", "Error initializing notifications service", e)
@@ -86,7 +86,7 @@ class HomeActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         val sessionManager = DataStoreSessionManager(this)
-        val apiService = RetrofitInstance.api
+        val authService = RetrofitInstance.authService
         
         setContent {
             MediPathTheme {
@@ -94,7 +94,7 @@ class HomeActivity : ComponentActivity() {
                     onLogoutClick = {
                         lifecycleScope.launch(Dispatchers.IO) {
                             try {
-                                apiService.logout()
+                                authService.logout()
                             } catch (e: Exception) {
                                 Log.e("HomeActivity", "Logout error", e)
                             } finally {
@@ -148,10 +148,12 @@ fun HomeScreen(
     val referralCode by viewModel.referralCode
 
     Navigation(
+        onNotificationsClick = {
+            context.startActivity(Intent(context, NotificationsActivity::class.java))
+        },
         content = { innerPadding ->
             val colors = LocalCustomColors.current
             
-            // Use single scroll container instead of nested scrollable components
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -177,7 +179,6 @@ fun HomeScreen(
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                         
-                        // Prescription card
                         InfoCard(
                             title = "Prescriptions",
                             label = "Code:",
@@ -192,7 +193,6 @@ fun HomeScreen(
                         
                         Spacer(modifier = Modifier.height(10.dp))
                         
-                        // Referral card
                         InfoCard(
                             title = "Referrals",
                             label = "Code:",
@@ -205,7 +205,6 @@ fun HomeScreen(
                             }
                         )
                         
-                        // Menu cards
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -248,7 +247,6 @@ fun HomeScreen(
                 }
 
                 item {
-                    // Visits section
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -281,7 +279,6 @@ fun HomeScreen(
                     }
                 }
                 
-                // Visit items - render directly in LazyColumn instead of nested LazyColumn
                 if (upcomingVisits.isEmpty()) {
                     item {
                         Column(
@@ -323,14 +320,10 @@ fun HomeScreen(
                 }
             }
         },
-        onNotificationsClick = {
-            //powiadomienia
-        },
         onLogoutClick = onLogoutClick,
         firstName = firstName
     )
 
-    // Dialog handling
     if (deleteSuccess) {
         AlertDialog(
             onDismissRequest = { viewModel.clearDeleteMessages() },

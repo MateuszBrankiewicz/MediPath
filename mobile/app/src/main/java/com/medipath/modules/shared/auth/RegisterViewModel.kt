@@ -9,11 +9,13 @@ import androidx.compose.runtime.mutableStateOf
 import com.medipath.core.models.City
 import com.medipath.core.models.RegisterRequest
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.ApiService
+import com.medipath.core.services.AuthService
+import com.medipath.core.services.LocationService
 import retrofit2.HttpException
 
 class RegisterViewModel(
-    private val apiService: ApiService = RetrofitInstance.api
+    private val authService: AuthService = RetrofitInstance.authService,
+    private val locationService: LocationService = RetrofitInstance.locationService
 ): ViewModel() {
     private val _cities = mutableStateOf<List<City>>(emptyList())
     val cities: State<List<City>> = _cities
@@ -35,7 +37,7 @@ class RegisterViewModel(
     private fun fetchCities() {
         viewModelScope.launch {
             try {
-                _cities.value = apiService.getCities()
+                _cities.value = locationService.getCities()
                 Log.d("RegisterViewModel", "Fetched cities: ${_cities.value}")
             } catch (e: Exception) {
                 Log.e("RegisterViewModel", "Error fetching cities", e)
@@ -47,7 +49,7 @@ class RegisterViewModel(
     private fun fetchProvinces() {
         viewModelScope.launch {
             try {
-                _provinces.value = apiService.getProvinces()
+                _provinces.value = locationService.getProvinces()
                 Log.d("RegisterViewModel", "Fetched provinces: ${_provinces.value}")
             } catch (e: Exception) {
                 Log.e("RegisterViewModel", "Error fetching provinces", e)
@@ -62,7 +64,7 @@ class RegisterViewModel(
             _registrationSuccess.value = false
 
             try {
-                val response = apiService.registerUser(request)
+                val response = authService.registerUser(request)
                 _registrationSuccess.value = true
                 Log.d("RegisterViewModel", "Registration successful: $response")
             } catch (e: HttpException) {
