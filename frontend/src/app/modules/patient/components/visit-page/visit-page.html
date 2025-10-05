@@ -1,6 +1,18 @@
 <h2>{{ translationService.translate("patient.visits.title") }}</h2>
+<app-filter-component
+  (filtersChange)="onFiltersChange($event)"
+  [defaults]="{
+    searchTerm: '',
+    status: 'all',
+    dateFrom: null,
+    dateTo: null,
+    sortField: 'date',
+    sortOrder: 'desc',
+  }"
+  [autoApply]="true"
+></app-filter-component>
 <div class="visits-list">
-  @for (visit of visits(); track visit.id) {
+  @for (visit of paginatedVisits(); track visit.id) {
     <p-card class="visit-card">
       <div class="visit-card-content">
         <div class="visit-main-info">
@@ -24,16 +36,18 @@
           </div>
         </div>
         <div class="visit-actions">
-          <i
+          <p-button
             (click)="openVisitDialog(visit.id)"
-            class="pi pi-file-export details-icon"
-            [title]="translationService.translate('patient.visits.details')"
-          ></i>
+            [disabled]="checkIfDisableDetailsButton(visit.status)"
+            icon="pi pi-file-export details-icon"
+            [label]="translationService.translate('patient.visits.details')"
+          ></p-button>
           <p-button
             icon="pi pi-ellipsis-v"
             size="large"
             [text]="true"
             (click)="op.toggle($event)"
+            [disabled]="checkIfDisablePopover(visit.status)"
             #menuButton
             class="options-button"
           ></p-button>
@@ -63,4 +77,12 @@
       </div>
     </p-card>
   }
+  <p-paginator
+    (onPageChange)="onPageChange($event)"
+    [first]="first()"
+    [rows]="rows()"
+    [totalRecords]="totalRecords()"
+    [rowsPerPageOptions]="[10, 20, 30]"
+    style="margin-bottom: 10px"
+  />
 </div>

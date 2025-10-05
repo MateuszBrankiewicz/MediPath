@@ -2,19 +2,23 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuModule } from 'primeng/menu';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { PopoverModule } from 'primeng/popover';
 import { TableModule } from 'primeng/table';
-import { map } from 'rxjs';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import {
   VisitPageModel,
   VisitResponseArray,
@@ -34,13 +38,15 @@ import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog
     ButtonModule,
     PopoverModule,
     CardModule,
+    PaginatorModule,
+    FilterComponent,
   ],
   providers: [DialogService],
   templateUrl: './visit-page.html',
   styleUrl: './visit-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VisitPage {
+export class VisitPage implements OnInit {
   protected readonly showVisitDetailsDialog = signal(false);
   protected readonly selectedVisitId = signal<string | null>(null);
   private visitService = inject(PatientVisitsService);
@@ -48,20 +54,40 @@ export class VisitPage {
   protected translationService = inject(TranslationService);
   private destroyRef = inject(DestroyRef);
   private ref: DynamicDialogRef | null = null;
+  private toastService = inject(ToastService);
 
-  protected readonly visits = toSignal<VisitPageModel[]>(
-    this.visitService.getAllVisits().pipe(
-      map((visits: VisitResponseArray): VisitPageModel[] =>
-        visits.map((visit) => ({
-          id: visit.id,
-          date: new Date(visit.time.startTime),
-          doctorName: visit.doctor.doctorName,
-          institution: visit.institution.institutionName,
-          status: this.parseVisitStatus(visit.status),
-        })),
-      ),
-    ),
+  protected readonly first = signal(0);
+  protected readonly rows = signal(10);
+  protected readonly filters = signal<{
+    searchTerm: string;
+    status: string;
+    dateFrom: Date | null;
+    dateTo: Date | null;
+    sortField: string;
+    sortOrder: 'asc' | 'desc';
+  }>({
+    searchTerm: '',
+    status: 'all',
+    dateFrom: null,
+    dateTo: null,
+    sortField: 'date',
+    sortOrder: 'desc',
+  });
+
+  protected onPageChange(event: PaginatorState): void {
+    this.first.set(event.first ?? 0);
+    this.rows.set(event.rows ?? 10);
+  }
+
+  protected readonly totalRecords = computed(
+    () => this.filteredVisits().length,
   );
+
+  protected readonly visits = signal<VisitPageModel[]>([]);
+
+  ngOnInit(): void {
+    this.initVisitList();
+  }
 
   protected cancelVisit() {
     console.log('cancel');
@@ -89,6 +115,85 @@ export class VisitPage {
   protected editVisit() {
     console.log('edit');
   }
+
+  protected readonly filteredVisits = computed(() => {
+    const filters = this.filters();
+    const search = filters.searchTerm?.toLowerCase().trim() ?? '';
+    const statusFilterRaw = (filters.status ?? 'all').toLowerCase();
+    const statusFilter =
+      statusFilterRaw === 'cancelled' ? 'canceled' : statusFilterRaw;
+    const from = filters.dateFrom ? new Date(filters.dateFrom) : null;
+    const to = filters.dateTo ? new Date(filters.dateTo) : null;
+
+    return this.visits().filter((value) => {
+      if (
+        statusFilter !== 'all' &&
+        value.status !== (statusFilter as VisitStatus)
+      ) {
+        return false;
+      }
+      if (from && value.date < from) return false;
+      if (to && value.date > to) return false;
+      if (search) {
+        const hay = `${value.doctorName} ${value.institution} ${value.status}`
+          .toLowerCase()
+          .trim();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+  });
+
+  protected readonly sortedVisits = computed(() => {
+    const list = this.filteredVisits().slice();
+    const { sortField, sortOrder } = this.filters();
+    const dir = sortOrder === 'asc' ? 1 : -1;
+    list.sort((firstValue, secondValue) => {
+      let aValue: number | string = 0;
+      let bValue: number | string = 0;
+      switch (sortField) {
+        case 'doctorName':
+          aValue = firstValue.doctorName?.toLowerCase() ?? '';
+          bValue = secondValue.doctorName?.toLowerCase() ?? '';
+          break;
+        case 'institution':
+          aValue = firstValue.institution?.toLowerCase() ?? '';
+          bValue = secondValue.institution?.toLowerCase() ?? '';
+          break;
+        case 'status':
+          aValue = String(firstValue.status).toLowerCase();
+          bValue = String(secondValue.status).toLowerCase();
+          break;
+        case 'date':
+        default:
+          aValue = firstValue.date?.getTime?.() ?? 0;
+          bValue = secondValue.date?.getTime?.() ?? 0;
+      }
+      if (aValue < bValue) return -1 * dir;
+      if (aValue > bValue) return 1 * dir;
+      return 0;
+    });
+    return list;
+  });
+
+  protected readonly paginatedVisits = computed(() => {
+    const start = this.first();
+    const end = start + this.rows();
+    return this.sortedVisits().slice(start, end);
+  });
+
+  protected onFiltersChange(ev: {
+    searchTerm: string;
+    status: string;
+    dateFrom: Date | null;
+    dateTo: Date | null;
+    sortField: string;
+    sortOrder: 'asc' | 'desc';
+  }): void {
+    this.filters.set(ev);
+    this.first.set(0);
+  }
+
   protected openVisitDialog(id: string): void {
     this.selectedVisitId.set(id);
 
@@ -114,9 +219,9 @@ export class VisitPage {
     });
   }
 
-  protected openRescheduleDialog(id: string): void {
+  protected openRescheduleDialog(visitId: string): void {
     this.ref = this.dialogService.open(ScheduleVisitDialog, {
-      data: { visitId: id },
+      data: { visitId: visitId },
       header: this.translationService.translate(
         'patient.visits.rescheduleTitle',
       ),
@@ -134,13 +239,26 @@ export class VisitPage {
     this.ref.onClose.subscribe((result) => {
       if (result) {
         this.visitService
-          .scheduleVisit(result.slotId, result.patientRemarks)
+          .scheduleVisit({
+            scheduleID: result.slotId,
+            patientRemarks: result.patientRemarks,
+          })
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
-            next: () => {
-              // Optionally refresh the visits list or provide feedback to the user
+            next: (result) => {
+              console.log(result);
+              this.toastService.showSuccess(
+                this.translationService.translate(
+                  'patient.appointment.bookSuccess',
+                ),
+              );
             },
             error: (error: unknown) => {
+              this.toastService.showError(
+                this.translationService.translate(
+                  'patient.appointment.bookError',
+                ),
+              );
               console.error('Failed to reschedule visit:', error);
             },
           });
@@ -168,5 +286,40 @@ export class VisitPage {
       default:
         return VisitStatus.Scheduled;
     }
+  }
+
+  private initVisitList(): void {
+    this.visitService
+      .getAllVisits()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (visits: VisitResponseArray) => {
+          const visitList: VisitPageModel[] = visits.map((visit) => ({
+            id: visit.id,
+            date: new Date(visit.time.startTime),
+            doctorName: visit.doctor.doctorName,
+            institution: visit.institution.institutionName,
+            status: this.parseVisitStatus(visit.status),
+          }));
+          this.visits.set(visitList);
+        },
+        error: (error: unknown) => {
+          console.error('Failed to fetch visits:', error);
+        },
+      });
+  }
+
+  protected checkIfDisablePopover(status: string): boolean {
+    return (
+      status.toLowerCase() === 'completed' ||
+      status.toLowerCase() === 'canceled'
+    );
+  }
+
+  protected checkIfDisableDetailsButton(status: string): boolean {
+    return (
+      status.toLowerCase() === 'canceled' ||
+      status.toLowerCase() === 'scheduled'
+    );
   }
 }

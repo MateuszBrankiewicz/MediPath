@@ -2,10 +2,35 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
-import { VisitResponse } from '../models/visit-page.model';
+import {
+  SingleVisitResponse,
+  UpcomingVisitsResponse,
+} from '../models/visit-page.model';
 
-interface UpcomingVisitsResponse {
-  visits: VisitResponse[];
+interface ScheduleVisitRequest {
+  scheduleID: string;
+  patientRemarks: string;
+}
+
+export interface ScheduleResponse {
+  schedules: {
+    id: string;
+    startHour: string;
+    endHour: string;
+    booked: boolean;
+    doctor: {
+      userId: string;
+      doctorName: string;
+      doctorSurname: string;
+      specialisations: string[];
+      valid: boolean;
+    };
+    institution: {
+      institutionId: string;
+      institutionName: string;
+      valid: boolean;
+    };
+  }[];
 }
 
 @Injectable({
@@ -35,25 +60,38 @@ export class PatientVisitsService {
       );
   }
 
+  public getVisitDetails(visitId: string) {
+    return this.http.get<SingleVisitResponse>(`${API_URL}/visits/${visitId}`, {
+      withCredentials: true,
+    });
+  }
+
   public cancelVisit(visitId: string) {
     return this.http.delete(`${API_URL}/visits/${visitId}`, {
       withCredentials: true,
     });
   }
 
-  public scheduleVisit(scheduleId: string, patientRemarks: string) {
+  public scheduleVisit(scheduleVisit: ScheduleVisitRequest) {
+    return this.http.post(`${API_URL}/visits/add`, scheduleVisit, {
+      withCredentials: true,
+    });
+  }
+
+  public rescheduleVisit(scheduleVisit: ScheduleVisitRequest) {
     return this.http.post(
-      `${API_URL}/visits/add`,
-      { patientRemarks, scheduleId },
+      `${API_URL}/visits/${scheduleVisit.scheduleID}/reschedule`,
+      { patientRemarks: scheduleVisit.patientRemarks },
       { withCredentials: true },
     );
   }
 
-  public rescheduleVisit(visitId: string, patientRemarks: string) {
-    return this.http.post(
-      `${API_URL}/visits/${visitId}/reschedule`,
-      { patientRemarks },
-      { withCredentials: true },
+  public getDoctorSchedule(doctorId: string) {
+    return this.http.get<ScheduleResponse>(
+      `${API_URL}/schedules/bydoctor/${doctorId}`,
+      {
+        withCredentials: true,
+      },
     );
   }
 }

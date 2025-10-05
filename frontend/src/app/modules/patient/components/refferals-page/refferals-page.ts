@@ -1,20 +1,36 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService } from 'primeng/dynamicdialog';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { catchError, map } from 'rxjs';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { Refferal, UsedState } from '../../models/refferal-page.model';
 import { PatientCodeDialogService } from '../../services/paitent-code-dialog.service';
 import { PatientCodesService } from '../../services/patient-codes.service';
 
 @Component({
   selector: 'app-refferals-page',
-  imports: [CommonModule, TableModule, ButtonModule, CardModule, DatePipe],
+  imports: [
+    CommonModule,
+    TableModule,
+    ButtonModule,
+    CardModule,
+    DatePipe,
+    PaginatorModule,
+    FilterComponent,
+  ],
   templateUrl: './refferals-page.html',
   styleUrl: './refferals-page.scss',
   providers: [DialogService, PatientCodeDialogService],
@@ -36,6 +52,94 @@ export class RefferalsPage {
         ),
       ),
   );
+
+  protected readonly first = signal(0);
+  protected readonly rows = signal(10);
+
+  protected readonly filters = signal<{
+    searchTerm: string;
+    status: string;
+    dateFrom: Date | null;
+    dateTo: Date | null;
+    sortField: string;
+    sortOrder: 'asc' | 'desc';
+  }>({
+    searchTerm: '',
+    status: 'all',
+    dateFrom: null,
+    dateTo: null,
+    sortField: 'date',
+    sortOrder: 'desc',
+  });
+
+  protected onPageChange(event: PaginatorState): void {
+    this.first.set(event.first ?? 0);
+    this.rows.set(event.rows ?? 10);
+  }
+
+  protected readonly filteredReferrals = computed(() => {
+    const f = this.filters();
+    const search = f.searchTerm?.toLowerCase().trim() ?? '';
+    const from = f.dateFrom ? new Date(f.dateFrom) : null;
+    const to = f.dateTo ? new Date(f.dateTo) : null;
+
+    const list = this.referrals() ?? [];
+    return list.filter((r: Refferal) => {
+      if (from && r.date < from) return false;
+      if (to && r.date > to) return false;
+      if (search) {
+        const hay = `${r.doctorName} ${r.prescriptionPin}`.toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+  });
+
+  protected readonly totalRecords = computed(
+    () => this.filteredReferrals().length,
+  );
+
+  protected readonly sortedReferrals = computed(() => {
+    const list = this.filteredReferrals().slice();
+    const { sortField, sortOrder } = this.filters();
+    const dir = sortOrder === 'asc' ? 1 : -1;
+    list.sort((a, b) => {
+      let av: number | string = 0;
+      let bv: number | string = 0;
+      switch (sortField) {
+        case 'doctorName':
+          av = a.doctorName?.toLowerCase() ?? '';
+          bv = b.doctorName?.toLowerCase() ?? '';
+          break;
+        case 'date':
+        default:
+          av = a.date?.getTime?.() ?? 0;
+          bv = b.date?.getTime?.() ?? 0;
+      }
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+    return list;
+  });
+
+  protected readonly paginatedReferrals = computed(() => {
+    const start = this.first();
+    const end = start + this.rows();
+    return this.sortedReferrals().slice(start, end);
+  });
+
+  protected onFiltersChange(ev: {
+    searchTerm: string;
+    status: string;
+    dateFrom: Date | null;
+    dateTo: Date | null;
+    sortField: string;
+    sortOrder: 'asc' | 'desc';
+  }): void {
+    this.filters.set(ev);
+    this.first.set(0);
+  }
 
   protected copyToClipboard(pin: number): void {
     navigator.clipboard

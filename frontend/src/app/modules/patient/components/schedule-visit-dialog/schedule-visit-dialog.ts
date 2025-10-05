@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +16,10 @@ import {
   CalendarSchedule,
 } from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { RescheduleData } from '../../models/visit-page.model';
+import {
+  PatientVisitsService,
+  ScheduleResponse,
+} from '../../services/patient-visits.service';
 
 @Component({
   selector: 'app-schedule-visit-dialog',
@@ -29,7 +34,7 @@ import { RescheduleData } from '../../models/visit-page.model';
   styleUrl: './schedule-visit-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScheduleVisitDialog {
+export class ScheduleVisitDialog implements OnInit {
   private ref = inject(DynamicDialogRef);
   private config = inject(DynamicDialogConfig);
   protected translationService = inject(TranslationService);
@@ -38,15 +43,16 @@ export class ScheduleVisitDialog {
 
   protected readonly availableDays = signal<AvailableDay[]>([]);
 
-  protected readonly isLoading = signal(!this.config.data?.availableTerms);
-
   constructor() {
-    this.initializeAvailableDays();
+    if (!this.visitId) {
+      this.initializeAvailableDays();
+    }
   }
+
+  private visitService = inject(PatientVisitsService);
 
   private initializeAvailableDays(): void {
     const backendData = this.config.data?.availableTerms || [];
-
     const convertedDays: AvailableDay[] = backendData.map(
       (term: {
         date: string;
@@ -73,7 +79,6 @@ export class ScheduleVisitDialog {
             } else if (slot.time) {
               time = slot.time;
             } else {
-              console.warn('Slot missing time information:', slot);
               time = '00:00';
             }
 
@@ -93,14 +98,16 @@ export class ScheduleVisitDialog {
     this.availableDays.set(convertedDays);
   }
 
-  protected readonly rescheduleData = signal<RescheduleData>({
-    doctorName: this.config.data?.event.doctor?.name || 'Dr. Smith',
-    institution: this.config.data?.institution || 'Szpital Powiatowy, Kraśnik',
-    selectedDate: this.config.data?.event?.day || undefined,
-    selectedTime: this.config.data?.event?.time || undefined,
-    selectedSlotId: this.config.data?.event?.slotId || undefined,
-    patientRemarks: '',
-  });
+  ngOnInit(): void {
+    if (!this.config.data.visitId) {
+      return;
+    }
+    this.initVisitInformation();
+
+    this.initializeAvailableDays();
+  }
+
+  protected readonly rescheduleData = signal<RescheduleData | null>(null);
 
   protected onDateTimeSelected(selection: {
     date: Date;
@@ -108,7 +115,10 @@ export class ScheduleVisitDialog {
     slotId?: string;
   }): void {
     this.rescheduleData.update((data) => ({
-      ...data,
+      doctorName: data?.doctorName ?? '',
+      doctorId: data?.doctorId ?? '',
+      institution: data?.institution ?? '',
+      patientRemarks: data?.patientRemarks ?? '',
       selectedDate: selection.date,
       selectedTime: selection.time,
       selectedSlotId: selection.slotId,
@@ -116,25 +126,31 @@ export class ScheduleVisitDialog {
   }
 
   protected onRemarksChange(remarks: string | null): void {
-    console.log(remarks);
     this.rescheduleData.update((data) => ({
-      ...data,
-      patientRemarks: remarks || '',
+      doctorName: data?.doctorName ?? '',
+      doctorId: data?.doctorId ?? '',
+      institution: data?.institution ?? '',
+      patientRemarks: remarks ?? '',
+      selectedDate: data?.selectedDate ?? new Date(),
+      selectedTime: data?.selectedTime ?? '',
+      selectedSlotId: data?.selectedSlotId ?? '',
     }));
   }
 
   protected isFormValid(): boolean {
     const data = this.rescheduleData();
-    return !!(data.selectedDate && data.selectedTime);
+    return !!(data && data.selectedDate && data.selectedTime);
   }
 
   protected confirmReschedule(): void {
     if (!this.isFormValid()) {
-      console.warn('Please select date and time');
       return;
     }
 
     const rescheduleData = this.rescheduleData();
+    if (!rescheduleData) {
+      return;
+    }
 
     const result = {
       visitId: this.visitId,
@@ -149,5 +165,79 @@ export class ScheduleVisitDialog {
 
   protected cancelReschedule(): void {
     this.ref.close(null);
+  }
+
+  private initVisitInformation(): void {
+    this.visitService
+      .getVisitDetails(this.config.data?.visitId)
+      .subscribe((visit) => {
+        const startTime = new Date(visit.visit.time.startTime);
+
+        this.rescheduleData.set({
+          doctorName: `${visit.visit.doctor.doctorName} ${visit.visit.doctor.doctorSurname}`,
+          doctorId: visit.visit.doctor.userId,
+          institution: visit.visit.institution.institutionName,
+          patientRemarks: visit.visit.patientRemarks || '',
+          selectedDate: startTime,
+          selectedTime: startTime.toTimeString().slice(0, 5),
+          selectedSlotId: visit.visit.time.scheduleId,
+        });
+
+        if (visit.visit.doctor.userId) {
+          this.getDoctorSchedule(visit.visit.doctor.userId);
+        }
+      });
+  }
+
+  private getDoctorSchedule(doctorId: string): void {
+    this.visitService
+      .getDoctorSchedule(doctorId)
+      .subscribe((response: ScheduleResponse) => {
+        let schedules = response.schedules || [];
+        const availableDaysMap = new Map<string, AvailableDay>();
+        console.log(schedules.length);
+        schedules = schedules.filter((schedule) => {
+          return (
+            schedule.institution.institutionName ===
+            this.rescheduleData()?.institution
+          );
+        });
+        schedules.forEach((schedule) => {
+          const startDate = new Date(schedule.startHour);
+          const dateKey = startDate.toISOString().split('T')[0];
+          const timeString = startDate.toTimeString().slice(0, 5);
+
+          if (!availableDaysMap.has(dateKey)) {
+            availableDaysMap.set(dateKey, {
+              date: dateKey,
+              slots: [],
+            });
+          }
+
+          const day = availableDaysMap.get(dateKey)!;
+          day.slots.push({
+            id: schedule.id,
+            time: timeString,
+            available: !schedule.booked,
+            booked: schedule.booked,
+          });
+        });
+
+        const availableDays = Array.from(availableDaysMap.values()).sort(
+          (a, b) => {
+            const aDate =
+              typeof a.date === 'string'
+                ? a.date
+                : a.date.toISOString().split('T')[0];
+            const bDate =
+              typeof b.date === 'string'
+                ? b.date
+                : b.date.toISOString().split('T')[0];
+            return aDate.localeCompare(bDate);
+          },
+        );
+
+        this.availableDays.set(availableDays);
+      });
   }
 }

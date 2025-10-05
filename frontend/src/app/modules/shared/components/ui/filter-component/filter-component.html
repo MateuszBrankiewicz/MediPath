@@ -1,0 +1,136 @@
+<div class="filter-container gradient-bg">
+  <div class="filter-wrapper">
+    @if (showSearch()) {
+      <div class="filter-row row-1">
+        <div class="filter-item filter-search">
+          <label class="filter-label" for="searchInput">
+            {{
+              translationService.translate("shared.filters.search") || "Szukaj"
+            }}
+          </label>
+          <input
+            pInputText
+            id="searchInput"
+            class="w-full"
+            type="text"
+            [placeholder]="
+              searchPlaceholder() ??
+              translationService.translate('shared.filters.searchPlaceholder')
+            "
+            [ngModel]="searchTerm()"
+            (ngModelChange)="searchTerm.set($event)"
+          />
+        </div>
+      </div>
+    }
+
+    @if (showStatus() || showDates()) {
+      <div class="filter-row row-2">
+        @if (showStatus()) {
+          <div class="filter-item filter-status">
+            <label class="filter-label" for="statusSelect">
+              {{ translationService.translate("shared.filters.status") }}
+            </label>
+            <p-select
+              inputId="statusSelect"
+              [options]="statusOptions()"
+              optionLabel="label"
+              optionValue="value"
+              [placeholder]="translationService.translate('shared.filters.all')"
+              [ngModel]="selectedStatus()"
+              (ngModelChange)="selectedStatus.set($event)"
+              class="w-full"
+            ></p-select>
+          </div>
+        }
+
+        @if (showDates()) {
+          <div class="filter-item filter-date-from">
+            <label class="filter-label" for="dateFrom">
+              {{ translationService.translate("shared.filters.dateFrom") }}
+            </label>
+            <p-datepicker
+              inputId="dateFrom"
+              [ngModel]="selectedDate()"
+              (ngModelChange)="selectedDate.set($event)"
+              [placeholder]="
+                translationService.translate('shared.filters.dateFrom')
+              "
+              class="w-full"
+            ></p-datepicker>
+          </div>
+
+          <div class="filter-item filter-date-to">
+            <label class="filter-label" for="dateTo">
+              {{ translationService.translate("shared.filters.dateTo") }}
+            </label>
+            <p-datepicker
+              inputId="dateTo"
+              [ngModel]="selectedEndDate()"
+              (ngModelChange)="selectedEndDate.set($event)"
+              [placeholder]="
+                translationService.translate('shared.filters.dateTo')
+              "
+              class="w-full"
+            ></p-datepicker>
+          </div>
+        }
+      </div>
+    }
+
+    @if (showSort() || showActions()) {
+      <div class="filter-row row-3">
+        @if (showSort()) {
+          <div class="filter-item filter-sort-by">
+            <label class="filter-label" for="sortBy">
+              {{ translationService.translate("shared.filters.sortBy") }}
+            </label>
+            <p-select
+              inputId="sortBy"
+              [options]="sortByOptions()"
+              optionLabel="label"
+              optionValue="value"
+              [ngModel]="sortField()"
+              (ngModelChange)="sortField.set($event)"
+              class="w-full"
+            ></p-select>
+          </div>
+
+          <div class="filter-item filter-sort-order">
+            <label class="filter-label" for="sortOrder">
+              {{ translationService.translate("shared.filters.sortOrder") }}
+            </label>
+            <p-select
+              inputId="sortOrder"
+              [options]="sortOrderOptions()"
+              optionLabel="label"
+              optionValue="value"
+              [ngModel]="sortOrder()"
+              (ngModelChange)="sortOrder.set($event)"
+              class="w-full"
+            ></p-select>
+          </div>
+        }
+
+        @if (showActions()) {
+          <div class="filter-actions">
+            <p-button
+              icon="pi pi-filter-slash"
+              [label]="translationService.translate('shared.filters.clear')"
+              severity="secondary"
+              [outlined]="true"
+              size="small"
+              (onClick)="clearFilters()"
+            ></p-button>
+            <p-button
+              icon="pi pi-filter"
+              [label]="translationService.translate('shared.filters.apply')"
+              size="small"
+              (onClick)="applyFilters()"
+            ></p-button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,6 +1,20 @@
 <h2>{{ translationService.translate("patient.referrals.title") }}</h2>
+
+<app-filter-component
+  (filtersChange)="onFiltersChange($event)"
+  [defaults]="{
+    searchTerm: '',
+    status: 'all',
+    dateFrom: null,
+    dateTo: null,
+    sortField: 'date',
+    sortOrder: 'desc',
+  }"
+  [autoApply]="true"
+></app-filter-component>
+
 <div class="referrals-list">
-  @for (referral of referrals(); track referral.id) {
+  @for (referral of paginatedReferrals(); track referral.id) {
     <p-card class="referral-card">
       <div class="referral-content">
         <div class="referral-icon">
@@ -77,4 +91,12 @@
       </div>
     </p-card>
   }
+
+  <p-paginator
+    (onPageChange)="onPageChange($event)"
+    [first]="first()"
+    [rows]="rows()"
+    [totalRecords]="totalRecords()"
+    [rowsPerPageOptions]="[10, 20, 30]"
+  />
 </div>

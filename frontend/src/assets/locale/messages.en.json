@@ -379,12 +379,29 @@
   "patient.dashboard.empty.visits": "No upcoming visits",
   "patient.dashboard.empty.prescriptionsMessage": "You don't have any active prescriptions at the moment.",
   "patient.dashboard.empty.referralsMessage": "You don't have any active referrals at the moment.",
-  "patient.dashboard.empty.visitsMessage": "You don't have any scheduled visits in the near future."
-
-  ,
+  "patient.dashboard.empty.visitsMessage": "You don't have any scheduled visits in the near future.",
+  "patient.appointment.bookSuccess": "Appointment booked successfully",
+  "patient.appointment.bookError": "We couldn't book the appointment. Please try again.",
   "admin.dashboard.selectInstitution": "Select Institution",
   "admin.dashboard.comments": "Comments",
   "admin.dashboard.upcomingVisits": "Upcoming visits",
-  "admin.dashboard.changeDoctor": "CHANGE DOCTOR"
+  "admin.dashboard.changeDoctor": "CHANGE DOCTOR",
+  "shared.filters.searchPlaceholder": "Search by doctor or institution...",
+  "shared.filters.search": "Search",
+  "shared.filters.status": "Status",
+  "shared.filters.dateFrom": "Date from",
+  "shared.filters.dateTo": "Date to",
+  "shared.filters.apply": "Apply",
+  "shared.filters.clear": "Clear",
+  "shared.filters.all": "All"
+  ,
+  "shared.filters.sortBy": "Sort by",
+  "shared.filters.sortOrder": "Order",
+  "shared.filters.ascending": "Ascending",
+  "shared.filters.descending": "Descending",
+  "shared.filters.date": "Date",
+
+ "code.statusActive": "Not Used",
+  "code.statusUsed": "Used"
 
 }

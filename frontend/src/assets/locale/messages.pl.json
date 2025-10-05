@@ -388,4 +388,22 @@
   "admin.dashboard.upcomingVisits": "Nadchodzące wizyty",
   "admin.dashboard.changeDoctor": "Zmień lekarza"
 
+  ,
+  "shared.filters.searchPlaceholder": "Szukaj po lekarzu lub placówce...",
+  "shared.filters.search": "Szukaj",
+  "shared.filters.status": "Status",
+  "shared.filters.dateFrom": "Data od",
+  "shared.filters.dateTo": "Data do",
+  "shared.filters.apply": "Zastosuj",
+  "shared.filters.clear": "Wyczyść",
+  "shared.filters.all": "Wszystkie"
+  ,
+  "shared.filters.sortBy": "Sortuj wg",
+  "shared.filters.sortOrder": "Kolejność",
+  "shared.filters.ascending": "Rosnąco",
+  "shared.filters.descending": "Malejąco",
+  "shared.filters.date": "Data",
+
+  "code.statusActive": "Nie użyte",
+  "code.statusUsed": "Użyte"
 }

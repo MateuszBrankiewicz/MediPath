@@ -12,6 +12,7 @@ import { ButtonModule } from 'primeng/button';
 import { DataViewModule } from 'primeng/dataview';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastService } from '../../../../../core/services/toast/toast.service';
+import { TranslationService } from '../../../../../core/services/translation/translation.service';
 import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
 import { PatientVisitsService } from '../../../../patient/services/patient-visits.service';
 import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
@@ -48,6 +49,7 @@ export class SearchResultComponent implements OnInit {
   private dialogRef: DynamicDialogRef | null = null;
   private patientVisitsService = inject(PatientVisitsService);
   private toastService = inject(ToastService);
+  private readonly translationService = inject(TranslationService);
   protected readonly category = signal('');
 
   protected readonly values = signal<SearchResponse | null>(null);
@@ -69,14 +71,7 @@ export class SearchResultComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const query = params['query'] || '';
-      const category = params['category'] || '';
-      const location = params['location'] || '';
-      const specialization = params['specialization'] || '';
-      this.category.set(category);
-      this.performSearch({ query, category, location, specialization });
-    });
+    this.requestSearchResult();
   }
 
   protected performSearch(params: SearchQuery): void {
@@ -84,7 +79,6 @@ export class SearchResultComponent implements OnInit {
       .search(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((results) => {
-        console.log('Search results:', results);
         this.values.set(results);
       });
   }
@@ -115,14 +109,26 @@ export class SearchResultComponent implements OnInit {
     this.dialogRef.onClose.subscribe((result) => {
       if (result) {
         this.patientVisitsService
-          .scheduleVisit(result.slotId, result.patientRemarks)
+          .scheduleVisit({
+            scheduleID: result.slotId,
+            patientRemarks: result.patientRemarks,
+          })
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: () => {
-              this.toastService.showSuccess('Appointment booked successfully');
+              this.toastService.showSuccess(
+                this.translationService.translate(
+                  'patient.appointment.bookSuccess',
+                ),
+              );
+              this.requestSearchResult();
             },
-            error: (err) => {
-              console.error('Error booking appointment:', err);
+            error: () => {
+              this.toastService.showError(
+                this.translationService.translate(
+                  'patient.appointment.bookError',
+                ),
+              );
             },
           });
       }
@@ -135,5 +141,16 @@ export class SearchResultComponent implements OnInit {
 
   onAddressChange(event: AddressChange): void {
     console.log('Address changed:', event);
+  }
+
+  private requestSearchResult(): void {
+    this.route.queryParams.subscribe((params) => {
+      const query = params['query'] || '';
+      const category = params['category'] || '';
+      const location = params['location'] || '';
+      const specialization = params['specialization'] || '';
+      this.category.set(category);
+      this.performSearch({ query, category, location, specialization });
+    });
   }
 }
