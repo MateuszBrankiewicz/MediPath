@@ -16,7 +16,9 @@ import { catchError, map } from 'rxjs';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
+import { FilterParams } from '../../models/filter.model';
 import { Refferal, UsedState } from '../../models/refferal-page.model';
+import { CodesFilterService } from '../../services/codesFilter.service';
 import { PatientCodeDialogService } from '../../services/paitent-code-dialog.service';
 import { PatientCodesService } from '../../services/patient-codes.service';
 
@@ -40,7 +42,7 @@ export class RefferalsPage {
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
   private codeService = inject(PatientCodesService);
-
+  private filterCodesService = inject(CodesFilterService);
   private readonly manageDialogCodeService = inject(PatientCodeDialogService);
 
   protected referrals = toSignal<Refferal[]>(
@@ -56,14 +58,7 @@ export class RefferalsPage {
   protected readonly first = signal(0);
   protected readonly rows = signal(10);
 
-  protected readonly filters = signal<{
-    searchTerm: string;
-    status: string;
-    dateFrom: Date | null;
-    dateTo: Date | null;
-    sortField: string;
-    sortOrder: 'asc' | 'desc';
-  }>({
+  protected readonly filters = signal<FilterParams>({
     searchTerm: '',
     status: 'all',
     dateFrom: null,
@@ -77,66 +72,31 @@ export class RefferalsPage {
     this.rows.set(event.rows ?? 10);
   }
 
-  protected readonly filteredReferrals = computed(() => {
-    const f = this.filters();
-    const search = f.searchTerm?.toLowerCase().trim() ?? '';
-    const from = f.dateFrom ? new Date(f.dateFrom) : null;
-    const to = f.dateTo ? new Date(f.dateTo) : null;
-
-    const list = this.referrals() ?? [];
-    return list.filter((r: Refferal) => {
-      if (from && r.date < from) return false;
-      if (to && r.date > to) return false;
-      if (search) {
-        const hay = `${r.doctorName} ${r.prescriptionPin}`.toLowerCase();
-        if (!hay.includes(search)) return false;
-      }
-      return true;
+  protected readonly filteredPrescriptions = computed(() => {
+    const filterValue = this.filters();
+    const codes = this.filterCodesService.filterCodes(this.referrals() ?? [], {
+      searchTerm: filterValue.searchTerm,
+      status: filterValue.status,
+      dateFrom: filterValue.dateFrom,
+      dateTo: filterValue.dateTo,
+      sortField: '',
+      sortOrder: 'asc',
     });
+
+    return codes;
   });
 
   protected readonly totalRecords = computed(
-    () => this.filteredReferrals().length,
+    () => this.filteredPrescriptions().length,
   );
-
-  protected readonly sortedReferrals = computed(() => {
-    const list = this.filteredReferrals().slice();
-    const { sortField, sortOrder } = this.filters();
-    const dir = sortOrder === 'asc' ? 1 : -1;
-    list.sort((a, b) => {
-      let av: number | string = 0;
-      let bv: number | string = 0;
-      switch (sortField) {
-        case 'doctorName':
-          av = a.doctorName?.toLowerCase() ?? '';
-          bv = b.doctorName?.toLowerCase() ?? '';
-          break;
-        case 'date':
-        default:
-          av = a.date?.getTime?.() ?? 0;
-          bv = b.date?.getTime?.() ?? 0;
-      }
-      if (av < bv) return -1 * dir;
-      if (av > bv) return 1 * dir;
-      return 0;
-    });
-    return list;
-  });
 
   protected readonly paginatedReferrals = computed(() => {
     const start = this.first();
     const end = start + this.rows();
-    return this.sortedReferrals().slice(start, end);
+    return this.filteredPrescriptions().slice(start, end);
   });
 
-  protected onFiltersChange(ev: {
-    searchTerm: string;
-    status: string;
-    dateFrom: Date | null;
-    dateTo: Date | null;
-    sortField: string;
-    sortOrder: 'asc' | 'desc';
-  }): void {
+  protected onFiltersChange(ev: FilterParams): void {
     this.filters.set(ev);
     this.first.set(0);
   }
@@ -145,7 +105,6 @@ export class RefferalsPage {
     navigator.clipboard
       .writeText(pin.toString())
       .then(() => {
-        console.log('PIN copied to clipboard:', pin);
         this.toastService.showSuccess('PIN copied to clipboard');
       })
       .catch(() => {
@@ -160,7 +119,6 @@ export class RefferalsPage {
   }
 
   protected markAsUsed(referral: Refferal): void {
-    console.log('Attempting to mark referral as used:', referral);
     if (referral.status === 'USED') {
       this.toastService.showInfo('This referral is already marked as used.');
       return;

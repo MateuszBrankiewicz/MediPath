@@ -1,19 +1,12 @@
 import { Injectable } from '@angular/core';
+import { FilterParams } from '../models/filter.model';
 import { Refferal, UsedState } from '../models/refferal-page.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CodesFilterService {
-  public filterCodes(
-    codes: Refferal[],
-    filters: {
-      searchTerm?: string;
-      status?: string;
-      dateFrom?: Date | null;
-      dateTo?: Date | null;
-    },
-  ) {
+  public filterCodes(codes: Refferal[], filters: FilterParams) {
     if (!codes) return [];
     const search = filters.searchTerm?.toLowerCase().trim() ?? '';
     const statusFilter = (filters.status ?? 'all').toUpperCase();
@@ -21,7 +14,7 @@ export class CodesFilterService {
     const from = filters.dateFrom ? new Date(filters.dateFrom) : null;
     const to = filters.dateTo ? new Date(filters.dateTo) : null;
 
-    return codes.filter((value) => {
+    codes.filter((value) => {
       if (
         statusFilter !== 'all'.toUpperCase() &&
         value.status !== (statusFilter as UsedState)
@@ -40,6 +33,8 @@ export class CodesFilterService {
       }
       return true;
     });
+    codes = this.sortCodes(codes, filters.sortField, filters.sortOrder);
+    return codes;
   }
 
   public sortCodes(

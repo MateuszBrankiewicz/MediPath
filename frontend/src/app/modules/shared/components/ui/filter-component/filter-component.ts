@@ -14,6 +14,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
+import { FilterParams } from '../../../../patient/models/filter.model';
 
 @Component({
   selector: 'app-filter-component',
@@ -43,14 +44,7 @@ export class FilterComponent {
   >(null);
   readonly searchPlaceholder = input<string | null>(null);
 
-  readonly defaults = input<{
-    searchTerm?: string;
-    status?: string;
-    dateFrom?: Date | null;
-    dateTo?: Date | null;
-    sortField?: string;
-    sortOrder?: 'asc' | 'desc';
-  } | null>(null);
+  readonly defaults = input<FilterParams | null>(null);
   readonly syncWithDefaults = input<boolean>(false);
 
   readonly defaultStatusOptions = computed(() => {
@@ -133,14 +127,7 @@ export class FilterComponent {
     () => this.sortOrderOptionsInput() ?? this.defaultSortOrderOptions(),
   );
 
-  readonly filtersChange = output<{
-    searchTerm: string;
-    status: string;
-    dateFrom: Date | null;
-    dateTo: Date | null;
-    sortField: string;
-    sortOrder: 'asc' | 'desc';
-  }>();
+  readonly filtersChange = output<FilterParams>();
 
   private emitChange(): void {
     this.filtersChange.emit({

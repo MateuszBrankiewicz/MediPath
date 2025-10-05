@@ -15,6 +15,7 @@ import { TableModule } from 'primeng/table';
 import { catchError, map } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
+import { FilterParams } from '../../models/filter.model';
 import { Refferal, UsedState } from '../../models/refferal-page.model';
 import { CodesFilterService } from '../../services/codesFilter.service';
 import { PatientCodesService } from '../../services/patient-codes.service';
@@ -44,14 +45,7 @@ export class PrescriptionPage {
   protected codeService = inject(PatientCodesService);
   private filterCodesService = inject(CodesFilterService);
 
-  protected readonly filters = signal<{
-    searchTerm: string;
-    status: string;
-    dateFrom: Date | null;
-    dateTo: Date | null;
-    sortField: string;
-    sortOrder: 'asc' | 'desc';
-  }>({
+  protected readonly filters = signal<FilterParams>({
     searchTerm: '',
     status: 'all',
     dateFrom: null,
@@ -68,21 +62,18 @@ export class PrescriptionPage {
 
   protected readonly filteredPrescriptions = computed(() => {
     const filterValue = this.filters();
-    let codes = this.filterCodesService.filterCodes(
+    const codes = this.filterCodesService.filterCodes(
       this.prescriptions() ?? [],
       {
         searchTerm: filterValue.searchTerm,
         status: filterValue.status,
         dateFrom: filterValue.dateFrom,
         dateTo: filterValue.dateTo,
+        sortField: '',
+        sortOrder: 'asc',
       },
     );
 
-    codes = this.filterCodesService.sortCodes(
-      codes,
-      filterValue.sortField,
-      filterValue.sortOrder,
-    );
     return codes;
   });
 
@@ -176,14 +167,7 @@ export class PrescriptionPage {
       });
   }
 
-  protected onFiltersChange(filterValue: {
-    searchTerm: string;
-    status: string;
-    dateFrom: Date | null;
-    dateTo: Date | null;
-    sortField: string;
-    sortOrder: 'asc' | 'desc';
-  }) {
+  protected onFiltersChange(filterValue: FilterParams): void {
     this.filters.set(filterValue);
   }
 }
