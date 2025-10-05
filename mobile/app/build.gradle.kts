@@ -71,17 +71,14 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
     debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
 
-    //unit tests
-//    testImplementation("androidx.test:core:1.5.0")
-//    testImplementation("org.mockito:mockito-core:5.7.0")
-//    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
-//    testImplementation("io.mockk:mockk:1.13.8")
-//    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-//    testImplementation("androidx.arch.core:core-testing:2.2.0")
-
     implementation("androidx.compose.material:material-icons-extended:$compose_version")
 
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+//
+//    implementation("com.google.code.gson:gson:2.10.1")
+//    implementation("io.reactivex.rxjava2:rxjava:2.2.21")
+//    implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
+//    implementation("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
 }

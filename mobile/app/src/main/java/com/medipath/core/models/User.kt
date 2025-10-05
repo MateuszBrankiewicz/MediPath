@@ -13,9 +13,8 @@ data class User(
     val id: String,
     val licenceNumber: String,
     val specialisations: List<String>,
-    val latestMedicalHistory: List<String>,
+    val latestMedicalHistory: List<MedicalHistory>,
     val roleCode: Int,
-    val notifications: List<String>,
     val rating: Double,
     val employers: List<Employer> = emptyList(),
     val active: Boolean

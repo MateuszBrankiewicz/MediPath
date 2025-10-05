@@ -65,7 +65,7 @@ class LoginViewModel(
                     }
                 }
             } catch (e: Exception) {
-                _loginError.value = "Registration failed"
+                _loginError.value = "Login failed"
                 Log.e("LoginViewModel", "Network error: ${e.message}", e)
             }
         }

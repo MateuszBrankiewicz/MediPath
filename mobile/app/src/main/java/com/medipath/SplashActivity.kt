@@ -6,18 +6,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -62,48 +58,6 @@ class SplashActivity : ComponentActivity() {
 
 @Composable
 fun SplashScreen(onGetStartedClick: () -> Unit) {
-    var startAnimations by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        startAnimations = true
-    }
-
-    val infiniteTransition = rememberInfiniteTransition(label = "splash_animation")
-
-    val fadeInAlpha by animateFloatAsState(
-        targetValue = if (startAnimations) 1f else 0f,
-        animationSpec = tween(durationMillis = 800, easing = EaseOutCubic),
-        label = "fade_in"
-    )
-
-    val logoOffset by animateFloatAsState(
-        targetValue = if (startAnimations) 0f else -100f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 200, easing = EaseOutBack),
-        label = "logo_offset"
-    )
-
-    val logoScale by animateFloatAsState(
-        targetValue = if (startAnimations) 1f else 0.3f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 200, easing = EaseOutBack),
-        label = "logo_scale"
-    )
-
-    val bottomSectionOffset by animateFloatAsState(
-        targetValue = if (startAnimations) 0f else 200f,
-        animationSpec = tween(durationMillis = 800, delayMillis = 600, easing = EaseOutCubic),
-        label = "bottom_section_offset"
-    )
-
-    val buttonScale by infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutQuart),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "button_pulse"
-    )
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -125,23 +79,13 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
                 .size(100.dp)
                 .offset(y = 200.dp)
                 .align(Alignment.TopCenter)
-                .graphicsLayer {
-                    scaleX = logoScale
-                    scaleY = logoScale
-                    translationY = logoOffset
-                    alpha = fadeInAlpha
-                }
         )
 
         Column(
             modifier = Modifier
                 .width(350.dp)
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 25.dp)
-                .graphicsLayer {
-                    translationY = bottomSectionOffset
-                    alpha = fadeInAlpha
-                },
+                .padding(bottom = 25.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -173,11 +117,6 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
                 modifier = Modifier
                     .width(410.dp)
                     .padding(vertical = 14.dp)
-                    .graphicsLayer {
-                        scaleX = buttonScale
-                        scaleY = buttonScale
-                        shadowElevation = (buttonScale - 1f) * 50f
-                    }
             ) {
                 Text(
                     text = "GET STARTED",

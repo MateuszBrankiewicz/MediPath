@@ -1,7 +1,9 @@
 package com.medipath.core.models
 
 data class CodeItem(
-    val codes: CodeData
+    val codes: CodeData,
+    val date: String,
+    val doctor: String
 )
 
 data class CodeData(

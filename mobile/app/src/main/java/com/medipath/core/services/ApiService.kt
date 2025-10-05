@@ -39,8 +39,8 @@ interface ApiService {
     @GET("/api/users/profile")
     suspend fun getUserProfile(@Header("Cookie") cookie: String): UserProfileResponse
 
-    @GET("/api/visits/getupcoming/{userid}")
-    suspend fun getUpcomingVisits(@Path("userid") userId: String, @Header("Cookie") cookie: String): VisitsResponse
+    @GET("/api/users/me/visits")
+    suspend fun getUpcomingVisits(@Query("upcoming") upcoming: String = "true", @Header("Cookie") cookie: String): VisitsResponse
 
     @DELETE("/api/visits/{visitid}")
     suspend fun cancelVisit(@Path("visitid") visitId: String, @Header("Cookie") cookie: String): Response<Unit>
@@ -48,6 +48,6 @@ interface ApiService {
     @GET("/api/search/{query}")
     suspend fun search(@Path("query") query: String, @Query("type") type: String, @Query("city") city: String? = null, @Query("specialisations") specialisations: String? = null): Response<SearchResponse>
 
-    @GET("api/visits/getactivecodes/{userid}")
-    suspend fun getActiveCodes(@Path("userid") userId: String): Response<CodesResponse>
+    @GET("/api/users/me/codes")
+    suspend fun getActiveCodes(@Header("Cookie") cookie: String): Response<CodesResponse>
 }

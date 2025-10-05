@@ -51,22 +51,17 @@ class HomeViewModel(
                 fetchUpcomingVisits(token)
                 fetchActiveCodes(token)
             } catch (e: Exception) {
-                Log.e("HomeViewModel", "Error: $e")
+                Log.e("HomeViewModel", "Error fetching profile: $e")
             }
         }
     }
 
     private suspend fun fetchUpcomingVisits(token: String) {
         try {
-            Log.d("HomeViewModel", "Fetching visits for userId: ${_userId.value}")
-            Log.d("HomeViewModel", "Full URL would be: visits/upcoming/${_userId.value}")
+            Log.d("HomeViewModel", "Fetching upcoming visits")
+            Log.d("HomeViewModel", "Full URL would be: /api/users/me/visits?upcoming=true")
 
-            if (_userId.value.isEmpty()) {
-                Log.e("HomeViewModel", "UserId is empty!")
-                return
-            }
-
-            val visitsResponse = apiService.getUpcomingVisits(_userId.value, "SESSION=$token")
+            val visitsResponse = apiService.getUpcomingVisits("true", "SESSION=$token")
             _upcomingVisits.value = visitsResponse.visits
             Log.d("HomeViewModel", "Fetched ${visitsResponse.visits.size} upcoming visits")
         } catch (e: retrofit2.HttpException) {
@@ -84,14 +79,7 @@ class HomeViewModel(
 
     private suspend fun fetchActiveCodes(token: String) {
         try {
-            if (_userId.value.isEmpty()) {
-                Log.e("HomeViewModel", "UserId is empty!")
-                return
-            }
-
-            val userId = _userId.value
-
-            val codesResponse = apiService.getActiveCodes(userId)
+            val codesResponse = apiService.getActiveCodes("SESSION=$token")
 
             if (codesResponse.isSuccessful) {
                 val codes = codesResponse.body()?.codes ?: emptyList()
