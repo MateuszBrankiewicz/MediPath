@@ -687,3 +687,102 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 403 - Institution does not exist or user is not staff in institution
 - 200 - success
 
+
+### /visits/{id}
+#### Method: GET
+
+#### Path variables:
+- id - Object id of the institution
+
+#### Returns:
+- 401 - User not logged in
+- 403 - visit does not exist, user is not doctor, staff or patient
+- 200 - success
+
+
+### /comments/doctor/{id}
+#### Method: GET
+
+#### Path variables:
+- id - Object id of the doctor
+
+#### Returns:
+- 200 - returns 200 if institutiton does not exist, has no comments or has comments
+
+
+### /comments/institution/{id}
+#### Method: GET
+
+#### Path variables:
+- id - Object id of the institution
+
+#### Returns:
+- 200 - returns 200 if institutiton does not exist, has no comments or has comments
+
+
+### /notifications/read/
+#### Method: POST
+
+#### Body:
+- timestamp - timestamp of the notification
+- title - title of the notification
+
+#### Returns:
+- 401 - User not logged in
+- 403 - user does not exist
+- 200 - success
+
+
+### /notifications/readall/
+#### Method: POST
+
+
+#### Returns:
+- 401 - User not logged in
+- 403 - user does not exist
+- 200 - success
+
+
+### /doctors/{doctorid}/schedules/
+#### Method: GET
+
+#### Path variables:
+- doctorid - Object id of the doctor
+
+
+#### Returns:
+- 404 - doctor not found
+- 200 - success
+
+
+### /users/me/notifications
+#### Method: GET
+
+#### Returns:
+- 401 - user not logged in
+- 200 - success
+
+
+### /doctors/{id}/institutions/
+#### Method: GET
+
+#### Path variables:
+- doctorid - Object id of the doctor
+
+
+#### Returns:
+- 400 - doctor not found
+- 200 - success
+
+
+### /institution/{institutionid}/upcomingvisits/
+#### Method: GET
+
+#### Path variables:
+- institutionid - Object id of the institution
+
+
+#### Returns:
+- 401 - user not logged in
+- 403 - user is not staff of institution or institution does not exist
+- 200 - success
