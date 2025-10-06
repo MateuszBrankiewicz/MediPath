@@ -2,18 +2,23 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
 import { Paginator, PaginatorState } from 'primeng/paginator';
 import { PanelModule } from 'primeng/panel';
 import { RatingModule } from 'primeng/rating';
+import { Tooltip } from 'primeng/tooltip';
 import { map } from 'rxjs';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { AcceptActionDialogComponent } from '../../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { FilterParams } from '../../models/filter.model';
 import { PatientCommentService } from '../../services/patient-comment.service';
@@ -37,15 +42,20 @@ export interface CommentWithRating {
     RatingModule,
     FilterComponent,
     Paginator,
+    Tooltip,
   ],
   templateUrl: './rating-component.html',
   styleUrl: './rating-component.scss',
   providers: [DialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RatingComponent {
+export class RatingComponent implements OnInit {
   protected translationService = inject(TranslationService);
+  protected readonly comments = signal<CommentWithRating[]>([]);
+  private commentService = inject(PatientCommentService);
   private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
+  private destroyRef = inject(DestroyRef);
   protected readonly first = signal(0);
   protected readonly rows = signal(10);
   private readonly filters = signal<FilterParams>({
@@ -56,6 +66,10 @@ export class RatingComponent {
     sortField: '',
     sortOrder: 'asc',
   });
+
+  ngOnInit(): void {
+    this.initCommentsData();
+  }
 
   private readonly filteredComments = computed(() => {
     const allComments = this.comments();
@@ -106,30 +120,120 @@ export class RatingComponent {
   }
 
   protected viewRatings(comment: CommentWithRating): void {
-    this.dialogService.open(ReviewVisitDialog, {
-      width: '70%',
+    const ref = this.dialogService.open(ReviewVisitDialog, {
+      width: window.innerWidth < 768 ? '100%' : '70%',
       height: 'auto',
       data: comment,
     });
-  }
-  private commentService = inject(PatientCommentService);
+    if (!ref) {
+      return;
+    }
+    ref.onClose.subscribe((editedComment) => {
+      if (!editedComment) {
+        return;
+      }
+      const comment: Partial<CommentWithRating> = {
+        id: editedComment.commentId,
+        comment: editedComment.comments,
+        doctorRating: editedComment.doctorRating,
+        institutionRating: editedComment.institutionRating,
+      };
 
-  protected readonly comments = toSignal<CommentWithRating[]>(
-    this.commentService.getUsersComments().pipe(
-      map((response) =>
-        response.comments.map((comment) => ({
-          id: comment.id,
-          comment: comment.content,
-          doctorName: comment.doctor,
-          institutionName: comment.institution,
-          doctorRating: comment.doctorRating,
-          institutionRating: comment.institutionRating,
-        })),
-      ),
-    ),
-  );
+      this.commentService
+        .editComment(comment)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.toastService.showSuccess(
+              this.translationService.translate('comment.edit.success'),
+            );
+            this.comments.update((val) => {
+              return val.map((v) =>
+                v.id === comment.id
+                  ? {
+                      ...v,
+                      comment: comment.comment ?? v.comment,
+                      institutionRating:
+                        comment.institutionRating ?? v.institutionRating,
+                      doctorRating: comment.doctorRating ?? v.doctorRating,
+                    }
+                  : v,
+              );
+            });
+          },
+          error: (err: unknown) => {
+            console.log(err);
+            this.toastService.showError(
+              this.translationService.translate('comments.edit.failed'),
+            );
+          },
+        });
+    });
+  }
+
+  protected initCommentsData() {
+    this.commentService
+      .getUsersComments()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map((response) =>
+          response.comments.map((comment) => ({
+            id: comment.id,
+            comment: comment.content,
+            doctorName: comment.doctor,
+            institutionName: comment.institution,
+            doctorRating: comment.doctorRating,
+            institutionRating: comment.institutionRating,
+          })),
+        ),
+      )
+      .subscribe((comments) => {
+        this.comments.set(comments);
+      });
+  }
 
   protected onFiltersChange(filter: FilterParams): void {
     this.filters.set(filter);
+  }
+  protected deleteComment(comment: CommentWithRating) {
+    const ref = this.dialogService.open(AcceptActionDialogComponent, {
+      width: '400px',
+      height: 'auto',
+      closable: true,
+      header: this.translationService.translate('comment.delete.title'),
+      data: {
+        title: this.translationService.translate('comment.delete.title'),
+        message: this.translationService.translate('comment.delete.message'),
+      },
+    });
+    if (!ref) {
+      return;
+    }
+    ref.onClose.subscribe((accept) => {
+      if (accept) {
+        this.confirmDelete(comment);
+      }
+    });
+  }
+
+  protected confirmDelete(comment: CommentWithRating) {
+    this.commentService
+      .deleteComment(comment.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess(
+            this.translationService.translate('comment.deleted.success'),
+          );
+          this.comments.update((comments) =>
+            comments.filter((com) => com.id !== comment.id),
+          );
+        },
+        error: () => {
+          this.toastService.showError(
+            this.translationService.translate('comment.deleted.error'),
+          );
+        },
+      });
   }
 }

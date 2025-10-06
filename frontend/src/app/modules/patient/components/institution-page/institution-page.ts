@@ -5,6 +5,7 @@ import {
   signal,
 } from '@angular/core';
 import { CardModule } from 'primeng/card';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import {
   Hospital,
@@ -15,13 +16,32 @@ import { PatientCommentComponent } from '../patient-comment-component/patient-co
 
 @Component({
   selector: 'app-institution-page',
-  imports: [CardModule, HospitalCardComponent, PatientCommentComponent],
+  imports: [
+    CardModule,
+    HospitalCardComponent,
+    PatientCommentComponent,
+    PaginatorModule,
+  ],
   templateUrl: './institution-page.html',
   styleUrl: './institution-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstitutionPage {
   protected translationService = inject(TranslationService);
+
+  protected readonly first = signal(0);
+  protected readonly rows = signal(5);
+  protected readonly firstDoctors = signal(0);
+  protected readonly rowsDoctors = signal(5);
+
+  protected onDoctorPageChange(event: PaginatorState) {
+    this.firstDoctors.set(event.first ?? 0);
+    this.rowsDoctors.set(event.rows ?? 5);
+  }
+  protected onPageChange(event: PaginatorState) {
+    this.first.set(event.first ?? 0);
+    this.rows.set(event.rows ?? 5);
+  }
 
   sampleHospital: Hospital = {
     id: '1',

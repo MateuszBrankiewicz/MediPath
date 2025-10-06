@@ -86,8 +86,31 @@
     </div>
   } @else {
     <div class="tab-panel">
-      <div class="doctors-institutions"></div>
+      <div class="doctors-instutions">
+        @for (institution of exampleDoctor().institutions; track institution) {
+          <p-card
+            class="institution-chip"
+            [header]="'institution: ' + institution"
+            (click)="selectInstitution(institution)"
+            [class]="selectedInstitution() === institution ? 'selected' : ''"
+          ></p-card>
+        }
+      </div>
       <app-calendar-schedule></app-calendar-schedule>
+      <div class="remarks-with-schedule">
+        <textarea
+          pTextarea
+          class="appointment-description"
+          placeholder="Appointment description..."
+          [(ngModel)]="patientRemarks"
+          [rows]="10"
+        ></textarea>
+        <p-button
+          type="button"
+          label="Book appointment"
+          [disabled]="!selectedInstitution()"
+        />
+      </div>
     </div>
   }
 </div>

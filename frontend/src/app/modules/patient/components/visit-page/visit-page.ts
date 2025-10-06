@@ -19,11 +19,13 @@ import { TableModule } from 'primeng/table';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
+import { AddComentRequest } from '../../models/review-page.model';
 import {
   VisitPageModel,
   VisitResponseArray,
   VisitStatus,
 } from '../../models/visit-page.model';
+import { PatientCommentService } from '../../services/patient-comment.service';
 import { PatientVisitsService } from '../../services/patient-visits.service';
 import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
 import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
@@ -49,6 +51,7 @@ import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog
 export class VisitPage implements OnInit {
   protected readonly showVisitDetailsDialog = signal(false);
   protected readonly selectedVisitId = signal<string | null>(null);
+  private commentService = inject(PatientCommentService);
   private visitService = inject(PatientVisitsService);
   private dialogService = inject(DialogService);
   protected translationService = inject(TranslationService);
@@ -272,6 +275,35 @@ export class VisitPage implements OnInit {
       header: this.translationService.translate('patient.visits.reviewTitle'),
       width: '70%',
       height: 'auto',
+    });
+
+    if (!this.ref) {
+      return;
+    }
+
+    this.ref.onClose.subscribe((comment) => {
+      const newComment: AddComentRequest = {
+        comment: comment.comments,
+        visitID: comment.visitId,
+        doctorRating: comment.doctorRating,
+        institutionRating: comment.institutionRating,
+      };
+      this.commentService
+        .addComment(newComment)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.toastService.showSuccess(
+              this.translationService.translate('comment.add.succes'),
+            );
+          },
+          error: (err) => {
+            console.log(err);
+            this.toastService.showError(
+              this.translationService.translate('comment.add.error'),
+            );
+          },
+        });
     });
   }
 

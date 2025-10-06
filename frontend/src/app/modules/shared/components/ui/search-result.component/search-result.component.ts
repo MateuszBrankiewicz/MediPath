@@ -146,4 +146,8 @@ export class SearchResultComponent implements OnInit {
       this.performSearch({ query, category, location, specialization });
     });
   }
+
+  protected onInstitutionClicked(hospital: Hospital): void {
+    this.router.navigate(['/patient/institution', hospital.id]);
+  }
 }

@@ -2,7 +2,10 @@
 
 @if (category() === "institution") {
   @for (institution of hospitals(); track $index) {
-    <app-hospital-card [hospital]="institution"></app-hospital-card>
+    <app-hospital-card
+      (institutionClicked)="onInstitutionClicked($event)"
+      [hospital]="institution"
+    ></app-hospital-card>
   }
 } @else {
   @for (doctor of doctors(); track $index) {

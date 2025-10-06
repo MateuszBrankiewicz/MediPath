@@ -21,14 +21,24 @@
         <h4>
           Rating: {{ rating.doctorName }} and {{ rating.institutionName }}
         </h4>
-        <p-button
-          icon="pi pi-eye"
-          class="view-button"
-          [text]="true"
-          (onClick)="viewRatings(rating)"
-          pTooltip="View details"
-        >
-        </p-button>
+        <div>
+          <p-button
+            icon="pi pi-eye"
+            class="view-button"
+            [text]="true"
+            (onClick)="viewRatings(rating)"
+            pTooltip="View details"
+          >
+          </p-button>
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            pTooltip="Delete"
+            (onClick)="deleteComment(rating)"
+          >
+          </p-button>
+        </div>
       </div>
       <div class="ratings">
         <div class="rating-item">

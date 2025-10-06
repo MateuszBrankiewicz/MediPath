@@ -8,12 +8,14 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TabsModule } from 'primeng/tabs';
+import { Textarea } from 'primeng/textarea';
 import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { DoctorPageModel } from '../../models/doctor.model';
 import { DoctorService } from '../../services/doctor.service';
@@ -27,6 +29,8 @@ import { PatientCommentComponent } from '../patient-comment-component/patient-co
     TabsModule,
     CalendarSchedule,
     ButtonModule,
+    FormsModule,
+    Textarea,
   ],
   templateUrl: './doctor-page.html',
   styleUrl: './doctor-page.scss',
@@ -37,6 +41,7 @@ export class DoctorPage implements OnInit {
   private destroyRef = inject(DestroyRef);
   protected readonly doctorId = signal<string | null>(null);
   private doctorService = inject(DoctorService);
+  protected readonly patientRemarks = signal<string>('');
   protected readonly homeItem = signal<MenuItem>({
     label: 'Doctors',
     routerLink: '/patient/doctors/',
@@ -114,4 +119,8 @@ export class DoctorPage implements OnInit {
       },
     ],
   });
+  protected selectedInstitution = signal<string | null>(null);
+  protected selectInstitution(institution: string): void {
+    this.selectedInstitution.set(institution);
+  }
 }

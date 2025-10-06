@@ -109,12 +109,13 @@ export class MedicalHistoryDialog {
       date: this.fb.control(record.date ? new Date(record.date) : null, [
         Validators.required,
       ]),
-      doctorName: this.fb.nonNullable.control(record.doctor.doctorName, [
+      doctorName: this.fb.nonNullable.control(record.doctor?.doctorName ?? '', [
         Validators.required,
       ]),
-      doctorSurname: this.fb.nonNullable.control(record.doctor.doctorSurname, [
-        Validators.required,
-      ]),
+      doctorSurname: this.fb.nonNullable.control(
+        record.doctor?.doctorSurname ?? '',
+        [Validators.required],
+      ),
       notes: this.fb.control(record.note ?? '', [Validators.maxLength(2000)]),
     }) as MedicalHistoryForm;
   }

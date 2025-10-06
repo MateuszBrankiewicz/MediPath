@@ -161,7 +161,6 @@ export class MedicalHistoryPage implements OnInit {
     ref.onClose
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((updated) => {
-        console.log('Dialog closed with data:', updated.record);
         this.medicalHistoryService
           .addMedicalHistoryEntry({
             date: updated?.record.date,

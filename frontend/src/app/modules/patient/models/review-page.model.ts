@@ -15,3 +15,9 @@ export interface CommentResponse {
 export interface CommentApiResponse {
   comments: CommentResponse[];
 }
+export interface AddComentRequest {
+  visitID: string;
+  comment: string;
+  doctorRating: string;
+  institutionRating: string;
+}

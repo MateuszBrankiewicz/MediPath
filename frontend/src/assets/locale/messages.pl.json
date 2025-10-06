@@ -405,5 +405,16 @@
   "shared.filters.showFilters": "Pokaż filtry",
   "code.statusActive": "Nie użyte",
   "code.statusUsed": "Użyte",
-  "shared.filters.title": "Filtry"
+  "shared.filters.title": "Filtry",
+  "comment.edit.success": "Komentarz edytowan pomyślnie",
+  "comments.edit.failed": "Nie udało się edytować komentarza",
+   "comments.delete.success": "Usunięto komentarz",
+  "comments.delete.error" : "Wystąpił błąd",
+  "comment.add.success": "Dodano komentarz",
+  "comment.add.error": "Wystąpił błąd podczas dodawania komentarza",
+  "comment.delete.message": "Czy na pewno chcesz usunąć ten komentarz?",
+  "comment.deleted.success": "Komentarz usunięty pomyślnie",
+  "comment.delete.title": "Usuń komentarz",
+  "comment.deleted.error": "Wystąpił błąd podczas usuwania komentarza"
+
 }
