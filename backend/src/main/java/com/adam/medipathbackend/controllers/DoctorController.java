@@ -1,6 +1,9 @@
 package com.adam.medipathbackend.controllers;
 
+import com.adam.medipathbackend.models.Institution;
+import com.adam.medipathbackend.models.InstitutionDigest;
 import com.adam.medipathbackend.models.User;
+import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +19,8 @@ public class DoctorController {
     @Autowired
     UserRepository userRepository;
 
-
+    @Autowired
+    InstitutionRepository institutionRepository;
 
     @GetMapping(value= {"/{id}", "/{id}/"})
     public ResponseEntity<Map<String, Object>> getDoctor(@PathVariable String id, @RequestParam(value = "fields", required = false) String[] fields) {
@@ -53,5 +57,35 @@ public class DoctorController {
             outputFields.put("employers", foundDoctor.getEmployers());
         }
         return new ResponseEntity<>(Map.of("doctor", outputFields), HttpStatus.OK);
+    }
+
+    @GetMapping(value= {"/{id}/institutions", "/{id}/institutions/"})
+    public ResponseEntity<Map<String, Object>> getDoctorInstitutions(@PathVariable String id) {
+        Optional<User> user = userRepository.findDoctorById(id);
+        if(user.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
+        }
+        User foundDoctor = user.get();
+        ArrayList<InstitutionDigest> employers = foundDoctor.getEmployers();
+        ArrayList<Map<String, Object>> results = new ArrayList<>();
+        boolean updated = false;
+        for(int i = 0; i < employers.size(); i++) {
+            InstitutionDigest digest = employers.get(i);
+            Optional<Institution> institutionOpt = institutionRepository.findById(digest.getInstitutionId());
+            if(institutionOpt.isPresent()) {
+                Institution institution = institutionOpt.get();
+                if (!institution.getName().equals(digest.getInstitutionName())) {
+                    employers.set(i, new InstitutionDigest(digest.getInstitutionId(), institution.getName()));
+                    updated = true;
+                }
+                results.add(Map.of("institutionId", institution.getId(), "institutionName", institution.getName(), "image", institution.getImage(), "address", institution.getAddress()));
+            }
+
+        }
+        if(updated) {
+            foundDoctor.setEmployers(employers);
+            userRepository.save(foundDoctor);
+        }
+        return new ResponseEntity<>(Map.of("institutions", results), HttpStatus.OK);
     }
 }
