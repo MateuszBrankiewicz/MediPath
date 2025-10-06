@@ -1,9 +1,20 @@
 package com.medipath.modules.patient.home.ui
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -57,14 +68,29 @@ class HomeActivity : ComponentActivity() {
 
     private lateinit var notificationsService: UserNotificationsService
     private val activityDisposable = CompositeDisposable()
+    private val channelId = "medipath_notifications"
+    private var notificationId = 1
+    
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.d("HomeActivity", "Uprawnienia do powiadomień udzielone")
+        } else {
+            Log.w("HomeActivity", "Uprawnienia do powiadomień odrzucone")
+            Toast.makeText(this, "Bez uprawnień do powiadomień nie będziesz otrzymywać alertów", Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         Log.d("HomeActivity", "onCreate started - launching WebSocket setup")
+        
+        createNotificationChannel()
+        checkNotificationPermission()
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                Log.d("HomeA<ctivity", "WebSocket coroutine started")
                 val sessionManager = DataStoreSessionManager(this@HomeActivity)
                 val token = sessionManager.getSessionId()
                 Log.d("HomeActivity", "Using token for WebSocket: $token")
@@ -75,7 +101,7 @@ class HomeActivity : ComponentActivity() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { notification ->
                         Log.d("HomeActivity", "Received notification: ${notification.title} - ${notification.content}")
-                         Toast.makeText(this@HomeActivity, "Nowe powiadomienie: ${notification.title}", Toast.LENGTH_SHORT).show()
+                        showNotification(notification.title, notification.content)
                     }
                 activityDisposable.add(notificationSubscription)
                 notificationsService.connect("http://10.0.2.2:8080/ws")
@@ -109,6 +135,87 @@ class HomeActivity : ComponentActivity() {
                     sessionManager = sessionManager
                 )
             }
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "MediPath Powiadomienia"
+            val descriptionText = "Powiadomienia z aplikacji MediPath"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(channelId, name, importance).apply {
+                description = descriptionText
+            }
+            
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    Log.d("HomeActivity", "Uprawnienia do powiadomień już udzielone")
+                }
+                else -> {
+                    Log.d("HomeActivity", "Żądanie uprawnień do powiadomień")
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        } else {
+            Log.d("HomeActivity", "Android < 13, uprawnienia do powiadomień nie wymagane")
+        }
+    }
+
+    private fun showNotification(title: String, content: String) {
+        Log.d("HomeActivity", "Próba wyświetlenia powiadomienia: $title")
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) 
+                != PackageManager.PERMISSION_GRANTED) {
+                Log.w("HomeActivity", "Brak uprawnień do powiadomień - fallback do Toast")
+                Toast.makeText(this, "Nowe powiadomienie: $title", Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
+        
+        val intent = Intent(this, NotificationsActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            this, 0, intent, 
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val builder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        try {
+            with(NotificationManagerCompat.from(this)) {
+                if (areNotificationsEnabled()) {
+                    notify(notificationId++, builder.build())
+                    Log.d("HomeActivity", "Powiadomienie wyświetlone pomyślnie: $title")
+                } else {
+                    Log.w("HomeActivity", "Powiadomienia wyłączone przez użytkownika")
+                    Toast.makeText(this@HomeActivity, "Nowe powiadomienie: $title", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } catch (e: SecurityException) {
+            Log.w("HomeActivity", "Błąd SecurityException przy wyświetlaniu powiadomienia", e)
+            Toast.makeText(this, "Nowe powiadomienie: $title", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Log.e("HomeActivity", "Błąd przy wyświetlaniu powiadomienia", e)
+            Toast.makeText(this, "Nowe powiadomienie: $title", Toast.LENGTH_SHORT).show()
         }
     }
 
