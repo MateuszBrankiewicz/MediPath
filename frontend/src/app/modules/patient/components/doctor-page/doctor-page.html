@@ -55,10 +55,39 @@
   </div>
 </div>
 <div class="comment-block">
-  <span>Comments</span>
-  <div class="comment-content">
-    @for (comment of exampleDoctor().comments; track comment.id) {
-      <app-patient-comment-component [comment]="comment" />
-    }
+  <div class="tab-list">
+    <p-button
+      type="button"
+      class="tab"
+      [text]="true"
+      [class.active]="selectedTabIndex() === 0"
+      (click)="setSelectedTabIndex(0)"
+    >
+      Comments
+    </p-button>
+    <p-button
+      type="button"
+      class="tab"
+      [text]="true"
+      [class.active]="selectedTabIndex() === 1"
+      (click)="setSelectedTabIndex(1)"
+    >
+      Schedule
+    </p-button>
   </div>
+
+  @if (selectedTabIndex() === 0) {
+    <div [style]="{ overflow: 'auto' }">
+      <div class="comment-content">
+        @for (comment of exampleDoctor().comments; track comment.id) {
+          <app-patient-comment-component [comment]="comment" />
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="tab-panel">
+      <div class="doctors-institutions"></div>
+      <app-calendar-schedule></app-calendar-schedule>
+    </div>
+  }
 </div>

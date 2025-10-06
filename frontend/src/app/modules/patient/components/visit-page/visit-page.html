@@ -1,5 +1,6 @@
 <h2>{{ translationService.translate("patient.visits.title") }}</h2>
 <app-filter-component
+  [style]="{ width: '80%', marginTop: '1rem' }"
   (filtersChange)="onFiltersChange($event)"
   [defaults]="{
     searchTerm: '',
@@ -9,7 +10,6 @@
     sortField: 'date',
     sortOrder: 'desc',
   }"
-  [autoApply]="true"
 ></app-filter-component>
 <div class="visits-list">
   @for (visit of paginatedVisits(); track visit.id) {

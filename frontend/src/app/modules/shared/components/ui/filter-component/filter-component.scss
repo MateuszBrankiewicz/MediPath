@@ -1,98 +1,27 @@
-:host {
-  display: block;
-}
-
-.filter-container {
-  background: var(--surface-50);
-  border: 1px solid var(--surface-200);
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-}
-
-.gradient-bg {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.9) 0%,
-      rgba(255, 255, 255, 1) 100%
-    ),
-    var(--surface-50);
-}
-
-.filter-wrapper {
+.show-filter-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.filter-row {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.filter-row.row-3 {
-  justify-content: center;
   align-items: center;
-}
-
-.filter-item {
-  flex: 1 1 240px;
-  min-width: 220px;
+  margin-bottom: 1rem;
+  .filter-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-right: 0.5rem;
+  }
+  .filter-search {
+    margin-right: 0.5rem;
+  }
 }
 
 .filter-label {
+  font-size: 14px;
+  color: var(--p-text-secondary-color);
   display: block;
-  font-size: 0.85rem;
-  color: var(--text-color-secondary);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.25rem;
+  font-weight: bold;
 }
-
-.filter-actions {
+.filter-wrapper {
+  width: 100%;
   display: flex;
-  justify-content: flex-end;
-  gap: 0.6rem;
-  align-items: flex-end;
-  height: 100%;
-  min-height: 50px;
-}
-
-:host ::ng-deep {
-  .p-inputtext {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-  }
-
-  .p-datepicker,
-  .p-select {
-    width: 100%;
-  }
-
-  .p-input-icon-left > i {
-    left: 0.75rem;
-    color: var(--text-color-secondary);
-  }
-
-  .p-button.p-button-outlined {
-    border-color: var(--surface-300);
-  }
-}
-
-@media (min-width: 992px) {
-  .row-1 .filter-search {
-    flex: 1 1 100%;
-    min-width: 100%;
-  }
-  .row-2 .filter-status,
-  .row-2 .filter-date-from,
-  .row-2 .filter-date-to {
-    flex: 1 1 0;
-    min-width: 240px;
-  }
-  .row-3 .filter-sort-by,
-  .row-3 .filter-sort-order {
-    flex: 0 0 200px;
-  }
+  flex-direction: column;
+  gap: 1rem;
 }

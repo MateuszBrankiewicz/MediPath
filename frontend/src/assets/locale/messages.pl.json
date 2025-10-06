@@ -396,14 +396,14 @@
   "shared.filters.dateTo": "Data do",
   "shared.filters.apply": "Zastosuj",
   "shared.filters.clear": "Wyczyść",
-  "shared.filters.all": "Wszystkie"
-  ,
+  "shared.filters.all": "Wszystkie",
   "shared.filters.sortBy": "Sortuj wg",
   "shared.filters.sortOrder": "Kolejność",
   "shared.filters.ascending": "Rosnąco",
   "shared.filters.descending": "Malejąco",
   "shared.filters.date": "Data",
-
+  "shared.filters.showFilters": "Pokaż filtry",
   "code.statusActive": "Nie użyte",
-  "code.statusUsed": "Użyte"
+  "code.statusUsed": "Użyte",
+  "shared.filters.title": "Filtry"
 }

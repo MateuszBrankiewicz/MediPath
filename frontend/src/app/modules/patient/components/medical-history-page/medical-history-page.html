@@ -1,12 +1,29 @@
 <div class="medical-history-container">
-<h3>{{ translationService.translate('patient.medicalHistory.title') }}</h3>
-
-  <p-panel  class="history-panel">
+  <h3>{{ translationService.translate("patient.medicalHistory.title") }}</h3>
+  <app-filter-component
+    [style]="{ width: '80%', marginTop: '1rem', marginBottom: '1rem' }"
+    (filtersChange)="onFiltersChange($event)"
+    [showStatus]="false"
+    [showDates]="true"
+    [showSort]="true"
+    [defaults]="{
+      searchTerm: '',
+      status: 'all',
+      dateFrom: null,
+      dateTo: null,
+      sortField: 'date',
+      sortOrder: 'desc',
+    }"
+    [autoApply]="true"
+  />
+  <p-panel class="history-panel">
     <div class="history-list">
-      @for (record of medicalRecords(); track record.id) {
+      @for (record of filteredRecords(); track record.id) {
         <div class="history-item">
           <div class="history-content">
-            <span class="history-text">{{ record.date | date: 'dd-MM-yyyy' }} - {{ record.title }}</span>
+            <span class="history-text"
+              >{{ record.date | date: "dd-MM-yyyy" }} - {{ record.title }}</span
+            >
           </div>
           <div class="history-actions">
             <p-button
@@ -14,7 +31,8 @@
               class="view-button"
               [text]="true"
               (onClick)="viewRecord(record)"
-              pTooltip="View details">
+              pTooltip="View details"
+            >
             </p-button>
             <p-button
               icon="pi pi-trash"
@@ -22,20 +40,20 @@
               [text]="true"
               severity="danger"
               (onClick)="deleteRecord(record.id)"
-              pTooltip="Delete record">
+              pTooltip="Delete record"
+            >
             </p-button>
           </div>
         </div>
       }
     </div>
-
-
   </p-panel>
   <div class="add-entry-container">
-      <p-button
-        [label]="translationService.translate('patient.medicalHistory.addEntry')"
-        class="add-entry-button"
-        (onClick)="addNewEntry()">
-      </p-button>
-    </div>
+    <p-button
+      [label]="translationService.translate('patient.medicalHistory.addEntry')"
+      class="add-entry-button"
+      (onClick)="addNewEntry()"
+    >
+    </p-button>
+  </div>
 </div>

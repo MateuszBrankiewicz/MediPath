@@ -1,7 +1,21 @@
 <div class="rating-container">
   <h3>{{ translationService.translate("patient.rating.title") }}</h3>
 
-  @for (rating of comments(); track rating.id) {
+  <app-filter-component
+    [style]="{ width: '80%', marginTop: '1rem', marginBottom: '1rem' }"
+    (filtersChange)="onFiltersChange($event)"
+    [showStatus]="false"
+    [defaults]="{
+      searchTerm: '',
+      status: 'all',
+      dateFrom: null,
+      dateTo: null,
+      sortField: 'date',
+      sortOrder: 'desc',
+    }"
+    [autoApply]="true"
+  />
+  @for (rating of paginatedComments(); track rating.id) {
     <p-panel class="rating-panel">
       <div class="header-row">
         <h4>
@@ -46,4 +60,8 @@
       >
     </p-panel>
   }
+  <p-paginator
+    [rows]="10"
+    [totalRecords]="comments()?.length ?? 0"
+  ></p-paginator>
 </div>

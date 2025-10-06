@@ -10,7 +10,9 @@
 
         <div class="doctor-specialization">
           <span>{{ doctor().specialisation }}</span>
-          <button class="more-btn" (click)="onShowMore()">{{ translationService.translate('shared.doctorCard.more') }}</button>
+          <button class="more-btn" (click)="showMoreInfo.emit(doctor())">
+            {{ translationService.translate("shared.doctorCard.more") }}
+          </button>
         </div>
 
         <div class="doctor-rating">
@@ -21,7 +23,12 @@
               >
             }
           </div>
-          <span class="reviews-count">{{ doctor().reviewsCount }} {{ translationService.translate('shared.doctorCard.opinion') }}</span>
+          <span class="reviews-count"
+            >{{ doctor().reviewsCount }}
+            {{
+              translationService.translate("shared.doctorCard.opinion")
+            }}</span
+          >
         </div>
       </div>
     </div>
@@ -34,57 +41,66 @@
             [class.active]="i === selectedAddressIndex()"
             (click)="onAddressTabClick(i)"
           >
-            {{ translationService.translate('shared.doctorCard.address') }} {{ i + 1 }}
+            {{ translationService.translate("shared.doctorCard.address") }}
+            {{ i + 1 }}
           </button>
         }
       </div>
 
       <div class="current-address">
-        {{ doctor().addresses[selectedAddressIndex()].address | addressFormat}}
+        {{ doctor().addresses[selectedAddressIndex()].address | addressFormat }}
         <p>{{ doctor().addresses[selectedAddressIndex()].institution }}</p>
       </div>
     </div>
   </div>
 
   <div class="schedule-section">
-    @if(doctor().schedule && doctor().schedule.length > 0) {
-    <div class="schedule-days">
-      @for (day of doctor().schedule; track day) {
-        <div class="day-column">
-          <div class="day-header">
-            <div class="day-name">{{ day.dayName }}</div>
-            <div class="day-date">{{ day.dayNumber }}</div>
+    @if (doctor().schedule && doctor().schedule.length > 0) {
+      <div class="schedule-days">
+        @for (day of doctor().schedule; track day) {
+          <div class="day-column">
+            <div class="day-header">
+              <div class="day-name">{{ day.dayName }}</div>
+              <div class="day-date">{{ day.dayNumber }}</div>
+            </div>
+
+            <div class="time-slots">
+              @for (slot of day.slots; track slot) {
+                <button
+                  class="time-slot"
+                  [class.available]="slot.available && !slot.booked"
+                  [class.booked]="slot.booked"
+                  [class.unavailable]="!slot.available"
+                  [disabled]="!slot.available || slot.booked"
+                  (click)="onTimeSlotClick(day, slot)"
+                >
+                  {{ slot.time }}
+                </button>
+              }
+              @if (day.slots.length > 5) {
+                <button class="more-hours-btn" (click)="onShowMoreHours(day)">
+                  {{
+                    translationService.translate("shared.doctorCard.moreHours")
+                  }}
+                  ⌄
+                </button>
+              }
+            </div>
           </div>
-
-          <div class="time-slots">
-            @for (slot of day.slots; track slot) {
-              <button
-                class="time-slot"
-                [class.available]="slot.available && !slot.booked"
-                [class.booked]="slot.booked"
-                [class.unavailable]="!slot.available"
-                [disabled]="!slot.available || slot.booked"
-                (click)="onTimeSlotClick(day, slot)"
-              >
-                {{ slot.time }}
-              </button>
-            }
-
-            <button class="more-hours-btn" (click)="onShowMoreHours(day)">
-              {{ translationService.translate('shared.doctorCard.moreHours') }} ⌄
-            </button>
-          </div>
-        </div>
-      }
-
-
-    </div>
-  } @else {
-      <div class="no-schedule">{{ translationService.translate('shared.doctorCard.noSchedule') }}</div>
+        }
+      </div>
+    } @else {
+      <div class="no-schedule">
+        {{ translationService.translate("shared.doctorCard.noSchedule") }}
+      </div>
     }
 
-    <button class="next-btn">
-      <span class="arrow">→</span>
-    </button>
+    <p-button
+      [rounded]="true"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="showMoreInfo.emit(doctor())"
+      icon="pi pi-arrow-right"
+    ></p-button>
   </div>
 </div>

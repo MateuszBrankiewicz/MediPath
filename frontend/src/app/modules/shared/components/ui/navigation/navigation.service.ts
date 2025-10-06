@@ -39,7 +39,6 @@ export class NavigationService {
 
   public getMenuItemsForRole(role: UserRoles): MediPathMenuItem[] {
     const baseItems = this._menuItems();
-    console.log(role);
 
     switch (role) {
       case UserRoles.DOCTOR:

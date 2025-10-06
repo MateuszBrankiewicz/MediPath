@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DataViewModule } from 'primeng/dataview';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -44,6 +44,7 @@ import {
 export class SearchResultComponent implements OnInit {
   private searchService = inject(SearchService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private readonly dialogService = inject(DialogService);
   private destroyRef = inject(DestroyRef);
   private dialogRef: DynamicDialogRef | null = null;
@@ -83,15 +84,7 @@ export class SearchResultComponent implements OnInit {
       });
   }
 
-  onEditHospital(hospital: Hospital): void {
-    console.log('Edit hospital:', hospital);
-  }
-
-  onDisableHospital(hospital: Hospital): void {
-    console.log('Disable hospital:', hospital);
-  }
-
-  onBookAppointment(event: BookAppointment): void {
+  protected onBookAppointment(event: BookAppointment): void {
     this.dialogRef = this.dialogService.open(ScheduleVisitDialog, {
       data: {
         availableTerms: event.doctor.schedule,
@@ -135,11 +128,11 @@ export class SearchResultComponent implements OnInit {
     });
   }
 
-  onShowMoreInfo(doctor: Doctor): void {
-    console.log('Show more info for:', doctor);
+  protected onShowMoreInfo(doctor: Doctor): void {
+    this.router.navigate(['/patient/doctor', doctor.id]);
   }
 
-  onAddressChange(event: AddressChange): void {
+  protected onAddressChange(event: AddressChange): void {
     console.log('Address changed:', event);
   }
 

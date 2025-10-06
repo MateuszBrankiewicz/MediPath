@@ -396,11 +396,13 @@
   "shared.filters.all": "All"
   ,
   "shared.filters.sortBy": "Sort by",
+  "shared.filters.title": "Filters",
+
   "shared.filters.sortOrder": "Order",
   "shared.filters.ascending": "Ascending",
   "shared.filters.descending": "Descending",
   "shared.filters.date": "Date",
-
+  "shared.filters.showFilters": "Show Filters",
  "code.statusActive": "Not Used",
   "code.statusUsed": "Used"
 

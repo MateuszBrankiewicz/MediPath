@@ -11,6 +11,8 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
+import { DrawerModule } from 'primeng/drawer';
+import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputText } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
@@ -18,7 +20,15 @@ import { FilterParams } from '../../../../patient/models/filter.model';
 
 @Component({
   selector: 'app-filter-component',
-  imports: [InputText, SelectModule, FormsModule, ButtonModule, DatePicker],
+  imports: [
+    InputText,
+    SelectModule,
+    FormsModule,
+    ButtonModule,
+    DatePicker,
+    DrawerModule,
+    FloatLabelModule,
+  ],
   templateUrl: './filter-component.html',
   styleUrl: './filter-component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +42,12 @@ export class FilterComponent {
   readonly showSort = input<boolean>(true);
   readonly showActions = input<boolean>(true);
   readonly autoApply = input<boolean>(false);
+
+  protected readonly showFiltersDrawer = signal(false);
+
+  protected toggleFilters(): void {
+    this.showFiltersDrawer.update((v) => !v);
+  }
 
   readonly statusOptionsInput = input<
     { label: string; value: string }[] | null
@@ -84,6 +100,33 @@ export class FilterComponent {
 
   sortField = signal<string>('date');
   sortOrder = signal<'asc' | 'desc'>('desc');
+
+  private readonly defaultStatus = 'ALL';
+
+  protected readonly activeFiltersCount = computed(() => {
+    let count = 0;
+
+    if ((this.searchTerm()?.toString() ?? '').trim().length > 0) {
+      count++;
+    }
+
+    if (
+      this.selectedStatus() !== null &&
+      this.selectedStatus() !== undefined &&
+      this.selectedStatus().toLowerCase() !== this.defaultStatus.toLowerCase()
+    ) {
+      count++;
+    }
+
+    if (this.selectedDate() instanceof Date) count++;
+    if (this.selectedEndDate() instanceof Date) count++;
+
+    return count;
+  });
+
+  protected areFiltersApplied(): boolean {
+    return this.activeFiltersCount() > 0;
+  }
 
   readonly defaultSortByOptions = computed(() => {
     this.translationService.language();
@@ -149,9 +192,11 @@ export class FilterComponent {
     this.sortField.set(d?.sortField ?? 'date');
     this.sortOrder.set(d?.sortOrder ?? 'desc');
     this.emitChange();
+    this.showFiltersDrawer.set(false);
   }
 
   applyFilters(): void {
+    this.showFiltersDrawer.set(false);
     this.emitChange();
   }
 

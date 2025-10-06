@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
   OnInit,
@@ -15,13 +16,22 @@ import { PanelModule } from 'primeng/panel';
 import { TooltipModule } from 'primeng/tooltip';
 import { map } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
+import { FilterParams } from '../../models/filter.model';
 import { MedicalRecord } from '../../models/medical-history.model';
 import { PatientMedicalHistoryService } from '../../services/patient-medical-history.service';
 import { MedicalHistoryDialog } from './components/medical-history-dialog/medical-history-dialog';
 
 @Component({
   selector: 'app-medical-history-page',
-  imports: [DataViewModule, DatePipe, ButtonModule, PanelModule, TooltipModule],
+  imports: [
+    DataViewModule,
+    DatePipe,
+    ButtonModule,
+    PanelModule,
+    TooltipModule,
+    FilterComponent,
+  ],
   templateUrl: './medical-history-page.html',
   providers: [DialogService],
   styleUrl: './medical-history-page.scss',
@@ -33,12 +43,76 @@ export class MedicalHistoryPage implements OnInit {
   private destroyRef = inject(DestroyRef);
   private dialogService = inject(DialogService);
 
+  private readonly filters = signal<FilterParams>({
+    searchTerm: '',
+    status: '',
+    dateFrom: null,
+    dateTo: null,
+    sortField: 'date',
+    sortOrder: 'desc',
+  });
+
   private readonly medicalHistoryService = inject(PatientMedicalHistoryService);
   ngOnInit(): void {
     this.loadMedicalHistory();
   }
 
-  viewRecord(record: MedicalRecord): void {
+  protected filteredRecords = computed(() => {
+    let records = this.medicalRecords();
+    const filter = this.filters();
+
+    if (filter.searchTerm) {
+      const searchTermLower = filter.searchTerm.toLowerCase();
+      records = records.filter(
+        (record) =>
+          record.title.toLowerCase().includes(searchTermLower) ||
+          record.notes?.toLowerCase().includes(searchTermLower) ||
+          `${record.doctor.doctorName} ${record.doctor.doctorSurname}`
+            .toLowerCase()
+            .includes(searchTermLower),
+      );
+    }
+
+    if (filter.dateFrom) {
+      records = records.filter(
+        (record) => record.date >= (filter.dateFrom as Date),
+      );
+    }
+
+    if (filter.dateTo) {
+      records = records.filter(
+        (record) => record.date <= (filter.dateTo as Date),
+      );
+    }
+
+    if (filter.sortField) {
+      records = records.sort((a, b) => {
+        const fieldA = a[filter.sortField as keyof MedicalRecord];
+        const fieldB = b[filter.sortField as keyof MedicalRecord];
+
+        if (fieldA == null && fieldB == null) {
+          return 0;
+        }
+        if (fieldA == null) {
+          return filter.sortOrder === 'asc' ? 1 : -1;
+        }
+        if (fieldB == null) {
+          return filter.sortOrder === 'asc' ? -1 : 1;
+        }
+        if (fieldA < fieldB) {
+          return filter.sortOrder === 'asc' ? -1 : 1;
+        }
+        if (fieldA > fieldB) {
+          return filter.sortOrder === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return records;
+  });
+
+  protected viewRecord(record: MedicalRecord): void {
     const ref = this.dialogService.open(MedicalHistoryDialog, {
       header: 'Medical Record Details',
       width: '50%',
@@ -62,14 +136,14 @@ export class MedicalHistoryPage implements OnInit {
       });
   }
 
-  deleteRecord(recordId: string): void {
+  protected deleteRecord(recordId: string): void {
     const currentRecords = this.medicalRecords();
     this.medicalRecords.set(
       currentRecords.filter((record) => record.id !== recordId),
     );
   }
 
-  addNewEntry(): void {
+  protected addNewEntry(): void {
     const ref = this.dialogService.open(MedicalHistoryDialog, {
       header: 'Medical Record Details',
       width: '50%',
@@ -109,6 +183,10 @@ export class MedicalHistoryPage implements OnInit {
             },
           });
       });
+  }
+
+  protected onFiltersChange(filter: FilterParams): void {
+    this.filters.set(filter);
   }
 
   private loadMedicalHistory(): void {
