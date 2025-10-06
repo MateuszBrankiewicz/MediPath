@@ -2,8 +2,10 @@ package com.adam.medipathbackend.controllers;
 
 import com.adam.medipathbackend.models.Institution;
 import com.adam.medipathbackend.models.InstitutionDigest;
+import com.adam.medipathbackend.models.StaffDigest;
 import com.adam.medipathbackend.models.User;
 import com.adam.medipathbackend.repository.InstitutionRepository;
+import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,9 @@ public class DoctorController {
 
     @Autowired
     InstitutionRepository institutionRepository;
+
+    @Autowired
+    ScheduleRepository scheduleRepository;
 
     @GetMapping(value= {"/{id}", "/{id}/"})
     public ResponseEntity<Map<String, Object>> getDoctor(@PathVariable String id, @RequestParam(value = "fields", required = false) String[] fields) {
@@ -87,5 +92,23 @@ public class DoctorController {
             userRepository.save(foundDoctor);
         }
         return new ResponseEntity<>(Map.of("institutions", results), HttpStatus.OK);
+    }
+    @GetMapping(value = {"/{doctorid}/schedules/", "/{doctorid}/schedules"})
+    public ResponseEntity<Map<String, Object>> getDoctors(@PathVariable String doctorid, @RequestParam(required = false) String institution) {
+            Optional<User> doctorOpt = userRepository.findDoctorById(doctorid);
+            if(doctorOpt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            if(institution != null) {
+                User doctor = doctorOpt.get();
+                if(doctor.getEmployers().stream().noneMatch(employer -> employer.getInstitutionId().equals(institution))) {
+                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                }
+                return new ResponseEntity<>(Map.of("schedules", scheduleRepository.getUpcomingSchedulesByDoctorInInstitution(doctorid, institution)), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(Map.of("schedules", scheduleRepository.getUpcomingSchedulesByDoctor(doctorid)), HttpStatus.OK);
+
+            }
+
     }
 }

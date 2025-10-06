@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -516,6 +517,24 @@ public class UserController {
         }
         User user = userOpt.get();
         return new ResponseEntity<>(Map.of("pfp", user.getPfpimage()), HttpStatus.OK);
+    }
+
+    @GetMapping(value = {"/me/notifications", "/me/notifications/"})
+    public ResponseEntity<Map<String, Object>> getNotifications(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(Map.of("notifications", ""), HttpStatus.OK);
+        }
+        User user = userOpt.get();
+        return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
+                .map(notification -> Map.of("title", notification.getTitle(), "content",
+                        notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                        notification.isRead(), "system", notification.isSystem())
+        ).toList()), HttpStatus.OK);
     }
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {
