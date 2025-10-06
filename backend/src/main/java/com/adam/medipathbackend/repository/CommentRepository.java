@@ -11,5 +11,9 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
     @Query("{'author.userId': ?0}")
     ArrayList<Comment> getCommentsForUser(String userid);
 
+    @Query("{'doctorDigest.userId': ?0}")
+    ArrayList<Comment> getCommentsForDoctor(String doctorid);
 
+    @Query("{'institution.institutionId': ?0}")
+    ArrayList<Comment> getCommentsForInstitution(String institutionid);
 }

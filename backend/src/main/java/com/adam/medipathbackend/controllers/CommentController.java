@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -191,6 +192,20 @@ public class CommentController {
                 HttpStatus.OK);
     }
 
+    @GetMapping(value = {"/doctor/{id}", "/doctor/{id}/"})
+    public ResponseEntity<Map<String, Object>> getCommentsForDoctor(@PathVariable String id) {
+        if(!userRepository.existsById(id)) {
+            return new ResponseEntity<>(Map.of("comments", new ArrayList<Comment>()), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(Map.of("comments", commentRepository.getCommentsForDoctor(id)), HttpStatus.OK);
+    }
+    @GetMapping(value = {"/institution/{id}", "/institution/{id}/"})
+    public ResponseEntity<Map<String, Object>> getCommentsForInstitution(@PathVariable String id) {
+        if(!institutionRepository.existsById(id)) {
+            return new ResponseEntity<>(Map.of("comments", new ArrayList<Comment>()), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(Map.of("comments", commentRepository.getCommentsForInstitution(id)), HttpStatus.OK);
+    }
 
 }
 
