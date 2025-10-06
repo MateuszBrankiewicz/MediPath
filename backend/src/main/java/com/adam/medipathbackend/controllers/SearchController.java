@@ -11,10 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
@@ -68,11 +65,19 @@ public class SearchController {
                 return new ResponseEntity<>(Map.of("result", List.of()), HttpStatus.OK);
             }
             System.out.println();
-            List<Map<String, Object>> doctors_clean = doctors.stream().map(doctor -> {
-                User doctorProfile = userRepository.findById(doctor.getUserId()).get();
-                return Map.of("id", doctor.getUserId(), "name", doctor.getName(), "surname", doctor.getSurname(),
-                        "specialisations", doctor.getSpecialisations(), "addresses", getAddressesForDoctor(doctor.getUserId()),
-                        "schedules", getSchedulesTruncatedForDoctor(doctor.getUserId()), "image", doctor.getPfpimage(), "rating", doctorProfile.getRating(), "numOfRatings", doctorProfile.getNumOfRatings());
+            Set<String> doctorIds = new HashSet<>();
+            for(StaffDigest doc: doctors) {
+                doctorIds.add(doc.getUserId());
+            }
+            List<Map<?, Object>> doctors_clean = doctorIds.stream().map(doctor -> {
+                Optional<User> doctorOpt =  userRepository.findById(doctor);
+                if(doctorOpt.isEmpty()) {
+                    return Map.of();
+                }
+                User doctorProfile = doctorOpt.get();
+                return Map.of("id", doctor, "name", doctorProfile.getName(), "surname", doctorProfile.getSurname(),
+                        "specialisations", doctorProfile.getSpecialisations(), "addresses", getAddressesForDoctor(doctor),
+                        "schedules", getSchedulesTruncatedForDoctor(doctor), "image", doctorProfile.getPfpimage(), "rating", doctorProfile.getRating(), "numOfRatings", doctorProfile.getNumOfRatings());
                     }
 
             ).toList();
