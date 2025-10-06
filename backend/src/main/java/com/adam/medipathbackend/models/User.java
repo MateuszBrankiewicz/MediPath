@@ -261,4 +261,8 @@ public class User {
     public void setPfpimage(String pfpimage) {
         this.pfpimage = pfpimage;
     }
+
+    public void setNotifications(ArrayList<Notification> notifications) {
+        this.notifications = notifications;
+    }
 }

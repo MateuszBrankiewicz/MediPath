@@ -7,13 +7,11 @@ import com.adam.medipathbackend.models.Visit;
 import com.adam.medipathbackend.repository.UserRepository;
 import com.adam.medipathbackend.repository.VisitRepository;
 import jakarta.servlet.http.HttpSession;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -80,6 +78,54 @@ public class NotificationController {
         userRepository.save(user);
         return new ResponseEntity<>(HttpStatus.CREATED);
 
+
+    }
+
+    @PostMapping(value = {"/read/", "/read"})
+    public ResponseEntity<Map<String, Object>> readNotification(@RequestBody Notification notifToChange,  HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        User user =  userOpt.get();
+        ArrayList<Notification> notifications = user.getNotifications();
+        for(int i = 0; i < notifications.size(); i++) {
+            Notification notification = notifications.get(i);
+            if(notification.getTimestamp().isEqual(notifToChange.getTimestamp()) && notification.getTitle().equals(notifToChange.getTitle())) {
+                notification.setRead(true);
+                notifications.set(i, notification);
+                break;
+            }
+        }
+        user.setNotifications(notifications);
+        userRepository.save(user);
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
+    @PostMapping(value = {"/readall/", "/readall"})
+    public ResponseEntity<Map<String, Object>> readNotification(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        User user =  userOpt.get();
+        ArrayList<Notification> notifications = user.getNotifications();
+        for(int i = 0; i < notifications.size(); i++) {
+            Notification notification = notifications.get(i);
+            notification.setRead(true);
+            notifications.set(i, notification);
+        }
+        user.setNotifications(notifications);
+        userRepository.save(user);
+        return new ResponseEntity<>(HttpStatus.OK);
 
     }
 
