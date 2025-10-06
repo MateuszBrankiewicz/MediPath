@@ -35,6 +35,17 @@ class HomeViewModel(
     private val _referralCode = mutableStateOf("")
     val referralCode: State<String> = _referralCode
 
+    private val _shouldRedirectToLogin = mutableStateOf(false)
+    val shouldRedirectToLogin: State<Boolean> = _shouldRedirectToLogin
+
+    private suspend fun handleAuthError(sessionManager: DataStoreSessionManager, error: Exception) {
+        if (error is retrofit2.HttpException && error.code() == 401) {
+            Log.w("HomeViewModel", "Session expired, clearing token and redirecting to login")
+            sessionManager.deleteSessionId()
+            _shouldRedirectToLogin.value = true
+        }
+    }
+
     fun fetchUserProfile(sessionManager: DataStoreSessionManager) {
         viewModelScope.launch {
             try {
@@ -52,6 +63,7 @@ class HomeViewModel(
                 fetchActiveCodes(token)
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Error fetching profile: $e")
+                handleAuthError(sessionManager, e)
             }
         }
     }

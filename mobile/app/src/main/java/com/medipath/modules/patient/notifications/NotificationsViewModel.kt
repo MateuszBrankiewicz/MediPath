@@ -37,7 +37,6 @@ class NotificationsViewModel(
                 }
 
                 Log.d("NotificationsViewModel", "Fetching notifications with token: $token")
-                // TEMPORARY: używamy /profile endpoint i wyciągamy notifications z user
                 val profileResponse = userService.getNotificationsFromProfile("SESSION=$token")
                 _notifications.value = profileResponse.user.notifications
                 Log.d("NotificationsViewModel", "Fetched ${profileResponse.user.notifications.size} notifications")

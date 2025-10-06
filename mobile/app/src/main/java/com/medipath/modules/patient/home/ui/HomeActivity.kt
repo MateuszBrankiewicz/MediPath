@@ -23,9 +23,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.List
@@ -33,12 +31,11 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.MedicalInformation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
-//import com.medipath.core.services.UserNotificationsService
+import com.medipath.core.services.UserNotificationsService
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.patient.codes.ui.CodesActivity
 import com.medipath.modules.shared.components.InfoCard
@@ -49,36 +46,39 @@ import com.medipath.modules.shared.components.VisitItem
 import com.medipath.modules.patient.notifications.ui.NotificationsActivity
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.patient.home.HomeViewModel
-//import io.reactivex.disposables.CompositeDisposable
-//import io.reactivex.android.schedulers.AndroidSchedulers
-//import io.reactivex.schedulers.Schedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class HomeActivity : ComponentActivity() {
 
-//    private lateinit var notificationsService: UserNotificationsService
-//    private val activityDisposable = CompositeDisposable()
+    private lateinit var notificationsService: UserNotificationsService
+    private val activityDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
+        Log.d("HomeActivity", "onCreate started - launching WebSocket setup")
 
-        // Initialize notifications service in background
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-//                notificationsService = UserNotificationsService()
-//
-//                val notificationSubscription = notificationsService.notifications
-//                    .subscribeOn(Schedulers.io())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribe { notification ->
-//                        Log.d("HomeActivity", "Received notification: ${notification.title} - ${notification.message}")
-//                        Toast.makeText(this@HomeActivity, "Nowe powiadomienie: ${notification.title}", Toast.LENGTH_SHORT).show()
-//                    }
-//                activityDisposable.add(notificationSubscription)
-//
-//                notificationsService.connect("http://10.0.2.2:8080/ws")
+                Log.d("HomeA<ctivity", "WebSocket coroutine started")
+                val sessionManager = DataStoreSessionManager(this@HomeActivity)
+                val token = sessionManager.getSessionId()
+                Log.d("HomeActivity", "Using token for WebSocket: $token")
+                notificationsService = UserNotificationsService(token)
+
+                val notificationSubscription = notificationsService.notifications
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe { notification ->
+                        Log.d("HomeActivity", "Received notification: ${notification.title} - ${notification.content}")
+                         Toast.makeText(this@HomeActivity, "Nowe powiadomienie: ${notification.title}", Toast.LENGTH_SHORT).show()
+                    }
+                activityDisposable.add(notificationSubscription)
+                notificationsService.connect("http://10.0.2.2:8080/ws")
             } catch (e: Exception) {
                 Log.e("HomeActivity", "Error initializing notifications service", e)
             }
@@ -112,20 +112,20 @@ class HomeActivity : ComponentActivity() {
         }
     }
 
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            try {
-//                if (::notificationsService.isInitialized) {
-//                    notificationsService.disconnect()
-//                }
-//                activityDisposable.clear()
-//            } catch (e: Exception) {
-//                Log.e("HomeActivity", "Error during cleanup", e)
-//            }
-//        }
-//        Log.d("HomeActivity", "Activity destroyed, WebSocket disconnected.")
-//    }
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                if (::notificationsService.isInitialized) {
+                    notificationsService.disconnect()
+                }
+                activityDisposable.clear()
+            } catch (e: Exception) {
+                Log.e("HomeActivity", "Error during cleanup", e)
+            }
+        }
+        Log.d("HomeActivity", "Activity destroyed, WebSocket disconnected.")
+    }
 }
 
 @Composable
@@ -138,6 +138,17 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         viewModel.fetchUserProfile(sessionManager)
+    }
+
+    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin
+    LaunchedEffect(shouldRedirectToLogin) {
+        if (shouldRedirectToLogin) {
+            Log.w("HomeScreen", "Redirecting to login due to expired session")
+            val intent = Intent(context, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            context.startActivity(intent)
+            (context as? ComponentActivity)?.finish()
+        }
     }
 
     val firstName by viewModel.firstName
