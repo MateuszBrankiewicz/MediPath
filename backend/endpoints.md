@@ -749,9 +749,12 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 #### Path variables:
 - doctorid - Object id of the doctor
 
+#### Parameters
+- institution - object id of the institution to filter the schedules by
+
 
 #### Returns:
-- 404 - doctor not found
+- 404 - doctor not found, institution not found if specified or doctor is not employed in institution
 - 200 - success
 
 
