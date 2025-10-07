@@ -38,7 +38,7 @@ public class Utils {
         return compute_Levenshtein_distance(str1, str2) < MINIMUM_ACCEPTABLE_SIMILARITY_THRESHOLD;
     }
     public static boolean isValidMongoOID(String oid) {
-        if(oid.length() != 24) return false;
+        if(oid == null || oid.length() != 24) return false;
         char c;
         for(int i = 0; i < 24; i++) {
             c = oid.charAt(i);
