@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -187,10 +188,42 @@ public class CommentController {
                 "institution", comment.getInstitution().getInstitutionName(),
                 "doctorRating", comment.getDoctorRating(),
                 "institutionRating", comment.getInstitutionRating(),
-                "content", comment.getContent())),
+                "content", comment.getContent(),
+                "createdAt", comment.getCreatedAt().toString())),
                 HttpStatus.OK);
     }
 
+    @GetMapping(value = {"/doctor/{id}", "/doctor/{id}/"})
+    public ResponseEntity<Map<String, Object>> getCommentsForDoctor(@PathVariable String id) {
+        if(!userRepository.existsById(id)) {
+            return new ResponseEntity<>(Map.of("comments", new ArrayList<Comment>()), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(Map.of("comments", commentRepository.getCommentsForDoctor(id).stream().map(comment -> Map.of(
+                "id", comment.getId(),
+                "author", comment.getAuthor().getName() + " " + comment.getAuthor().getSurname(),
+                "doctor", comment.getDoctorDigest().getDoctorName() + " " + comment.getDoctorDigest().getDoctorSurname(),
+                "institution", comment.getInstitution().getInstitutionName(),
+                "doctorRating", comment.getDoctorRating(),
+                "institutionRating", comment.getInstitutionRating(),
+                "content", comment.getContent(),
+                "createdAt", comment.getCreatedAt().toString())))
+                , HttpStatus.OK);
+    }
+    @GetMapping(value = {"/institution/{id}", "/institution/{id}/"})
+    public ResponseEntity<Map<String, Object>> getCommentsForInstitution(@PathVariable String id) {
+        if(!institutionRepository.existsById(id)) {
+            return new ResponseEntity<>(Map.of("comments", new ArrayList<Comment>()), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(Map.of("comments", commentRepository.getCommentsForInstitution(id).stream().map(comment -> Map.of(
+                "id", comment.getId(),
+                "author", comment.getAuthor().getName() + " " + comment.getAuthor().getSurname(),
+                "doctor", comment.getDoctorDigest().getDoctorName() + " " + comment.getDoctorDigest().getDoctorSurname(),
+                "institution", comment.getInstitution().getInstitutionName(),
+                "doctorRating", comment.getDoctorRating(),
+                "institutionRating", comment.getInstitutionRating(),
+                "content", comment.getContent(),
+                "createdAt", comment.getCreatedAt().toString()))), HttpStatus.OK);
+    }
 
 }
 

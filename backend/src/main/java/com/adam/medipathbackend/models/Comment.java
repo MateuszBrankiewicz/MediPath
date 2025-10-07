@@ -1,7 +1,10 @@
 package com.adam.medipathbackend.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
 
 @Document("Comment")
 public class Comment {
@@ -23,6 +26,8 @@ public class Comment {
 
     private String visitId;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="Europe/Warsaw")
+    private final LocalDateTime createdAt;
 
     public Comment(float doctorRating, float institutionRating, String content, DoctorDigest doctorDigest, InstitutionDigest institution, PatientDigest author, String visitId) {
         this.doctorRating = doctorRating;
@@ -32,6 +37,7 @@ public class Comment {
         this.author = author;
         this.visitId = visitId;
         this.institution = institution;
+        this.createdAt = LocalDateTime.now();
     }
 
     public InstitutionDigest getInstitution() {
@@ -93,5 +99,9 @@ public class Comment {
 
     public void setVisitId(String visitId) {
         this.visitId = visitId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }
