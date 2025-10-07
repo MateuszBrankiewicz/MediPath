@@ -18,8 +18,10 @@ app-hospital-card {
   width: 40%;
   height: 100%;
   .comment-content {
-    height: 100%;
     width: 100%;
+    .comment-item {
+      margin-bottom: 20px;
+    }
   }
 }
 .doctor-block {

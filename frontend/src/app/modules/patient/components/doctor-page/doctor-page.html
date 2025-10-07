@@ -55,10 +55,62 @@
   </div>
 </div>
 <div class="comment-block">
-  <span>Comments</span>
-  <div class="comment-content">
-    @for (comment of exampleDoctor().comments; track comment.id) {
-      <app-patient-comment-component [comment]="comment" />
-    }
+  <div class="tab-list">
+    <p-button
+      type="button"
+      class="tab"
+      [text]="true"
+      [class.active]="selectedTabIndex() === 0"
+      (click)="setSelectedTabIndex(0)"
+    >
+      Comments
+    </p-button>
+    <p-button
+      type="button"
+      class="tab"
+      [text]="true"
+      [class.active]="selectedTabIndex() === 1"
+      (click)="setSelectedTabIndex(1)"
+    >
+      Schedule
+    </p-button>
   </div>
+
+  @if (selectedTabIndex() === 0) {
+    <div [style]="{ overflow: 'auto' }">
+      <div class="comment-content">
+        @for (comment of exampleDoctor().comments; track comment.id) {
+          <app-patient-comment-component [comment]="comment" />
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="tab-panel">
+      <div class="doctors-instutions">
+        @for (institution of exampleDoctor().institutions; track institution) {
+          <p-card
+            class="institution-chip"
+            [header]="'institution: ' + institution"
+            (click)="selectInstitution(institution)"
+            [class]="selectedInstitution() === institution ? 'selected' : ''"
+          ></p-card>
+        }
+      </div>
+      <app-calendar-schedule></app-calendar-schedule>
+      <div class="remarks-with-schedule">
+        <textarea
+          pTextarea
+          class="appointment-description"
+          placeholder="Appointment description..."
+          [(ngModel)]="patientRemarks"
+          [rows]="10"
+        ></textarea>
+        <p-button
+          type="button"
+          label="Book appointment"
+          [disabled]="!selectedInstitution()"
+        />
+      </div>
+    </div>
+  }
 </div>

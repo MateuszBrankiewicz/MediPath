@@ -4,8 +4,8 @@
       <app-calendar-schedule
         (dateTimeSelected)="onDateTimeSelected($event)"
         [availableAppointments]="availableDays()"
-        [initialSelectedDate]="rescheduleData().selectedDate || null"
-        [initialSelectedTime]="rescheduleData().selectedTime || null"
+        [initialSelectedDate]="rescheduleData()?.selectedDate || null"
+        [initialSelectedTime]="rescheduleData()?.selectedTime || null"
       >
       </app-calendar-schedule>
     </div>
@@ -15,14 +15,14 @@
         <h3>
           {{ translationService.translate("patient.scheduleVisit.doctor") }}
         </h3>
-        <p class="doctor-name">{{ rescheduleData().doctorName }}</p>
+        <p class="doctor-name">{{ rescheduleData()?.doctorName }}</p>
 
         <h3>
           {{
             translationService.translate("patient.scheduleVisit.institution")
           }}
         </h3>
-        <p class="institution-name">{{ rescheduleData().institution }}</p>
+        <p class="institution-name">{{ rescheduleData()?.institution }}</p>
       </div>
 
       <div class="patient-remarks">
@@ -36,7 +36,8 @@
           class="remarks-textarea"
           placeholder="Enter any additional notes you would like to share with your doctor before your visit."
           rows="6"
-          [(ngModel)]="rescheduleData().patientRemarks"
+          [ngModel]="rescheduleData()?.patientRemarks"
+          (ngModelChange)="onRemarksChange($event)"
         >
         </textarea>
       </div>

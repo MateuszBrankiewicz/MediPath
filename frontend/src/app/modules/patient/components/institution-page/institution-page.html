@@ -1,7 +1,9 @@
 <div>
-  <app-hospital-card [hospital]="sampleHospital" />
+  <app-hospital-card [showInfoButton]="false" [hospital]="sampleHospital" />
   <div class="doctor-block">
-    <span class="comment-section">{{ translationService.translate('patient.institution.doctorsInInstitution') }}</span>
+    <span class="comment-section">{{
+      translationService.translate("patient.institution.doctorsInInstitution")
+    }}</span>
     <div class="doctors-card">
       <p-card>
         <div class="doctor-info-card">
@@ -29,18 +31,37 @@
                 ({{ exampleDoctor().rating.opinions }} opinions)
               </span>
             </div>
-            <span class="pwz-info">{{ translationService.translate('patient.institution.pwz') }} {{ exampleDoctor().pwz }}</span>
+            <span class="pwz-info"
+              >{{ translationService.translate("patient.institution.pwz") }}
+              {{ exampleDoctor().pwz }}</span
+            >
           </div>
         </div>
       </p-card>
     </div>
+    <p-paginator
+      [rows]="1"
+      [totalRecords]="5"
+      [rowsPerPageOptions]="[1, 2, 3]"
+      (onPageChange)="onDoctorPageChange($event)"
+    ></p-paginator>
   </div>
 </div>
 <div class="comment-block">
-  <span class="comment-section">{{ translationService.translate('patient.institution.comments') }}</span>
+  <span class="comment-section">{{
+    translationService.translate("patient.institution.comments")
+  }}</span>
   <div class="comment-content">
     @for (comment of comments; track comment.id) {
-      <app-patient-comment-component [comment]="comment" />
+      <div class="comment-item">
+        <app-patient-comment-component [comment]="comment" />
+      </div>
     }
   </div>
+  <p-paginator
+    [rows]="5"
+    [totalRecords]="comments.length"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    (onPageChange)="onPageChange($event)"
+  ></p-paginator>
 </div>

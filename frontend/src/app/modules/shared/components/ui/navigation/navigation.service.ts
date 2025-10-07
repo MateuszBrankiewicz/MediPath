@@ -137,7 +137,9 @@ export class NavigationService {
           },
         ];
 
-      case (UserRoles.ADMIN, UserRoles.STAFF):
+      case UserRoles.ADMIN:
+      case UserRoles.STAFF:
+        console.log('Admin menu items');
         return [
           {
             role: UserRoles.ADMIN,

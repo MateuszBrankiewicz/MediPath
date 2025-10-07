@@ -7,11 +7,14 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DataViewModule } from 'primeng/dataview';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ToastService } from '../../../../../core/services/toast/toast.service';
+import { TranslationService } from '../../../../../core/services/translation/translation.service';
 import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
+import { PatientVisitsService } from '../../../../patient/services/patient-visits.service';
 import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
 import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
 import {
@@ -41,10 +44,13 @@ import {
 export class SearchResultComponent implements OnInit {
   private searchService = inject(SearchService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private readonly dialogService = inject(DialogService);
   private destroyRef = inject(DestroyRef);
   private dialogRef: DynamicDialogRef | null = null;
-
+  private patientVisitsService = inject(PatientVisitsService);
+  private toastService = inject(ToastService);
+  private readonly translationService = inject(TranslationService);
   protected readonly category = signal('');
 
   protected readonly values = signal<SearchResponse | null>(null);
@@ -66,14 +72,7 @@ export class SearchResultComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const query = params['query'] || '';
-      const category = params['category'] || '';
-      const location = params['location'] || '';
-      const specialization = params['specialization'] || '';
-      this.category.set(category);
-      this.performSearch({ query, category, location, specialization });
-    });
+    this.requestSearchResult();
   }
 
   protected performSearch(params: SearchQuery): void {
@@ -81,20 +80,11 @@ export class SearchResultComponent implements OnInit {
       .search(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((results) => {
-        console.log('Search results:', results);
         this.values.set(results);
       });
   }
 
-  onEditHospital(hospital: Hospital): void {
-    console.log('Edit hospital:', hospital);
-  }
-
-  onDisableHospital(hospital: Hospital): void {
-    console.log('Disable hospital:', hospital);
-  }
-
-  onBookAppointment(event: BookAppointment): void {
+  protected onBookAppointment(event: BookAppointment): void {
     this.dialogRef = this.dialogService.open(ScheduleVisitDialog, {
       data: {
         availableTerms: event.doctor.schedule,
@@ -111,16 +101,53 @@ export class SearchResultComponent implements OnInit {
     }
     this.dialogRef.onClose.subscribe((result) => {
       if (result) {
-        console.log('Appointment booked:', result);
+        this.patientVisitsService
+          .scheduleVisit({
+            scheduleID: result.slotId,
+            patientRemarks: result.patientRemarks,
+          })
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.toastService.showSuccess(
+                this.translationService.translate(
+                  'patient.appointment.bookSuccess',
+                ),
+              );
+              this.requestSearchResult();
+            },
+            error: () => {
+              this.toastService.showError(
+                this.translationService.translate(
+                  'patient.appointment.bookError',
+                ),
+              );
+            },
+          });
       }
     });
   }
 
-  onShowMoreInfo(doctor: Doctor): void {
-    console.log('Show more info for:', doctor);
+  protected onShowMoreInfo(doctor: Doctor): void {
+    this.router.navigate(['/patient/doctor', doctor.id]);
   }
 
-  onAddressChange(event: AddressChange): void {
+  protected onAddressChange(event: AddressChange): void {
     console.log('Address changed:', event);
+  }
+
+  private requestSearchResult(): void {
+    this.route.queryParams.subscribe((params) => {
+      const query = params['query'] || '';
+      const category = params['category'] || '';
+      const location = params['location'] || '';
+      const specialization = params['specialization'] || '';
+      this.category.set(category);
+      this.performSearch({ query, category, location, specialization });
+    });
+  }
+
+  protected onInstitutionClicked(hospital: Hospital): void {
+    this.router.navigate(['/patient/institution', hospital.id]);
   }
 }

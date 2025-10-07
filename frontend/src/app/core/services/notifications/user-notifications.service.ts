@@ -19,14 +19,12 @@ export class UserNotificationsService implements OnDestroy {
     this.notificationSubject.asObservable();
 
   constructor() {
-    console.log('Initializing UserNotificationsService');
-
     this.client = new Client({
       webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       reconnectDelay: 5000,
     });
 
-    this.client.onConnect = (frame) => {
+    this.client.onConnect = () => {
       this.client.subscribe('/user/notifications', (message: IMessage) => {
         const parsedMessage = JSON.parse(message.body) as NotificationMessage;
         this.notificationSubject.next(parsedMessage);

@@ -29,6 +29,7 @@ export interface Visit {
 
 export interface RescheduleData {
   doctorName: string;
+  doctorId: string;
   institution: string;
   selectedDate?: Date;
   selectedTime?: string;
@@ -82,29 +83,10 @@ export interface VisitCode {
 }
 
 export type VisitResponseArray = VisitResponse[];
+export interface UpcomingVisitsResponse {
+  visits: VisitResponse[];
+}
 
-export function convertVisitResponseToVisit(
-  visitResponse: VisitResponse,
-): Visit {
-  const prescriptionCodes = visitResponse.codes.filter(
-    (code) => code.codeType === 'PRESCRIPTION' && code.active,
-  );
-  const referralCodes = visitResponse.codes.filter(
-    (code) => code.codeType === 'REFERRAL' && code.active,
-  );
-
-  return {
-    id: visitResponse.id,
-    doctorName: `${visitResponse.doctor.doctorName} ${visitResponse.doctor.doctorSurname}`,
-    specialisation:
-      visitResponse.doctor.specialisations.join(', ') || 'Brak specjalizacji',
-    institution: visitResponse.institution.institutionName,
-    address: '',
-    date: new Date(visitResponse.time.startTime),
-    status: visitResponse.status.toLowerCase(),
-    notes: visitResponse.note || undefined,
-    prescriptionPin:
-      prescriptionCodes.map((code) => code.code).join(', ') || undefined,
-    referralPin: referralCodes.map((code) => code.code).join(', ') || undefined,
-  };
+export interface SingleVisitResponse {
+  visit: VisitResponse;
 }

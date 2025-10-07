@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, UpperCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,7 +10,7 @@ import { Comment } from '../..//models/doctor.model';
 
 @Component({
   selector: 'app-patient-comment-component',
-  imports: [DatePipe],
+  imports: [DatePipe, UpperCasePipe],
   templateUrl: './patient-comment-component.html',
   styleUrl: './patient-comment-component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

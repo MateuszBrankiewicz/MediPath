@@ -1,0 +1,42 @@
+:host {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-container {
+  padding: 30px 40px 70px;
+  min-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-title {
+  margin: 0 0 30px 0;
+  font-size: 24px;
+}
+
+.grid.top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+  height: 35%;
+}
+
+.bottom-row {
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+  max-height: 100%;
+  min-height: 30%;
+}
+
+@media (max-width: 900px) {
+  .grid.top-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,7 +1,7 @@
 <div class="calendar-schedule">
   <div class="schedule-layout">
     <div class="date-selection">
-      <h3>{{ translationService.translate('shared.calendar.selectDate') }}</h3>
+      <h3>{{ translationService.translate("shared.calendar.selectDate") }}</h3>
 
       <div class="custom-calendar">
         <div class="calendar-header">
@@ -9,7 +9,8 @@
             icon="pi pi-chevron-left"
             styleClass="nav-button"
             (onClick)="previousMonth()"
-            [text]="true">
+            [text]="true"
+          >
           </p-button>
 
           <span class="month-year">{{ monthYearDisplay() }}</span>
@@ -18,7 +19,8 @@
             icon="pi pi-chevron-right"
             styleClass="nav-button"
             (onClick)="nextMonth()"
-            [text]="true">
+            [text]="true"
+          >
           </p-button>
         </div>
 
@@ -31,7 +33,7 @@
         </div>
 
         <div class="calendar-grid">
-          @for (calendarDay of calendarDays(); track calendarDay.dayNumber + '-' + calendarDay.isCurrentMonth) {
+          @for (calendarDay of calendarDays(); track $index) {
             <div
               class="calendar-day"
               [class.other-month]="!calendarDay.isCurrentMonth"
@@ -39,7 +41,8 @@
               [class.has-appointments]="calendarDay.hasAppointments"
               [class.selected]="isDateSelected(calendarDay)"
               [class.selectable]="calendarDay.hasAppointments"
-              (click)="onDateSelect(calendarDay)">
+              (click)="onDateSelect(calendarDay)"
+            >
               {{ calendarDay.dayNumber }}
             </div>
           }
@@ -48,7 +51,9 @@
     </div>
 
     <div class="time-selection">
-      <h3>{{ translationService.translate('shared.calendar.availableTerms') }}</h3>
+      <h3>
+        {{ translationService.translate("shared.calendar.availableTerms") }}
+      </h3>
 
       @if (selectedDate()) {
         <div class="time-slots">
@@ -59,14 +64,17 @@
                 [class.selected]="selectedTime() === slot.time"
                 [class.unavailable]="!slot.available"
                 [disabled]="!slot.available"
-                (click)="onTimeSelect(slot)">
+                (click)="onTimeSelect(slot)"
+              >
                 {{ slot.time }}
               </button>
             }
           </div>
         </div>
       } @else {
-        <p class="no-date-message">{{ translationService.translate('shared.calendar.pleaseSelectDate') }}</p>
+        <p class="no-date-message">
+          {{ translationService.translate("shared.calendar.pleaseSelectDate") }}
+        </p>
       }
     </div>
   </div>
