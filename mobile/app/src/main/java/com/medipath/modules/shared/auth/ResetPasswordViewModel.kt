@@ -1,6 +1,5 @@
 package com.medipath.modules.shared.auth
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableStateOf
@@ -27,25 +26,20 @@ class ResetPasswordViewModel(
             try {
                 val response = authService.resetPassword(email)
                 _resetSuccess.value = true
-                Log.d("resetViewModel", "Successful: $response")
             } catch (e: HttpException) {
                 when (e.code()) {
                     400 -> {
                         _resetError.value = "Please fill email field."
-                        Log.e("resetViewModel", "Missing email: ${e.response()?.errorBody()?.string()}")
                     }
                     500 -> {
                         _resetError.value = "The email service threw an error."
-                        Log.e("resetViewModel", "Unexpected error from email service: ${e.response()?.errorBody()?.string()}")
                     }
                     else -> {
                         _resetError.value = "An unknown error occurred. Please try again later."
-                        Log.e("resetViewModel", "Unknown error: ${e.message()}")
                     }
                 }
             } catch (e: Exception) {
                 _resetError.value = "Reset failed"
-                Log.e("resetViewModel", "Network error: ${e.message}", e)
             }
         }
     }

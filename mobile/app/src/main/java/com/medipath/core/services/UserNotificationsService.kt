@@ -26,13 +26,11 @@ class UserNotificationsService(private val authToken: String? = null) {
 
     fun connect(baseUrl: String) {
         if (isConnecting || stompClient?.isConnected == true) {
-            Log.d("UserNotificationsService", "Already connecting or connected")
             return
         }
 
         isConnecting = true
         val wsUrl = baseUrl.replace("http", "ws") + "/websocket"
-        Log.d("UserNotificationsService", "Attempting to connect to WebSocket URL: $wsUrl")
 
         try {
             val headers = mutableMapOf<String, String>()
@@ -49,16 +47,13 @@ class UserNotificationsService(private val authToken: String? = null) {
                     when (lifecycleEvent.type) {
                         LifecycleEvent.Type.OPENED -> {
                             isConnecting = false
-                            Log.d("UserNotificationsService", "Stomp connection opened successfully!")
                             subscribeToNotifications()
                         }
                         LifecycleEvent.Type.ERROR -> {
                             isConnecting = false
-                            Log.e("UserNotificationsService", "Stomp connection error: ${lifecycleEvent.exception?.message}", lifecycleEvent.exception)
                         }
                         LifecycleEvent.Type.CLOSED -> {
                             isConnecting = false
-                            Log.d("UserNotificationsService", "Stomp connection closed.")
                         }
                         LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT -> {
                             Log.w("UserNotificationsService", "Server heartbeat failed, connection might be unstable.")
@@ -87,7 +82,6 @@ class UserNotificationsService(private val authToken: String? = null) {
                     .subscribe({ stompMessage: StompMessage ->
                         try {
                             val notification = gson.fromJson(stompMessage.payload, NotificationMessage::class.java)
-                            Log.d("UserNotificationsService", "Received private notification: $notification")
                             _notifications.onNext(notification)
                         } catch (e: Exception) {
                             Log.e("UserNotificationsService", "Error parsing notification message: ${e.message}", e)
@@ -113,7 +107,6 @@ class UserNotificationsService(private val authToken: String? = null) {
             compositeDisposable.clear()
             stompClient = null
             isConnecting = false
-            Log.d("UserNotificationsService", "Disconnected from Stomp WebSocket and cleared disposables.")
         } catch (e: Exception) {
             Log.e("UserNotificationsService", "Error during disconnect", e)
         }

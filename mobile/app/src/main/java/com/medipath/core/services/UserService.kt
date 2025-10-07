@@ -2,7 +2,6 @@ package com.medipath.core.services
 
 import com.medipath.core.models.UserProfileResponse
 import com.medipath.core.models.VisitsResponse
-import com.medipath.core.models.NotificationsResponse
 import com.medipath.core.responses.CodesResponse
 import retrofit2.Response
 import retrofit2.http.DELETE

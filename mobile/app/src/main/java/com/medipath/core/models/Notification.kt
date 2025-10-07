@@ -1,8 +1,6 @@
 package com.medipath.core.models
 
-data class NotificationsResponse(
-    val user: List<Notification>
-)
+import java.io.Serializable
 
 data class Notification(
     val title: String,
@@ -10,4 +8,4 @@ data class Notification(
     val timestamp: List<Int>,
     val system: Boolean,
     val read: Boolean
-)
+) : Serializable

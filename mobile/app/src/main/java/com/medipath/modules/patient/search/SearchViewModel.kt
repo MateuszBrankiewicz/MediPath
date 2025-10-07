@@ -1,6 +1,5 @@
 package com.medipath.modules.patient.search
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.medipath.core.network.RetrofitInstance
@@ -20,7 +19,6 @@ class SearchViewModel(
     val isLoading: StateFlow<Boolean> = _isLoading
 
     fun search(query: String, type: String, city: String, specialisation: String) {
-        Log.d("SearchViewModel", "Searching with query: $query, type: $type, city: $city, specialisation: $specialisation")
         viewModelScope.launch {
             _isLoading.value = true
             try {

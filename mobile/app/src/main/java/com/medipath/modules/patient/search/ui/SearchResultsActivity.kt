@@ -1,7 +1,6 @@
 package com.medipath.modules.patient.search.ui
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.medipath.core.theme.MediPathTheme
@@ -15,7 +14,6 @@ class SearchResultsActivity : ComponentActivity() {
         val searchCity = intent.getStringExtra("search_city") ?: ""
         val searchSpecialisations = intent.getStringExtra("search_specialisation") ?: ""
 
-        Log.d("SearchResultsActivity", "Received search parameters: query='$searchQuery', type='$searchType', city='$searchCity', specialisations='$searchSpecialisations'")
         setContent {
             MediPathTheme {
                 when (searchType) {

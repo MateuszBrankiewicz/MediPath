@@ -38,7 +38,6 @@ class RegisterViewModel(
         viewModelScope.launch {
             try {
                 _cities.value = locationService.getCities()
-                Log.d("RegisterViewModel", "Fetched cities: ${_cities.value}")
             } catch (e: Exception) {
                 Log.e("RegisterViewModel", "Error fetching cities", e)
                 _cities.value = emptyList()
@@ -50,7 +49,6 @@ class RegisterViewModel(
         viewModelScope.launch {
             try {
                 _provinces.value = locationService.getProvinces()
-                Log.d("RegisterViewModel", "Fetched provinces: ${_provinces.value}")
             } catch (e: Exception) {
                 Log.e("RegisterViewModel", "Error fetching provinces", e)
                 _provinces.value = emptyList()
@@ -66,25 +64,20 @@ class RegisterViewModel(
             try {
                 val response = authService.registerUser(request)
                 _registrationSuccess.value = true
-                Log.d("RegisterViewModel", "Registration successful: $response")
             } catch (e: HttpException) {
                 when (e.code()) {
                     400 -> {
                         _registrationError.value = "Please fill in all required fields."
-                        Log.e("RegisterViewModel", "Missing fields: ${e.response()?.errorBody()?.string()}")
                     }
                     409 -> {
                         _registrationError.value = "An account with this email or GovID already exists."
-                        Log.e("RegisterViewModel", "User already exists")
                     }
                     else -> {
                         _registrationError.value = "An unknown error occurred. Please try again later."
-                        Log.e("RegisterViewModel", "Unknown error: ${e.message()}")
                     }
                 }
             } catch (e: Exception) {
                 _registrationError.value = "Registration failed"
-                Log.e("RegisterViewModel", "Network error: ${e.message}", e)
             }
         }
     }

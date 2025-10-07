@@ -32,18 +32,15 @@ class NotificationsViewModel(
 
                 val token = sessionManager.getSessionId()
                 if (token.isNullOrEmpty()) {
-                    _error.value = "Brak sesji użytkownika"
+                    _error.value = "No session ID found"
                     return@launch
                 }
 
-                Log.d("NotificationsViewModel", "Fetching notifications with token: $token")
                 val profileResponse = userService.getNotificationsFromProfile("SESSION=$token")
                 _notifications.value = profileResponse.user.notifications
-                Log.d("NotificationsViewModel", "Fetched ${profileResponse.user.notifications.size} notifications")
 
             } catch (e: Exception) {
-                Log.e("NotificationsViewModel", "Error fetching notifications: $e")
-                _error.value = "Błąd podczas pobierania powiadomień: ${e.message}"
+                _error.value = "Error fetching notifications: ${e.message}"
             } finally {
                 _isLoading.value = false
             }
@@ -53,4 +50,20 @@ class NotificationsViewModel(
     fun clearError() {
         _error.value = ""
     }
+
+    fun markAllAsRead(sessionManager: DataStoreSessionManager) {
+        viewModelScope.launch {
+            try {
+                val token = sessionManager.getSessionId()
+                if (token.isNullOrEmpty()) return@launch
+
+                // TODO: Dodaj endpint oznacz wszstkie jako przczytane
+                _notifications.value = _notifications.value.map { it.copy(read = true) }
+            } catch (e: Exception) {
+                Log.e("NotificationsViewModel", "Error marking all as read: $e")
+            }
+        }
+    }
+
+
 }

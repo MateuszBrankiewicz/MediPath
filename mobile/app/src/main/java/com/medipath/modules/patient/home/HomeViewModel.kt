@@ -40,7 +40,6 @@ class HomeViewModel(
 
     private suspend fun handleAuthError(sessionManager: DataStoreSessionManager, error: Exception) {
         if (error is retrofit2.HttpException && error.code() == 401) {
-            Log.w("HomeViewModel", "Session expired, clearing token and redirecting to login")
             sessionManager.deleteSessionId()
             _shouldRedirectToLogin.value = true
         }
@@ -51,18 +50,14 @@ class HomeViewModel(
             try {
                 val token = sessionManager.getSessionId()
                 if(token.isNullOrEmpty()) {
-                    Log.e("HomeViewModel", "No session token found")
                     return@launch
                 }
-                Log.d("HomeViewModel", "Using token: $token")
                 val userResponse = userService.getUserProfile("SESSION=$token")
                 _firstName.value = userResponse.user.name
                 _userId.value = userResponse.user.id
-                Log.d("HomeViewModel", "Fetched user profile: ${userResponse.user.name}, ID: ${userResponse.user.id}")
                 fetchUpcomingVisits(token)
                 fetchActiveCodes(token)
             } catch (e: Exception) {
-                Log.e("HomeViewModel", "Error fetching profile: $e")
                 handleAuthError(sessionManager, e)
             }
         }
@@ -70,20 +65,10 @@ class HomeViewModel(
 
     private suspend fun fetchUpcomingVisits(token: String) {
         try {
-            Log.d("HomeViewModel", "Fetching upcoming visits")
-            Log.d("HomeViewModel", "Full URL would be: /api/users/me/visits?upcoming=true")
-
             val visitsResponse = userService.getUpcomingVisits("true", "SESSION=$token")
             _upcomingVisits.value = visitsResponse.visits
-            Log.d("HomeViewModel", "Fetched ${visitsResponse.visits.size} upcoming visits")
         } catch (e: retrofit2.HttpException) {
             Log.e("HomeViewModel", "HTTP Error ${e.code()}: ${e.message()}")
-            Log.e("HomeViewModel", "Error body: ${e.response()?.errorBody()?.string()}")
-            try {
-                Log.e("HomeViewModel", "Error body: ${e.response()?.errorBody()?.string()} ${upcomingVisits.value}")
-            } catch (ex: Exception) {
-                Log.e("HomeViewModel", "Could not read error body")
-            }
         } catch (e: Exception) {
             Log.e("HomeViewModel", "Error fetching visits: $e")
         }
@@ -95,17 +80,11 @@ class HomeViewModel(
 
             if (codesResponse.isSuccessful) {
                 val codes = codesResponse.body()?.codes ?: emptyList()
-                Log.d("HomeViewModel", "Received ${codes.size} codes")
-
                 val prescriptions = codes.filter { it.codes.codeType == "PRESCRIPTION" }
                 val referrals = codes.filter { it.codes.codeType == "REFERRAL" }
 
                 _prescriptionCode.value = prescriptions.lastOrNull()?.codes?.code ?: ""
                 _referralCode.value = referrals.lastOrNull()?.codes?.code ?: ""
-
-                Log.d("HomeViewModel", "Final codes: Prescription=${_prescriptionCode.value}, Referral=${_referralCode.value}")
-            } else {
-                Log.e("HomeViewModel", "API error: ${codesResponse.code()} - ${codesResponse.message()}")
             }
         } catch (e: Exception) {
             Log.e("HomeViewModel", "Error fetching codes: $e")
@@ -129,13 +108,10 @@ class HomeViewModel(
                     _deleteError.value = "Brak sesji użytkownika"
                     return@launch
                 }
-
-                Log.d("HomeViewModel", "Cancelling visit with ID: $visitId")
                 val response = userService.cancelVisit(visitId, "SESSION=$token")
 
                 if (response.isSuccessful) {
                     _deleteSuccess.value = true
-                    Log.d("HomeViewModel", "Visit cancelled successfully")
                     fetchUpcomingVisits(token)
                 } else {
                     val errorMessage = when (response.code()) {
@@ -145,11 +121,9 @@ class HomeViewModel(
                         else -> "Błąd podczas anulowania wizyty (${response.code()})"
                     }
                     _deleteError.value = errorMessage
-                    Log.e("HomeViewModel", "Cancel visit error: ${response.code()} - ${response.message()}")
                 }
             } catch (e: Exception) {
                 _deleteError.value = "Błąd sieciowy: ${e.message}"
-                Log.e("HomeViewModel", "Error cancelling visit", e)
             }
         }
     }

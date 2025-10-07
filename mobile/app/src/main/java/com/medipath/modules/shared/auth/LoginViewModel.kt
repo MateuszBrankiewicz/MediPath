@@ -11,6 +11,7 @@ import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.services.AuthService
 import retrofit2.HttpException
 
+
 class LoginViewModel(
     private val authService: AuthService = RetrofitInstance.authService
 ): ViewModel() {
@@ -24,23 +25,19 @@ class LoginViewModel(
     private val _sessionId = mutableStateOf("")
     val sessionId: State<String> = _sessionId
 
+    private val _isLoading = mutableStateOf(false)
+    val isLoading: State<Boolean> = _isLoading
+
     fun loginUser(request: LoginRequest) {
         viewModelScope.launch {
             _loginError.value = ""
             _loginSuccess.value = false
             _sessionId.value = ""
-
+            _isLoading.value = true
             try {
                 val response = authService.loginUser(request)
                 if (response.isSuccessful) {
-                    // Debug: sprawdź wszystkie headers
-                    Log.d("LoginViewModel", "All headers:")
-                    response.headers().forEach { (name, value) ->
-                        Log.d("LoginViewModel", "  $name: $value")
-                    }
-                    
                     val sessionId = response.headers()["Set-Cookie"]?.let { cookie ->
-                        Log.d("LoginViewModel", "Full cookie: '$cookie'")
                         cookie.split(";")
                             .map { it.trim() }
                             .firstOrNull { it.startsWith("SESSION=") }
@@ -51,7 +48,6 @@ class LoginViewModel(
                     }
                     _sessionId.value = sessionId ?: ""
                     _loginSuccess.value = true
-                    Log.d("LoginViewModel", "Login successful, session ID: $sessionId")
                 } else {
                     _loginError.value = "Invalid credentials"
                 }
@@ -59,20 +55,18 @@ class LoginViewModel(
                 when (e.code()) {
                     400 -> {
                         _loginError.value = "Please fill in all required fields."
-                        Log.e("LoginViewModel", "Missing fields: ${e.response()?.errorBody()?.string()}")
                     }
                     401 -> {
                         _loginError.value = "Invalid email or password."
-                        Log.e("LoginViewModel", "User with the email does not exist or the password does not match")
                     }
                     else -> {
                         _loginError.value = "An unknown error occurred. Please try again later."
-                        Log.e("LoginViewModel", "Unknown error: ${e.message()}")
                     }
                 }
             } catch (e: Exception) {
                 _loginError.value = "Login failed"
-                Log.e("LoginViewModel", "Network error: ${e.message}", e)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
