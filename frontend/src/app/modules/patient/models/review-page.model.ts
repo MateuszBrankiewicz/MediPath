@@ -21,3 +21,27 @@ export interface AddComentRequest {
   doctorRating: string;
   institutionRating: string;
 }
+
+export interface InstitutionCommentResponse {
+  comments: {
+    id: string;
+    author: string;
+    doctor: string;
+    institution: string;
+    doctorRating: number;
+    institutionRating: number;
+    content: string;
+    createdAt: string;
+  }[];
+}
+
+export interface InstitutionComment {
+  id: string;
+  author: string;
+  doctor: string;
+  institution: string;
+  doctorRating: number;
+  institutionRating: number;
+  content: string;
+  createdAt: string;
+}

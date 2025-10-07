@@ -84,40 +84,7 @@ export class DoctorPage implements OnInit {
     },
     institutions: ['City Hospital', 'Health Clinic'],
     specialisation: ['Cardiology', 'Internal Medicine'],
-    comments: [
-      {
-        id: 1,
-        userName: 'Alice Smith',
-        visitedInstitution: 'City Hospital',
-        content: 'Very professional and caring.',
-        dateOfVisit: new Date('2024-03-15'),
-        numberOfStars: 5,
-      },
-      {
-        id: 2,
-        userName: 'Bob Johnson',
-        visitedInstitution: 'Health Clinic',
-        content: 'Helpful and knowledgeable.',
-        dateOfVisit: new Date('2024-02-10'),
-        numberOfStars: 4,
-      },
-      {
-        id: 1,
-        userName: 'Alice Smith',
-        visitedInstitution: 'City Hospital',
-        content: 'Very professional and caring.',
-        dateOfVisit: new Date('2024-03-15'),
-        numberOfStars: 5,
-      },
-      {
-        id: 2,
-        userName: 'Bob Johnson',
-        visitedInstitution: 'Health Clinic',
-        content: 'Helpful and knowledgeable.',
-        dateOfVisit: new Date('2024-02-10'),
-        numberOfStars: 4,
-      },
-    ],
+    comments: [],
   });
   protected selectedInstitution = signal<string | null>(null);
   protected selectInstitution(institution: string): void {

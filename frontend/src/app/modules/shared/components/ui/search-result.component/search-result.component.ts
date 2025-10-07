@@ -133,7 +133,7 @@ export class SearchResultComponent implements OnInit {
   }
 
   protected onAddressChange(event: AddressChange): void {
-    console.log('Address changed:', event);
+    console.log(event);
   }
 
   private requestSearchResult(): void {

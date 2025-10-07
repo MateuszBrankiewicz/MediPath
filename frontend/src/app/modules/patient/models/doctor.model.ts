@@ -12,7 +12,7 @@ export interface DoctorPageModel {
   comments: Comment[];
 }
 export interface Comment {
-  id: number;
+  id: string;
   userName: string;
   visitedInstitution: string;
   content: string;

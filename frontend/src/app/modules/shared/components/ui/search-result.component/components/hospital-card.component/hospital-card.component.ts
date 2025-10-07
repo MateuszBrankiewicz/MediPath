@@ -27,7 +27,6 @@ export class HospitalCardComponent {
   public readonly institutionClicked = output<Hospital>();
   public readonly showInfoButton = input(true);
   public onCardClick() {
-    console.log('Card clicked');
     this.institutionClicked.emit(this.hospital());
   }
 
