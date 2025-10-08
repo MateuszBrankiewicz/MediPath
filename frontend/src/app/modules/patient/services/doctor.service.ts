@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
 
 @Injectable({
@@ -33,5 +33,20 @@ export class DoctorService {
       params,
       withCredentials: true,
     });
+  }
+
+  public getDoctorSchedulesForDoctorPage(
+    institutionId: string,
+    doctorId: string,
+  ) {
+    const params = new HttpParams().set('institution', institutionId);
+    return this.http
+      .get(`${API_URL}/doctors/${doctorId}/schedules`, {
+        params,
+        withCredentials: true,
+      })
+      .pipe(
+        tap((response) => console.log('Doctor schedule response:', response)),
+      );
   }
 }

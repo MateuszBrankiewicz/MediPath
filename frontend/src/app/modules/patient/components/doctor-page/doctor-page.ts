@@ -14,11 +14,21 @@ import { MenuItem } from 'primeng/api';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TabsModule } from 'primeng/tabs';
 import { Textarea } from 'primeng/textarea';
-import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
+import { groupSchedulesByDate } from '../../../../utils/scheduleMapper';
+import {
+  AvailableDay,
+  CalendarSchedule,
+} from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { DoctorPageModel } from '../../models/doctor.model';
+import {
+  ScheduleByInstitutionResponse,
+  ScheduleItem,
+} from '../../models/visit-page.model';
 import { DoctorService } from '../../services/doctor.service';
+import { PatientCommentService } from '../../services/patient-comment.service';
 import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 
 @Component({
@@ -31,6 +41,7 @@ import { PatientCommentComponent } from '../patient-comment-component/patient-co
     ButtonModule,
     FormsModule,
     Textarea,
+    ProgressSpinnerModule,
   ],
   templateUrl: './doctor-page.html',
   styleUrl: './doctor-page.scss',
@@ -42,11 +53,22 @@ export class DoctorPage implements OnInit {
   protected readonly doctorId = signal<string | null>(null);
   private doctorService = inject(DoctorService);
   protected readonly patientRemarks = signal<string>('');
+  private commentService = inject(PatientCommentService);
   protected readonly homeItem = signal<MenuItem>({
     label: 'Doctors',
     routerLink: '/patient/doctors/',
     icon: '',
   });
+
+  private isLCommentsLoading = signal(false);
+  private isScheduleLoading = signal(false);
+
+  protected readonly isLoading = computed<boolean>(() => {
+    const isCommentsLoading = this.isLCommentsLoading();
+    const isScheduleLoading = this.isScheduleLoading();
+    return isCommentsLoading || isScheduleLoading;
+  });
+
   ngOnInit(): void {
     this.activatedRoute.paramMap.subscribe((params) => {
       this.doctorId.set(params.get('id'));
@@ -58,6 +80,8 @@ export class DoctorPage implements OnInit {
         .subscribe((doctor) => {
           console.log(doctor);
         });
+      this.initDoctorComments();
+      this.initDoctorSchedule();
     }
   }
   protected readonly breadcumbMenuItems = computed<MenuItem[]>(() => {
@@ -66,6 +90,16 @@ export class DoctorPage implements OnInit {
         label: 'Twoj stary',
       },
     ];
+  });
+
+  protected readonly mappedSchedule = computed<AvailableDay[]>(() => {
+    return this.exampleDoctor().schedule.map((daySchedule) => ({
+      date: daySchedule.date,
+      slots: daySchedule.slots.map((slot) => ({
+        ...slot,
+        booked: slot.booked ?? false,
+      })),
+    }));
   });
 
   protected selectedTabIndex = signal(0);
@@ -85,9 +119,56 @@ export class DoctorPage implements OnInit {
     institutions: ['City Hospital', 'Health Clinic'],
     specialisation: ['Cardiology', 'Internal Medicine'],
     comments: [],
+    schedule: [],
   });
   protected selectedInstitution = signal<string | null>(null);
   protected selectInstitution(institution: string): void {
     this.selectedInstitution.set(institution);
+  }
+
+  private initDoctorComments() {
+    this.isLCommentsLoading.set(true);
+    this.commentService
+      .getCommentByDoctor(this.doctorId() ?? '')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((comments) => {
+        const currentDoctor = this.exampleDoctor();
+        console.log(currentDoctor);
+        console.log(comments);
+        this.exampleDoctor.set({
+          ...currentDoctor,
+          comments: comments,
+        });
+        this.isLCommentsLoading.set(false);
+      });
+  }
+
+  private initDoctorSchedule() {
+    this.isScheduleLoading.set(true);
+    this.doctorService
+      .getDoctorScheduleByInstitution(
+        '68c5dc05d2569d07e73a8456',
+        this.doctorId() || '',
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((response: ScheduleByInstitutionResponse) => {
+        const newSchedule = this.mapAndGroupSchedules(response.schedules);
+        this.exampleDoctor.update((doctor) => ({
+          ...doctor,
+          schedule: newSchedule,
+        }));
+        this.isScheduleLoading.set(false);
+      });
+  }
+
+  private mapAndGroupSchedules(
+    schedules: ScheduleByInstitutionResponse['schedules'],
+  ): ReturnType<typeof groupSchedulesByDate> {
+    const mappedSchedules: ScheduleItem[] = schedules.map((schedule) => ({
+      id: schedule.id,
+      startTime: schedule.startHour,
+      isBooked: schedule.isBooked,
+    }));
+    return groupSchedulesByDate(mappedSchedules);
   }
 }

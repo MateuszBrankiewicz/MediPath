@@ -13,8 +13,9 @@ import { ButtonModule } from 'primeng/button';
 import { DataViewModule } from 'primeng/dataview';
 import { DialogService } from 'primeng/dynamicdialog';
 import { PanelModule } from 'primeng/panel';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
-import { map } from 'rxjs';
+import { catchError, map, of } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { FilterParams } from '../../models/filter.model';
@@ -31,6 +32,7 @@ import { MedicalHistoryDialog } from './components/medical-history-dialog/medica
     PanelModule,
     TooltipModule,
     FilterComponent,
+    ProgressSpinnerModule,
   ],
   templateUrl: './medical-history-page.html',
   providers: [DialogService],
@@ -43,6 +45,9 @@ export class MedicalHistoryPage implements OnInit {
   private destroyRef = inject(DestroyRef);
   private dialogService = inject(DialogService);
 
+  protected readonly isLoading = signal(false);
+
+  protected readonly isSending = signal(false);
   private readonly filters = signal<FilterParams>({
     searchTerm: '',
     status: '',
@@ -54,6 +59,7 @@ export class MedicalHistoryPage implements OnInit {
 
   private readonly medicalHistoryService = inject(PatientMedicalHistoryService);
   ngOnInit(): void {
+    this.isLoading.set(true);
     this.loadMedicalHistory();
   }
 
@@ -161,6 +167,7 @@ export class MedicalHistoryPage implements OnInit {
     ref.onClose
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((updated) => {
+        this.isSending.set(true);
         this.medicalHistoryService
           .addMedicalHistoryEntry({
             date: updated?.record.date,
@@ -208,9 +215,15 @@ export class MedicalHistoryPage implements OnInit {
             notes: record.note,
           }));
         }),
+        catchError(() => {
+          this.isLoading.set(false);
+          return of([]);
+        }),
       )
       .subscribe((records) => {
         this.medicalRecords.set(records);
+        this.isLoading.set(false);
+        this.isSending.set(false);
       });
   }
 }

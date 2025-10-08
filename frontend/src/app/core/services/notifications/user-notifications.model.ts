@@ -18,4 +18,9 @@ export interface NotificationMessage {
   content: string;
   type?: string;
   timestamp?: string;
+  read?: boolean;
+}
+
+export interface NotificationMessageResponse {
+  notifications: NotificationMessage[];
 }

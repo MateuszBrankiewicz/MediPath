@@ -67,4 +67,23 @@ export class PatientCommentService {
         ),
       );
   }
+
+  public getCommentByDoctor(doctorId: string): Observable<Comment[]> {
+    return this.http
+      .get<InstitutionCommentResponse>(`${API_URL}/comments/doctor/${doctorId}`)
+      .pipe(
+        map((response) =>
+          response.comments.map((resp) => {
+            return {
+              id: resp.id,
+              userName: resp.author,
+              visitedInstitution: resp.institution,
+              content: resp.content,
+              numberOfStars: resp.doctorRating,
+              dateOfVisit: new Date(resp.createdAt),
+            };
+          }),
+        ),
+      );
+  }
 }

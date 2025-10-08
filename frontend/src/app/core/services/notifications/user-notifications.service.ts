@@ -1,8 +1,13 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable, OnDestroy } from '@angular/core';
 import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
-import { Observable, Subject } from 'rxjs';
+import { map, Observable, Subject } from 'rxjs';
 import SockJS from 'sockjs-client';
-import { NotificationMessage } from './user-notifications.model';
+import { API_URL } from '../../../utils/constants';
+import {
+  NotificationMessage,
+  NotificationMessageResponse,
+} from './user-notifications.model';
 
 export type ListenerCallBack = (data: unknown) => void;
 
@@ -12,7 +17,7 @@ export type ListenerCallBack = (data: unknown) => void;
 export class UserNotificationsService implements OnDestroy {
   private client: Client;
   private subscription: StompSubscription | undefined;
-
+  private http = inject(HttpClient);
   private notificationSubject = new Subject<NotificationMessage>();
 
   public notifications$: Observable<NotificationMessage> =
@@ -44,5 +49,13 @@ export class UserNotificationsService implements OnDestroy {
     }
     this.client.deactivate();
     this.notificationSubject.complete();
+  }
+
+  public getAllNotifications(): Observable<NotificationMessage[]> {
+    return this.http
+      .get<NotificationMessageResponse>(`${API_URL}/users/me/notifications`, {
+        withCredentials: true,
+      })
+      .pipe(map((response) => response.notifications));
   }
 }

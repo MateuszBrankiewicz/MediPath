@@ -13,7 +13,13 @@ import { DataViewModule } from 'primeng/dataview';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastService } from '../../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
+import { groupSchedulesByDate } from '../../../../../utils/scheduleMapper';
 import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
+import {
+  InstitutionObject,
+  ScheduleByInstitutionResponse,
+  ScheduleItem,
+} from '../../../../patient/models/visit-page.model';
 import { DoctorService } from '../../../../patient/services/doctor.service';
 import { PatientVisitsService } from '../../../../patient/services/patient-visits.service';
 import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
@@ -28,25 +34,6 @@ import {
   SearchResponse,
   SearchService,
 } from './services/search.service';
-
-interface InstitutionObject {
-  institutionId: string;
-  institutionName: string;
-}
-
-interface ScheduleItem {
-  id: string;
-  startTime: string;
-  isBooked: boolean;
-}
-
-interface ScheduleResponse {
-  schedules: {
-    id: string;
-    startHour: string;
-    isBooked: boolean;
-  }[];
-}
 
 @Component({
   selector: 'app-search-result.component',
@@ -160,7 +147,7 @@ export class SearchResultComponent implements OnInit {
     this.doctorService
       .getDoctorScheduleByInstitution(institutionId, event.doctor.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((schedules: ScheduleResponse) => {
+      .subscribe((schedules: ScheduleByInstitutionResponse) => {
         this.updateDoctorSchedule(event.doctor.id, schedules);
         this.isNewScheduleLoaded.set({ isLoading: false, cardId: '' });
       });
@@ -174,7 +161,7 @@ export class SearchResultComponent implements OnInit {
 
   private updateDoctorSchedule(
     doctorId: string,
-    schedules: ScheduleResponse,
+    schedules: ScheduleByInstitutionResponse,
   ): void {
     const currentValues = this.values();
     if (!currentValues) return;
@@ -199,14 +186,14 @@ export class SearchResultComponent implements OnInit {
   }
 
   private mapAndGroupSchedules(
-    schedules: ScheduleResponse['schedules'],
-  ): ReturnType<typeof this.searchService.groupSchedulesByDate> {
+    schedules: ScheduleByInstitutionResponse['schedules'],
+  ): ReturnType<typeof groupSchedulesByDate> {
     const mappedSchedules: ScheduleItem[] = schedules.map((schedule) => ({
       id: schedule.id,
       startTime: schedule.startHour,
       isBooked: schedule.isBooked,
     }));
-    return this.searchService.groupSchedulesByDate(mappedSchedules);
+    return groupSchedulesByDate(mappedSchedules);
   }
 
   private updateSearchResults(doctorId: string, updatedDoctor: Doctor): void {
