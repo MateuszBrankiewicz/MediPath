@@ -33,7 +33,10 @@ export interface ApiDoctor {
   }[];
   specialisations: string[];
   addresses: {
-    first: string;
+    first: {
+      institutionId: string;
+      institutionName: string;
+    };
     second: string;
   }[];
   image: string;
@@ -87,14 +90,17 @@ export class SearchService {
       photoUrl: apiDoctor.image || 'assets/imageDoctor.png',
       addresses: apiDoctor.addresses.map((addr) => ({
         address: addr.second,
-        institution: addr.first,
+        institution: {
+          institutionId: addr.first.institutionId,
+          institutionName: addr.first.institutionName,
+        },
       })),
       currentAddressIndex: 0,
       schedule: this.groupSchedulesByDate(apiDoctor.schedules),
     };
   }
 
-  private groupSchedulesByDate(
+  public groupSchedulesByDate(
     schedules: { startTime: string; isBooked: boolean; id: string }[],
   ) {
     const grouped = new Map<

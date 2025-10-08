@@ -242,10 +242,13 @@ export class VisitPage implements OnInit {
     this.ref.onClose.subscribe((result) => {
       if (result) {
         this.visitService
-          .scheduleVisit({
-            scheduleID: result.slotId,
-            patientRemarks: result.patientRemarks,
-          })
+          .rescheduleVisit(
+            {
+              scheduleID: result.slotId,
+              patientRemarks: result.patientRemarks,
+            },
+            visitId,
+          )
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: (result) => {

@@ -49,58 +49,71 @@
 
       <div class="current-address">
         {{ doctor().addresses[selectedAddressIndex()].address | addressFormat }}
-        <p>{{ doctor().addresses[selectedAddressIndex()].institution }}</p>
+        <p>
+          {{
+            doctor().addresses[selectedAddressIndex()].institution
+              .institutionName
+          }}
+        </p>
       </div>
     </div>
   </div>
 
   <div class="schedule-section">
-    @if (doctor().schedule && doctor().schedule.length > 0) {
-      <div class="schedule-days">
-        @for (day of doctor().schedule; track day) {
-          <div class="day-column">
-            <div class="day-header">
-              <div class="day-name">{{ day.dayName }}</div>
-              <div class="day-date">{{ day.dayNumber }}</div>
-            </div>
-
-            <div class="time-slots">
-              @for (slot of day.slots; track slot) {
-                <button
-                  class="time-slot"
-                  [class.available]="slot.available && !slot.booked"
-                  [class.booked]="slot.booked"
-                  [class.unavailable]="!slot.available"
-                  [disabled]="!slot.available || slot.booked"
-                  (click)="onTimeSlotClick(day, slot)"
-                >
-                  {{ slot.time }}
-                </button>
-              }
-              @if (day.slots.length > 5) {
-                <button class="more-hours-btn" (click)="onShowMoreHours(day)">
-                  {{
-                    translationService.translate("shared.doctorCard.moreHours")
-                  }}
-                  ⌄
-                </button>
-              }
-            </div>
-          </div>
-        }
+    @if (isScheduleLoading()) {
+      <div class="spinner-container">
+        <p-progress-spinner [strokeWidth]="'3'"></p-progress-spinner>
       </div>
     } @else {
-      <div class="no-schedule">
-        {{ translationService.translate("shared.doctorCard.noSchedule") }}
-      </div>
-    }
+      @if (doctor().schedule && doctor().schedule.length > 0) {
+        <div class="schedule-days">
+          @for (day of doctor().schedule; track day) {
+            <div class="day-column">
+              <div class="day-header">
+                <div class="day-name">{{ day.dayName }}</div>
+                <div class="day-date">{{ day.dayNumber }}</div>
+              </div>
 
-    <p-button
-      [rounded]="true"
-      severity="secondary"
-      [outlined]="true"
-      (onClick)="showMoreInfo.emit(doctor())"
-      icon="pi pi-arrow-right"
-    ></p-button>
+              <div class="time-slots">
+                @for (slot of day.slots; track slot) {
+                  <button
+                    class="time-slot"
+                    [class.available]="slot.available && !slot.booked"
+                    [class.booked]="slot.booked"
+                    [class.unavailable]="!slot.available"
+                    [disabled]="!slot.available || slot.booked"
+                    (click)="onTimeSlotClick(day, slot)"
+                  >
+                    {{ slot.time }}
+                  </button>
+                }
+                @if (day.slots.length > 5) {
+                  <button class="more-hours-btn" (click)="onShowMoreHours(day)">
+                    {{
+                      translationService.translate(
+                        "shared.doctorCard.moreHours"
+                      )
+                    }}
+                    ⌄
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="no-schedule">
+          {{ translationService.translate("shared.doctorCard.noSchedule") }}
+        </div>
+      }
+
+      <p-button
+        [rounded]="true"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="showMoreInfo.emit(doctor())"
+        icon="pi pi-arrow-right"
+      ></p-button>
+    }
   </div>
 </div>

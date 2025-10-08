@@ -1,5 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
 
 @Injectable({
@@ -14,8 +15,23 @@ export class DoctorService {
   public getDoctorScheduleByInstitution(
     institutionId: string,
     doctorId: string,
-  ) {
+  ): Observable<{
+    schedules: {
+      id: string;
+      startHour: string;
+      isBooked: boolean;
+    }[];
+  }> {
     const params = new HttpParams().set('institution', institutionId);
-    return this.http.get(`${API_URL}/doctors/${doctorId}/schedule`, { params });
+    return this.http.get<{
+      schedules: {
+        id: string;
+        startHour: string;
+        isBooked: boolean;
+      }[];
+    }>(`${API_URL}/doctors/${doctorId}/schedules`, {
+      params,
+      withCredentials: true,
+    });
   }
 }
