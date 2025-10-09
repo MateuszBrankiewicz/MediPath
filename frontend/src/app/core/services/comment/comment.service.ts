@@ -2,17 +2,18 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
-import { CommentWithRating } from '../components/rating-component/rating-component';
-import { Comment } from '../models/doctor.model';
+
+import { Comment } from '../../models/doctor.model';
 import {
   AddComentRequest,
   CommentApiResponse,
+  CommentWithRating,
   InstitutionCommentResponse,
-} from '../models/review-page.model';
+} from '../../models/review.model';
 @Injectable({
   providedIn: 'root',
 })
-export class PatientCommentService {
+export class CommentService {
   private http = inject(HttpClient);
 
   public getUsersComments(): Observable<CommentApiResponse> {

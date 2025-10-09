@@ -95,17 +95,3 @@ export interface InstitutionObject {
   institutionId: string;
   institutionName: string;
 }
-
-export interface ScheduleItem {
-  id: string;
-  startTime: string;
-  isBooked: boolean;
-}
-
-export interface ScheduleByInstitutionResponse {
-  schedules: {
-    id: string;
-    startHour: string;
-    isBooked: boolean;
-  }[];
-}

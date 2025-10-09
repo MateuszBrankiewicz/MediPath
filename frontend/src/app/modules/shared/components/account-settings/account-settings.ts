@@ -12,6 +12,11 @@ import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { firstValueFrom } from 'rxjs';
+import {
+  AccountSettingsForm,
+  DEFAULT_FORM,
+  LanguageOption,
+} from '../../../../core/models/account-settings.model';
 import { UserSettings } from '../../../../core/services/authentication/user-settings.model';
 import { UserSettingsService } from '../../../../core/services/authentication/user-settings.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
@@ -20,19 +25,6 @@ import {
   SupportedLanguage,
 } from '../../../../core/services/translation/language.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-
-interface LanguageOption {
-  code: SupportedLanguage;
-  name: string;
-}
-
-type AccountSettingsForm = UserSettings;
-
-const DEFAULT_FORM: AccountSettingsForm = {
-  language: DEFAULT_LANGUAGE,
-  systemNotifications: true,
-  userNotifications: false,
-};
 
 @Component({
   selector: 'app-account-settings',

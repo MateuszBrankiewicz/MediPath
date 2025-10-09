@@ -18,10 +18,11 @@ import {
   Hospital,
   HospitalCardComponent,
 } from '../../../shared/components/ui/search-result.component/components/hospital-card.component/hospital-card.component';
-import { Comment } from '../../models/doctor.model';
-import { Institution } from '../../models/institution.model';
-import { InstitutionService } from '../../services/institution.service';
-import { PatientCommentService } from '../../services/patient-comment.service';
+
+import { Comment } from '../../../../core/models/doctor.model';
+import { Institution } from '../../../../core/models/institution.model';
+import { CommentService } from '../../../../core/services/comment/comment.service';
+import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 
 @Component({
@@ -50,7 +51,7 @@ export class InstitutionPage implements OnInit {
 
   private destroyRef = inject(DestroyRef);
   private institutionService = inject(InstitutionService);
-  private commentService = inject(PatientCommentService);
+  private commentService = inject(CommentService);
   private activatedRoue = inject(ActivatedRoute);
 
   protected onDoctorPageChange(event: PaginatorState) {

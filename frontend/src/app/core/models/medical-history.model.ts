@@ -1,3 +1,5 @@
+import { FormControl } from '@angular/forms';
+
 export interface MedicalRecord {
   id: string;
   title: string;
@@ -36,4 +38,30 @@ export interface MedicalHistoryApiRequest {
 
 export interface MedicalHistoryApiResponse {
   medicalhistories: MedicalHistoryResponse[];
+}
+
+export interface MedicalHistoryEntry {
+  date: string;
+  description: string;
+}
+
+export type MedicalHistoryDialogMode = 'view' | 'edit';
+
+export interface MedicalHistoryDialogData {
+  mode?: MedicalHistoryDialogMode;
+  record?: MedicalHistoryResponse;
+}
+
+export interface MedicalHistoryDialogResult {
+  record: MedicalHistoryResponse;
+  mode: MedicalHistoryDialogMode;
+}
+
+export interface MedicalHistoryFormModel {
+  id: FormControl<string>;
+  title: FormControl<string>;
+  date: FormControl<Date | null>;
+  doctorName: FormControl<string>;
+  doctorSurname: FormControl<string>;
+  notes: FormControl<string | null>;
 }

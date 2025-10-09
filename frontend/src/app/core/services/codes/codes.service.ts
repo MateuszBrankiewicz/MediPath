@@ -6,12 +6,12 @@ import {
   ApiCodesResponse,
   Refferal,
   UsedState,
-} from '../models/refferal-page.model';
+} from '../../models/refferal.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class PatientCodesService {
+export class CodesService {
   private http = inject(HttpClient);
 
   public getPrescriptions() {

@@ -5,8 +5,8 @@ import {
   inject,
   input,
 } from '@angular/core';
+import { Comment } from '../../../../core/models/doctor.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { Comment } from '../..//models/doctor.model';
 
 @Component({
   selector: 'app-patient-comment-component',

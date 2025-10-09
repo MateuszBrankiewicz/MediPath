@@ -7,8 +7,8 @@ import {
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Visit } from '../../../../core/models/visit.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { Visit } from '../../models/visit-page.model';
 
 @Component({
   selector: 'app-visit-details-dialog',

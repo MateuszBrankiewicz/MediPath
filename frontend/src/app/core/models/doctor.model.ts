@@ -1,4 +1,4 @@
-import { DaySchedule } from '../../shared/components/ui/search-result.component/search-result.model';
+import { DaySchedule } from '../../modules/shared/components/ui/search-result.component/search-result.model';
 
 export interface DoctorPageModel {
   name: string;

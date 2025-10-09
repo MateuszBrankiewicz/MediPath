@@ -17,16 +17,8 @@ import { ButtonModule } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { MedicationReminder } from '../../../../../../core/models/reminder.model';
 import { TranslationService } from '../../../../../../core/services/translation/translation.service';
-
-export interface MedicationReminder {
-  id?: number;
-  title: string;
-  reminderTime: Date | null;
-  startDate: Date | null;
-  endDate: Date | null;
-  content: string;
-}
 
 @Component({
   selector: 'app-add-reminder-dialog',

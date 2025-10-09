@@ -11,17 +11,18 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DataViewModule } from 'primeng/dataview';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DoctorService } from '../../../../../core/services/doctor/doctor.service';
 import { ToastService } from '../../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
 import { groupSchedulesByDate } from '../../../../../utils/scheduleMapper';
 import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
+
 import {
-  InstitutionObject,
   ScheduleByInstitutionResponse,
   ScheduleItem,
-} from '../../../../patient/models/visit-page.model';
-import { DoctorService } from '../../../../patient/services/doctor.service';
-import { PatientVisitsService } from '../../../../patient/services/patient-visits.service';
+} from '../../../../../core/models/schedule.model';
+import { InstitutionObject } from '../../../../../core/models/visit.model';
+import { VisitsService } from '../../../../../core/services/visits/visits.service';
 import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
 import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
 import {
@@ -55,7 +56,7 @@ export class SearchResultComponent implements OnInit {
   private readonly dialogService = inject(DialogService);
   private destroyRef = inject(DestroyRef);
   private dialogRef: DynamicDialogRef | null = null;
-  private patientVisitsService = inject(PatientVisitsService);
+  private patientVisitsService = inject(VisitsService);
   private toastService = inject(ToastService);
   private readonly translationService = inject(TranslationService);
   protected readonly category = signal('');

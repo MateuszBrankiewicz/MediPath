@@ -15,8 +15,8 @@ import { DrawerModule } from 'primeng/drawer';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputText } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { FilterParams } from '../../../../../core/models/filter.model';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
-import { FilterParams } from '../../../../patient/models/filter.model';
 
 @Component({
   selector: 'app-filter-component',

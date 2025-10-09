@@ -45,3 +45,12 @@ export interface InstitutionComment {
   content: string;
   createdAt: string;
 }
+
+export interface CommentWithRating {
+  id: string;
+  comment: string;
+  doctorName: string;
+  institutionName: string;
+  doctorRating: number;
+  institutionRating: number;
+}

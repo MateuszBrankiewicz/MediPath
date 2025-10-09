@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import {
   FormBuilder,
-  FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
@@ -18,28 +17,13 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { MedicalHistoryResponse } from '../../../../models/medical-history.model';
-
-type MedicalHistoryDialogMode = 'view' | 'edit';
-
-export interface MedicalHistoryDialogData {
-  mode?: MedicalHistoryDialogMode;
-  record?: MedicalHistoryResponse;
-}
-
-export interface MedicalHistoryDialogResult {
-  record: MedicalHistoryResponse;
-  mode: MedicalHistoryDialogMode;
-}
-
-interface MedicalHistoryFormModel {
-  id: FormControl<string>;
-  title: FormControl<string>;
-  date: FormControl<Date | null>;
-  doctorName: FormControl<string>;
-  doctorSurname: FormControl<string>;
-  notes: FormControl<string | null>;
-}
+import {
+  MedicalHistoryDialogData,
+  MedicalHistoryDialogMode,
+  MedicalHistoryDialogResult,
+  MedicalHistoryFormModel,
+  MedicalHistoryResponse,
+} from '../../../../../../core/models/medical-history.model';
 
 type MedicalHistoryForm = FormGroup<MedicalHistoryFormModel>;
 

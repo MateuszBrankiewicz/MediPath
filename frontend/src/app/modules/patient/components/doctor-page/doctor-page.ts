@@ -17,18 +17,17 @@ import { CardModule } from 'primeng/card';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TabsModule } from 'primeng/tabs';
 import { Textarea } from 'primeng/textarea';
+import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { groupSchedulesByDate } from '../../../../utils/scheduleMapper';
+
+import { DoctorPageModel } from '../../../../core/models/doctor.model';
 import {
   AvailableDay,
-  CalendarSchedule,
-} from '../../../shared/components/calendar-schedule/calendar-schedule';
-import { DoctorPageModel } from '../../models/doctor.model';
-import {
   ScheduleByInstitutionResponse,
   ScheduleItem,
-} from '../../models/visit-page.model';
-import { DoctorService } from '../../services/doctor.service';
-import { PatientCommentService } from '../../services/patient-comment.service';
+} from '../../../../core/models/schedule.model';
+import { CommentService } from '../../../../core/services/comment/comment.service';
+import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 
 @Component({
@@ -53,7 +52,7 @@ export class DoctorPage implements OnInit {
   protected readonly doctorId = signal<string | null>(null);
   private doctorService = inject(DoctorService);
   protected readonly patientRemarks = signal<string>('');
-  private commentService = inject(PatientCommentService);
+  private commentService = inject(CommentService);
   protected readonly homeItem = signal<MenuItem>({
     label: 'Doctors',
     routerLink: '/patient/doctors/',
