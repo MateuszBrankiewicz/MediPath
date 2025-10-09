@@ -1,12 +1,16 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  inject,
   input,
   OnInit,
   output,
   signal,
-  inject,
 } from '@angular/core';
+import { ButtonModule } from 'primeng/button';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { AddressFormatPipe } from '../../../../../../../core/pipes/address-format-pipe';
+import { TranslationService } from '../../../../../../../core/services/translation/translation.service';
 import {
   AddressChange,
   BookAppointment,
@@ -14,29 +18,25 @@ import {
   Doctor,
   TimeSlot,
 } from '../../search-result.model';
-import { AddressFormatPipe } from '../../../../../../../core/pipes/address-format-pipe';
-import { TranslationService } from '../../../../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-doctor-card',
-  imports: [CommonModule, AddressFormatPipe],
+  imports: [CommonModule, AddressFormatPipe, ButtonModule, ProgressSpinner],
   templateUrl: './doctor-card.component.html',
   styleUrl: './doctor-card.component.scss',
 })
 export class DoctorCardComponent implements OnInit {
   public readonly translationService = inject(TranslationService);
 
-  onShowMore() {
-    throw new Error('Method not implemented.');
-  }
   public readonly doctor = input.required<Doctor>();
   public readonly bookAppointment = output<BookAppointment>();
   public readonly showMoreInfo = output<Doctor>();
   public readonly addressChange = output<AddressChange>();
   protected readonly selectedAddressIndex = signal(0);
-
+  public isScheduleLoading = input(true);
   ngOnInit(): void {
     this.selectedAddressIndex.set(this.doctor().currentAddressIndex || 0);
+    console.log(this.doctor());
   }
   getStarsArray(): boolean[] {
     const stars = [];

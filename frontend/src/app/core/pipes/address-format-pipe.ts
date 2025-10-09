@@ -18,31 +18,47 @@ export class AddressFormatPipe implements PipeTransform {
 
     const [province, city, street, buildingNumber, postalCode] = parts;
 
-    const addressParts: string[] = [];
+    const valid = (v: unknown) => !!v && v !== 'null';
 
-    if (
-      street &&
-      street !== 'null' &&
-      buildingNumber &&
-      buildingNumber !== 'null'
-    ) {
-      addressParts.push(`${street} ${buildingNumber}`);
-    } else if (street && street !== 'null') {
-      addressParts.push(street);
+    if (valid(street)) {
+      // street buildingNumber PostalCode City, Province
+      const addressParts: string[] = [];
+      if (valid(street)) {
+        addressParts.push(street);
+      }
+      if (valid(buildingNumber)) {
+        addressParts.push(buildingNumber);
+      }
+      if (valid(postalCode)) {
+        addressParts.push(postalCode);
+      }
+      if (valid(city)) {
+        addressParts.push(city);
+      }
+      let result = addressParts.join(' ');
+      if (valid(province) && province !== city) {
+        result += `, ${province}`;
+      }
+      return result;
+    } else {
+      // city buildingNumber PostalCode City Province
+      const addressParts: string[] = [];
+      if (valid(city)) {
+        addressParts.push(city);
+      }
+      if (valid(buildingNumber)) {
+        addressParts.push(buildingNumber);
+      }
+      if (valid(postalCode)) {
+        addressParts.push(postalCode);
+      }
+      if (valid(city)) {
+        addressParts.push(city);
+      }
+      if (valid(province) && province !== city) {
+        addressParts.push(province);
+      }
+      return addressParts.join(' ');
     }
-
-    if (city && city !== 'null') {
-      addressParts.push(city);
-    }
-
-    if (province && province !== 'null' && province !== city) {
-      addressParts.push(province);
-    }
-
-    if (postalCode && postalCode !== 'null') {
-      addressParts.push(postalCode);
-    }
-
-    return addressParts.join(', ');
   }
 }

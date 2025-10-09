@@ -1,41 +1,28 @@
+import { CommonModule } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  inject,
   input,
   output,
   signal,
-  effect,
-  inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import {
+  AvailableDay,
+  CalendarDay,
+} from '../../../../core/models/schedule.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-
-export interface TimeSlot {
-  id: string;
-  time: string;
-  available: boolean;
-  booked: boolean;
-}
-
-export interface AvailableDay {
-  date: Date | string;
-  slots: TimeSlot[];
-}
-
-export interface CalendarDay {
-  date: Date;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  hasAppointments: boolean;
-  dayNumber: number;
-}
+import { TimeSlot } from '../ui/search-result.component/search-result.model';
 
 @Component({
   selector: 'app-calendar-schedule',
   imports: [CommonModule, ButtonModule],
   templateUrl: './calendar-schedule.html',
   styleUrl: './calendar-schedule.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarSchedule {
   protected translationService = inject(TranslationService);

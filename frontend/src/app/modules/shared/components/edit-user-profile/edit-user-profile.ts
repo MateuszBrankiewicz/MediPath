@@ -1,80 +1,126 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  ReactiveFormsModule,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
   FormControl,
   FormGroup,
+  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { finalize } from 'rxjs';
+import { ProfileFormControls } from '../../../../core/models/user-profile.model';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
+import { UserProfileFormValue } from '../../../../core/services/authentication/profile.model';
 import { ToastService } from '../../../../core/services/toast/toast.service';
-
-export interface UserProfile {
-  name: string;
-  surname: string;
-  email: string;
-  birthDate: string;
-  phoneNumber: string;
-  governmentId: string;
-  province: string;
-  postalCode: string;
-  city: string;
-  number: string;
-  street: string;
-}
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   selector: 'app-edit-user-profile',
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './edit-user-profile.html',
   styleUrl: './edit-user-profile.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditUserProfile implements OnInit {
   public translationService = inject(TranslationService);
   private toastService = inject(ToastService);
-
+  private authService = inject(AuthenticationService);
+  private destroyRef = inject(DestroyRef);
   public isSubmitting = signal(false);
 
-  // Form controls with mock data - in real app this would come from a service
-  public profileFormGroup = new FormGroup({
-    name: new FormControl('Jan', [
-      Validators.required,
-      Validators.minLength(2),
-    ]),
-    surname: new FormControl('Kowalski', [
-      Validators.required,
-      Validators.minLength(2),
-    ]),
-    email: new FormControl('jankowalski@gmail.com', [
-      Validators.required,
-      Validators.email,
-    ]),
-    birthDate: new FormControl('08-04-1984', [Validators.required]),
-    phoneNumber: new FormControl('+48 999 999 999', [Validators.required]),
-    governmentId: new FormControl('84123456789'),
-    province: new FormControl('lubelskie', [Validators.required]),
-    postalCode: new FormControl('20-950', [Validators.required]),
-    city: new FormControl('Lublin', [Validators.required]),
-    number: new FormControl('99', [Validators.required]),
-    street: new FormControl('Nadbystrzycka', [Validators.required]),
+  public profileFormGroup = new FormGroup<ProfileFormControls>({
+    name: new FormControl<string>('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(2)],
+    }),
+    surname: new FormControl<string>('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(2)],
+    }),
+
+    birthDate: new FormControl<string>('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    phoneNumber: new FormControl<string>('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    governmentId: new FormControl<string>('', { nonNullable: true }),
+    province: new FormControl<string>('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    postalCode: new FormControl<string>('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    city: new FormControl<string>('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    number: new FormControl<string>('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    street: new FormControl<string>('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
   });
 
   ngOnInit() {
-    this.profileFormGroup.controls.governmentId.disable();
-    console.log('EditUserProfile initialized');
+    this.profileFormGroup.controls.governmentId.disable({ emitEvent: false });
+
+    this.authService
+      .getUserProfile()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (profile) => {
+          this.profileFormGroup.patchValue(profile, {
+            emitEvent: false,
+            onlySelf: true,
+          });
+          this.profileFormGroup.markAsPristine();
+        },
+        error: () => {
+          this.toastService.showError(
+            this.translationService.translate('editProfile.error.load'),
+          );
+        },
+      });
   }
 
   public onSubmit() {
     if (this.profileFormGroup.valid) {
       this.isSubmitting.set(true);
+      const formValue =
+        this.profileFormGroup.getRawValue() as UserProfileFormValue;
 
-      // Simulate API call
-      setTimeout(() => {
-        this.toastService.showSuccess(
-          this.translationService.translate('editProfile.success'),
-        );
-        this.isSubmitting.set(false);
-      }, 1000);
+      this.authService
+        .updateUserProfile(formValue)
+        .pipe(
+          takeUntilDestroyed(this.destroyRef),
+          finalize(() => this.isSubmitting.set(false)),
+        )
+        .subscribe({
+          next: () => {
+            this.toastService.showSuccess('editProfile.success');
+            this.profileFormGroup.markAsPristine();
+          },
+          error: () => {
+            this.toastService.showError(
+              this.translationService.translate('editProfile.error.save'),
+            );
+          },
+        });
     } else {
       this.markFormGroupTouched();
       this.toastService.showError(
@@ -89,9 +135,8 @@ export class EditUserProfile implements OnInit {
   }
 
   private markFormGroupTouched() {
-    Object.keys(this.profileFormGroup.controls).forEach((field) => {
-      const control = this.profileFormGroup.get(field);
-      control?.markAsTouched({ onlySelf: true });
+    Object.values(this.profileFormGroup.controls).forEach((control) => {
+      control.markAsTouched({ onlySelf: true });
     });
   }
 }

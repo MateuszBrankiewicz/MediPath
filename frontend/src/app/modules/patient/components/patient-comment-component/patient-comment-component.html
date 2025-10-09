@@ -1,15 +1,15 @@
 <div class="comment-content">
   <div class="header-content">
     <div class="icon-with-name">
-      <i class="pi pi-user"></i>
+      <div class="avatar">{{ (comment().userName || " ")[0] | uppercase }}</div>
       <span>{{ comment().userName }}</span>
     </div>
     <div class="date-with-review-grade">
-      <span class="date"
-        >{{ translationService.translate('patient.comments.dateOfVisit') }} <span>{{ comment().dateOfVisit | date }} </span></span
-      >
+      <div class="date">
+        {{ translationService.translate("patient.comments.dateOfVisit") }}
+        <span>{{ comment().dateOfVisit | date }}</span>
+      </div>
       <div class="stars">
-        Review:
         @for (star of [1, 2, 3, 4, 5]; track star) {
           <span class="star" [class.filled]="star <= comment().numberOfStars"
             >★</span
@@ -18,8 +18,13 @@
       </div>
     </div>
   </div>
+
   <p class="institution">
-    <span>{{ translationService.translate('patient.comments.institution') }}</span> {{ comment().visitedInstitution }}
+    <span>{{
+      translationService.translate("patient.comments.institution")
+    }}</span>
+    {{ comment().visitedInstitution }}
   </p>
-  <span class="content"> {{ comment().content }}</span>
+
+  <div class="content">{{ comment().content }}</div>
 </div>

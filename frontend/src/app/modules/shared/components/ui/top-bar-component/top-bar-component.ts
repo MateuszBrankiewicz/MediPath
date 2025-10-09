@@ -6,6 +6,7 @@ import {
   DestroyRef,
   inject,
   input,
+  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
@@ -17,12 +18,19 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { Menu, MenuModule } from 'primeng/menu';
+import { Popover, PopoverModule } from 'primeng/popover';
 import { SelectModule } from 'primeng/select';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
 
-import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
-import { ToastService } from '../../../../../core/services/toast/toast.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
+import {
+  getRoleFromCode,
+  UserRoles,
+} from '../../../../../core/services/authentication/authentication.model';
+import { NotificationMessage } from '../../../../../core/services/notifications/user-notifications.model';
+import { UserNotificationsService } from '../../../../../core/services/notifications/user-notifications.service';
+import { ToastService } from '../../../../../core/services/toast/toast.service';
 
 export interface TopBarConfig {
   showSearch?: boolean;
@@ -31,7 +39,7 @@ export interface TopBarConfig {
 }
 interface RoleOption {
   label: string;
-  value: string;
+  value: UserRoles;
 }
 @Component({
   selector: 'app-top-bar-component',
@@ -46,11 +54,15 @@ interface RoleOption {
     ButtonModule,
     MenuModule,
     SelectModule,
+    PopoverModule,
     FormsModule,
   ],
 })
-export class TopBarComponent {
+export class TopBarComponent implements OnInit {
   private readonly userMenu = viewChild<Menu>('userMenu');
+  private readonly notificationsPopover = viewChild<Popover>(
+    'notificationsPopover',
+  );
 
   private destroyRef = inject(DestroyRef);
 
@@ -59,6 +71,7 @@ export class TopBarComponent {
   private readonly authService = inject(AuthenticationService);
 
   private readonly toastService = inject(ToastService);
+  private readonly notificationsService = inject(UserNotificationsService);
 
   protected readonly translationService = inject(TranslationService);
 
@@ -67,8 +80,12 @@ export class TopBarComponent {
   protected readonly selectedCategory = signal('');
   protected readonly locationQuery = signal('');
   protected readonly specializationQuery = signal('');
-
+  protected readonly notifications = signal<NotificationMessage[]>([]);
   protected readonly isSearchExpanded = signal(false);
+
+  protected readonly unreadCount = signal(1);
+
+  private readonly notificationService = inject(UserNotificationsService);
 
   protected readonly categoryOptions = computed(() => [
     { label: '-- Category --', value: '' },
@@ -83,11 +100,18 @@ export class TopBarComponent {
   ]);
 
   protected readonly roleOptions = computed<RoleOption[]>(() => [
-    { label: 'Doctor', value: 'doctor' },
-    { label: 'Nurse', value: 'nurse' },
-    { label: 'Admin', value: 'admin' },
-    { label: 'Patient', value: 'patient' },
+    { label: 'Doctor', value: UserRoles.DOCTOR },
+    { label: 'Admin', value: UserRoles.ADMIN },
+    { label: 'Patient', value: UserRoles.PATIENT },
   ]);
+
+  protected readonly selectedRole = computed<UserRoles>(() => {
+    const lastPanel = this.user()?.userSettings.lastPanel;
+    if (typeof lastPanel === 'number') {
+      return getRoleFromCode(lastPanel);
+    }
+    return (lastPanel as UserRoles) ?? UserRoles.PATIENT;
+  });
 
   public readonly config = input<TopBarConfig>({
     showSearch: false,
@@ -128,6 +152,15 @@ export class TopBarComponent {
 
   protected readonly user = computed(() => this.authService.getUser());
 
+  protected readonly unreadBadge = computed<string | undefined>(() => {
+    const count = 0;
+    if (count <= 0) {
+      return undefined;
+    }
+    return count > 99 ? '99+' : String(count);
+  });
+  protected readonly isMarkingAll = signal(false);
+
   protected readonly menuItems = computed<MenuItem[]>(() => [
     {
       label: 'Edit profile',
@@ -157,6 +190,7 @@ export class TopBarComponent {
     {
       label: 'Szukaj po instytucji',
       icon: 'pi pi-building',
+
       command: () => this.onSearchType('institution'),
     },
     {
@@ -166,6 +200,16 @@ export class TopBarComponent {
       style: { 'font-size': '1.1rem' },
     },
   ];
+
+  ngOnInit(): void {
+    this.notificationService.notifications$.subscribe((message) => {
+      const title = message?.title || 'Nowa notyfikacja';
+      const content = message?.content || '';
+      this.toastService.showInfo(title, content);
+      this.notifications.update((notifications) => [...notifications, message]);
+    });
+    this.initNotifications();
+  }
 
   private navigateToProfile(): void {
     this.router.navigate(['/profile']);
@@ -201,7 +245,6 @@ export class TopBarComponent {
 
   protected onSearchType(type: string): void {
     this.selectedSearchType.set(type);
-    console.log(type);
   }
 
   protected getSearchPlaceholder(): string {
@@ -235,25 +278,86 @@ export class TopBarComponent {
         return 'Wszystkie';
     }
   }
-  protected onRoleChange(newRole: string): void {
-    console.log('Role changed to:', newRole);
-    switch (newRole) {
-      case 'doctor':
-        this.authService.setNewRole(newRole);
-        console.log(this.authService.getUser());
+
+  protected onNotificationsButtonClick(event: Event): void {
+    const popover = this.notificationsPopover();
+    if (!popover) {
+      return;
+    }
+
+    popover.toggle(event);
+  }
+
+  protected onNotificationSelect(notification: NotificationMessage): void {
+    console.log('Selected notification:', notification);
+  }
+
+  protected onMarkAllAsRead(): void {
+    if (this.isMarkingAll()) {
+      return;
+    }
+
+    this.isMarkingAll.set(true);
+  }
+
+  protected navigateToNotifications(): void {
+    const routePrefix = this.authService.getRoutePrefix();
+    const targetRoute =
+      routePrefix === '/patient'
+        ? [routePrefix, 'reminders']
+        : ['/patient', 'reminders'];
+
+    this.router.navigate(targetRoute);
+    this.notificationsPopover()?.hide();
+  }
+
+  protected translate(key: string, params?: Record<string, string | number>) {
+    return this.translationService.translate(key, params);
+  }
+
+  protected onRoleChange(newRole: UserRoles | null): void {
+    if (!newRole) {
+      return;
+    }
+
+    this.authService
+      .changeLastPanel(newRole)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (role) => {
+          if (!role) {
+            return;
+          }
+          this.navigateToModule(role);
+        },
+        error: (error) => {
+          console.error('Changing default panel failed', error);
+          this.toastService.showError('toast.changePanel.error');
+        },
+      });
+  }
+
+  private navigateToModule(targetRole: UserRoles): void {
+    switch (targetRole) {
+      case UserRoles.DOCTOR:
+        this.router.navigate(['/doctor']);
         break;
-      case 'nurse':
-        this.router.navigate(['/nurse']);
-        break;
-      case 'admin':
+      case UserRoles.ADMIN:
         this.router.navigate(['/admin']);
         break;
-      case 'patient':
+      case UserRoles.PATIENT:
+      default:
         this.router.navigate(['/patient']);
         break;
-      default:
-        this.router.navigate(['/']);
-        break;
     }
+  }
+
+  private initNotifications() {
+    this.notificationService
+      .getAllNotifications()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => {
+        this.notifications.set(res);
+      });
   }
 }

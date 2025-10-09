@@ -1,4 +1,4 @@
-import { Component, input, output, inject } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TranslationService } from '../../../../../../../core/services/translation/translation.service';
 
@@ -24,6 +24,11 @@ export class HospitalCardComponent {
   public readonly disable? = output<Hospital>();
   public readonly canEdit = input(false);
   public readonly canDisabled = input(false);
+  public readonly institutionClicked = output<Hospital>();
+  public readonly showInfoButton = input(true);
+  public onCardClick() {
+    this.institutionClicked.emit(this.hospital());
+  }
 
   public onEditDetails() {
     if (this.editClicked) {

@@ -1,64 +1,131 @@
 <p-breadcrumb [model]="breadcumbMenuItems()" [home]="homeItem()" />
-
-<div class="doctor-info">
-  <div class="main-card">
-    <p-card>
-      <div class="doctor-info-card">
-        <img
-          [src]="exampleDoctor().photoUrl"
-          [alt]="'Dr. ' + exampleDoctor().name + ' ' + exampleDoctor().surname"
-        />
-        <div class="doctor-personal-information">
-          <p class="doctor-name">
-            Dr. {{ exampleDoctor().name }} {{ exampleDoctor().surname }}
-          </p>
-          <div class="doctor-rating">
-            <div class="stars">
-              @for (star of [1, 2, 3, 4, 5]; track star) {
-                <span
-                  class="star"
-                  [class.filled]="star <= exampleDoctor().rating.stars"
-                  >★</span
-                >
-              }
+@if (isLoading()) {
+  <div class="loading-container">
+    <p-progress-spinner></p-progress-spinner>
+  </div>
+} @else {
+  <div class="doctor-info">
+    <div class="main-card">
+      <p-card>
+        <div class="doctor-info-card">
+          <img
+            [src]="exampleDoctor().photoUrl"
+            [alt]="
+              'Dr. ' + exampleDoctor().name + ' ' + exampleDoctor().surname
+            "
+          />
+          <div class="doctor-personal-information">
+            <p class="doctor-name">
+              Dr. {{ exampleDoctor().name }} {{ exampleDoctor().surname }}
+            </p>
+            <div class="doctor-rating">
+              <div class="stars">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <span
+                    class="star"
+                    [class.filled]="star <= exampleDoctor().rating.stars"
+                    >★</span
+                  >
+                }
+              </div>
+              <span class="reviews-count">
+                ({{ exampleDoctor().rating.opinions }} opinions)
+              </span>
             </div>
-            <span class="reviews-count">
-              ({{ exampleDoctor().rating.opinions }} opinions)
-            </span>
+            <span class="pwz-info">PWZ: {{ exampleDoctor().pwz }}</span>
           </div>
-          <span class="pwz-info">PWZ: {{ exampleDoctor().pwz }}</span>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="institution-card">
+      <p-card>
+        <div class="card-title">Institutions</div>
+        <ul>
+          @for (
+            institution of exampleDoctor().institutions;
+            track institution
+          ) {
+            <li>{{ institution }}</li>
+          }
+        </ul>
+      </p-card>
+    </div>
+
+    <div class="spec-card">
+      <p-card>
+        <div class="card-title">Specialisation</div>
+        <ul>
+          @for (spec of exampleDoctor().specialisation; track spec) {
+            <li>{{ spec }}</li>
+          }
+        </ul>
+      </p-card>
+    </div>
+  </div>
+  <div class="comment-block">
+    <div class="tab-list">
+      <p-button
+        type="button"
+        class="tab"
+        [text]="true"
+        [class.active]="selectedTabIndex() === 0"
+        (click)="setSelectedTabIndex(0)"
+      >
+        Comments
+      </p-button>
+      <p-button
+        type="button"
+        class="tab"
+        [text]="true"
+        [class.active]="selectedTabIndex() === 1"
+        (click)="setSelectedTabIndex(1)"
+      >
+        Schedule
+      </p-button>
+    </div>
+
+    @if (selectedTabIndex() === 0) {
+      <div [style]="{ overflow: 'auto' }">
+        <div class="comment-content">
+          @for (comment of exampleDoctor().comments; track comment.id) {
+            <app-patient-comment-component [comment]="comment" />
+          }
         </div>
       </div>
-    </p-card>
-  </div>
-
-  <div class="institution-card">
-    <p-card>
-      <div class="card-title">Institutions</div>
-      <ul>
-        @for (institution of exampleDoctor().institutions; track institution) {
-          <li>{{ institution }}</li>
-        }
-      </ul>
-    </p-card>
-  </div>
-
-  <div class="spec-card">
-    <p-card>
-      <div class="card-title">Specialisation</div>
-      <ul>
-        @for (spec of exampleDoctor().specialisation; track spec) {
-          <li>{{ spec }}</li>
-        }
-      </ul>
-    </p-card>
-  </div>
-</div>
-<div class="comment-block">
-  <span>Comments</span>
-  <div class="comment-content">
-    @for (comment of exampleDoctor().comments; track comment.id) {
-      <app-patient-comment-component [comment]="comment" />
+    } @else {
+      <div class="tab-panel">
+        <div class="doctors-instutions">
+          @for (
+            institution of exampleDoctor().institutions;
+            track institution
+          ) {
+            <p-card
+              class="institution-chip"
+              [header]="'institution: ' + institution"
+              (click)="selectInstitution(institution)"
+              [class]="selectedInstitution() === institution ? 'selected' : ''"
+            ></p-card>
+          }
+        </div>
+        <app-calendar-schedule
+          [availableAppointments]="mappedSchedule()"
+        ></app-calendar-schedule>
+        <div class="remarks-with-schedule">
+          <textarea
+            pTextarea
+            class="appointment-description"
+            placeholder="Appointment description..."
+            [(ngModel)]="patientRemarks"
+            [rows]="10"
+          ></textarea>
+          <p-button
+            type="button"
+            label="Book appointment"
+            [disabled]="!selectedInstitution()"
+          />
+        </div>
+      </div>
     }
   </div>
-</div>
+}

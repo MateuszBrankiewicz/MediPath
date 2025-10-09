@@ -4,10 +4,8 @@ import { ButtonModule } from 'primeng/button';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 import { Router } from '@angular/router';
-import {
-  AvailableDay,
-  TimeSlot,
-} from '../../../shared/components/calendar-schedule/calendar-schedule';
+
+import { AvailableDay, TimeSlot } from '../../../../core/models/schedule.model';
 import {
   AppointmentItem,
   AppointmentsList,

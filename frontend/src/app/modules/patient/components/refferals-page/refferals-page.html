@@ -1,17 +1,38 @@
-<h2>{{ translationService.translate('patient.referrals.title') }}</h2>
+<h2>{{ translationService.translate("patient.referrals.title") }}</h2>
+
+<app-filter-component
+  (filtersChange)="onFiltersChange($event)"
+  [defaults]="{
+    searchTerm: '',
+    status: 'all',
+    dateFrom: null,
+    dateTo: null,
+    sortField: 'date',
+    sortOrder: 'desc',
+  }"
+  [autoApply]="true"
+></app-filter-component>
+
 <div class="referrals-list">
-  @for (referral of referrals(); track referral.id) {
+  @for (referral of paginatedReferrals(); track referral.id) {
     <p-card class="referral-card">
       <div class="referral-content">
         <div class="referral-icon">
           <i class="pi pi-file-edit"></i>
         </div>
         <div class="referral-info">
-          <h3 class="referral-title">{{ translationService.translate('patient.referrals.referralTitle') }}</h3>
+          <h3 class="referral-title">
+            {{
+              translationService.translate("patient.referrals.referralTitle")
+            }}
+          </h3>
           <div class="referral-meta">
             <div class="meta-item">
               <i class="pi pi-key"></i>
-              <span>{{ translationService.translate('patient.referrals.pin') }} {{ referral.prescriptionPin }}</span>
+              <span
+                >{{ translationService.translate("patient.referrals.pin") }}
+                {{ referral.prescriptionPin }}</span
+              >
             </div>
             <div class="meta-item">
               <i class="pi pi-user"></i>
@@ -19,11 +40,16 @@
             </div>
             <div class="meta-item">
               <i class="pi pi-calendar"></i>
-              <span>{{ referral.date | date:'dd.MM.yyyy HH:mm' }}</span>
+              <span>{{ referral.date | date: "dd.MM.yyyy HH:mm" }}</span>
             </div>
             <div class="meta-item">
               <i class="pi pi-clock"></i>
-              <span>{{ translationService.translate('patient.referrals.validUntil') }} {{ getValidityDate(referral.date) | date:'dd.MM.yyyy' }}</span>
+              <span
+                >{{
+                  translationService.translate("patient.referrals.validUntil")
+                }}
+                {{ getValidityDate(referral.date) | date: "dd.MM.yyyy" }}</span
+              >
             </div>
           </div>
         </div>
@@ -33,28 +59,44 @@
             [text]="true"
             size="small"
             (click)="copyToClipboard(referral.prescriptionPin)"
-            title="Copy PIN">
+            title="Copy PIN"
+          >
           </p-button>
-          @if(referral.status === 'UNUSED'){
+          @if (referral.status === "UNUSED") {
             <p-button
               severity="success"
               icon="pi pi-check"
               [rounded]="true"
-              [label]="translationService.translate('patient.prescriptions.markAsUsed')"
-              size="small" />
-          }@else {
-            <span class="status-chip used">{{ translationService.translate('patient.referrals.used') }}</span>
+              [label]="
+                translationService.translate('patient.prescriptions.markAsUsed')
+              "
+              (onClick)="markAsUsed(referral)"
+              size="small"
+            />
+          } @else {
+            <span class="status-chip used">{{
+              translationService.translate("patient.referrals.used")
+            }}</span>
           }
           <p-button
             severity="danger"
             icon="pi pi-trash"
             [rounded]="true"
-            [label]="translationService.translate('patient.prescriptions.delete')"
-            size="small" />
+            [label]="
+              translationService.translate('patient.prescriptions.delete')
+            "
+            size="small"
+          />
         </div>
       </div>
     </p-card>
   }
+
+  <p-paginator
+    (onPageChange)="onPageChange($event)"
+    [first]="first()"
+    [rows]="rows()"
+    [totalRecords]="totalRecords()"
+    [rowsPerPageOptions]="[10, 20, 30]"
+  />
 </div>
-
-

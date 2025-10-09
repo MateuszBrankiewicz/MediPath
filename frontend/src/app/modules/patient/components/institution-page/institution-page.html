@@ -1,46 +1,71 @@
 <div>
-  <app-hospital-card [hospital]="sampleHospital" />
+  <app-hospital-card
+    [showInfoButton]="false"
+    [hospital]="getDataForInstitutionCard()"
+  />
   <div class="doctor-block">
-    <span class="comment-section">{{ translationService.translate('patient.institution.doctorsInInstitution') }}</span>
+    <span class="comment-section">{{
+      translationService.translate("patient.institution.doctorsInInstitution")
+    }}</span>
     <div class="doctors-card">
-      <p-card>
-        <div class="doctor-info-card">
-          <img
-            [src]="exampleDoctor().photoUrl"
-            [alt]="
-              'Dr. ' + exampleDoctor().name + ' ' + exampleDoctor().surname
-            "
-          />
-          <div class="doctor-personal-information">
-            <p class="doctor-name">
-              Dr. {{ exampleDoctor().name }} {{ exampleDoctor().surname }}
-            </p>
-            <div class="doctor-rating">
-              <div class="stars">
-                @for (star of [1, 2, 3, 4, 5]; track star) {
-                  <span
-                    class="star"
-                    [class.filled]="star <= exampleDoctor().rating.stars"
-                    >★</span
-                  >
-                }
+      @for (doctor of institution()?.employees; track doctor.userId) {
+        <p-card>
+          <div class="doctor-info-card">
+            <img
+              [src]="doctor.pfpImage"
+              [alt]="'Dr. ' + doctor.name + ' ' + doctor.surname"
+            />
+            <div class="doctor-personal-information">
+              <p class="doctor-name">
+                Dr. {{ doctor.name }} {{ doctor.surname }}
+              </p>
+              <div class="doctor-rating">
+                <div class="stars">
+                  <p-rating
+                    [(ngModel)]="exampleDoctor().rating.stars"
+                    [readonly]="true"
+                    [stars]="5"
+                    styleClass="doctor-rating-stars"
+                  ></p-rating>
+                </div>
+                <span class="reviews-count">
+                  ({{ exampleDoctor().rating.opinions }} opinions)
+                </span>
               </div>
-              <span class="reviews-count">
-                ({{ exampleDoctor().rating.opinions }} opinions)
-              </span>
+              <span class="pwz-info"
+                >{{ translationService.translate("patient.institution.pwz") }}
+                {{ exampleDoctor().pwz }}</span
+              >
             </div>
-            <span class="pwz-info">{{ translationService.translate('patient.institution.pwz') }} {{ exampleDoctor().pwz }}</span>
           </div>
-        </div>
-      </p-card>
+        </p-card>
+      }
     </div>
+    <p-paginator
+      [rows]="1"
+      [totalRecords]="5"
+      [rowsPerPageOptions]="[1, 2, 3]"
+      (onPageChange)="onDoctorPageChange($event)"
+    ></p-paginator>
   </div>
 </div>
 <div class="comment-block">
-  <span class="comment-section">{{ translationService.translate('patient.institution.comments') }}</span>
+  <span class="comment-section">{{
+    translationService.translate("patient.institution.comments")
+  }}</span>
   <div class="comment-content">
-    @for (comment of comments; track comment.id) {
-      <app-patient-comment-component [comment]="comment" />
+    @for (comment of comments(); track comment.id) {
+      <div class="comment-item">
+        <app-patient-comment-component [comment]="comment" />
+      </div>
     }
   </div>
+  @if (comments().length > 5) {
+    <p-paginator
+      [rows]="5"
+      [totalRecords]="comments().length"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      (onPageChange)="onPageChange($event)"
+    ></p-paginator>
+  }
 </div>

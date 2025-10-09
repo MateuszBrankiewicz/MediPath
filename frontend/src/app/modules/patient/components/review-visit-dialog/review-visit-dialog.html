@@ -1,58 +1,119 @@
-<div class="review-container">
-    <h3>Leave a Review</h3>
+<div class="dialog-shell">
+  <form class="dialog-body" (ngSubmit)="onSubmit()">
+    <section class="dialog-intro">
+      <div class="dialog-intro__titles">
+        <h3 class="dialog-intro__title">
+          {{
+            isEditing()
+              ? translationService.translate("patient.reviewVisit.editTitle")
+              : translationService.translate("patient.reviewVisit.title")
+          }}
+        </h3>
+        <p class="dialog-intro__subtitle">
+          {{
+            translationService.translate("patient.reviewVisit.subtitle") ||
+              translationService.translate("patient.reviewVisit.comments")
+          }}
+        </p>
+      </div>
 
-    <div class="content-row">
-        <div class="left-section">
-              <div class="review-dialog-content">
-    <h3>{{ translationService.translate('patient.reviewVisit.title') }}</h3>
+      <div class="dialog-intro__meta">
+        @if (doctorName()) {
+          <p class="dialog-intro__meta-item">
+            <span class="dialog-intro__meta-label">
+              {{
+                translationService.translate(
+                  "patient.reviewVisit.doctorNameLabel"
+                )
+              }}
+            </span>
+            <span class="dialog-intro__meta-value">{{ doctorName() }}</span>
+          </p>
+        }
 
-    <form class="review-form">
-        <div class="form-group">
-            <div class="input-group">
-                <label for="comments">{{ translationService.translate('patient.reviewVisit.comments') }}</label>
-                <textarea
-                    id="comments"
-                    [(ngModel)]="comments"
-                    name="comments"
-                    rows="4"
-                    placeholder="Share your experience with this visit..."
-                    class="form-control">
-                </textarea>
-            </div>
-        </div>
+        @if (institutionName()) {
+          <p class="dialog-intro__meta-item">
+            <span class="dialog-intro__meta-label">
+              {{
+                translationService.translate(
+                  "patient.reviewVisit.institutionNameLabel"
+                )
+              }}
+            </span>
+            <span class="dialog-intro__meta-value">
+              {{ institutionName() }}
+            </span>
+          </p>
+        }
+      </div>
+    </section>
 
-        <div class="form-group">
-            <div class="input-group">
-                <label for="doctorRating">{{ translationService.translate('patient.reviewVisit.rateDoctor') }}</label>
-                <p-select
-                    id="doctorRating"
-                    [(ngModel)]="doctorRating"
-                    name="doctorRating"
-                    [options]="starRatingOptions"
-                    optionLabel="stars"
-                    optionValue="value"
-                    placeholder="Select rating"
-                    class="w-100">
-                </p-select>
-            </div>
-        </div>
+    <section class="form-section">
+      <label class="form-label" for="comments">
+        {{ translationService.translate("patient.reviewVisit.comments") }}
+      </label>
+      <textarea
+        id="comments"
+        [(ngModel)]="commentsModel"
+        name="comments"
+        rows="5"
+        placeholder="Share your experience with this visit..."
+        class="form-textarea"
+      ></textarea>
+    </section>
 
-        <div class="form-group">
-            <div class="input-group">
-                <label for="institutionRating">{{ translationService.translate('patient.reviewVisit.rateInstitution') }}</label>
-    </div>
+    <section class="form-section form-section--ratings">
+      <div class="rating-field">
+        <label class="form-label" for="doctorRating">
+          {{ translationService.translate("patient.reviewVisit.rateDoctor") }}
+        </label>
+        <p-select
+          id="doctorRating"
+          [(ngModel)]="doctorRatingModel"
+          name="doctorRating"
+          [options]="starRatingOptions"
+          optionLabel="stars"
+          optionValue="value"
+          placeholder="Select rating"
+          class="rating-select"
+        ></p-select>
+      </div>
+      <div class="rating-field">
+        <label class="form-label" for="institutionRating">
+          {{
+            translationService.translate("patient.reviewVisit.rateInstitution")
+          }}
+        </label>
+        <p-select
+          id="institutionRating"
+          [(ngModel)]="institutionRatingModel"
+          name="institutionRating"
+          [options]="starRatingOptions"
+          optionLabel="stars"
+          optionValue="value"
+          placeholder="Select rating"
+          class="rating-select"
+        ></p-select>
+      </div>
+    </section>
 
-    <div class="dialog-actions">
-        <p-button
-            label="Cancel"
-            severity="secondary"
-            (onClick)="onCancel()"
-            class="cancel-btn">
-        </p-button>
-        <p-button
-            label="Submit Review"
-            (onClick)="onSubmit()"
-            class="submit-btn">
-        </p-button>
-    </div>
+    <footer class="dialog-actions">
+      <p-button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        (onClick)="onCancel()"
+        class="dialog-actions__cancel"
+      ></p-button>
+      <p-button
+        type="submit"
+        [label]="
+          isEditing()
+            ? translationService.translate('patient.reviewVisit.updateReview')
+            : translationService.translate('patient.reviewVisit.submitReview')
+        "
+        class="dialog-actions__submit"
+      ></p-button>
+    </footer>
+  </form>
 </div>

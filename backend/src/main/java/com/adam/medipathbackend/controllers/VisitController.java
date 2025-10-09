@@ -36,12 +36,17 @@ public class VisitController {
     InstitutionRepository institutionRepository;
 
     @PostMapping(value = {"/add", "/add/"})
-    public ResponseEntity<Map<String, Object>> add(@RequestBody AddVisitForm visit) {
+    public ResponseEntity<Map<String, Object>> add(@RequestBody AddVisitForm visit, HttpSession session) {
+
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
         ArrayList<String> missingFields = new ArrayList<>();
 
-        if(visit.getPatientID() == null || visit.getPatientID().isBlank()) {
-            missingFields.add("patientID");
+        if(visit.getPatientRemarks() == null) {
+            visit.setPatientRemarks("");
         }
         if(visit.getScheduleID() == null || visit.getScheduleID().isBlank()) {
             missingFields.add("scheduleID");
@@ -49,9 +54,10 @@ public class VisitController {
         if(!missingFields.isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
-        Optional<User> optionalUser = userRepository.findById(visit.getPatientID());
+
+        Optional<User> optionalUser = userRepository.findById(loggedUserID);
         if(optionalUser.isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "invalid patient id"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         Optional<Schedule> schedule = scheduleRepository.findById(visit.getScheduleID());
         if(schedule.isEmpty() || schedule.get().isBooked()) {
@@ -258,7 +264,7 @@ public class VisitController {
     }
 
     @PutMapping(value = {"/code", "/code/"})
-    public ResponseEntity<Map<String, Object>> deleteCode(@RequestBody Code code, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> updateCode(@RequestBody Code code, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -295,7 +301,7 @@ public class VisitController {
     }
 
     @DeleteMapping(value = {"/code", "/code/"})
-    public ResponseEntity<Map<String, Object>> updateCode(@RequestBody Code code, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> deleteeCode(@RequestBody Code code, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

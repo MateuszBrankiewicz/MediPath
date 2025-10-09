@@ -1,9 +1,10 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { API_URL } from '../../../../../../utils/constants';
-import { Doctor } from '../search-result.model';
-import { Hospital } from '../components/hospital-card.component/hospital-card.component';
 import { map } from 'rxjs';
+import { API_URL } from '../../../../../../utils/constants';
+import { groupSchedulesByDate } from '../../../../../../utils/scheduleMapper';
+import { Hospital } from '../components/hospital-card.component/hospital-card.component';
+import { Doctor } from '../search-result.model';
 
 export enum SearchType {
   INSTITUTION = 'institution',
@@ -33,7 +34,10 @@ export interface ApiDoctor {
   }[];
   specialisations: string[];
   addresses: {
-    first: string;
+    first: {
+      institutionId: string;
+      institutionName: string;
+    };
     second: string;
   }[];
   image: string;
@@ -60,14 +64,12 @@ export class SearchService {
     }
 
     const query = searchQuery.query || '';
-    console.log('Search query:', query, params);
     return this.http
       .get<SearchResponse>(`${API_URL}/search/${query}`, {
         params,
       })
       .pipe(
         map((response) => {
-          console.log('Raw search response:', response);
           if (searchQuery.category === SearchType.DOCTOR) {
             const doctors = (response.result as unknown[]).map((doc) =>
               this.mapApiDoctorToComponentFormat(doc as ApiDoctor),
@@ -89,63 +91,13 @@ export class SearchService {
       photoUrl: apiDoctor.image || 'assets/imageDoctor.png',
       addresses: apiDoctor.addresses.map((addr) => ({
         address: addr.second,
-        institution: addr.first,
+        institution: {
+          institutionId: addr.first.institutionId,
+          institutionName: addr.first.institutionName,
+        },
       })),
       currentAddressIndex: 0,
-      schedule: this.groupSchedulesByDate(apiDoctor.schedules),
+      schedule: groupSchedulesByDate(apiDoctor.schedules),
     };
-  }
-
-  private groupSchedulesByDate(
-    schedules: { startTime: string; isBooked: boolean; id: string }[],
-  ) {
-    const grouped = new Map<
-      string,
-      { startTime: string; isBooked: boolean; id: string }[]
-    >();
-
-    schedules.forEach((slot) => {
-      const date = new Date(slot.startTime);
-      const dateKey = date.toISOString().split('T')[0];
-
-      if (!grouped.has(dateKey)) {
-        grouped.set(dateKey, []);
-      }
-      grouped.get(dateKey)!.push(slot);
-    });
-
-    return Array.from(grouped.entries()).map(([dateKey, slots]) => {
-      const date = new Date(dateKey);
-      const dayNames = [
-        'Niedziela',
-        'Poniedziałek',
-        'Wtorek',
-        'Środa',
-        'Czwartek',
-        'Piątek',
-        'Sobota',
-      ];
-
-      return {
-        date: dateKey,
-        dayName: dayNames[date.getDay()],
-        dayNumber: date.getDate().toString(),
-        slots: slots.map((slot) => {
-          const slotDate = new Date(slot.startTime);
-          const timeString = slotDate.toLocaleTimeString('pl-PL', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          });
-
-          return {
-            time: timeString,
-            available: !slot.isBooked,
-            booked: slot.isBooked,
-            id: slot.id,
-          };
-        }),
-      };
-    });
   }
 }

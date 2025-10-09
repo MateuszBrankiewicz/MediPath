@@ -1,103 +1,123 @@
-import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { PanelModule } from 'primeng/panel';
-import { TooltipModule } from 'primeng/tooltip';
-import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder-dialog';
-import { Reminder } from '../../models/reminder-page.model';
+import { DialogService } from 'primeng/dynamicdialog';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { TagModule } from 'primeng/tag';
+import { NotificationMessage } from '../../../../core/services/notifications/user-notifications.model';
+import { UserNotificationsService } from '../../../../core/services/notifications/user-notifications.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder-dialog';
 
 @Component({
   selector: 'app-reminder-page',
-  imports: [PanelModule, ButtonModule, DatePipe, TooltipModule],
+  imports: [CommonModule, ButtonModule, TagModule, DatePipe, PaginatorModule],
   templateUrl: './reminder-page.html',
   styleUrl: './reminder-page.scss',
   providers: [DialogService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReminderPage {
+export class ReminderPage implements OnInit {
+  private readonly notificationsService = inject(UserNotificationsService);
+  private readonly toastService = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly notifications = signal<NotificationMessage[]>([]);
+  protected readonly translationService = inject(TranslationService);
+  protected readonly first = signal(0);
+  protected readonly rows = signal(10);
+  protected readonly isRefreshing = signal(false);
+  protected readonly isMarkingAll = signal(false);
+
   private dialogService = inject(DialogService);
-  private ref: DynamicDialogRef | undefined;
-  protected translationService = inject(TranslationService);
 
-  reminders = signal<Reminder[]>([
-    {
-      id: '1',
-      date: new Date('2024-06-01'),
-      hour: '08:00',
-      title: 'Morning Medication',
-      description: 'Take blood pressure medicine.',
-    },
-    {
-      id: '2',
-      date: new Date('2024-06-01'),
-      hour: '20:00',
-      title: 'Evening Medication',
-      description: 'Take cholesterol medicine.',
-    },
-    {
-      id: '3',
-      date: new Date('2024-06-02'),
-      hour: '12:30',
-      title: 'Lunch Supplement',
-      description: 'Take vitamin D supplement with food.',
-    },
-  ]);
+  protected readonly hasNotifications = computed(
+    () => this.notifications().length !== 0,
+  );
 
-  protected openMenuId = signal<string | null>(null);
+  protected readonly notificationsCount = computed(() => {
+    return this.notifications().length;
+  });
 
-  protected addNewEntry(): void {
-    this.ref = this.dialogService.open(AddReminderDialog, {
-      header: 'Add New Reminder',
-      width: '70%',
-      height: 'auto',
-      closable: true,
-      modal: true,
-      styleClass: 'add-reminder-dialog',
+  protected readonly unreadNotifications = computed(() => {
+    return this.notifications().filter(
+      (notifcation) => notifcation.read === false,
+    ).length;
+  });
+
+  protected readonly todaysNotifications = computed(() => {
+    return this.notifications().filter((notification) => {
+      return this.isToday(notification.timestamp);
+    }).length;
+  });
+
+  protected readonly notificationsPointer = computed(() => {
+    const readCount = this.notifications().filter(
+      (notification) => notification.read === true,
+    ).length;
+    return readCount / this.notificationsCount();
+  });
+
+  protected readonly paginatedNotifications = computed(() => {
+    return this.notifications().slice(this.first(), this.first() + this.rows());
+  });
+
+  ngOnInit(): void {
+    this.notificationsService.notifications$.subscribe((message) => {
+      console.log(message);
     });
-
-    this.ref.onClose.subscribe((result) => {
-      if (result) {
-        console.log('Visit rescheduled:', result);
-      }
-    });
+    this.initNotifcations();
   }
 
-  protected deleteReminder(reminderId: string): void {
-    const currentReminders = this.reminders();
-    this.reminders.set(
-      currentReminders.filter((reminder) => reminder.id !== reminderId),
+  protected onPageChange(event: PaginatorState) {
+    this.first.set(event.first ?? 0);
+    this.rows.set(event.rows ?? 10);
+  }
+
+  private isToday(dateString?: string): boolean {
+    if (!dateString) return false;
+    const today = new Date();
+    const date = new Date(dateString);
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
     );
   }
 
-  protected viewReminder(reminder: Reminder): void {
-    console.log('Viewing reminder:', reminder);
+  private initNotifcations() {
+    this.notificationsService
+      .getAllNotifications()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => {
+        const notificationsArray: NotificationMessage[] = Array.isArray(res)
+          ? (res as NotificationMessage[])
+          : (Object.values(res ?? {}) as NotificationMessage[]);
+        this.notifications.set(notificationsArray);
+        console.log(this.notifications());
+      });
   }
 
-  protected getTodayReminders(): number {
-    const today = new Date();
-    const todayString = today.toDateString();
+  protected openAddNotificationDialog() {
+    const ref = this.dialogService.open(AddReminderDialog, {
+      style: {
+        width: '40%',
+        overflow: 'hidden',
+      },
+      header: 'Add notification',
+    });
 
-    return this.reminders().filter(
-      (reminder) => reminder.date.toDateString() === todayString,
-    ).length;
-  }
-
-  protected editReminder(reminder: Reminder): void {
-    console.log('Editing reminder:', reminder);
-  }
-
-  protected toggleMenu(event: Event, reminder: Reminder): void {
-    event.stopPropagation();
-    const currentId = this.openMenuId();
-    if (currentId === reminder.id) {
-      this.openMenuId.set(null);
-    } else {
-      this.openMenuId.set(reminder.id);
-    }
-  }
-
-  isMenuOpen(reminderId: string): boolean {
-    return this.openMenuId() === reminderId;
+    ref?.onClose.subscribe((res) => {
+      console.log(res);
+    });
   }
 }

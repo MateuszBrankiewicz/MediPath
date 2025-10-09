@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
@@ -9,13 +10,12 @@ import { Router, RouterModule } from '@angular/router';
 import { Button } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { ToastService } from '../../../../core/services/toast/toast.service';
-import { InputForAuth } from '../../../shared/components/forms/input-for-auth/input-for-auth';
-import { ModalDialogComponent } from '../../../shared/components/ui/modal-dialog/modal-dialog';
-import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthenticationService } from '../../../../core/services/authentication/authentication';
+import { ToastService } from '../../../../core/services/toast/toast.service';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { InputForAuth } from '../../../shared/components/forms/input-for-auth/input-for-auth';
+import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
+import { ModalDialogComponent } from '../../../shared/components/ui/modal-dialog/modal-dialog';
 
 @Component({
   selector: 'app-login',

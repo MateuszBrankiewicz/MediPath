@@ -14,4 +14,7 @@ public interface ScheduleRepository extends MongoRepository<Schedule, String> {
 
     @Aggregation({"{ $match: { \"doctor.userId\": \"?0\", $expr: {  $gt: [\"$startHour\", { $dateTrunc: { date: \"$$NOW\",  unit: \"day\", binSize: 1 } } ] } } }"})
     ArrayList<Schedule> getUpcomingSchedulesByDoctor(String doctorID);
+
+    @Aggregation({"{ $match: { \"doctor.userId\": \"?0\", \"institution.institutionId\": \"?1\", $expr: {  $gt: [\"$startHour\", { $dateTrunc: { date: \"$$NOW\",  unit: \"day\", binSize: 1 } } ] } } }"})
+    ArrayList<Schedule> getUpcomingSchedulesByDoctorInInstitution(String doctorID, String institutionId);
 }

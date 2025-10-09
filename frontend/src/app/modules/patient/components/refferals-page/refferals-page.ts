@@ -1,43 +1,110 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { TableModule } from 'primeng/table';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { DialogService } from 'primeng/dynamicdialog';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { TableModule } from 'primeng/table';
+import { catchError, map } from 'rxjs';
+import { FilterParams } from '../../../../core/models/filter.model';
+import { Refferal, UsedState } from '../../../../core/models/refferal.model';
+import { CodesService } from '../../../../core/services/codes/codes.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
-import { Refferal, UsedState } from '../../models/refferal-page.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
+import { CodesFilterService } from '../../services/codesFilter.service';
+import { PatientCodeDialogService } from '../../services/paitent-code-dialog.service';
 
 @Component({
   selector: 'app-refferals-page',
-  imports: [CommonModule, TableModule, ButtonModule, CardModule, DatePipe],
+  imports: [
+    CommonModule,
+    TableModule,
+    ButtonModule,
+    CardModule,
+    DatePipe,
+    PaginatorModule,
+    FilterComponent,
+  ],
   templateUrl: './refferals-page.html',
   styleUrl: './refferals-page.scss',
+  providers: [DialogService, PatientCodeDialogService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RefferalsPage {
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
-  protected referrals = signal<Refferal[]>([
-    {
-      id: 1,
-      doctorName: 'Dr. Smith',
-      prescriptionPin: 12345,
-      status: UsedState.UNUSED,
-      date: new Date('2023-10-01'),
-    },
-    {
-      id: 2,
-      doctorName: 'Dr. Johnson',
-      prescriptionPin: 67890,
-      status: UsedState.USED,
-      date: new Date('2023-09-15'),
-    },
-  ]);
+  private codeService = inject(CodesService);
+  private filterCodesService = inject(CodesFilterService);
+  private readonly manageDialogCodeService = inject(PatientCodeDialogService);
+
+  protected referrals = toSignal<Refferal[]>(
+    this.codeService
+      .getPrescriptions()
+      .pipe(
+        map((results: Refferal[]) =>
+          results.filter((code) => code.codeType?.toLowerCase() === 'referral'),
+        ),
+      ),
+  );
+
+  protected readonly first = signal(0);
+  protected readonly rows = signal(10);
+
+  protected readonly filters = signal<FilterParams>({
+    searchTerm: '',
+    status: 'all',
+    dateFrom: null,
+    dateTo: null,
+    sortField: 'date',
+    sortOrder: 'desc',
+  });
+
+  protected onPageChange(event: PaginatorState): void {
+    this.first.set(event.first ?? 0);
+    this.rows.set(event.rows ?? 10);
+  }
+
+  protected readonly filteredPrescriptions = computed(() => {
+    const filterValue = this.filters();
+    const codes = this.filterCodesService.filterCodes(this.referrals() ?? [], {
+      searchTerm: filterValue.searchTerm,
+      status: filterValue.status,
+      dateFrom: filterValue.dateFrom,
+      dateTo: filterValue.dateTo,
+      sortField: '',
+      sortOrder: 'asc',
+    });
+
+    return codes;
+  });
+
+  protected readonly totalRecords = computed(
+    () => this.filteredPrescriptions().length,
+  );
+
+  protected readonly paginatedReferrals = computed(() => {
+    const start = this.first();
+    const end = start + this.rows();
+    return this.filteredPrescriptions().slice(start, end);
+  });
+
+  protected onFiltersChange(ev: FilterParams): void {
+    this.filters.set(ev);
+    this.first.set(0);
+  }
 
   protected copyToClipboard(pin: number): void {
     navigator.clipboard
       .writeText(pin.toString())
       .then(() => {
-        console.log('PIN copied to clipboard:', pin);
         this.toastService.showSuccess('PIN copied to clipboard');
       })
       .catch(() => {
@@ -49,5 +116,41 @@ export class RefferalsPage {
     const validityDate = new Date(referralDate);
     validityDate.setDate(validityDate.getDate() + 90);
     return validityDate;
+  }
+
+  protected markAsUsed(referral: Refferal): void {
+    if (referral.status === 'USED') {
+      this.toastService.showInfo('This referral is already marked as used.');
+      return;
+    }
+    this.manageDialogCodeService
+      .useCode({
+        codeNumber: referral.prescriptionPin,
+        codeType: 'referral',
+      })
+      .subscribe((success) => {
+        if (success) {
+          this.codeService
+            .useCode({
+              code: referral.prescriptionPin,
+              codeType: referral.codeType ?? '',
+            })
+            .pipe(
+              catchError((err) => {
+                console.log(err);
+                throw err;
+              }),
+            )
+            .subscribe(() => {
+              this.referrals()?.filter((refferal) => {
+                if (refferal.prescriptionPin === referral.prescriptionPin) {
+                  refferal.status = UsedState.USED;
+                }
+                return refferal;
+              });
+              this.toastService.showSuccess('Referral marked as used.');
+            });
+        }
+      });
   }
 }

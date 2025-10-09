@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -148,7 +149,7 @@ public class UserController {
         }
         User user = opt.get();
         HashMap<String, Object> data = new java.util.HashMap<>(Map.of("name", user.getName(), "surname", user.getSurname(),
-                "govId", user.getGovId(), "birthDate", user.getBirthDate(),
+                "govId", user.getGovId(), "birthDate", user.getBirthDate().toString(),
                 "address", user.getAddress(), "phoneNumber", user.getPhoneNumber(),
                 "licenceNumber", user.getLicenceNumber(), "specialisations", user.getSpecialisations(),
                 "latestMedicalHistory", user.getLatestMedicalHistory(), "roleCode", user.getRoleCode()));
@@ -255,19 +256,6 @@ public class UserController {
             return new ResponseEntity<>(Map.of("visits", visitRepository.getUpcomingVisits(loggedUserID)), HttpStatus.OK);
         }
 
-    }
-
-    @GetMapping(value = {"/me/schedules", "/me/schedules/"})
-    public ResponseEntity<Map<String, Object>> getMySchedules(HttpSession session) {
-        String loggedUserID = (String) session.getAttribute("id");
-        if(loggedUserID == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        if(userRepository.findDoctorById(loggedUserID).isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        ArrayList<Schedule> schedules = scheduleRepository.getSchedulesByDoctor(loggedUserID);
-        return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
     }
 
     @GetMapping(value = {"/me/comments", "/me/comments/"})
@@ -516,6 +504,24 @@ public class UserController {
         }
         User user = userOpt.get();
         return new ResponseEntity<>(Map.of("pfp", user.getPfpimage()), HttpStatus.OK);
+    }
+
+    @GetMapping(value = {"/me/notifications", "/me/notifications/"})
+    public ResponseEntity<Map<String, Object>> getNotifications(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(Map.of("notifications", ""), HttpStatus.OK);
+        }
+        User user = userOpt.get();
+        return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
+                .map(notification -> Map.of("title", notification.getTitle(), "content",
+                        notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                        notification.isRead(), "system", notification.isSystem())
+        ).toList()), HttpStatus.OK);
     }
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {

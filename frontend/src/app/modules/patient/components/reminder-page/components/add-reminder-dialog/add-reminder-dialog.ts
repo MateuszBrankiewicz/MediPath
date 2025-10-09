@@ -1,31 +1,37 @@
-import { Component, EventEmitter, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
-  Validators,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
+import { DatePicker } from 'primeng/datepicker';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { signal } from '@angular/core';
+import { InputTextModule } from 'primeng/inputtext';
+import { MedicationReminder } from '../../../../../../core/models/reminder.model';
 import { TranslationService } from '../../../../../../core/services/translation/translation.service';
-
-export interface MedicationReminder {
-  id?: number;
-  title: string;
-  reminderTime: Date | null;
-  startDate: Date | null;
-  endDate: Date | null;
-  content: string;
-}
 
 @Component({
   selector: 'app-add-reminder-dialog',
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonModule,
+    InputTextModule,
+    DatePicker,
+  ],
   templateUrl: './add-reminder-dialog.html',
   styleUrl: './add-reminder-dialog.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddReminderDialog implements OnInit {
   private ref = inject(DynamicDialogRef);
@@ -64,7 +70,7 @@ export class AddReminderDialog implements OnInit {
   }
 
   onClose() {
-    this.ref.close();
+    this.ref.close(this.reminderForm.value);
   }
 
   onSave() {
