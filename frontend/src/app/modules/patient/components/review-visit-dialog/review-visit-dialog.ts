@@ -9,8 +9,8 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SelectModule } from 'primeng/select';
+import { StarRatingOption } from '../../../../core/models/review.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { StarRatingOption } from '../../models/review-page.model';
 
 @Component({
   selector: 'app-review-visit-dialog',

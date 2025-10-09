@@ -16,17 +16,17 @@ import { MenuModule } from 'primeng/menu';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { PopoverModule } from 'primeng/popover';
 import { TableModule } from 'primeng/table';
-import { ToastService } from '../../../../core/services/toast/toast.service';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
-import { AddComentRequest } from '../../models/review-page.model';
+import { AddComentRequest } from '../../../../core/models/review.model';
 import {
   VisitPageModel,
   VisitResponseArray,
   VisitStatus,
-} from '../../models/visit-page.model';
-import { PatientCommentService } from '../../services/patient-comment.service';
-import { PatientVisitsService } from '../../services/patient-visits.service';
+} from '../../../../core/models/visit.model';
+import { CommentService } from '../../../../core/services/comment/comment.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
+import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
 import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
 import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog';
@@ -51,8 +51,8 @@ import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog
 export class VisitPage implements OnInit {
   protected readonly showVisitDetailsDialog = signal(false);
   protected readonly selectedVisitId = signal<string | null>(null);
-  private commentService = inject(PatientCommentService);
-  private visitService = inject(PatientVisitsService);
+  private commentService = inject(CommentService);
+  private visitService = inject(VisitsService);
   private dialogService = inject(DialogService);
   protected translationService = inject(TranslationService);
   private destroyRef = inject(DestroyRef);

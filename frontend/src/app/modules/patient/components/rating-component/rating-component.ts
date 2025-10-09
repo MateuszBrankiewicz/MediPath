@@ -16,22 +16,14 @@ import { PanelModule } from 'primeng/panel';
 import { RatingModule } from 'primeng/rating';
 import { Tooltip } from 'primeng/tooltip';
 import { map } from 'rxjs';
+import { FilterParams } from '../../../../core/models/filter.model';
+import { CommentWithRating } from '../../../../core/models/review.model';
+import { CommentService } from '../../../../core/services/comment/comment.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { AcceptActionDialogComponent } from '../../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
-import { FilterParams } from '../../models/filter.model';
-import { PatientCommentService } from '../../services/patient-comment.service';
 import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
-
-export interface CommentWithRating {
-  id: string;
-  comment: string;
-  doctorName: string;
-  institutionName: string;
-  doctorRating: number;
-  institutionRating: number;
-}
 
 @Component({
   selector: 'app-rating-component',
@@ -52,7 +44,7 @@ export interface CommentWithRating {
 export class RatingComponent implements OnInit {
   protected translationService = inject(TranslationService);
   protected readonly comments = signal<CommentWithRating[]>([]);
-  private commentService = inject(PatientCommentService);
+  private commentService = inject(CommentService);
   private dialogService = inject(DialogService);
   private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);

@@ -2,7 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
-import { Institution, InstitutionResponse } from '../models/institution.model';
+import {
+  Institution,
+  InstitutionResponse,
+} from '../../models/institution.model';
 
 @Injectable({
   providedIn: 'root',

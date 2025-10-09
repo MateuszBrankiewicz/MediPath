@@ -10,16 +10,14 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Textarea } from 'primeng/textarea';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
 import {
   AvailableDay,
-  CalendarSchedule,
-} from '../../../shared/components/calendar-schedule/calendar-schedule';
-import { RescheduleData } from '../../models/visit-page.model';
-import {
-  PatientVisitsService,
   ScheduleResponse,
-} from '../../services/patient-visits.service';
+} from '../../../../core/models/schedule.model';
+import { RescheduleData } from '../../../../core/models/visit.model';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
+import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
 
 @Component({
   selector: 'app-schedule-visit-dialog',
@@ -49,7 +47,7 @@ export class ScheduleVisitDialog implements OnInit {
     }
   }
 
-  private visitService = inject(PatientVisitsService);
+  private visitService = inject(VisitsService);
 
   private initializeAvailableDays(): void {
     const backendData = this.config.data?.availableTerms || [];

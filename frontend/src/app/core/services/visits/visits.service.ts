@@ -3,40 +3,18 @@ import { inject, Injectable } from '@angular/core';
 import { map } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
 import {
+  ScheduleResponse,
+  ScheduleVisitRequest,
+} from '../../models/schedule.model';
+import {
   SingleVisitResponse,
   UpcomingVisitsResponse,
-} from '../models/visit-page.model';
-
-interface ScheduleVisitRequest {
-  scheduleID: string;
-  patientRemarks: string;
-}
-
-export interface ScheduleResponse {
-  schedules: {
-    id: string;
-    startHour: string;
-    endHour: string;
-    booked: boolean;
-    doctor: {
-      userId: string;
-      doctorName: string;
-      doctorSurname: string;
-      specialisations: string[];
-      valid: boolean;
-    };
-    institution: {
-      institutionId: string;
-      institutionName: string;
-      valid: boolean;
-    };
-  }[];
-}
+} from '../../models/visit.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class PatientVisitsService {
+export class VisitsService {
   private http = inject(HttpClient);
 
   public getUpcomingVisits() {

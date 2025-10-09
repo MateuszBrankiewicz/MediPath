@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { FilterParams } from '../models/filter.model';
-import { Refferal, UsedState } from '../models/refferal-page.model';
+import { FilterParams } from '../../../core/models/filter.model';
+import { Refferal, UsedState } from '../../../core/models/refferal.model';
 
 @Injectable({
   providedIn: 'root',

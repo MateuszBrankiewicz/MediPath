@@ -13,14 +13,14 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { catchError, map } from 'rxjs';
+import { FilterParams } from '../../../../core/models/filter.model';
+import { Refferal, UsedState } from '../../../../core/models/refferal.model';
+import { CodesService } from '../../../../core/services/codes/codes.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
-import { FilterParams } from '../../models/filter.model';
-import { Refferal, UsedState } from '../../models/refferal-page.model';
 import { CodesFilterService } from '../../services/codesFilter.service';
 import { PatientCodeDialogService } from '../../services/paitent-code-dialog.service';
-import { PatientCodesService } from '../../services/patient-codes.service';
 
 @Component({
   selector: 'app-refferals-page',
@@ -41,7 +41,7 @@ import { PatientCodesService } from '../../services/patient-codes.service';
 export class RefferalsPage {
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
-  private codeService = inject(PatientCodesService);
+  private codeService = inject(CodesService);
   private filterCodesService = inject(CodesFilterService);
   private readonly manageDialogCodeService = inject(PatientCodeDialogService);
 

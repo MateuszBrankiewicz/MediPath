@@ -13,12 +13,15 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { catchError, map, of } from 'rxjs';
+import { Refferal } from '../../../../core/models/refferal.model';
+import {
+  VisitBasicInfo,
+  VisitResponse,
+} from '../../../../core/models/visit.model';
+import { CodesService } from '../../../../core/services/codes/codes.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
 import { DashboardConfig } from '../../../shared/components/layout/dashboard-layout-component/dashboard-layout-component';
-import { Refferal } from '../../models/refferal-page.model';
-import { VisitBasicInfo, VisitResponse } from '../../models/visit-page.model';
-import { PatientCodesService } from '../../services/patient-codes.service';
-import { PatientVisitsService } from '../../services/patient-visits.service';
 
 @Component({
   selector: 'app-patient-dashboard-component',
@@ -29,8 +32,8 @@ import { PatientVisitsService } from '../../services/patient-visits.service';
 })
 export class PatientDashboardComponent implements OnInit {
   readonly searchQuery = signal('');
-  private codesService = inject(PatientCodesService);
-  private patientVisitsService = inject(PatientVisitsService);
+  private codesService = inject(CodesService);
+  private patientVisitsService = inject(VisitsService);
   protected translationService = inject(TranslationService);
 
   private destroyRef = inject(DestroyRef);

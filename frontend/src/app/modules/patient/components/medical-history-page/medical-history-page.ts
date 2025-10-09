@@ -16,11 +16,11 @@ import { PanelModule } from 'primeng/panel';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 import { catchError, map, of } from 'rxjs';
+import { FilterParams } from '../../../../core/models/filter.model';
+import { MedicalRecord } from '../../../../core/models/medical-history.model';
+import { MedicalHistoryService } from '../../../../core/services/medical-history/medical-history.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
-import { FilterParams } from '../../models/filter.model';
-import { MedicalRecord } from '../../models/medical-history.model';
-import { PatientMedicalHistoryService } from '../../services/patient-medical-history.service';
 import { MedicalHistoryDialog } from './components/medical-history-dialog/medical-history-dialog';
 
 @Component({
@@ -57,7 +57,7 @@ export class MedicalHistoryPage implements OnInit {
     sortOrder: 'desc',
   });
 
-  private readonly medicalHistoryService = inject(PatientMedicalHistoryService);
+  private readonly medicalHistoryService = inject(MedicalHistoryService);
   ngOnInit(): void {
     this.isLoading.set(true);
     this.loadMedicalHistory();

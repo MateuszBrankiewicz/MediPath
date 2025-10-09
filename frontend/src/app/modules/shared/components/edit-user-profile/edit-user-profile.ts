@@ -15,23 +15,11 @@ import {
   Validators,
 } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { ProfileFormControls } from '../../../../core/models/user-profile.model';
 import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 import { UserProfileFormValue } from '../../../../core/services/authentication/profile.model';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-
-interface ProfileFormControls {
-  name: FormControl<string>;
-  surname: FormControl<string>;
-  birthDate: FormControl<string>;
-  phoneNumber: FormControl<string>;
-  governmentId: FormControl<string>;
-  province: FormControl<string>;
-  postalCode: FormControl<string>;
-  city: FormControl<string>;
-  number: FormControl<string>;
-  street: FormControl<string>;
-}
 
 @Component({
   selector: 'app-edit-user-profile',

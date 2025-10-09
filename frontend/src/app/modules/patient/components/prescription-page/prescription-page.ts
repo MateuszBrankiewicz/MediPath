@@ -15,10 +15,11 @@ import { TableModule } from 'primeng/table';
 import { catchError, map } from 'rxjs';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
-import { FilterParams } from '../../models/filter.model';
-import { Refferal, UsedState } from '../../models/refferal-page.model';
+
+import { FilterParams } from '../../../../core/models/filter.model';
+import { Refferal, UsedState } from '../../../../core/models/refferal.model';
+import { CodesService } from '../../../../core/services/codes/codes.service';
 import { CodesFilterService } from '../../services/codesFilter.service';
-import { PatientCodesService } from '../../services/patient-codes.service';
 import { ToastService } from './../../../../core/services/toast/toast.service';
 import { PatientCodeDialogService } from './../../services/paitent-code-dialog.service';
 
@@ -42,7 +43,7 @@ export class PrescriptionPage {
   private toastService = inject(ToastService);
   private manageDialogCodeService = inject(PatientCodeDialogService);
   protected translationService = inject(TranslationService);
-  protected codeService = inject(PatientCodesService);
+  protected codeService = inject(CodesService);
   private filterCodesService = inject(CodesFilterService);
 
   protected readonly filters = signal<FilterParams>({
