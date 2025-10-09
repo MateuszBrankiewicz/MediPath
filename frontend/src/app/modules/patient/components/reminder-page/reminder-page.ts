@@ -64,7 +64,7 @@ export class ReminderPage implements OnInit {
     const readCount = this.notifications().filter(
       (notification) => notification.read === true,
     ).length;
-    return readCount / this.notificationsCount();
+    return Number((readCount / this.notificationsCount()).toFixed(2));
   });
 
   protected readonly paginatedNotifications = computed(() => {
@@ -117,7 +117,13 @@ export class ReminderPage implements OnInit {
     });
 
     ref?.onClose.subscribe((res) => {
-      console.log(res);
+      if (res) {
+        this.notificationsService.addNotification(res).subscribe((response) => {
+          this.toastService.showSuccess('Notification added successfully');
+          this.initNotifcations();
+          console.log(response);
+        });
+      }
     });
   }
 }

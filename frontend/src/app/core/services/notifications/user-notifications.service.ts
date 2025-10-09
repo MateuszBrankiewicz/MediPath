@@ -4,6 +4,7 @@ import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { map, Observable, Subject } from 'rxjs';
 import SockJS from 'sockjs-client';
 import { API_URL } from '../../../utils/constants';
+import { MedicationReminder } from '../../models/reminder.model';
 import {
   NotificationMessage,
   NotificationMessageResponse,
@@ -57,5 +58,23 @@ export class UserNotificationsService implements OnDestroy {
         withCredentials: true,
       })
       .pipe(map((response) => response.notifications));
+  }
+
+  public addNotification(
+    notification: MedicationReminder,
+  ): Observable<unknown> {
+    if (notification.startDate !== null) {
+      notification.startDate = new Date(notification.startDate)
+        .toISOString()
+        .split('T')[0];
+    }
+    if (notification.endDate !== null) {
+      notification.endDate = new Date(notification.endDate)
+        .toISOString()
+        .split('T')[0];
+    }
+    return this.http.post(`${API_URL}/notifications/add`, notification, {
+      withCredentials: true,
+    });
   }
 }
