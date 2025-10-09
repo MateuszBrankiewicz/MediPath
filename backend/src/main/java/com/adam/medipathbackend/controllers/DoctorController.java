@@ -1,12 +1,10 @@
 package com.adam.medipathbackend.controllers;
 
-import com.adam.medipathbackend.models.Institution;
-import com.adam.medipathbackend.models.InstitutionDigest;
-import com.adam.medipathbackend.models.StaffDigest;
-import com.adam.medipathbackend.models.User;
+import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -110,5 +108,18 @@ public class DoctorController {
 
             }
 
+    }
+
+    @GetMapping(value = {"/me/schedules", "/me/schedules/"})
+    public ResponseEntity<Map<String, Object>> getMySchedules(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(userRepository.findDoctorById(loggedUserID).isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        ArrayList<Schedule> schedules = scheduleRepository.getSchedulesByDoctor(loggedUserID);
+        return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
     }
 }

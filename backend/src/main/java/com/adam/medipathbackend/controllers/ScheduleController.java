@@ -132,14 +132,6 @@ public class ScheduleController {
         return missingFields;
     }
 
-    @GetMapping(value = {"/bydoctor/{id}", "/bydoctor/{id}/"})
-    public ResponseEntity<Map<String, Object>> getByDoctor(@PathVariable String id) {
-        if(!Utils.isValidMongoOID(id) || userRepository.findDoctorById(id).isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "invalid user id"), HttpStatus.BAD_REQUEST);
-        }
-        ArrayList<Schedule> schedules = scheduleRepository.getSchedulesByDoctor(id);
-        return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
-    }
 
     @PutMapping(value = {"/{scheduleid}", "/{scheduleid}/"})
     public ResponseEntity<Map<String, Object>> updateSchedule(@PathVariable String scheduleid, @RequestBody AddScheduleForm newSchedule, HttpSession session) {

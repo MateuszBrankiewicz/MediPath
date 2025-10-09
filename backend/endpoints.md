@@ -130,19 +130,8 @@
 #### Returns:
 
 - 403 - doctor's user id is invalid, institution id is invalid, user is not logged in as staff of institution or doctor does not belong to institution
-- 409 - this doctor is booked at this hour-  schedule overlaps with another for a given doctor
+- 409 - this doctor is booked at this hour - schedule overlaps with another for a given doctor
 - 201 - success
-
-
-### /schedules/bydoctor/{id}
-#### Method: GET
-
-#### Path variables:
-- id: doctor's user id
-
-#### Returns:
-- 400 - invalid user id - user with a given id does not exist or user is not a doctor
-- 200 - success - retrieves all upcoming schedules for doctor
 
 
 ### /doctors/{id}
@@ -232,7 +221,7 @@
 #### Returns:
 - 401 - User is not logged in
 - 400 - invalid code type - not prescription or referral
-- 500 - if the schedule id inside of the visit is invalid, the server is programmed to throw a 500.
+- 500 - if the schedule id inside the visit is invalid, the server is programmed to throw a 500.
 - 200 - success, returns a list of objects containing active codes and their code types
 
 
@@ -480,7 +469,7 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 200 - Success
 
 
-### /users/me/schedules
+### /doctors/me/schedules
 #### Method: GET
 
 #### Returns:
@@ -508,7 +497,7 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 
 #### Body:
 - codeType - PRESCRIPTION or REFERRAL
-- code - 4 digit code
+- code - 4-digit code
 
 
 #### Returns:
@@ -789,3 +778,28 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 401 - user not logged in
 - 403 - user is not staff of institution or institution does not exist
 - 200 - success
+
+
+### /notifications/add
+#### Method; POST
+
+#### Body:
+- userId - user's object Id. If ommitted, userId becomes currently logged in user's id
+- content - notification content, not requited
+- title - notification title, required
+- startDate - date of first notification in batch, required, syntax yyyy-mm-dd
+- endDate - date of last notification in batch, not required. If ommitted, only one notification is added
+- reminderTime - hour of notification, required, syntax hh:mm
+
+#### Returns:
+- 401 - User not logged in
+- 403 - User with given id does not exist, user logged in has not had any visits with patient
+- 400 - start date is not set in the future, end date is before start date
+- 201 - success
+
+### /users/profile
+#### Method: GET
+
+#### Returns:
+- 401 - User is not logged in or user does not exist
+- 200 - ok
