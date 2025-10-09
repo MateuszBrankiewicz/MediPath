@@ -41,7 +41,7 @@ public class NotificationController {
             return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
         Optional<User> optUser;
-        if(notificationForm.getUserId().isBlank()) {
+        if(notificationForm.getUserId() == null || notificationForm.getUserId().isBlank()) {
             optUser = userRepository.findById(loggedUserID);
             if(optUser.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
