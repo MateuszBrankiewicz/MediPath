@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
 import { CommentWithRating } from '../components/rating-component/rating-component';
+import { Comment } from '../models/doctor.model';
 import {
   AddComentRequest,
   CommentApiResponse,
+  InstitutionCommentResponse,
 } from '../models/review-page.model';
-
 @Injectable({
   providedIn: 'root',
 })
@@ -44,5 +45,45 @@ export class PatientCommentService {
       { comment, visitID, doctorRating, institutionRating },
       { withCredentials: true },
     );
+  }
+
+  public getCommentByInstitution(institutionId: string): Observable<Comment[]> {
+    return this.http
+      .get<InstitutionCommentResponse>(
+        `${API_URL}/comments/institution/${institutionId}`,
+      )
+      .pipe(
+        map((response) =>
+          response.comments.map((resp) => {
+            return {
+              id: resp.id,
+              userName: resp.author,
+              visitedInstitution: resp.institution,
+              content: resp.content,
+              numberOfStars: resp.institutionRating,
+              dateOfVisit: new Date(resp.createdAt),
+            };
+          }),
+        ),
+      );
+  }
+
+  public getCommentByDoctor(doctorId: string): Observable<Comment[]> {
+    return this.http
+      .get<InstitutionCommentResponse>(`${API_URL}/comments/doctor/${doctorId}`)
+      .pipe(
+        map((response) =>
+          response.comments.map((resp) => {
+            return {
+              id: resp.id,
+              userName: resp.author,
+              visitedInstitution: resp.institution,
+              content: resp.content,
+              numberOfStars: resp.doctorRating,
+              dateOfVisit: new Date(resp.createdAt),
+            };
+          }),
+        ),
+      );
   }
 }

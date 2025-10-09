@@ -13,7 +13,14 @@ import { DataViewModule } from 'primeng/dataview';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastService } from '../../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
+import { groupSchedulesByDate } from '../../../../../utils/scheduleMapper';
 import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
+import {
+  InstitutionObject,
+  ScheduleByInstitutionResponse,
+  ScheduleItem,
+} from '../../../../patient/models/visit-page.model';
+import { DoctorService } from '../../../../patient/services/doctor.service';
 import { PatientVisitsService } from '../../../../patient/services/patient-visits.service';
 import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
 import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
@@ -52,6 +59,8 @@ export class SearchResultComponent implements OnInit {
   private toastService = inject(ToastService);
   private readonly translationService = inject(TranslationService);
   protected readonly category = signal('');
+  private doctorService = inject(DoctorService);
+  protected isNewScheduleLoaded = signal({ isLoading: false, cardId: '' });
 
   protected readonly values = signal<SearchResponse | null>(null);
 
@@ -133,7 +142,75 @@ export class SearchResultComponent implements OnInit {
   }
 
   protected onAddressChange(event: AddressChange): void {
-    console.log('Address changed:', event);
+    const institutionId = this.extractInstitutionId(event);
+    this.isNewScheduleLoaded.set({ isLoading: true, cardId: event.doctor.id });
+    this.doctorService
+      .getDoctorScheduleByInstitution(institutionId, event.doctor.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((schedules: ScheduleByInstitutionResponse) => {
+        this.updateDoctorSchedule(event.doctor.id, schedules);
+        this.isNewScheduleLoaded.set({ isLoading: false, cardId: '' });
+      });
+  }
+
+  private extractInstitutionId(event: AddressChange): string {
+    const institution = event.doctor.addresses[event.addressIndex]
+      .institution as unknown as InstitutionObject;
+    return institution.institutionId;
+  }
+
+  private updateDoctorSchedule(
+    doctorId: string,
+    schedules: ScheduleByInstitutionResponse,
+  ): void {
+    const currentValues = this.values();
+    if (!currentValues) return;
+
+    const doctor = this.findDoctorInResults(currentValues.result, doctorId);
+    if (!doctor) return;
+
+    const groupedSchedule = this.mapAndGroupSchedules(schedules.schedules);
+    doctor.schedule = groupedSchedule;
+
+    this.updateSearchResults(doctorId, doctor);
+  }
+
+  private findDoctorInResults(
+    results: (Doctor | Hospital)[],
+    doctorId: string,
+  ): Doctor | null {
+    const found = results.find(
+      (res) => res.id === doctorId && this.isDoctor(res),
+    );
+    return found && this.isDoctor(found) ? found : null;
+  }
+
+  private mapAndGroupSchedules(
+    schedules: ScheduleByInstitutionResponse['schedules'],
+  ): ReturnType<typeof groupSchedulesByDate> {
+    const mappedSchedules: ScheduleItem[] = schedules.map((schedule) => ({
+      id: schedule.id,
+      startTime: schedule.startHour,
+      isBooked: schedule.isBooked,
+    }));
+    return groupSchedulesByDate(mappedSchedules);
+  }
+
+  private updateSearchResults(doctorId: string, updatedDoctor: Doctor): void {
+    this.values.update((val) => {
+      if (!val || this.category() !== 'doctor') return val;
+
+      return {
+        ...val,
+        result: (val.result as Doctor[]).map((doctor) =>
+          doctor.id === doctorId ? updatedDoctor : doctor,
+        ),
+      };
+    });
+  }
+
+  private isDoctor(obj: Doctor | Hospital): obj is Doctor {
+    return 'schedule' in obj;
   }
 
   private requestSearchResult(): void {

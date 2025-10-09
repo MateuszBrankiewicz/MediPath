@@ -26,7 +26,10 @@ export interface Doctor {
 
 export interface AddressWithInstitution {
   address: string;
-  institution: string;
+  institution: {
+    institutionId: string;
+    institutionName: string;
+  };
 }
 
 export interface BookAppointment {

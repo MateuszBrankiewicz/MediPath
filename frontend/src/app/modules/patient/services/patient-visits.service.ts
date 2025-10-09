@@ -78,10 +78,13 @@ export class PatientVisitsService {
     });
   }
 
-  public rescheduleVisit(scheduleVisit: ScheduleVisitRequest) {
-    return this.http.post(
-      `${API_URL}/visits/${scheduleVisit.scheduleID}/reschedule`,
-      { patientRemarks: scheduleVisit.patientRemarks },
+  public rescheduleVisit(scheduleVisit: ScheduleVisitRequest, visitId: string) {
+    return this.http.put(
+      `${API_URL}/visits/${visitId}/reschedule`,
+      {
+        patientRemarks: scheduleVisit.patientRemarks,
+        newSchedule: scheduleVisit.scheduleID,
+      },
       { withCredentials: true },
     );
   }

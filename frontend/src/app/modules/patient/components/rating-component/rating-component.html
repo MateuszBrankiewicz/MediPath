@@ -70,8 +70,5 @@
       >
     </p-panel>
   }
-  <p-paginator
-    [rows]="10"
-    [totalRecords]="comments()?.length ?? 0"
-  ></p-paginator>
+  <p-paginator [rows]="10" [totalRecords]="comments().length"></p-paginator>
 </div>

@@ -1,3 +1,5 @@
+import { DaySchedule } from '../../shared/components/ui/search-result.component/search-result.model';
+
 export interface DoctorPageModel {
   name: string;
   surname: string;
@@ -9,10 +11,12 @@ export interface DoctorPageModel {
   };
   institutions: string[];
   specialisation: string[];
+  schedule: DaySchedule[];
+
   comments: Comment[];
 }
 export interface Comment {
-  id: number;
+  id: string;
   userName: string;
   visitedInstitution: string;
   content: string;

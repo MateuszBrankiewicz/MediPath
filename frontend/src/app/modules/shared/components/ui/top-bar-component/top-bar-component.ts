@@ -28,7 +28,7 @@ import {
   getRoleFromCode,
   UserRoles,
 } from '../../../../../core/services/authentication/authentication.model';
-import { UserNotification } from '../../../../../core/services/notifications/user-notifications.model';
+import { NotificationMessage } from '../../../../../core/services/notifications/user-notifications.model';
 import { UserNotificationsService } from '../../../../../core/services/notifications/user-notifications.service';
 import { ToastService } from '../../../../../core/services/toast/toast.service';
 
@@ -80,28 +80,7 @@ export class TopBarComponent implements OnInit {
   protected readonly selectedCategory = signal('');
   protected readonly locationQuery = signal('');
   protected readonly specializationQuery = signal('');
-  protected readonly notifications = signal([
-    {
-      id: '1',
-      title: 'Nowa wiadomość',
-      createdAt: new Date(),
-      read: false,
-      message: 'Masz nową wiadomość od Dr. Smith.',
-      type: 'info',
-      content: '',
-      system: false,
-    },
-    {
-      id: '2',
-      title: 'Przypomnienie o wizycie',
-      createdAt: new Date(Date.now() - 3600 * 1000),
-      read: true,
-      type: 'reminder',
-      message: 'Masz wizytę u Dr. Johnson jutro o 10:00.',
-      content: '',
-      system: false,
-    },
-  ]);
+  protected readonly notifications = signal<NotificationMessage[]>([]);
   protected readonly isSearchExpanded = signal(false);
 
   protected readonly unreadCount = signal(1);
@@ -227,7 +206,9 @@ export class TopBarComponent implements OnInit {
       const title = message?.title || 'Nowa notyfikacja';
       const content = message?.content || '';
       this.toastService.showInfo(title, content);
+      this.notifications.update((notifications) => [...notifications, message]);
     });
+    this.initNotifications();
   }
 
   private navigateToProfile(): void {
@@ -307,7 +288,7 @@ export class TopBarComponent implements OnInit {
     popover.toggle(event);
   }
 
-  protected onNotificationSelect(notification: UserNotification): void {
+  protected onNotificationSelect(notification: NotificationMessage): void {
     console.log('Selected notification:', notification);
   }
 
@@ -369,5 +350,14 @@ export class TopBarComponent implements OnInit {
         this.router.navigate(['/patient']);
         break;
     }
+  }
+
+  private initNotifications() {
+    this.notificationService
+      .getAllNotifications()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => {
+        this.notifications.set(res);
+      });
   }
 }

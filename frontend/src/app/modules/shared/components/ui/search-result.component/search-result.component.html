@@ -14,6 +14,11 @@
       (bookAppointment)="onBookAppointment($event)"
       (showMoreInfo)="onShowMoreInfo($event)"
       (addressChange)="onAddressChange($event)"
+      [isScheduleLoading]="
+        doctor.id === isNewScheduleLoaded().cardId
+          ? isNewScheduleLoaded().isLoading
+          : false
+      "
     >
     </app-doctor-card>
   }

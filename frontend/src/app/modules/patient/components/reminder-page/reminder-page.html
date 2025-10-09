@@ -2,61 +2,77 @@
   <section class="notifications-page__stats">
     <article class="notifications-page__stat-card">
       <span class="notifications-page__stat-label">
-        {{ translate("notifications.total") }}
+        {{ this.translationService.translate("notifications.total") }}
       </span>
-      <span class="notifications-page__stat-value">{{ 0 }}</span>
+      <span class="notifications-page__stat-value">{{
+        notificationsCount()
+      }}</span>
       <i class="pi pi-bell notifications-page__stat-icon"></i>
     </article>
 
     <article class="notifications-page__stat-card">
       <span class="notifications-page__stat-label">
-        {{ translate("notifications.unread") }}
+        {{ this.translationService.translate("notifications.unread") }}
       </span>
-      <span class="notifications-page__stat-value">{{ 0 }}</span>
+      <span class="notifications-page__stat-value">{{
+        unreadNotifications()
+      }}</span>
       <i class="pi pi-inbox notifications-page__stat-icon"></i>
     </article>
 
     <article class="notifications-page__stat-card">
       <span class="notifications-page__stat-label">
-        {{ translate("notifications.today") }}
+        {{ this.translationService.translate("notifications.today") }}
       </span>
-      <span class="notifications-page__stat-value">{{ 0 }}</span>
+      <span class="notifications-page__stat-value">{{
+        todaysNotifications()
+      }}</span>
       <i class="pi pi-calendar notifications-page__stat-icon"></i>
     </article>
 
     <article class="notifications-page__stat-card">
       <span class="notifications-page__stat-label">
-        {{ translate("notifications.readRate") }}
+        {{ this.translationService.translate("notifications.readRate") }}
       </span>
-      <span class="notifications-page__stat-value">{{ 0}}%</span>
+      <span class="notifications-page__stat-value"
+        >{{ notificationsPointer() * 100 }}%</span
+      >
       <i class="pi pi-chart-line notifications-page__stat-icon"></i>
     </article>
   </section>
 
   <section class="notifications-page__toolbar">
     <p-button
+      class="notifications-page__toolbar-button"
+      icon="pi pi-plus"
+      [label]="this.translationService.translate('notifications.add')"
+      (onClick)="this.openAddNotificationDialog()"
+    >
+    </p-button>
+
+    <p-button
       type="button"
       class="notifications-page__toolbar-button"
       icon="pi pi-refresh"
-      [label]="translate('notifications.refresh')"
+      [label]="this.translationService.translate('notifications.refresh')"
       [loading]="isRefreshing()"
     ></p-button>
     <p-button
       type="button"
       class="notifications-page__toolbar-button"
       icon="pi pi-envelope-open"
-      [label]="translate('notifications.markAllAsRead')"
+      [label]="this.translationService.translate('notifications.markAllAsRead')"
       [loading]="isMarkingAll()"
     ></p-button>
   </section>
 
   @if (!hasNotifications()) {
     <p class="notifications-page__empty">
-      {{ translate("notifications.empty") }}
+      {{ this.translationService.translate("notifications.empty") }}
     </p>
   } @else {
     <ul class="notifications-page__list">
-      @for (notification of notifications(); track notification.id) {
+      @for (notification of paginatedNotifications(); track $index) {
         <li
           class="notifications-page__item"
           [class.notifications-page__item--unread]="!notification.read"
@@ -66,7 +82,7 @@
               {{ notification.title || notification.content }}
             </span>
             <span class="notifications-page__item-date">
-              {{ notification.createdAt | date: "medium" }}
+              {{ notification.timestamp | date: "medium" }}
             </span>
           </div>
 
@@ -84,18 +100,31 @@
                 type="button"
                 icon="pi pi-check"
                 size="small"
-                [label]="translate('notifications.markAsRead')"
-
+                [label]="
+                  this.translationService.translate('notifications.markAsRead')
+                "
               ></p-button>
             } @else {
               <p-tag
                 severity="success"
-                [value]="translate('notifications.read')"
+                [value]="
+                  this.translationService.translate('notifications.read')
+                "
               ></p-tag>
             }
           </div>
         </li>
       }
     </ul>
+    @if (notificationsCount() > 10) {
+      <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="first()"
+        [rows]="rows()"
+        [totalRecords]="notificationsCount()"
+        [rowsPerPageOptions]="[10, 20, 30]"
+        style="margin-bottom: 10px"
+      />
+    }
   }
 </div>

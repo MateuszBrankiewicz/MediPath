@@ -14,6 +14,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { DatePicker } from 'primeng/datepicker';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TranslationService } from '../../../../../../core/services/translation/translation.service';
@@ -29,7 +30,13 @@ export interface MedicationReminder {
 
 @Component({
   selector: 'app-add-reminder-dialog',
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonModule,
+    InputTextModule,
+    DatePicker,
+  ],
   templateUrl: './add-reminder-dialog.html',
   styleUrl: './add-reminder-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,7 +78,7 @@ export class AddReminderDialog implements OnInit {
   }
 
   onClose() {
-    this.ref.close();
+    this.ref.close(this.reminderForm.value);
   }
 
   onSave() {

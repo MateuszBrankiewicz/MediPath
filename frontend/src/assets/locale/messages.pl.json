@@ -285,6 +285,7 @@
   "notifications.markAllSuccess": "Wszystkie powiadomienia oznaczono jako przeczytane",
   "notifications.markAllError": "Nie udało się zaktualizować powiadomień. Spróbuj ponownie.",
   "notifications.markSingleError": "Nie udało się zaktualizować powiadomienia. Spróbuj ponownie.",
+  "notifications.add": "Dodaj przypomnienie",
 
 
   "doctor.dashboard.title": "Panel główny",

@@ -17,6 +17,7 @@ app-hospital-card {
 .comment-block {
   width: 40%;
   height: 100%;
+  margin: 10px;
   .comment-content {
     width: 100%;
     .comment-item {
@@ -96,7 +97,9 @@ app-hospital-card {
 }
 .comment-section {
   align-self: flex-start;
-  font-size: 16px;
+  font-size: 22px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   font-weight: 500;
   padding: 10px;
 }

@@ -120,7 +120,7 @@
             </p>
           } @else {
             <ul class="notifications-popover__list">
-              @for (notification of notifications(); track notification.id) {
+              @for (notification of notifications(); track $index) {
                 <li
                   class="notifications-popover__item"
                   [class.notifications-popover__item--unread]="
@@ -133,10 +133,10 @@
                     (click)="onNotificationSelect(notification)"
                   >
                     <span class="notifications-popover__message">
-                      {{ notification.title || notification.message }}
+                      {{ notification.title || notification.content }}
                     </span>
                     <span class="notifications-popover__meta">
-                      {{ notification.createdAt | date: "short" }}
+                      {{ notification.timestamp | date: "short" }}
                     </span>
                   </button>
                 </li>
