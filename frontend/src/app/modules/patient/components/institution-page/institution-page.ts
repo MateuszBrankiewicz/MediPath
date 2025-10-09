@@ -45,6 +45,7 @@ export class InstitutionPage implements OnInit {
   protected readonly first = signal(0);
   protected readonly rows = signal(5);
   protected readonly firstDoctors = signal(0);
+
   protected readonly rowsDoctors = signal(5);
 
   protected readonly comments = signal<Comment[]>([]);
