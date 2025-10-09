@@ -803,3 +803,16 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 #### Returns:
 - 401 - User is not logged in or user does not exist
 - 200 - ok
+
+
+### /doctors/{id}
+#### Method: PUT
+
+#### Path Variables:
+- id - object id of the doctor
+
+#### Returns:
+- 401 - User is not logged in
+- 403 - doctor not found, user is not admin, user specified in doctorid is not doctor
+- 400 - missing fields in request body
+- 200 - success

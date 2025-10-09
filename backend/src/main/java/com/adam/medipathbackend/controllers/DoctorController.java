@@ -1,5 +1,7 @@
 package com.adam.medipathbackend.controllers;
 
+import com.adam.medipathbackend.config.Utils;
+import com.adam.medipathbackend.forms.DoctorUpdateForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
@@ -121,5 +123,36 @@ public class DoctorController {
         }
         ArrayList<Schedule> schedules = scheduleRepository.getSchedulesByDoctor(loggedUserID);
         return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
+    }
+
+    @PutMapping(value = {"/{doctorid}/", "/{doctorid}"})
+    public ResponseEntity<Map<String, Object>> updateDoctor(@PathVariable String doctorid, @RequestBody DoctorUpdateForm doctorUpdateForm, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> adminOpt = userRepository.findById(loggedUserID);
+        if(adminOpt.isEmpty() || adminOpt.get().getRoleCode() < 8) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(!Utils.isValidMongoOID(doctorid)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Optional<User> doctorOpt = userRepository.findDoctorById(doctorid);
+        if(doctorOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(doctorUpdateForm.getLicenceNumber() == null) {
+            return new ResponseEntity<>(Map.of("message", "missing licence number"), HttpStatus.BAD_REQUEST);
+        }
+        if(doctorUpdateForm.getSpecialisations() == null) {
+            return new ResponseEntity<>(Map.of("message", "missing specialisations"), HttpStatus.BAD_REQUEST);
+        }
+        User doctor = doctorOpt.get();
+        doctor.setLicenceNumber(doctorUpdateForm.getLicenceNumber());
+        doctor.setSpecialisations(doctorUpdateForm.getSpecialisations());
+        userRepository.save(doctor);
+        return new ResponseEntity<>(HttpStatus.OK);
+
     }
 }
