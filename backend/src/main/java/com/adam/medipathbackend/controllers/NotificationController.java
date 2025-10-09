@@ -40,14 +40,18 @@ public class NotificationController {
         if(!missingFields.isEmpty()) {
             return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
-        Optional<User> optUser = userRepository.findById(notificationForm.getUserId());
-        if(optUser.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        User user = optUser.get();
-        ArrayList<Visit> patientsvisits = visitRepository.getAllVisitsForPatient(notificationForm.getUserId());
-
-        if(!loggedUserID.equals(notificationForm.getUserId())) {
+        Optional<User> optUser;
+        if(notificationForm.getUserId().isBlank()) {
+            optUser = userRepository.findById(loggedUserID);
+            if(optUser.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+        } else {
+            optUser = userRepository.findById(notificationForm.getUserId());
+            if(optUser.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+            ArrayList<Visit> patientsvisits = visitRepository.getAllVisitsForPatient(notificationForm.getUserId());
             if(patientsvisits.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
@@ -56,6 +60,8 @@ public class NotificationController {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
         }
+
+        User user = optUser.get();
 
         LocalDate startDate = notificationForm.getStartDate();
 
@@ -134,14 +140,11 @@ public class NotificationController {
         if(notificationForm.getStartDate() == null) {
             missingFields.add("startDate");
         }
-        if(notificationForm.getUserId() == null || notificationForm.getUserId().isBlank()) {
-            missingFields.add("userId");
-        }
         if(notificationForm.getReminderTime() == null) {
             missingFields.add("reminderTime");
         }
         if(notificationForm.getTitle() == null || notificationForm.getTitle().isBlank()) {
-            missingFields.add("reminderTime");
+            missingFields.add("title");
         }
         return missingFields;
     }

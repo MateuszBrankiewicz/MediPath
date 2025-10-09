@@ -258,19 +258,6 @@ public class UserController {
 
     }
 
-    @GetMapping(value = {"/me/schedules", "/me/schedules/"})
-    public ResponseEntity<Map<String, Object>> getMySchedules(HttpSession session) {
-        String loggedUserID = (String) session.getAttribute("id");
-        if(loggedUserID == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        if(userRepository.findDoctorById(loggedUserID).isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        ArrayList<Schedule> schedules = scheduleRepository.getSchedulesByDoctor(loggedUserID);
-        return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
-    }
-
     @GetMapping(value = {"/me/comments", "/me/comments/"})
     public ResponseEntity<Map<String, Object>> getMyComments(HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");

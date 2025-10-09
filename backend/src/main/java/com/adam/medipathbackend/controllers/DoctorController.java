@@ -1,12 +1,12 @@
 package com.adam.medipathbackend.controllers;
 
-import com.adam.medipathbackend.models.Institution;
-import com.adam.medipathbackend.models.InstitutionDigest;
-import com.adam.medipathbackend.models.StaffDigest;
-import com.adam.medipathbackend.models.User;
+import com.adam.medipathbackend.config.Utils;
+import com.adam.medipathbackend.forms.DoctorUpdateForm;
+import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -109,6 +109,50 @@ public class DoctorController {
                 return new ResponseEntity<>(Map.of("schedules", scheduleRepository.getUpcomingSchedulesByDoctor(doctorid)), HttpStatus.OK);
 
             }
+
+    }
+
+    @GetMapping(value = {"/me/schedules", "/me/schedules/"})
+    public ResponseEntity<Map<String, Object>> getMySchedules(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(userRepository.findDoctorById(loggedUserID).isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        ArrayList<Schedule> schedules = scheduleRepository.getSchedulesByDoctor(loggedUserID);
+        return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
+    }
+
+    @PutMapping(value = {"/{doctorid}/", "/{doctorid}"})
+    public ResponseEntity<Map<String, Object>> updateDoctor(@PathVariable String doctorid, @RequestBody DoctorUpdateForm doctorUpdateForm, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> adminOpt = userRepository.findById(loggedUserID);
+        if(adminOpt.isEmpty() || adminOpt.get().getRoleCode() < 8) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(!Utils.isValidMongoOID(doctorid)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Optional<User> doctorOpt = userRepository.findDoctorById(doctorid);
+        if(doctorOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(doctorUpdateForm.getLicenceNumber() == null) {
+            return new ResponseEntity<>(Map.of("message", "missing licence number"), HttpStatus.BAD_REQUEST);
+        }
+        if(doctorUpdateForm.getSpecialisations() == null) {
+            return new ResponseEntity<>(Map.of("message", "missing specialisations"), HttpStatus.BAD_REQUEST);
+        }
+        User doctor = doctorOpt.get();
+        doctor.setLicenceNumber(doctorUpdateForm.getLicenceNumber());
+        doctor.setSpecialisations(doctorUpdateForm.getSpecialisations());
+        userRepository.save(doctor);
+        return new ResponseEntity<>(HttpStatus.OK);
 
     }
 }
