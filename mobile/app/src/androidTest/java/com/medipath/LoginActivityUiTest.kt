@@ -7,8 +7,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextInput
-import com.medipath.ui.auth.LoginScreen
-import com.medipath.ui.theme.MediPathTheme
+import com.medipath.core.theme.MediPathTheme
+import com.medipath.modules.shared.auth.ui.LoginScreen
 import org.junit.Rule
 import org.junit.Test
 
