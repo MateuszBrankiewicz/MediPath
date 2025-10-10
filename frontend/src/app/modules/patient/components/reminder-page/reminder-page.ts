@@ -89,7 +89,7 @@ export class ReminderPage implements OnInit {
   protected readonly notificationsPointer = computed(() => {
     const total = this.notificationsCount();
     if (total === 0) return 0;
-    const readCount = this.notifications().filter(
+    const readCount = this.receivedNotifications().filter(
       (notification) => notification.read === true,
     ).length;
     return Number((readCount / total).toFixed(2));

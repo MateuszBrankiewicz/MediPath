@@ -332,6 +332,7 @@
 @media (max-width: 1200px) {
   .doctor-profile {
     gap: 24px;
+    max-width: 100%;
   }
 
   .schedule-section {
@@ -351,6 +352,7 @@
   .doctor-profile {
     flex-direction: column;
     gap: 20px;
+    max-height:100% ;
   }
 
   .doctor-info {
