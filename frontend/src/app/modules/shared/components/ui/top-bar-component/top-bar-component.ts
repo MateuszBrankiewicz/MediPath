@@ -153,7 +153,12 @@ export class TopBarComponent implements OnInit {
   protected readonly user = computed(() => this.authService.getUser());
 
   protected readonly unreadBadge = computed<string | undefined>(() => {
-    const count = 0;
+    const count = this.notifications().filter(
+      (n) =>
+        !n.read &&
+        n.timestamp !== undefined &&
+        new Date(n.timestamp) < new Date(),
+    ).length;
     if (count <= 0) {
       return undefined;
     }
@@ -289,15 +294,30 @@ export class TopBarComponent implements OnInit {
   }
 
   protected onNotificationSelect(notification: NotificationMessage): void {
-    console.log('Selected notification:', notification);
+    this.notificationService
+      .markAsRead(notification)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.notifications.update((notifications) =>
+            notifications.map((n) =>
+              n.timestamp === notification.timestamp &&
+              n.title === notification.title
+                ? { ...n, read: true }
+                : n,
+            ),
+          );
+        },
+      });
   }
 
   protected onMarkAllAsRead(): void {
-    if (this.isMarkingAll()) {
-      return;
-    }
-
-    this.isMarkingAll.set(true);
+    this.notificationService
+      .markAllAsRead()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.initNotifications();
+      });
   }
 
   protected navigateToNotifications(): void {
@@ -353,11 +373,17 @@ export class TopBarComponent implements OnInit {
   }
 
   private initNotifications() {
-    this.notificationService
-      .getAllNotifications()
+    this.notificationService.getAllNotifications();
+    this.notificationService.notificationsArray$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res) => {
-        this.notifications.set(res);
+      .subscribe({
+        next: (notifications) => {
+          notifications = notifications.filter(
+            (n) =>
+              n.timestamp !== undefined && new Date(n.timestamp) < new Date(),
+          );
+          this.notifications.set(notifications);
+        },
       });
   }
 }

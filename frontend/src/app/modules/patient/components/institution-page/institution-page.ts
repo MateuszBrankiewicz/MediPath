@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { RatingModule } from 'primeng/rating';
@@ -54,7 +54,7 @@ export class InstitutionPage implements OnInit {
   private institutionService = inject(InstitutionService);
   private commentService = inject(CommentService);
   private activatedRoue = inject(ActivatedRoute);
-
+  private router = inject(Router);
   protected onDoctorPageChange(event: PaginatorState) {
     this.firstDoctors.set(event.first ?? 0);
     this.rowsDoctors.set(event.rows ?? 5);
@@ -63,15 +63,6 @@ export class InstitutionPage implements OnInit {
     this.first.set(event.first ?? 0);
     this.rows.set(event.rows ?? 5);
   }
-
-  sampleHospital: Hospital = {
-    id: '1',
-    name: 'Szpital kliniczny',
-    address: 'Jana Pawła II 25, 23-200 Lublin',
-    specialisation: ['Oncologist', 'Cardiologist'],
-    isPublic: true,
-    imageUrl: 'assets/footer-landing.png',
-  };
 
   protected readonly exampleDoctor = signal({
     name: 'John',
@@ -141,6 +132,7 @@ export class InstitutionPage implements OnInit {
 
   protected getDataForInstitutionCard = computed<Hospital>(() => {
     const inst = this.institution();
+    console.log(inst?.image);
     return {
       id: inst?.id ?? '',
       name: inst?.name ?? '',
@@ -160,5 +152,10 @@ export class InstitutionPage implements OnInit {
       .subscribe((val) => {
         this.comments.set(val);
       });
+  }
+
+  protected onDoctorCardClick(doctorId: string): void {
+    this.router.navigate(['/patient/doctor', doctorId]);
+    console.log('Doctor card clicked:', doctorId);
   }
 }

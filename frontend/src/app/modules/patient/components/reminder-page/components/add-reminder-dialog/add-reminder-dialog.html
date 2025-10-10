@@ -4,8 +4,16 @@
       <form [formGroup]="reminderForm" (ngSubmit)="onSave()">
         <div class="form-grid">
           <div class="form-row full">
-            <div class="form-group">
-              <label for="title" class="form-label">Title: *</label>
+            <div
+              class="form-group"
+              [class.has-error]="
+                reminderForm.get('title')?.touched &&
+                reminderForm.get('title')?.invalid
+              "
+            >
+              <label for="title" class="form-label">{{
+                translationService.translate("patient.addReminder.title")
+              }}</label>
               <input
                 id="title"
                 class="form-input"
@@ -13,14 +21,36 @@
                 placeholder="Enter medication name (e.g. Leki poranine/Rozciąganie)"
                 pInputText
               />
+              @if (
+                reminderForm.get("title")?.touched &&
+                reminderForm.get("title")?.hasError("required")
+              ) {
+                <div class="form-error">
+                  {{
+                    translationService.translate("validation.required", {
+                      field: translationService.translate(
+                        "patient.addReminder.titleShort"
+                      ),
+                    })
+                  }}
+                </div>
+              }
             </div>
           </div>
           <div class="form-row">
             <div class="form-col">
-              <div class="form-group">
-                <label for="reminderTime" class="form-label"
-                  >Reminder Time:</label
-                >
+              <div
+                class="form-group"
+                [class.has-error]="
+                  reminderForm.get('reminderTime')?.touched &&
+                  reminderForm.get('reminderTime')?.invalid
+                "
+              >
+                <label for="reminderTime" class="form-label">{{
+                  translationService.translate(
+                    "patient.addReminder.reminderTime"
+                  )
+                }}</label>
                 <input
                   type="time"
                   id="reminderTime"
@@ -28,11 +58,33 @@
                   placeholder="--:--"
                   class="form-input"
                 />
+                @if (
+                  reminderForm.get("reminderTime")?.touched &&
+                  reminderForm.get("reminderTime")?.hasError("required")
+                ) {
+                  <div class="form-error">
+                    {{
+                      translationService.translate("validation.required", {
+                        field: translationService.translate(
+                          "patient.addReminder.reminderTimeShort"
+                        ),
+                      })
+                    }}
+                  </div>
+                }
               </div>
             </div>
             <div class="form-col">
-              <div class="form-group">
-                <label for="startDate" class="form-label">Start Date:</label>
+              <div
+                class="form-group"
+                [class.has-error]="
+                  reminderForm.get('startDate')?.touched &&
+                  reminderForm.get('startDate')?.invalid
+                "
+              >
+                <label for="startDate" class="form-label">{{
+                  translationService.translate("patient.addReminder.startDate")
+                }}</label>
                 <p-date-picker
                   id="startDate"
                   formControlName="startDate"
@@ -41,11 +93,33 @@
                   appendTo="body"
                   [style]="{ width: '100%' }"
                 />
+                @if (
+                  reminderForm.get("startDate")?.touched &&
+                  reminderForm.get("startDate")?.hasError("required")
+                ) {
+                  <div class="form-error">
+                    {{
+                      translationService.translate("validation.required", {
+                        field: translationService.translate(
+                          "patient.addReminder.startDateShort"
+                        ),
+                      })
+                    }}
+                  </div>
+                }
               </div>
             </div>
             <div class="form-col">
-              <div class="form-group">
-                <label for="endDate" class="form-label">End Date:</label>
+              <div
+                class="form-group"
+                [class.has-error]="
+                  reminderForm.get('endDate')?.touched &&
+                  reminderForm.get('endDate')?.invalid
+                "
+              >
+                <label for="endDate" class="form-label">{{
+                  translationService.translate("patient.addReminder.endDate")
+                }}</label>
                 <p-date-picker
                   id="endDate"
                   formControlName="endDate"
@@ -54,13 +128,29 @@
                   appendTo="body"
                   [style]="{ width: '100%' }"
                 />
+                @if (
+                  reminderForm.get("endDate")?.touched &&
+                  reminderForm.get("endDate")?.hasError("required")
+                ) {
+                  <div class="form-error">
+                    {{
+                      translationService.translate("validation.required", {
+                        field: translationService.translate(
+                          "patient.addReminder.endDateShort"
+                        ),
+                      })
+                    }}
+                  </div>
+                }
               </div>
             </div>
           </div>
 
           <div class="form-row full">
             <div class="form-group">
-              <label for="content" class="form-label">Content:</label>
+              <label for="content" class="form-label">{{
+                translationService.translate("patient.addReminder.content")
+              }}</label>
               <textarea
                 id="content"
                 formControlName="content"
@@ -76,14 +166,16 @@
 
     <div class="dialog-actions">
       <p-button
-        label="DELETE REMINDER"
+        [label]="
+          translationService.translate('patient.reminders.delete') | uppercase
+        "
         severity="danger"
         [rounded]="true"
         (click)="onDelete()"
         styleClass="delete-btn"
       ></p-button>
       <p-button
-        label="SAVE REMINDER"
+        [label]="translationService.translate('shared.save') | uppercase"
         [rounded]="true"
         (click)="onSave()"
         styleClass="save-btn"

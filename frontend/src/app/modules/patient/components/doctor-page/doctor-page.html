@@ -9,30 +9,30 @@
       <p-card>
         <div class="doctor-info-card">
           <img
-            [src]="exampleDoctor().photoUrl"
+            [src]="doctorInfo().photoUrl"
             [alt]="
-              'Dr. ' + exampleDoctor().name + ' ' + exampleDoctor().surname
+              'Dr. ' + doctorInfo().name + ' ' + doctorInfo().surname
             "
           />
           <div class="doctor-personal-information">
             <p class="doctor-name">
-              Dr. {{ exampleDoctor().name }} {{ exampleDoctor().surname }}
+              Dr. {{ doctorInfo().name }} {{ doctorInfo().surname }}
             </p>
             <div class="doctor-rating">
               <div class="stars">
                 @for (star of [1, 2, 3, 4, 5]; track star) {
                   <span
                     class="star"
-                    [class.filled]="star <= exampleDoctor().rating.stars"
+                    [class.filled]="star <= doctorInfo().rating.stars"
                     >★</span
                   >
                 }
               </div>
               <span class="reviews-count">
-                ({{ exampleDoctor().rating.opinions }} opinions)
+                ({{ doctorInfo().rating.opinions }} opinions)
               </span>
             </div>
-            <span class="pwz-info">PWZ: {{ exampleDoctor().pwz }}</span>
+            <span class="pwz-info">PWZ: {{ doctorInfo().pwz }}</span>
           </div>
         </div>
       </p-card>
@@ -43,10 +43,10 @@
         <div class="card-title">Institutions</div>
         <ul>
           @for (
-            institution of exampleDoctor().institutions;
+            institution of doctorInfo().institutions;
             track institution
           ) {
-            <li>{{ institution }}</li>
+            <li>{{ institution.institutionName }}</li>
           }
         </ul>
       </p-card>
@@ -56,7 +56,7 @@
       <p-card>
         <div class="card-title">Specialisation</div>
         <ul>
-          @for (spec of exampleDoctor().specialisation; track spec) {
+          @for (spec of doctorInfo().specialisation; track spec) {
             <li>{{ spec }}</li>
           }
         </ul>
@@ -88,7 +88,7 @@
     @if (selectedTabIndex() === 0) {
       <div [style]="{ overflow: 'auto' }">
         <div class="comment-content">
-          @for (comment of exampleDoctor().comments; track comment.id) {
+          @for (comment of doctorInfo().comments; track comment.id) {
             <app-patient-comment-component [comment]="comment" />
           }
         </div>
@@ -97,20 +97,26 @@
       <div class="tab-panel">
         <div class="doctors-instutions">
           @for (
-            institution of exampleDoctor().institutions;
+            institution of doctorInfo().institutions;
             track institution
           ) {
             <p-card
               class="institution-chip"
-              [header]="'institution: ' + institution"
+              [header]="'institution: ' + institution.institutionName"
               (click)="selectInstitution(institution)"
               [class]="selectedInstitution() === institution ? 'selected' : ''"
             ></p-card>
           }
         </div>
-        <app-calendar-schedule
-          [availableAppointments]="mappedSchedule()"
-        ></app-calendar-schedule>
+
+        <div class="calendar-schedule-wrapper" style="position: relative;">
+  <app-calendar-schedule [availableAppointments]="mappedSchedule()" (dateTimeSelected)="selectSlotId($event)"></app-calendar-schedule>
+  @if (isScheduleLoading() && !isLoading()) {
+    <div class="calendar-spinner-overlay">
+      <p-progress-spinner></p-progress-spinner>
+    </div>
+  }
+</div>
         <div class="remarks-with-schedule">
           <textarea
             pTextarea
@@ -122,7 +128,8 @@
           <p-button
             type="button"
             label="Book appointment"
-            [disabled]="!selectedInstitution()"
+            (onClick)="bookVisit()"
+            [disabled]="!selectedInstitution() && !selectedId()"
           />
         </div>
       </div>

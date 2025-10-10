@@ -34,6 +34,10 @@ export class DoctorCardComponent implements OnInit {
   public readonly addressChange = output<AddressChange>();
   protected readonly selectedAddressIndex = signal(0);
   public isScheduleLoading = input(true);
+  protected readonly MAX_VISIBLE_SLOTS = 4;
+
+  protected readonly currentPages = signal<Map<string, number>>(new Map());
+
   ngOnInit(): void {
     this.selectedAddressIndex.set(this.doctor().currentAddressIndex || 0);
     console.log(this.doctor());
@@ -74,6 +78,69 @@ export class DoctorCardComponent implements OnInit {
   }
 
   onShowMoreHours(day: DaySchedule): void {
-    console.log('Show more hours for', day.dayName);
+    const pagesMap = new Map(this.currentPages());
+    const currentPage = pagesMap.get(day.dayName) || 0;
+    pagesMap.set(day.dayName, currentPage + 1);
+    this.currentPages.set(pagesMap);
+  }
+
+  onShowPreviousHours(day: DaySchedule): void {
+    const pagesMap = new Map(this.currentPages());
+    const currentPage = pagesMap.get(day.dayName) || 0;
+    if (currentPage > 0) {
+      pagesMap.set(day.dayName, currentPage - 1);
+      this.currentPages.set(pagesMap);
+    }
+  }
+
+  getVisibleSlots(slots: TimeSlot[], dayName: string): TimeSlot[] {
+    const currentPage = this.currentPages().get(dayName) || 0;
+    const startIndex = currentPage * this.MAX_VISIBLE_SLOTS;
+    const endIndex = startIndex + this.MAX_VISIBLE_SLOTS;
+    return slots.slice(startIndex, endIndex);
+  }
+
+  hasMoreSlots(slots: TimeSlot[], dayName: string): boolean {
+    const currentPage = this.currentPages().get(dayName) || 0;
+    const startIndex = (currentPage + 1) * this.MAX_VISIBLE_SLOTS;
+    return startIndex < slots.length;
+  }
+
+  hasPreviousSlots(dayName: string): boolean {
+    const currentPage = this.currentPages().get(dayName) || 0;
+    return currentPage > 0;
+  }
+
+  getRemainingSlotCount(slots: TimeSlot[], dayName: string): number {
+    const currentPage = this.currentPages().get(dayName) || 0;
+    const startIndex = (currentPage + 1) * this.MAX_VISIBLE_SLOTS;
+    return Math.max(0, slots.length - startIndex);
+  }
+
+  getCurrentPageInfo(slots: TimeSlot[], dayName: string): string {
+    const currentPage = this.currentPages().get(dayName) || 0;
+    const startIndex = currentPage * this.MAX_VISIBLE_SLOTS;
+    const endIndex = Math.min(
+      startIndex + this.MAX_VISIBLE_SLOTS,
+      slots.length,
+    );
+    return `${startIndex + 1}-${endIndex} z ${slots.length}`;
+  }
+
+  formatDayDate(day: DaySchedule): string {
+    if (!day.date) {
+      return '';
+    }
+
+    const date = typeof day.date === 'string' ? new Date(day.date) : day.date;
+
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      return '';
+    }
+
+    const dayNumber = date.getDate();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+
+    return `${dayNumber}.${month}`;
   }
 }

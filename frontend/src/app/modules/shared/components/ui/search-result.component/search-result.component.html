@@ -4,7 +4,7 @@
   @for (institution of hospitals(); track $index) {
     <app-hospital-card
       (institutionClicked)="onInstitutionClicked($event)"
-      [hospital]="institution"
+      [hospital]="getDataForInstitutionCard()[$index]"
     ></app-hospital-card>
   }
 } @else {

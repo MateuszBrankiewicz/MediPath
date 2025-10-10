@@ -165,3 +165,12 @@
     }
   }
 }
+
+.toggle-button {
+  --p-togglebutton-checked-background: var(--p-primary-color);
+  --p-togglebutton-content-checked-background: var(--p-primary-color);
+  --p-togglebutton-background: transparent;
+  --p-togglebutton-checked-color: white;
+  --p-togglebutton-icon-checked-color: white;
+  --p-togglebutton-border-color: var(--p-primary-color);
+}

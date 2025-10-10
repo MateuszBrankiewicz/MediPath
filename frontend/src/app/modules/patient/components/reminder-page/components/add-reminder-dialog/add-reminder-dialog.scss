@@ -120,6 +120,20 @@ input.p-inputtext {
   }
 }
 
+.has-error .form-input,
+.has-error .p-inputtext,
+.has-error p-date-picker,
+.has-error .form-textarea {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.form-error {
+  margin-top: 6px;
+  color: #ef4444;
+  font-size: 12px;
+}
+
 .form-textarea {
   resize: vertical;
   min-height: 80px;

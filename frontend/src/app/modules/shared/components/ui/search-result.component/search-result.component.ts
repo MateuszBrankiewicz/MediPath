@@ -228,4 +228,16 @@ export class SearchResultComponent implements OnInit {
   protected onInstitutionClicked(hospital: Hospital): void {
     this.router.navigate(['/patient/institution', hospital.id]);
   }
+
+  protected getDataForInstitutionCard = computed<Hospital[]>(() => {
+    const institution = this.hospitals();
+    return institution.map((inst) => ({
+      id: inst?.id ?? '',
+      name: inst?.name ?? '',
+      address: inst?.address ?? '',
+      specialisation: inst?.specialisation ?? [],
+      isPublic: inst?.isPublic ?? false,
+      imageUrl: inst.image ?? '',
+    }));
+  });
 }

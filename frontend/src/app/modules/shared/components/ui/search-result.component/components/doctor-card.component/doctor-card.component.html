@@ -71,11 +71,18 @@
             <div class="day-column">
               <div class="day-header">
                 <div class="day-name">{{ day.dayName }}</div>
-                <div class="day-date">{{ day.dayNumber }}</div>
+                <div class="day-date">{{ formatDayDate(day) }}</div>
               </div>
 
               <div class="time-slots">
-                @for (slot of day.slots; track slot) {
+                @if (hasPreviousSlots(day.dayName)) {
+                  <button class="back-btn" (click)="onShowPreviousHours(day)">
+                    <i class="pi pi-arrow-left"></i>
+                    Wróć
+                  </button>
+                }
+
+                @for (slot of getVisibleSlots(day.slots, day.dayName); track slot) {
                   <button
                     class="time-slot"
                     [class.available]="slot.available && !slot.booked"
@@ -87,15 +94,18 @@
                     {{ slot.time }}
                   </button>
                 }
-                @if (day.slots.length > 5) {
+
+                @if (hasMoreSlots(day.slots, day.dayName)) {
                   <button class="more-hours-btn" (click)="onShowMoreHours(day)">
-                    {{
-                      translationService.translate(
-                        "shared.doctorCard.moreHours"
-                      )
-                    }}
-                    ⌄
+                    {{ getRemainingSlotCount(day.slots, day.dayName) }} więcej
+                    <i class="pi pi-angle-right"></i>
                   </button>
+                }
+
+                @if (day.slots.length > MAX_VISIBLE_SLOTS) {
+                  <div class="page-info">
+                    {{ getCurrentPageInfo(day.slots, day.dayName) }}
+                  </div>
                 }
               </div>
             </div>

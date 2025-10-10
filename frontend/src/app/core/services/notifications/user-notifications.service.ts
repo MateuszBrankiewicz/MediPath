@@ -4,6 +4,7 @@ import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { map, Observable, Subject } from 'rxjs';
 import SockJS from 'sockjs-client';
 import { API_URL } from '../../../utils/constants';
+import { MedicationReminder } from '../../models/reminder.model';
 import {
   NotificationMessage,
   NotificationMessageResponse,
@@ -15,6 +16,8 @@ export type ListenerCallBack = (data: unknown) => void;
   providedIn: 'root',
 })
 export class UserNotificationsService implements OnDestroy {
+  private notifications = new Subject<NotificationMessage[]>();
+  public notificationsArray$ = this.notifications.asObservable();
   private client: Client;
   private subscription: StompSubscription | undefined;
   private http = inject(HttpClient);
@@ -51,11 +54,70 @@ export class UserNotificationsService implements OnDestroy {
     this.notificationSubject.complete();
   }
 
-  public getAllNotifications(): Observable<NotificationMessage[]> {
-    return this.http
+  public getAllNotifications(): void {
+    this.http
       .get<NotificationMessageResponse>(`${API_URL}/users/me/notifications`, {
         withCredentials: true,
       })
-      .pipe(map((response) => response.notifications));
+      .pipe(map((response) => response.notifications))
+      .subscribe((notifications) => {
+        this.notifications.next(notifications);
+      });
+  }
+
+  public addNotification(
+    notification: MedicationReminder,
+  ): Observable<unknown> {
+    if (notification.startDate !== null) {
+      const d = new Date(notification.startDate);
+
+      notification.startDate = `${d.getFullYear()}-${(d.getMonth() + 1)
+        .toString()
+        .padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+    }
+
+    if (notification.endDate !== null) {
+      const d = new Date(notification.endDate);
+      notification.endDate = `${d.getFullYear()}-${(d.getMonth() + 1)
+        .toString()
+        .padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+    }
+    return this.http.post(`${API_URL}/notifications/add`, notification, {
+      withCredentials: true,
+    });
+  }
+
+  public markAllAsRead(): Observable<unknown> {
+    return this.http.post(`${API_URL}/notifications/readall`, null, {
+      withCredentials: true,
+    });
+  }
+
+  public markAsRead(notification: NotificationMessage): Observable<unknown> {
+    return this.http.post(
+      `${API_URL}/notifications/read`,
+      {
+        timestamp: notification.timestamp,
+        title: notification.title,
+      },
+      {
+        withCredentials: true,
+      },
+    );
+  }
+
+  public deleteNotification(
+    notification: NotificationMessage,
+  ): Observable<unknown> {
+    return this.http.post(
+      `${API_URL}/notifications/delete`,
+      {
+        timestamp: notification.timestamp,
+        title: notification.title,
+      },
+      {
+        withCredentials: true,
+      },
+    );
   }
 }

@@ -6,6 +6,7 @@ import {
   MedicalHistoryApiRequest,
   MedicalHistoryApiResponse,
 } from '../../models/medical-history.model';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +14,7 @@ import {
 export class MedicalHistoryService {
   private http = inject(HttpClient);
 
-  public getMyMedicalHistory() {
+  public getMyMedicalHistory(): Observable<MedicalHistoryApiResponse> {
     return this.http.get<MedicalHistoryApiResponse>(
       `${API_URL}/users/me/medicalhistory`,
       {

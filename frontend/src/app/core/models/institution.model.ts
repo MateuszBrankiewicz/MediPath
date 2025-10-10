@@ -46,3 +46,8 @@ export interface Institution {
   rating: number;
   specialisation: string[];
 }
+
+export interface InstitutionShortInfo {
+  institutionId: string;
+  institutionName: string;
+}
