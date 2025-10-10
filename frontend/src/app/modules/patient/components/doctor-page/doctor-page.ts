@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   OnInit,
   signal,
@@ -29,6 +30,10 @@ import {
 import { CommentService } from '../../../../core/services/comment/comment.service';
 import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
+import { InstitutionShortInfo } from '../../../../core/models/institution.model';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
   imports: [
@@ -53,19 +58,23 @@ export class DoctorPage implements OnInit {
   private doctorService = inject(DoctorService);
   protected readonly patientRemarks = signal<string>('');
   private commentService = inject(CommentService);
+  private toastService = inject(ToastService);
+  private translationService = inject(TranslationService);
   protected readonly homeItem = signal<MenuItem>({
     label: 'Doctors',
     routerLink: '/patient/doctors/',
     icon: '',
   });
 
-  private isLCommentsLoading = signal(false);
-  private isScheduleLoading = signal(false);
+  private visitsService = inject(VisitsService);
 
+  private isLCommentsLoading = signal(false);
+  protected isScheduleLoading = signal(false);
+  private isDoctorInfoLoading = signal(false);
   protected readonly isLoading = computed<boolean>(() => {
     const isCommentsLoading = this.isLCommentsLoading();
-    const isScheduleLoading = this.isScheduleLoading();
-    return isCommentsLoading || isScheduleLoading;
+    const isDoctorInfoLoading = this.isDoctorInfoLoading();
+    return isCommentsLoading || isDoctorInfoLoading;
   });
 
   ngOnInit(): void {
@@ -77,7 +86,8 @@ export class DoctorPage implements OnInit {
         .getDoctorDetails(this.doctorId() ?? '')
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((doctor) => {
-          console.log(doctor);
+          this.doctorInfo.set(doctor);
+          this.selectInstitution(this.doctorInfo().institutions[0]);
         });
       this.initDoctorComments();
       this.initDoctorSchedule();
@@ -92,7 +102,7 @@ export class DoctorPage implements OnInit {
   });
 
   protected readonly mappedSchedule = computed<AvailableDay[]>(() => {
-    return this.exampleDoctor().schedule.map((daySchedule) => ({
+    return this.doctorInfo().schedule.map((daySchedule) => ({
       date: daySchedule.date,
       slots: daySchedule.slots.map((slot) => ({
         ...slot,
@@ -105,23 +115,32 @@ export class DoctorPage implements OnInit {
   protected setSelectedTabIndex(index: number): void {
     this.selectedTabIndex.set(index);
   }
+  protected selectedId = signal<string | null>(null);
 
-  protected readonly exampleDoctor = signal<DoctorPageModel>({
-    name: 'John',
-    surname: 'Doe',
-    photoUrl: 'assets/footer-landing.png',
-    pwz: '4175000',
+  protected selectSlotId(event: {
+    date: Date;
+    time: string;
+    slotId?: string;
+  }): void {
+    this.selectedId.set(event.slotId ?? null);
+  }
+
+  protected readonly doctorInfo = signal<DoctorPageModel>({
+    name: '',
+    surname: '',
+    photoUrl: '',
+    pwz: '',
     rating: {
-      stars: 4.7,
-      opinions: 120,
+      stars: 0,
+      opinions: 0,
     },
-    institutions: ['City Hospital', 'Health Clinic'],
-    specialisation: ['Cardiology', 'Internal Medicine'],
-    comments: [],
+    institutions: [],
+    specialisation: [],
     schedule: [],
+    comments: [],
   });
-  protected selectedInstitution = signal<string | null>(null);
-  protected selectInstitution(institution: string): void {
+  protected selectedInstitution = signal<InstitutionShortInfo | null>(null);
+  protected selectInstitution(institution: InstitutionShortInfo): void {
     this.selectedInstitution.set(institution);
   }
 
@@ -131,10 +150,10 @@ export class DoctorPage implements OnInit {
       .getCommentByDoctor(this.doctorId() ?? '')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((comments) => {
-        const currentDoctor = this.exampleDoctor();
+        const currentDoctor = this.doctorInfo();
         console.log(currentDoctor);
         console.log(comments);
-        this.exampleDoctor.set({
+        this.doctorInfo.set({
           ...currentDoctor,
           comments: comments,
         });
@@ -146,18 +165,24 @@ export class DoctorPage implements OnInit {
     this.isScheduleLoading.set(true);
     this.doctorService
       .getDoctorScheduleByInstitution(
-        '68c5dc05d2569d07e73a8456',
+        this.selectedInstitution()?.institutionId || '',
         this.doctorId() || '',
       )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response: ScheduleByInstitutionResponse) => {
         const newSchedule = this.mapAndGroupSchedules(response.schedules);
-        this.exampleDoctor.update((doctor) => ({
+        this.doctorInfo.update((doctor) => ({
           ...doctor,
           schedule: newSchedule,
         }));
         this.isScheduleLoading.set(false);
       });
+  }
+
+  constructor() {
+    effect(() => {
+      this.initDoctorSchedule();
+    });
   }
 
   private mapAndGroupSchedules(
@@ -168,6 +193,25 @@ export class DoctorPage implements OnInit {
       startTime: schedule.startHour,
       isBooked: schedule.isBooked,
     }));
+    console.log('Mapped schedules:', mappedSchedules);
     return groupSchedulesByDate(mappedSchedules);
+  }
+
+  protected bookVisit(): void {
+    this.visitsService
+      .scheduleVisit({
+        scheduleID: this.selectedId() || '',
+        patientRemarks: this.patientRemarks() || '',
+      })
+      .subscribe({
+        next: () => {
+          this.patientRemarks.set('');
+          this.initDoctorSchedule();
+          this.toastService.showSuccess('patient.appointment.bookSuccess');
+        },
+        error: () => {
+          this.toastService.showError('patient.appointment.bookError');
+        },
+      });
   }
 }

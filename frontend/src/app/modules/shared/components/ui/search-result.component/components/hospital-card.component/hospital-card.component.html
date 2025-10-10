@@ -21,7 +21,7 @@
         <span class="label">{{
           translationService.translate("shared.hospitalCard.address")
         }}</span>
-        <span class="value">{{ hospital().address }}</span>
+        <span class="value">{{ hospital().address | addressFormat }}</span>
       </div>
 
       <div class="detail-item">

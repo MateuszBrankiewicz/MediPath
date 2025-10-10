@@ -9,7 +9,7 @@
     }}</span>
     <div class="doctors-card">
       @for (doctor of institution()?.employees; track doctor.userId) {
-        <p-card>
+        <p-card (click)="onDoctorCardClick(doctor.userId)">
           <div class="doctor-info-card">
             <img
               [src]="doctor.pfpImage"
@@ -41,12 +41,18 @@
         </p-card>
       }
     </div>
-    <p-paginator
-      [rows]="1"
-      [totalRecords]="5"
-      [rowsPerPageOptions]="[1, 2, 3]"
-      (onPageChange)="onDoctorPageChange($event)"
-    ></p-paginator>
+    @if (
+      institution()?.employees &&
+      institution()?.employees &&
+      (institution()?.employees?.length ?? 0) > 5
+    ) {
+      <p-paginator
+        [rows]="1"
+        [totalRecords]="5"
+        [rowsPerPageOptions]="[1, 2, 3]"
+        (onPageChange)="onDoctorPageChange($event)"
+      ></p-paginator>
+    }
   </div>
 </div>
 <div class="comment-block">

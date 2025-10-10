@@ -1,3 +1,4 @@
+
 {
   "register.title": "Rejestracja",
   "register.form.name": "Imię",
@@ -150,9 +151,13 @@
   "patient.reviewVisit.updateReview": "Zaktualizuj opinię",
 
   "patient.addReminder.title": "Tytuł: *",
+  "patient.addReminder.titleShort": "Tytuł",
   "patient.addReminder.reminderTime": "Czas przypomnienia:",
+  "patient.addReminder.reminderTimeShort": "Czas przypomnienia",
   "patient.addReminder.startDate": "Data rozpoczęcia:",
+  "patient.addReminder.startDateShort": "Data rozpoczęcia",
   "patient.addReminder.endDate": "Data zakończenia:",
+  "patient.addReminder.endDateShort": "Data zakończenia",
   "patient.addReminder.content": "Treść:",
 
   "patient.referrals.title": "Skierowania",
@@ -416,6 +421,16 @@
   "comment.delete.message": "Czy na pewno chcesz usunąć ten komentarz?",
   "comment.deleted.success": "Komentarz usunięty pomyślnie",
   "comment.delete.title": "Usuń komentarz",
-  "comment.deleted.error": "Wystąpił błąd podczas usuwania komentarza"
+  "comment.deleted.error": "Wystąpił błąd podczas usuwania komentarza",
+    "notifications.toast.addSuccess": "Powiadomienie dodane pomyślnie",
+  "notifications.toast.addError": "Nie udało się dodać powiadomienia",
+  "notifications.toast.markAllSuccess": "Wszystkie powiadomienia oznaczone jako przeczytane",
+  "notifications.toast.markAllError": "Nie udało się oznaczyć wszystkich jako przeczytane",
+  "notifications.toast.markOneSuccess": "Powiadomienie oznaczone jako przeczytane",
+  "notifications.toast.markOneError": "Nie udało się oznaczyć powiadomienia jako przeczytane",
+  "notifications.toast.deleteSuccess": "Powiadomienie usunięte pomyślnie",
+  "notifications.toast.deleteError": "Nie udało się usunąć powiadomienia",
+  "notifications.edit": "Edytuj"
+
 
 }

@@ -50,14 +50,16 @@ export class AddReminderDialog implements OnInit {
   constructor() {
     this.reminderForm = this.fb.group({
       title: ['', [Validators.required]],
-      reminderTime: [null],
-      startDate: [null],
-      endDate: [null],
+      reminderTime: [null, [Validators.required]],
+      startDate: [null, [Validators.required]],
+      endDate: [null, [Validators.required]],
       content: [''],
     });
   }
 
   ngOnInit() {
+    this.reminder.set(this.config.data?.notification ?? null);
+
     if (this.reminder()) {
       this.reminderForm.patchValue({
         title: this.reminder()?.title ?? '',
@@ -74,6 +76,11 @@ export class AddReminderDialog implements OnInit {
   }
 
   onSave() {
+    if (this.reminderForm.invalid) {
+      this.reminderForm.markAllAsTouched();
+      return;
+    }
+
     if (this.reminderForm.valid) {
       const formValue = this.reminderForm.value;
       const reminderData: MedicationReminder = {

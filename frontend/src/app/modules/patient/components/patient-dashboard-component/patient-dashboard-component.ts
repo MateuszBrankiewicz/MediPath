@@ -38,7 +38,14 @@ export class PatientDashboardComponent implements OnInit {
 
   private destroyRef = inject(DestroyRef);
 
+  protected readonly isCodesLoading = signal(false);
+  protected readonly isVisitsLoading = signal(false);
+
   protected readonly upcomingVisits = signal<VisitBasicInfo[]>([]);
+
+  protected computedIsLoading = computed(() => {
+    return this.isCodesLoading() || this.isVisitsLoading();
+  });
 
   readonly dashboardConfig: DashboardConfig = {
     title: 'Dashboard',
@@ -49,6 +56,8 @@ export class PatientDashboardComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    this.isVisitsLoading.set(true);
+    this.isCodesLoading.set(true);
     this.patientVisitsService
       .getUpcomingVisits()
       .pipe(
@@ -66,9 +75,11 @@ export class PatientDashboardComponent implements OnInit {
       .subscribe({
         next: (visits) => {
           this.upcomingVisits.set(visits);
+          this.isVisitsLoading.set(false);
         },
         error: (error) => {
           console.error('Failed to load upcoming visits:', error);
+          this.isVisitsLoading.set(false);
         },
       });
   }
@@ -76,6 +87,7 @@ export class PatientDashboardComponent implements OnInit {
   protected readonly codesData = toSignal(
     this.codesService.getPrescriptions().pipe(
       map((results: Refferal[]) => {
+        this.isCodesLoading.set(false);
         return {
           prescriptions: results.filter(
             (code) => code.codeType?.toLowerCase() === 'prescription',
@@ -86,6 +98,7 @@ export class PatientDashboardComponent implements OnInit {
         };
       }),
       catchError(() => {
+        this.isCodesLoading.set(false);
         return of({ prescriptions: [], referrals: [] });
       }),
     ),

@@ -23,6 +23,7 @@ import {
   MedicalHistoryDialogResult,
   MedicalHistoryFormModel,
   MedicalHistoryResponse,
+  MedicalRecord,
 } from '../../../../../../core/models/medical-history.model';
 
 type MedicalHistoryForm = FormGroup<MedicalHistoryFormModel>;
@@ -51,7 +52,7 @@ export class MedicalHistoryDialog {
   private readonly initialMode: MedicalHistoryDialogMode =
     this.config.data?.mode ?? 'view';
 
-  private readonly initialRecord: MedicalHistoryResponse =
+  private readonly initialRecord: MedicalRecord =
     this.config.data?.record ?? this.createEmptyRecord();
 
   protected readonly mode = signal<MedicalHistoryDialogMode>(this.initialMode);
@@ -84,23 +85,25 @@ export class MedicalHistoryDialog {
     if (this.initialMode === 'view') {
       this.form.disable({ emitEvent: false });
     }
+    this.form.controls.doctorName.disable();
+    this.form.controls.doctorSurname.disable();
   }
 
-  private createForm(record: MedicalHistoryResponse): MedicalHistoryForm {
+  private createForm(record: MedicalRecord): MedicalHistoryForm {
     return this.fb.nonNullable.group({
       id: this.fb.nonNullable.control(record.id ?? ''),
       title: this.fb.nonNullable.control(record.title, [Validators.required]),
       date: this.fb.control(record.date ? new Date(record.date) : null, [
         Validators.required,
       ]),
-      doctorName: this.fb.nonNullable.control(record.doctor?.doctorName ?? '', [
-        Validators.required,
-      ]),
+      doctorName: this.fb.nonNullable.control(
+        record.doctor?.doctorName ?? '',
+        [],
+      ),
       doctorSurname: this.fb.nonNullable.control(
         record.doctor?.doctorSurname ?? '',
-        [Validators.required],
       ),
-      notes: this.fb.control(record.note ?? '', [Validators.maxLength(2000)]),
+      notes: this.fb.control(record.notes ?? '', [Validators.maxLength(2000)]),
     }) as MedicalHistoryForm;
   }
 
@@ -122,7 +125,7 @@ export class MedicalHistoryDialog {
   }
 
   public closeDialog(): void {
-    this.ref.close();
+    this.ref.close(null);
   }
 
   public submit(): void {
@@ -134,8 +137,7 @@ export class MedicalHistoryDialog {
     const value = this.form.getRawValue();
 
     const record: MedicalHistoryResponse = {
-      id: value.id,
-      userId: this.initialRecord.userId,
+      id: '',
       title: value.title.trim(),
       date: value.date ? value.date.toISOString().split('T')[0] : '',
       note: value.notes ?? '',
@@ -143,7 +145,11 @@ export class MedicalHistoryDialog {
         ...this.initialRecord.doctor,
         doctorName: value.doctorName.trim(),
         doctorSurname: value.doctorSurname.trim(),
+        specializations: [],
+        userId: '',
+        valid: false,
       },
+      userId: '',
     };
 
     this.ref.close({

@@ -1,15 +1,28 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
+import {
+  DoctorDetailsApiResponse,
+  DoctorPageModel,
+} from '../../models/doctor.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DoctorService {
   private http = inject(HttpClient);
-  public getDoctorDetails(doctorId: string) {
-    return this.http.get(`${API_URL}/doctors/${doctorId}`);
+
+  public getDoctorDetails(doctorId: string): Observable<DoctorPageModel> {
+    return this.http
+      .get<DoctorDetailsApiResponse>(`${API_URL}/doctors/${doctorId}`)
+      .pipe(
+        map((response) => {
+          const mapped = this.mapDoctorDetailsResponse(response);
+          console.log('Mapped doctor details:', mapped);
+          return this.mapDoctorDetailsResponse(response);
+        }),
+      );
   }
 
   public getDoctorScheduleByInstitution(
@@ -23,16 +36,26 @@ export class DoctorService {
     }[];
   }> {
     const params = new HttpParams().set('institution', institutionId);
-    return this.http.get<{
-      schedules: {
-        id: string;
-        startHour: string;
-        isBooked: boolean;
-      }[];
-    }>(`${API_URL}/doctors/${doctorId}/schedules`, {
-      params,
-      withCredentials: true,
-    });
+    return this.http
+      .get<{
+        schedules: {
+          id: string;
+          startHour: string;
+          booked: boolean;
+        }[];
+      }>(`${API_URL}/doctors/${doctorId}/schedules`, {
+        params,
+        withCredentials: true,
+      })
+      .pipe(
+        map((response) => ({
+          schedules: response.schedules.map((schedule) => ({
+            id: schedule.id,
+            startHour: schedule.startHour,
+            isBooked: schedule.booked,
+          })),
+        })),
+      );
   }
 
   public getDoctorSchedulesForDoctorPage(
@@ -48,5 +71,25 @@ export class DoctorService {
       .pipe(
         tap((response) => console.log('Doctor schedule response:', response)),
       );
+  }
+
+  private mapDoctorDetailsResponse(
+    response: DoctorDetailsApiResponse,
+  ): DoctorPageModel {
+    console.log('Mapping doctor details response:', response);
+    return {
+      name: response.doctor.name,
+      surname: response.doctor.surname,
+      photoUrl: 'assets/footer-landing.png',
+      pwz: response.doctor.licence_number,
+      rating: {
+        stars: 4.5,
+        opinions: 20,
+      },
+      institutions: response.doctor.employers,
+      specialisation: response.doctor.specialisations,
+      schedule: [], // Schedule will be fetched separately
+      comments: [], // Comments will be fetched separately
+    };
   }
 }

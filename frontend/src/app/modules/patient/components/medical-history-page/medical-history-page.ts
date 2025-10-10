@@ -15,7 +15,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { PanelModule } from 'primeng/panel';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
-import { catchError, map, of } from 'rxjs';
+import { map } from 'rxjs';
 import { FilterParams } from '../../../../core/models/filter.model';
 import { MedicalRecord } from '../../../../core/models/medical-history.model';
 import { MedicalHistoryService } from '../../../../core/services/medical-history/medical-history.service';
@@ -119,17 +119,19 @@ export class MedicalHistoryPage implements OnInit {
   });
 
   protected viewRecord(record: MedicalRecord): void {
+    const hasDoctorInfo =
+      !!record.doctor.doctorName && !!record.doctor.doctorSurname;
     const ref = this.dialogService.open(MedicalHistoryDialog, {
       header: 'Medical Record Details',
       width: '50%',
       data: {
-        mode: 'edit',
+        mode: hasDoctorInfo ? 'view' : 'edit',
         record,
       },
       closable: true,
     });
 
-    if (!ref) {
+    if (!ref && ref === null) {
       return;
     }
 
@@ -201,26 +203,25 @@ export class MedicalHistoryPage implements OnInit {
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         map((response): MedicalRecord[] => {
+          console.log(response);
           const medicalhistories = Array.isArray(response.medicalhistories)
             ? response.medicalhistories
             : [];
+          console.log(medicalhistories);
           return medicalhistories.map((record) => ({
             id: record.id,
             title: record.title,
             date: new Date(record.date),
             doctor: {
-              doctorName: record.doctor.doctorName,
-              doctorSurname: record.doctor.doctorSurname,
+              doctorName: record.doctor?.doctorName || '',
+              doctorSurname: record.doctor?.doctorSurname || '',
             },
             notes: record.note,
           }));
         }),
-        catchError(() => {
-          this.isLoading.set(false);
-          return of([]);
-        }),
       )
       .subscribe((records) => {
+        console.log(records);
         this.medicalRecords.set(records);
         this.isLoading.set(false);
         this.isSending.set(false);

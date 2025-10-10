@@ -201,24 +201,17 @@ export class CalendarSchedule {
     });
 
     if (!calendarDay.hasAppointments) {
-      console.log('No appointments for this date');
       return;
     }
 
-    console.log('Setting selected date to:', calendarDay.date);
     this.selectedDate.set(calendarDay.date);
     this.selectedTime.set(null);
-
-    console.log('Selected date is now:', this.selectedDate());
   }
 
   public onTimeSelect(slot: TimeSlot): void {
     if (!this.selectedDate()) return;
 
     this.selectedTime.set(slot.time);
-
-    console.log('Calendar onTimeSelect - slot:', slot);
-    console.log('Emitting slotId:', slot.id);
 
     this.dateTimeSelected.emit({
       date: this.selectedDate()!,

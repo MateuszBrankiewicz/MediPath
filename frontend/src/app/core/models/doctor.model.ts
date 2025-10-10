@@ -1,4 +1,5 @@
 import { DaySchedule } from '../../modules/shared/components/ui/search-result.component/search-result.model';
+import { InstitutionShortInfo } from './institution.model';
 
 export interface DoctorPageModel {
   name: string;
@@ -9,7 +10,7 @@ export interface DoctorPageModel {
     stars: number;
     opinions: number;
   };
-  institutions: string[];
+  institutions: InstitutionShortInfo[];
   specialisation: string[];
   schedule: DaySchedule[];
 
@@ -22,4 +23,15 @@ export interface Comment {
   content: string;
   dateOfVisit: Date;
   numberOfStars: number;
+}
+
+export interface DoctorDetailsApiResponse {
+  doctor: {
+    employers: InstitutionShortInfo[];
+    id: string;
+    licence_number: string;
+    name: string;
+    surname: string;
+    specialisations: string[];
+  };
 }

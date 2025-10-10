@@ -1,130 +1,181 @@
-<div class="notifications-page">
-  <section class="notifications-page__stats">
-    <article class="notifications-page__stat-card">
-      <span class="notifications-page__stat-label">
-        {{ this.translationService.translate("notifications.total") }}
-      </span>
-      <span class="notifications-page__stat-value">{{
-        notificationsCount()
-      }}</span>
-      <i class="pi pi-bell notifications-page__stat-icon"></i>
-    </article>
+@if (isRefreshing()) {
+  <div class="spinner-container">
+    <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
+  </div>
+} @else {
+  @if (isMarkingAll()) {
+    <div class="floating-center-spinner">
+      <p-progress-spinner
+        [style]="{ width: '20%', height: '20%' }"
+      ></p-progress-spinner>
+    </div>
+  }
+  <div class="notifications-page">
+    <section class="notifications-page__stats">
+      <article class="notifications-page__stat-card">
+        <span class="notifications-page__stat-label">
+          {{ this.translationService.translate("notifications.total") }}
+        </span>
+        <span class="notifications-page__stat-value">{{
+          notificationsCount()
+        }}</span>
+        <i class="pi pi-bell notifications-page__stat-icon"></i>
+      </article>
 
-    <article class="notifications-page__stat-card">
-      <span class="notifications-page__stat-label">
-        {{ this.translationService.translate("notifications.unread") }}
-      </span>
-      <span class="notifications-page__stat-value">{{
-        unreadNotifications()
-      }}</span>
-      <i class="pi pi-inbox notifications-page__stat-icon"></i>
-    </article>
+      <article class="notifications-page__stat-card">
+        <span class="notifications-page__stat-label">
+          {{ this.translationService.translate("notifications.unread") }}
+        </span>
+        <span class="notifications-page__stat-value">{{
+          unreadNotifications()
+        }}</span>
+        <i class="pi pi-inbox notifications-page__stat-icon"></i>
+      </article>
 
-    <article class="notifications-page__stat-card">
-      <span class="notifications-page__stat-label">
-        {{ this.translationService.translate("notifications.today") }}
-      </span>
-      <span class="notifications-page__stat-value">{{
-        todaysNotifications()
-      }}</span>
-      <i class="pi pi-calendar notifications-page__stat-icon"></i>
-    </article>
+      <article class="notifications-page__stat-card">
+        <span class="notifications-page__stat-label">
+          {{ this.translationService.translate("notifications.today") }}
+        </span>
+        <span class="notifications-page__stat-value">{{
+          todaysNotifications()
+        }}</span>
+        <i class="pi pi-calendar notifications-page__stat-icon"></i>
+      </article>
 
-    <article class="notifications-page__stat-card">
-      <span class="notifications-page__stat-label">
-        {{ this.translationService.translate("notifications.readRate") }}
-      </span>
-      <span class="notifications-page__stat-value"
-        >{{ notificationsPointer() * 100 }}%</span
-      >
-      <i class="pi pi-chart-line notifications-page__stat-icon"></i>
-    </article>
-  </section>
-
-  <section class="notifications-page__toolbar">
-    <p-button
-      class="notifications-page__toolbar-button"
-      icon="pi pi-plus"
-      [label]="this.translationService.translate('notifications.add')"
-      (onClick)="this.openAddNotificationDialog()"
-    >
-    </p-button>
-
-    <p-button
-      type="button"
-      class="notifications-page__toolbar-button"
-      icon="pi pi-refresh"
-      [label]="this.translationService.translate('notifications.refresh')"
-      [loading]="isRefreshing()"
-    ></p-button>
-    <p-button
-      type="button"
-      class="notifications-page__toolbar-button"
-      icon="pi pi-envelope-open"
-      [label]="this.translationService.translate('notifications.markAllAsRead')"
-      [loading]="isMarkingAll()"
-    ></p-button>
-  </section>
-
-  @if (!hasNotifications()) {
-    <p class="notifications-page__empty">
-      {{ this.translationService.translate("notifications.empty") }}
-    </p>
-  } @else {
-    <ul class="notifications-page__list">
-      @for (notification of paginatedNotifications(); track $index) {
-        <li
-          class="notifications-page__item"
-          [class.notifications-page__item--unread]="!notification.read"
+      <article class="notifications-page__stat-card">
+        <span class="notifications-page__stat-label">
+          {{ this.translationService.translate("notifications.readRate") }}
+        </span>
+        <span class="notifications-page__stat-value"
+          >{{ notificationsPointer() * 100 }}%</span
         >
-          <div class="notifications-page__item-header">
-            <span class="notifications-page__item-title">
-              {{ notification.title || notification.content }}
-            </span>
-            <span class="notifications-page__item-date">
-              {{ notification.timestamp | date: "medium" }}
-            </span>
-          </div>
+        <i class="pi pi-chart-line notifications-page__stat-icon"></i>
+      </article>
+    </section>
 
-          @if (
-            !notification.title || notification.title !== notification.content
-          ) {
-            <p class="notifications-page__item-message">
-              {{ notification.content }}
-            </p>
-          }
+    <section class="notifications-page__toolbar">
+      <p-togglebutton
+        class="notifications-page__toolbar-button toggle-button"
+        [ngModel]="showPlanned()"
+        (ngModelChange)="showPlanned.set($event); first.set(0)"
+        onLabel="Zaplanowane"
+        offLabel="Otrzymane"
+        [onIcon]="'pi pi-calendar-plus'"
+        [offIcon]="'pi pi-inbox'"
+        size="large"
+      />
 
-          <div class="notifications-page__item-actions">
-            @if (!notification.read) {
+      <p-button
+        class="notifications-page__toolbar-button"
+        icon="pi pi-plus"
+        [label]="this.translationService.translate('notifications.add')"
+        (onClick)="this.openAddNotificationDialog()"
+      >
+      </p-button>
+
+      <p-button
+        type="button"
+        class="notifications-page__toolbar-button"
+        icon="pi pi-refresh"
+        (onClick)="ngOnInit()"
+        [label]="this.translationService.translate('notifications.refresh')"
+        [loading]="isRefreshing()"
+      ></p-button>
+      <p-button
+        type="button"
+        class="notifications-page__toolbar-button"
+        icon="pi pi-envelope-open"
+        [label]="
+          this.translationService.translate('notifications.markAllAsRead')
+        "
+        [loading]="isMarkingAll()"
+        (onClick)="markAllAsRead()"
+      ></p-button>
+    </section>
+    <app-filter-component
+      [defaults]="filtersDefaults"
+      [syncWithDefaults]="false"
+      [statusOptionsInput]="null"
+      [sortByOptionsInput]="sortByOptions()"
+      [autoApply]="true"
+      (filtersChange)="onFiltersChange($event)"
+    ></app-filter-component>
+
+    @if (!hasNotifications()) {
+      <p class="notifications-page__empty">
+        {{ this.translationService.translate("notifications.empty") }}
+      </p>
+    } @else {
+      <ul class="notifications-page__list">
+        @for (notification of paginatedNotifications(); track $index) {
+          <li
+            class="notifications-page__item"
+            [class.notifications-page__item--unread]="!notification.read"
+          >
+            <div class="notifications-page__item-header">
+              <span class="notifications-page__item-title">
+                {{ notification.title || notification.content }}
+              </span>
+              <span class="notifications-page__item-date">
+                {{ notification.timestamp | date: "medium" }}
+              </span>
               <p-button
                 type="button"
-                icon="pi pi-check"
+                severity="danger"
+                (onClick)="deleteNotification(notification)"
+                icon="pi pi-trash"
                 size="small"
                 [label]="
-                  this.translationService.translate('notifications.markAsRead')
+                  this.translationService.translate('patient.reminders.delete')
                 "
+                [style]="{ 'margin-left': '8px' }"
               ></p-button>
-            } @else {
-              <p-tag
-                severity="success"
-                [value]="
-                  this.translationService.translate('notifications.read')
-                "
-              ></p-tag>
+            </div>
+
+            @if (
+              !notification.title || notification.title !== notification.content
+            ) {
+              <p class="notifications-page__item-message">
+                {{ notification.content }}
+              </p>
             }
-          </div>
-        </li>
+
+            <div class="notifications-page__item-actions">
+              @if (!notification.read) {
+                <p-button
+                  type="button"
+                  (onClick)="markAsRead(notification)"
+                  icon="pi pi-check"
+                  size="small"
+                  [label]="
+                    this.translationService.translate(
+                      'notifications.markAsRead'
+                    )
+                  "
+                  [disabled]="showPlanned()"
+                ></p-button>
+              } @else {
+                <p-tag
+                  severity="success"
+                  [value]="
+                    this.translationService.translate('notifications.read')
+                  "
+                ></p-tag>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+      @if (notificationsCount() > 10) {
+        <p-paginator
+          (onPageChange)="onPageChange($event)"
+          [first]="first()"
+          [rows]="rows()"
+          [totalRecords]="getCountToPaginate()"
+          [rowsPerPageOptions]="[10, 20, 30]"
+          style="margin-bottom: 10px"
+        />
       }
-    </ul>
-    @if (notificationsCount() > 10) {
-      <p-paginator
-        (onPageChange)="onPageChange($event)"
-        [first]="first()"
-        [rows]="rows()"
-        [totalRecords]="notificationsCount()"
-        [rowsPerPageOptions]="[10, 20, 30]"
-        style="margin-bottom: 10px"
-      />
     }
-  }
-</div>
+  </div>
+}

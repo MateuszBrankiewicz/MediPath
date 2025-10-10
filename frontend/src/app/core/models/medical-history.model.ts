@@ -18,8 +18,8 @@ export interface MedicalHistoryResponse {
   title: string;
   userId: string;
   doctor: {
-    doctorName: string;
-    doctorSurname: string;
+    doctorName?: string;
+    doctorSurname?: string;
     userId: string;
     specializations: string[];
     valid: boolean;
