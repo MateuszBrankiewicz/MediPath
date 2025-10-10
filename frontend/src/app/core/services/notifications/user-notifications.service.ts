@@ -70,10 +70,12 @@ export class UserNotificationsService implements OnDestroy {
   ): Observable<unknown> {
     if (notification.startDate !== null) {
       const d = new Date(notification.startDate);
+
       notification.startDate = `${d.getFullYear()}-${(d.getMonth() + 1)
         .toString()
         .padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
     }
+
     if (notification.endDate !== null) {
       const d = new Date(notification.endDate);
       notification.endDate = `${d.getFullYear()}-${(d.getMonth() + 1)
