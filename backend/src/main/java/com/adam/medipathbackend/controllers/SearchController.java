@@ -32,18 +32,10 @@ public class SearchController {
         if(query == null || query.isBlank()) {
             query = ".*";
         }
-        if(specialisations == null) {
-            System.out.println("IS NULL");
-        } else {
-            for(String elem: specialisations) {
-                System.out.print(" " + elem + " ");
-            }
-            System.out.println();
-        }
         if(type.equals("institution")) {
             ArrayList<Institution> institutions;
 
-            if(specialisations == null) {
+            if(specialisations == null || specialisations.length == 0) {
                 institutions = institutionRepository.findInstitutionByCity(city + ".*", query);
             } else {
                 institutions = institutionRepository.findInstitutionByCityAndSpec(city + ".*", query, specialisations);
@@ -56,7 +48,7 @@ public class SearchController {
         } else if(type.equals("doctor")) {
             ArrayList<StaffDigest> doctors;
 
-            if(specialisations == null) {
+            if(specialisations == null || specialisations.length == 0) {
                 doctors = institutionRepository.findDoctorsByCity(city + ".*", query);
             } else {
                 doctors = institutionRepository.findDoctorsByCityAndSpec(city + ".*", query, specialisations);
