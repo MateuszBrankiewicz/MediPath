@@ -43,8 +43,11 @@ public class SearchController {
             if(institutions.isEmpty()) {
                 return new ResponseEntity<>(Map.of("result", List.of()), HttpStatus.OK);
             }
+
             List<Map<String, Serializable>> institutions_clean = institutions.stream().map(institution -> Map.of("id", institution.getId(), "name", institution.getName(), "types", institution.getTypes(), "image", institution.getImage(), "address", institution.getAddress().toString(), "isPublic", institution.isPublic(), "rating", institution.getRating(), "numOfRatings", institution.getNumOfRatings())).toList();
+
             return new ResponseEntity<>(Map.of("result", institutions_clean), HttpStatus.OK);
+
         } else if(type.equals("doctor")) {
             ArrayList<StaffDigest> doctors;
 
@@ -53,14 +56,16 @@ public class SearchController {
             } else {
                 doctors = institutionRepository.findDoctorsByCityAndSpec(city + ".*", query, specialisations);
             }
+
             if(doctors.isEmpty()) {
                 return new ResponseEntity<>(Map.of("result", List.of()), HttpStatus.OK);
             }
-            System.out.println();
+
             Set<String> doctorIds = new HashSet<>();
             for(StaffDigest doc: doctors) {
                 doctorIds.add(doc.getUserId());
             }
+
             List<Map<?, Object>> doctors_clean = doctorIds.stream().map(doctor -> {
                 Optional<User> doctorOpt =  userRepository.findById(doctor);
                 if(doctorOpt.isEmpty()) {
@@ -74,6 +79,7 @@ public class SearchController {
 
             ).toList();
             return new ResponseEntity<>(Map.of("result", doctors_clean), HttpStatus.OK);
+
         } else {
             return new ResponseEntity<>(Map.of("message", "unknown type"), HttpStatus.BAD_REQUEST);
         }

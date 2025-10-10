@@ -46,24 +46,31 @@ public class DoctorController {
         if(fieldsList.contains("id")) {
             outputFields.put("id", foundDoctor.getId());
         }
+
         if(fieldsList.contains("name")) {
             outputFields.put("name", foundDoctor.getName());
         }
+
         if(fieldsList.contains("surname")) {
             outputFields.put("surname", foundDoctor.getSurname());
         }
+
         if(fieldsList.contains("licence_number")) {
             outputFields.put("licence_number", foundDoctor.getLicenceNumber());
         }
+
         if(fieldsList.contains("specialisations")) {
             outputFields.put("specialisations", foundDoctor.getSpecialisations());
         }
+
         if(fieldsList.contains("rating")) {
             outputFields.put("rating", foundDoctor.getRating());
         }
+
         if(fieldsList.contains("employers")) {
             outputFields.put("employers", foundDoctor.getEmployers());
         }
+
         if(fieldsList.contains("numofratings")) {
             outputFields.put("numofratings", foundDoctor.getNumOfRatings());
         }

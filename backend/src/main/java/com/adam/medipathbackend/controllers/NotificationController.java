@@ -103,9 +103,11 @@ public class NotificationController {
         for(int i = 0; i < notifications.size(); i++) {
             Notification notification = notifications.get(i);
             if(notification.getTimestamp().isEqual(notifToChange.getTimestamp()) && notification.getTitle().equals(notifToChange.getTitle())) {
+
                 if(notification.getTimestamp().isAfter(LocalDateTime.now())) {
                     return new ResponseEntity<>(Map.of("message", "notification set in future"), HttpStatus.BAD_REQUEST);
                 }
+
                 notification.setRead(true);
                 notifications.set(i, notification);
                 break;
@@ -130,6 +132,7 @@ public class NotificationController {
         ArrayList<Notification> notifications = user.getNotifications();
         for(int i = 0; i < notifications.size(); i++) {
             Notification notification = notifications.get(i);
+
             if(!notification.getTimestamp().isAfter(LocalDateTime.now())) {
                 notification.setRead(true);
                 notifications.set(i, notification);
