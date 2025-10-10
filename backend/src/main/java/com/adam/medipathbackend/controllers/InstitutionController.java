@@ -145,11 +145,23 @@ public class InstitutionController {
         ArrayList<StaffDigest> doctors = institutionRepository.findDoctorsInInstitution(institutionid);
 
         if(specialisation == null) {
-            return new ResponseEntity<>(Map.of("doctors", doctors.stream().map(doctor -> Map.of("doctorId", doctor.getUserId(), "doctorName", doctor.getName(),
-                    "doctorSurname", doctor.getSurname(), "doctorPfp", doctor.getPfpimage(), "doctorSchedules", scheduleRepository.getUpcomingSchedulesByDoctorInInstitution(doctor.getUserId(), institutionid))).toList()), HttpStatus.OK);
+            return new ResponseEntity<>(Map.of("doctors", doctors.stream().map(doctor -> {
+
+                User doctorProfile = userRepository.findById(doctor.getUserId()).get();
+                return Map.of("doctorId", doctor.getUserId(), "doctorName", doctor.getName(),
+                        "doctorSurname", doctor.getSurname(), "doctorPfp", doctor.getPfpimage(), "doctorSchedules", scheduleRepository.getUpcomingSchedulesByDoctorInInstitution(doctor.getUserId(), institutionid),
+                        "rating", doctorProfile.getRating(), "numofratings", doctorProfile.getNumOfRatings(), "licenceNumber", doctorProfile.getLicenceNumber());
+
+            }).toList()), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(Map.of("doctors", doctors.stream().filter(doctor -> doctor.getSpecialisations().contains(specialisation)).map(doctor -> Map.of("doctorId", doctor.getUserId(), "doctorName", doctor.getName(),
-                    "doctorSurname", doctor.getSurname(), "doctorPfp", doctor.getPfpimage(), "doctorSchedules", scheduleRepository.getUpcomingSchedulesByDoctorInInstitution(doctor.getUserId(), institutionid))).toList()), HttpStatus.OK);
+            return new ResponseEntity<>(Map.of("doctors", doctors.stream().filter(doctor -> doctor.getSpecialisations().contains(specialisation)).map(doctor -> {
+
+                User doctorProfile = userRepository.findById(doctor.getUserId()).get();
+                return Map.of("doctorId", doctor.getUserId(), "doctorName", doctor.getName(),
+                        "doctorSurname", doctor.getSurname(), "doctorPfp", doctor.getPfpimage(), "doctorSchedules", scheduleRepository.getUpcomingSchedulesByDoctorInInstitution(doctor.getUserId(), institutionid),
+                        "rating", doctorProfile.getRating(), "numofratings", doctorProfile.getNumOfRatings(), "licenceNumber", doctorProfile.getLicenceNumber());
+
+            }).toList()), HttpStatus.OK);
         }
 
     }

@@ -32,18 +32,10 @@ public class SearchController {
         if(query == null || query.isBlank()) {
             query = ".*";
         }
-        if(specialisations == null) {
-            System.out.println("IS NULL");
-        } else {
-            for(String elem: specialisations) {
-                System.out.print(" " + elem + " ");
-            }
-            System.out.println();
-        }
         if(type.equals("institution")) {
             ArrayList<Institution> institutions;
 
-            if(specialisations == null) {
+            if(specialisations == null || specialisations.length == 0) {
                 institutions = institutionRepository.findInstitutionByCity(city + ".*", query);
             } else {
                 institutions = institutionRepository.findInstitutionByCityAndSpec(city + ".*", query, specialisations);
@@ -51,24 +43,29 @@ public class SearchController {
             if(institutions.isEmpty()) {
                 return new ResponseEntity<>(Map.of("result", List.of()), HttpStatus.OK);
             }
+
             List<Map<String, Serializable>> institutions_clean = institutions.stream().map(institution -> Map.of("id", institution.getId(), "name", institution.getName(), "types", institution.getTypes(), "image", institution.getImage(), "address", institution.getAddress().toString(), "isPublic", institution.isPublic(), "rating", institution.getRating(), "numOfRatings", institution.getNumOfRatings())).toList();
+
             return new ResponseEntity<>(Map.of("result", institutions_clean), HttpStatus.OK);
+
         } else if(type.equals("doctor")) {
             ArrayList<StaffDigest> doctors;
 
-            if(specialisations == null) {
+            if(specialisations == null || specialisations.length == 0) {
                 doctors = institutionRepository.findDoctorsByCity(city + ".*", query);
             } else {
                 doctors = institutionRepository.findDoctorsByCityAndSpec(city + ".*", query, specialisations);
             }
+
             if(doctors.isEmpty()) {
                 return new ResponseEntity<>(Map.of("result", List.of()), HttpStatus.OK);
             }
-            System.out.println();
+
             Set<String> doctorIds = new HashSet<>();
             for(StaffDigest doc: doctors) {
                 doctorIds.add(doc.getUserId());
             }
+
             List<Map<?, Object>> doctors_clean = doctorIds.stream().map(doctor -> {
                 Optional<User> doctorOpt =  userRepository.findById(doctor);
                 if(doctorOpt.isEmpty()) {
@@ -82,6 +79,7 @@ public class SearchController {
 
             ).toList();
             return new ResponseEntity<>(Map.of("result", doctors_clean), HttpStatus.OK);
+
         } else {
             return new ResponseEntity<>(Map.of("message", "unknown type"), HttpStatus.BAD_REQUEST);
         }

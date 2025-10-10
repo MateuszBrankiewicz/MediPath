@@ -38,7 +38,7 @@ public class DoctorController {
         System.out.println(fields == null);
         List<String> fieldsList;
         if(fields == null) {
-            fieldsList = List.of("id", "name", "surname", "licence_number", "specialisations", "employers");
+            fieldsList = List.of("id", "name", "surname", "licence_number", "specialisations", "employers", "rating", "numofratings", "image");
         } else {
             fieldsList = List.of(fields);
         }
@@ -46,21 +46,38 @@ public class DoctorController {
         if(fieldsList.contains("id")) {
             outputFields.put("id", foundDoctor.getId());
         }
+
         if(fieldsList.contains("name")) {
             outputFields.put("name", foundDoctor.getName());
         }
+
         if(fieldsList.contains("surname")) {
             outputFields.put("surname", foundDoctor.getSurname());
         }
+
         if(fieldsList.contains("licence_number")) {
             outputFields.put("licence_number", foundDoctor.getLicenceNumber());
         }
+
         if(fieldsList.contains("specialisations")) {
             outputFields.put("specialisations", foundDoctor.getSpecialisations());
         }
+
+        if(fieldsList.contains("rating")) {
+            outputFields.put("rating", foundDoctor.getRating());
+        }
+
         if(fieldsList.contains("employers")) {
             outputFields.put("employers", foundDoctor.getEmployers());
         }
+
+        if(fieldsList.contains("numofratings")) {
+            outputFields.put("numofratings", foundDoctor.getNumOfRatings());
+        }
+        if(fieldsList.contains("image")) {
+            outputFields.put("image", foundDoctor.getPfpimage());
+        }
+
         return new ResponseEntity<>(Map.of("doctor", outputFields), HttpStatus.OK);
     }
 
