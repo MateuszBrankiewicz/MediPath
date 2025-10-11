@@ -333,3 +333,63 @@
     }
   }
 }
+
+// Size variants
+.calendar-schedule.size-small {
+  .schedule-layout {
+    min-height: 300px;
+  }
+
+  .date-selection {
+    padding: 16px;
+    h3 { font-size: 14px; margin-bottom: 16px; }
+
+    .custom-calendar {
+      .calendar-header { margin-bottom: 16px; }
+      .month-year { font-size: 16px; }
+      :deep(.nav-button) { width: 28px; height: 28px; }
+      .day-names .day-name { padding: 6px 2px; font-size: 12px; }
+      .calendar-grid .calendar-day {
+        min-height: 28px; font-size: 12px;
+        &::after { width: 3px; height: 3px; bottom: 1px; }
+      }
+    }
+  }
+
+  .time-selection {
+    padding: 16px;
+    h3 { font-size: 14px; margin-bottom: 16px; }
+    .time-slots .time-grid {
+      max-height: 240px;
+      .time-slot { padding: 8px 12px; font-size: 12px; min-height: 36px; }
+    }
+    .no-date-message { padding: 28px 16px; font-size: 14px; }
+  }
+}
+
+.calendar-schedule.size-large {
+  .schedule-layout { min-height: 500px; }
+  .date-selection {
+    padding: 32px;
+    h3 { font-size: 18px; margin-bottom: 28px; }
+    .custom-calendar {
+      .calendar-header { margin-bottom: 28px; }
+      .month-year { font-size: 20px; }
+      :deep(.nav-button) { width: 40px; height: 40px; }
+      .day-names .day-name { padding: 10px 6px; font-size: 16px; }
+      .calendar-grid .calendar-day {
+        min-height: 44px; font-size: 16px;
+        &::after { width: 5px; height: 5px; bottom: 3px; }
+      }
+    }
+  }
+  .time-selection {
+    padding: 32px;
+    h3 { font-size: 18px; margin-bottom: 28px; }
+    .time-slots .time-grid {
+      max-height: 400px;
+      .time-slot { padding: 16px 20px; font-size: 16px; min-height: 52px; }
+    }
+    .no-date-message { padding: 56px 24px; font-size: 16px; }
+  }
+}

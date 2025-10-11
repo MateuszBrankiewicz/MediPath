@@ -209,6 +209,10 @@
   "shared.calendar.selectDate": "Wybierz datę",
   "shared.calendar.availableTerms": "Dostępne terminy",
   "shared.calendar.pleaseSelectDate": "Proszę wybrać datę, aby zobaczyć dostępne godziny",
+  "calendar.selectTimeRange": "Wybierz zakres czasu",
+  "calendar.startTime": "Godzina rozpoczęcia",
+  "calendar.endTime": "Godzina zakończenia",
+  "calendar.differentHour": "Inna godzina",
 
   "shared.forms.noResultsFound": "Nie znaleziono wyników",
   "shared.forms.loading": "Ładowanie...",

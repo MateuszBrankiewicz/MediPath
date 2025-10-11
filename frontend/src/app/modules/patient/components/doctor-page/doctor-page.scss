@@ -4,6 +4,8 @@
   align-items: center;
   width: 100%;
   height: 100%;
+  /* UWAGA: Ta zmienna powoduje, że taby są bardzo daleko od siebie.
+     Jeśli chcesz, aby były bliżej, zmniejsz tę wartość lub ją usuń. */
   --p-tabs-tab-gap: 2000px;
 }
 
@@ -105,6 +107,7 @@ p-card {
   width: 100%;
   height: 100%;
 }
+
 .comment-block {
   width: 97%;
   height: 100%;
@@ -124,6 +127,7 @@ p-card {
     padding: 0 10px 10px 10px;
   }
 }
+
 .tab-list {
   width: 100%;
   display: flex;
@@ -133,6 +137,7 @@ p-card {
   border-bottom: 1px solid #ccc;
   margin-bottom: 5px;
 }
+
 .tab {
   cursor: pointer;
   padding: 10px 20px;
@@ -140,7 +145,11 @@ p-card {
   color: #666;
   border-bottom: 2px solid transparent;
   transition: all 0.3s ease;
-  --p-button-padding-x: 45%;
+  /* UWAGA: --p-button-padding-x: 45% to bardzo duża wartość, która może "rozpychać" layout.
+     Zastąpiłem to standardowym paddingiem wyżej. Jeśli to była celowa wartość dla jakiegoś komponentu,
+     można ją przywrócić, ale warto sprawdzić jej działanie. */
+  /* --p-button-padding-x: 45%; */
+
   &.active {
     color: var(--p-primary-color);
     font-weight: bold;
@@ -167,6 +176,7 @@ p-card {
   min-width: 220px;
   max-width: 320px;
   box-sizing: border-box;
+
   .institution-chip {
     cursor: pointer;
     border-radius: 10px;
@@ -243,6 +253,48 @@ tab-panel app-calendar-schedule,
   --p-button-border-radius: 8px;
 }
 
+.loading-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.calendar-schedule-wrapper {
+  position: relative;
+  width: 80%;
+  height: 100%;
+}
+
+.calendar-spinner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+
+/* =========================================== */
+/* DODANE REGUŁY RESPONSIVE                    */
+/* =========================================== */
+
+/* Dla tabletów i mniejszych urządzeń (np. poniżej 1024px) */
+@media (max-width: 1024px) {
+  .doctor-info {
+    /* ZMIANA: Zmieniamy układ kolumnowy na wierszowy */
+    flex-direction: column;
+    /* ZMIANA: Rozciągamy elementy, aby zajmowały całą szerokość */
+    align-items: stretch;
+  }
+}
+
+/* Twoje istniejące reguły dla 900px, zintegrowane */
 @media (max-width: 900px) {
   .tab-panel {
     flex-direction: column;
@@ -279,31 +331,59 @@ tab-panel app-calendar-schedule,
   tab-panel app-calendar-schedule,
   .tab-panel app-calendar-schedule {
     width: 100%;
+    /* ZMIANA: Zmieniamy kolejność, aby kalendarz był niżej */
     order: 2;
+  }
+
+  .remarks-with-schedule {
+    /* ZMIANA: Ustawiamy kolejność, aby uwagi były nad kalendarzem */
+    order: 1;
+  }
+
+  .doctors-instutions {
+    /* ZMIANA: Ustawiamy kolejność, aby placówki były na samej górze */
+    order: 0;
   }
 }
 
-.loading-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-.calendar-schedule-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
+/* Dla mniejszych urządzeń mobilnych (np. poniżej 600px) */
+@media (max-width: 600px) {
+    .doctor-info {
+      padding: 10px;
+      gap: 15px;
+    }
+
+    .tab-list {
+      /* ZMIANA: Umożliwiamy przewijanie tabów w poziomie, jeśli się nie mieszczą */
+      justify-content: flex-start;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch; /* Płynne przewijanie na iOS */
+    }
+
+    .tab {
+      /* ZMIANA: Zapobiegamy kurczeniu się tabów */
+      flex-shrink: 0;
+    }
 }
 
-.calendar-spinner-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255,255,255,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
+
+/* Dla bardzo małych ekranów (np. poniżej 480px) */
+@media (max-width: 480px) {
+  .doctor-info-card {
+    /* ZMIANA: Układamy zdjęcie nad tekstem */
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .doctor-info-card .doctor-personal-information {
+    /* ZMIANA: centrujemy zawartość (gwiazdki, opinie) */
+    align-items: center;
+  }
+
+  .doctors-instutions .institution-chip {
+      /* ZMIANA: Każdy chip zajmuje całą szerokość, aby uniknąć ściskania */
+      flex-basis: 100%;
+  }
 }

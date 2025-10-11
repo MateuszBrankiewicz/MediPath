@@ -208,6 +208,10 @@
   "shared.calendar.selectDate": "Select date",
   "shared.calendar.availableTerms": "Available terms",
   "shared.calendar.pleaseSelectDate": "Please select a date to see available times",
+  "calendar.selectTimeRange": "Select time range",
+  "calendar.startTime": "Start time",
+  "calendar.endTime": "End time",
+  "calendar.differentHour": "Different hour",
 
   "shared.forms.noResultsFound": "No results found",
   "shared.forms.loading": "Loading...",

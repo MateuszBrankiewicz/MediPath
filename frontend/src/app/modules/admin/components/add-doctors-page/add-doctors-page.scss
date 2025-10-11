@@ -1,0 +1,134 @@
+/* ==========================================================================
+   Stylistyka oparta na oryginalnym zrzucie ekranu z poprawionym layoutem
+   ========================================================================== */
+
+// --- Paleta kolorów z oryginalnego zrzutu ekranu ---
+$primary-blue: #3b82f6;      // Niebieski dla focusa i interaktywnych elementów
+$dark-blue: #1e293b;        // Ciemny niebieski/grafit dla głównego przycisku
+$danger-red: #ef4444;       // Czerwień dla usuwania
+$text-color: #334155;      // Ciemnoszary dla tekstu w polach
+$label-color: #475569;     // Kolor etykiet
+$background-color: #f1f5f9; // Jasnoszare tło strony
+$surface-card: #ffffff;    // Białe tło karty
+$border-color: #cbd5e1;     // Kolor obramowań pól
+
+// --- Stylizacja hosta komponentu ---
+:host {
+  display: block;
+  background-color: $background-color;
+  padding: 2rem;
+}
+
+// --- Główny kontener (karta) ---
+.institution-form-card {
+  background: $surface-card;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+// --- Nagłówek ---
+:host ::ng-deep .p-card-title {
+  font-size: 1.125rem;
+}
+
+:host ::ng-deep .p-card-body {
+  padding: 2rem;
+}
+
+// --- Etykiety pól ---
+.form-field > label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $label-color;
+}
+
+// --- Główna siatka formularza ---
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem 2rem; // Odstęp pionowy i poziomy
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+// --- Sekcja adresu ---
+.address-group {
+  grid-column: 1 / -1;
+  .group-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-color;
+    margin: 1rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid $border-color;
+  }
+}
+
+.address-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem 2rem;
+  .street-field {
+    grid-column: 1 / -1; // Ulica zawsze zajmuje całą szerokość
+  }
+}
+
+// --- Ogólne style dla pól PrimeNG ---
+:host ::ng-deep {
+  .p-inputtext, .p-inputtextarea, .p-autocomplete, .p-multiselect, .p-inputmask {
+    width: 100%;
+    border-color: $border-color;
+    color: $text-color;
+  }
+
+  // Efekt focus zgodny z oryginałem
+  .p-inputwrapper-focus, .p-inputtext:focus {
+    border-color: $primary-blue !important;
+    box-shadow: none !important;
+  }
+}
+
+// --- Przycisk przesyłania pliku ---
+:host ::ng-deep .p-fileupload-basic {
+  .p-button {
+    background-color: #ffffff;
+    color: $text-color;
+    border: 1px solid $border-color;
+  }
+}
+
+// --- Przyciski na dole ---
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+:host ::ng-deep {
+  // Główny przycisk CONFIRM
+  .p-button-confirm {
+    background-color: $dark-blue;
+    border-color: $dark-blue;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    &:hover {
+      background-color: lighten($dark-blue, 5%);
+      border-color: lighten($dark-blue, 5%);
+    }
+  }
+
+  // Czerwone przyciski "Remove" na chipach
+  .p-chip .p-chip-remove-icon {
+    color: $danger-red;
+    &:hover {
+      color: darken($danger-red, 10%);
+    }
+  }
+}

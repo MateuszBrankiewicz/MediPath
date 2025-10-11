@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
 import {
   Institution,
@@ -45,5 +45,11 @@ export class InstitutionService {
           };
         }),
       );
+  }
+
+  public getInstitutionsForAdmin() {
+    return this.http
+      .get(`${API_URL}/institution/admin`, { withCredentials: true })
+      .pipe(tap((res) => console.log(res)));
   }
 }

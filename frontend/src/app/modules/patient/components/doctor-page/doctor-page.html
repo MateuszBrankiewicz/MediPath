@@ -96,21 +96,26 @@
     } @else {
       <div class="tab-panel">
         <div class="doctors-instutions">
+          <h4>Choose institution:</h4>
           @for (
             institution of doctorInfo().institutions;
             track institution
           ) {
             <p-card
               class="institution-chip"
-              [header]="'institution: ' + institution.institutionName"
+              [style]="{ cursor: 'pointer', background: selectedInstitution() === institution ? '#cce5ff' : '#f8f9fa' }"
+              [header]="institution.institutionName"
               (click)="selectInstitution(institution)"
               [class]="selectedInstitution() === institution ? 'selected' : ''"
             ></p-card>
           }
         </div>
 
-        <div class="calendar-schedule-wrapper" style="position: relative;">
-  <app-calendar-schedule [availableAppointments]="mappedSchedule()" (dateTimeSelected)="selectSlotId($event)"></app-calendar-schedule>
+        <div class="calendar-schedule-wrapper">
+  <app-calendar-schedule
+    [size]="'small'"
+    [availableAppointments]="mappedSchedule()"
+    (dateTimeSelected)="selectSlotId($event)"></app-calendar-schedule>
   @if (isScheduleLoading() && !isLoading()) {
     <div class="calendar-spinner-overlay">
       <p-progress-spinner></p-progress-spinner>

@@ -1,0 +1,91 @@
+<p-card styleClass="institution-form-card">
+  <ng-template pTemplate="title">
+    <div class="card-title">
+      <span>Institutions</span>
+      <i class="pi pi-angle-right"></i>
+      <strong>Szpital kliniczny</strong>
+    </div>
+  </ng-template>
+
+  <form [formGroup]="institutionForm" (ngSubmit)="onSubmit()">
+    <div class="form-grid">
+      <div class="form-field full-width">
+        <label for="name">Name</label>
+        <input pInputText id="name" formControlName="name" />
+      </div>
+
+      <div class="form-field full-width">
+        <label for="description">Description</label>
+        <textarea pInputTextarea id="description" formControlName="description" rows="6"></textarea>
+      </div>
+
+      <div class="form-field">
+        <label for="doctors">Search and add doctor</label>
+        <p-autoComplete
+          formControlName="doctors"
+          [suggestions]="filteredDoctors()"
+          (completeMethod)="searchDoctor($event)"
+          field="name"
+          [multiple]="true"
+          placeholder="Type name or PWZ number"
+          inputId="doctors">
+        </p-autoComplete>
+      </div>
+
+      <div class="form-field">
+        <label for="types">Institution type</label>
+        <p-multiSelect
+          formControlName="institutionTypes"
+          [options]="allInstitutionTypes()"
+          optionLabel="name"
+          display="chip"
+          placeholder="Select from list"
+          inputId="types">
+        </p-multiSelect>
+      </div>
+
+      <div class="form-field address-group full-width">
+        <h3 class="group-title">Institution address</h3>
+        <div class="address-grid">
+          <div class="form-field">
+            <label for="province">Province</label>
+            <input pInputText id="province" formControlName="province" formGroupName="address"/>
+          </div>
+          <div class="form-field">
+            <label for="postalCode">Postal code</label>
+            <p-inputMask mask="99-999" id="postalCode" formControlName="postalCode" formGroupName="address"></p-inputMask>
+          </div>
+          <div class="form-field">
+            <label for="city">City</label>
+            <input pInputText id="city" formControlName="city" formGroupName="address"/>
+          </div>
+          <div class="form-field">
+            <label for="number">Number</label>
+            <input pInputText id="number" formControlName="number" formGroupName="address"/>
+          </div>
+          <div class="form-field street-field">
+            <label for="street">Street</label>
+            <input pInputText id="street" formControlName="street" formGroupName="address"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-field full-width">
+         <label>Image</label>
+         <p-fileUpload
+            name="image"
+            mode="basic"
+            chooseLabel="Add file"
+            [auto]="true"
+            accept="image/*"
+            [maxFileSize]="1000000">
+        </p-fileUpload>
+      </div>
+
+    </div>
+
+    <div class="actions">
+      <p-button label="CONFIRM" type="submit" [disabled]="institutionForm.invalid" styleClass="p-button-confirm"></p-button>
+    </div>
+  </form>
+</p-card>

@@ -19,6 +19,7 @@ import { TimeSlot } from '../ui/search-result.component/search-result.model';
 
 @Component({
   selector: 'app-calendar-schedule',
+  standalone: true,
   imports: [CommonModule, ButtonModule],
   templateUrl: './calendar-schedule.html',
   styleUrl: './calendar-schedule.scss',
@@ -26,6 +27,8 @@ import { TimeSlot } from '../ui/search-result.component/search-result.model';
 })
 export class CalendarSchedule {
   protected translationService = inject(TranslationService);
+
+  public readonly size = input<'small' | 'medium' | 'large'>('medium');
 
   public readonly dateTimeSelected = output<{
     date: Date;
