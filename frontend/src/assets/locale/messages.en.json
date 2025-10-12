@@ -455,7 +455,7 @@
     "admin.createSchedule.summary.start": "Start time",
     "admin.createSchedule.summary.end": "End time",
   "admin.createSchedule.createSchedule": "Create Schedule",
-  "admin.createSchedule.selectInstitution": "Select institution"
-
+  "admin.createSchedule.selectInstitution": "Select institution",
+  "shared.calendar.editModeAppointmentExists": "There are already scheduled appointments in this time slot. Editing this slot may remove existing appointments. Are you sure you want to continue?"
 }
 

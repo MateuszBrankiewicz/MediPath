@@ -143,4 +143,14 @@ export class DoctorCardComponent implements OnInit {
 
     return `${dayNumber}.${month}`;
   }
+
+  protected getSortedDays(): DaySchedule[] {
+    return [...this.doctor().schedule]
+      .sort((a, b) => {
+        const dateA = typeof a.date === 'string' ? new Date(a.date) : a.date;
+        const dateB = typeof b.date === 'string' ? new Date(b.date) : b.date;
+        return dateA.getTime() - dateB.getTime();
+      })
+      .slice(0, 6);
+  }
 }

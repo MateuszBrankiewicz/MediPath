@@ -64,13 +64,15 @@
                 {{ translationService.translate("shared.calendar.startTime") }}
               </div>
               <div class="time-buttons">
-                @for (timeOption of timeOptions; track timeOption.value) {
+                @for (timeOption of availableTimes(); track timeOption.time) {
                   <button
                     class="time-button"
-                    [class.selected]="selectedStartTime() === timeOption.value"
-                    (click)="onStartTimeSelect(timeOption.value)"
+                    [class.selected]="selectedStartTime() === timeOption.time"
+                    (click)="onStartTimeSelect(timeOption.time)"
+                    [class.unavailable]="!timeOption.available"
+                    [disabled]="!timeOption.available"
                   >
-                    {{ timeOption.label }}
+                    {{ timeOption.time }}
                   </button>
                 }
               </div>
@@ -100,13 +102,18 @@
                 {{ translationService.translate("shared.calendar.endTime") }}
               </div>
               <div class="time-buttons">
-                @for (timeOption of timeOptions; track timeOption.value) {
+                @for (
+                  timeOption of availableEndTimes();
+                  track timeOption.time
+                ) {
                   <button
                     class="time-button"
-                    [class.selected]="selectedEndTime() === timeOption.value"
-                    (click)="onEndTimeSelect(timeOption.value)"
+                    [class.selected]="selectedEndTime() === timeOption.time"
+                    (click)="onEndTimeSelect(timeOption.time)"
+                    [class.unavailable]="!timeOption.available"
+                    [disabled]="!timeOption.available"
                   >
-                    {{ timeOption.label }}
+                    {{ timeOption.time }}
                   </button>
                 }
               </div>

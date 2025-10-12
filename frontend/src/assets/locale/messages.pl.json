@@ -458,6 +458,6 @@
   "admin.createSchedule.summary.start": "Godzina rozpoczęcia",
   "admin.createSchedule.summary.end": "Godzina zakończenia",
   "admin.createSchedule.createSchedule": "Utwórz harmonogram",
-  "admin.createSchedule.selectInstitution": "Wybierz instytucję"
-
+  "admin.createSchedule.selectInstitution": "Wybierz instytucję",
+  "shared.calendar.editModeAppointmentExists": "W tym przedziale czasowym istnieją już zaplanowane wizyty. Edytowanie tego przedziału może spowodować usunięcie istniejących wizyt. Czy na pewno chcesz kontynuować?"
 }

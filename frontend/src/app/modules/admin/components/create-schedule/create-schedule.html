@@ -54,6 +54,7 @@
             [ngModel]="intervalMinutes()"
             (ngModelChange)="onIntervalChange($event)"
             [min]="1"
+            [style]="{ width: '100%' }"
           ></p-input-number>
           <label class="field-label" for="visitInterval">
             {{
@@ -89,6 +90,7 @@
       [editMode]="true"
       [size]="'large'"
       (scheduleTimeSelected)="onScheduleTimeSelected($event)"
+      [initialSelectedDate]="today"
     />
   </div>
   <p-card class="summary-card">
@@ -166,6 +168,7 @@
       label="Accept"
       icon="pi pi-pencil"
       size="small"
+      (click)="onCreateSchedule()"
       [disabled]="!selectedDoctorId()"
     ></p-button>
   </div>

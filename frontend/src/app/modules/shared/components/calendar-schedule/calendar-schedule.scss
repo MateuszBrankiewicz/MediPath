@@ -399,6 +399,17 @@
                 color: white;
                 font-weight: 600;
               }
+              &.unavailable {
+                background-color: #f3f4f6;
+                color: #9ca3af;
+                cursor: not-allowed;
+                border-color: #e5e7eb;
+                text-decoration: line-through;
+              }
+
+              &:disabled {
+                opacity: 0.5;
+              }
             }
           }
 

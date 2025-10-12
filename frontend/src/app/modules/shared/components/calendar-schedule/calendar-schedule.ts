@@ -10,12 +10,19 @@ import {
   signal,
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { DialogService } from 'primeng/dynamicdialog';
 import {
   AvailableDay,
   CalendarDay,
 } from '../../../../core/models/schedule.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { AcceptActionDialogComponent } from '../ui/accept-action-dialog/accept-action-dialog-component';
 import { TimeSlot } from '../ui/search-result.component/search-result.model';
+import {
+  dayNames,
+  monthNames,
+  timeOptions,
+} from './calendar-schedule.constants';
 
 export interface TimeOption {
   label: string;
@@ -27,11 +34,12 @@ export interface TimeOption {
   imports: [CommonModule, ButtonModule],
   templateUrl: './calendar-schedule.html',
   styleUrl: './calendar-schedule.scss',
+  providers: [DialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarSchedule {
   protected translationService = inject(TranslationService);
-
+  private dialogService = inject(DialogService);
   public readonly size = input<'small' | 'medium' | 'large'>('medium');
 
   public readonly editMode = input<boolean>(false);
@@ -55,6 +63,7 @@ export class CalendarSchedule {
   public readonly selectedDate = signal<Date | null>(null);
   public readonly selectedTime = signal<string | null>(null);
   public readonly currentMonth = signal<Date>(new Date());
+  public readonly institutionId = input<string | null>(null);
 
   public readonly selectedStartTime = signal<string>('');
   public readonly selectedEndTime = signal<string>('');
@@ -62,68 +71,20 @@ export class CalendarSchedule {
   public readonly customTimeInputEnd = signal<string>('');
 
   public readonly availableAppointments = input<AvailableDay[]>([]);
-
-  public readonly monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-
-  public readonly dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
-  public readonly timeOptions: TimeOption[] = [
-    { label: '06:00', value: '06:00' },
-    { label: '06:30', value: '06:30' },
-    { label: '07:00', value: '07:00' },
-    { label: '07:30', value: '07:30' },
-    { label: '08:00', value: '08:00' },
-    { label: '08:30', value: '08:30' },
-    { label: '09:00', value: '09:00' },
-    { label: '09:30', value: '09:30' },
-    { label: '10:00', value: '10:00' },
-    { label: '10:30', value: '10:30' },
-    { label: '11:00', value: '11:00' },
-    { label: '11:30', value: '11:30' },
-    { label: '12:00', value: '12:00' },
-    { label: '12:30', value: '12:30' },
-    { label: '13:00', value: '13:00' },
-    { label: '13:30', value: '13:30' },
-    { label: '14:00', value: '14:00' },
-    { label: '14:30', value: '14:30' },
-    { label: '15:00', value: '15:00' },
-    { label: '15:30', value: '15:30' },
-    { label: '16:00', value: '16:00' },
-    { label: '16:30', value: '16:30' },
-    { label: '17:00', value: '17:00' },
-    { label: '17:30', value: '17:30' },
-    { label: '18:00', value: '18:00' },
-    { label: '18:30', value: '18:30' },
-    { label: '19:00', value: '19:00' },
-    { label: '19:30', value: '19:30' },
-    { label: '20:00', value: '20:00' },
-    { label: '20:30', value: '20:30' },
-    { label: '21:00', value: '21:00' },
-    { label: '21:30', value: '21:30' },
-    { label: '22:00', value: '22:00' },
-  ];
+  public readonly checkIfDateAppointmentIsFromThisInstitution = output<{
+    date: Date;
+    isFromInstitution: boolean;
+  }>();
 
   public Math = Math;
-
+  protected readonly dayNames = dayNames;
+  protected readonly monthNames = monthNames;
+  protected timeOptions: TimeOption[] = timeOptions;
   constructor() {
     effect(() => {
       const appointments = this.availableAppointments();
       const initialDate = this.initialSelectedDate();
       const initialTime = this.initialSelectedTime();
-
       if (initialDate) {
         const date =
           typeof initialDate === 'string' ? new Date(initialDate) : initialDate;
@@ -213,26 +174,73 @@ export class CalendarSchedule {
         dayNumber: day,
       });
     }
-
     return days;
   });
 
   public readonly availableTimes = computed(() => {
     const selected = this.selectedDate();
     if (!selected) return [];
+    if (this.editMode()) {
+      const appointmentsForDay = this.availableAppointments().find((app) => {
+        const appDate =
+          typeof app.date === 'string' ? new Date(app.date) : app.date;
+        return appDate.toDateString() === selected.toDateString();
+      });
 
-    const appointment = this.availableAppointments().find((app) => {
-      const appDate =
-        typeof app.date === 'string' ? new Date(app.date) : app.date;
-      return appDate.toDateString() === selected.toDateString();
+      const bookedTimes = appointmentsForDay
+        ? appointmentsForDay.slots.map((slot) => slot.time)
+        : [];
+      return this.timeOptions.map((option) => ({
+        id: option.value,
+        time: option.value,
+        label: option.label,
+        booked: false,
+        available: !bookedTimes.includes(option.value),
+      }));
+    } else {
+      const found = this.availableAppointments().find((app) => {
+        const appDate =
+          typeof app.date === 'string' ? new Date(app.date) : app.date;
+        return appDate.toDateString() === selected.toDateString();
+      });
+      return found ? found.slots : [];
+    }
+  });
+
+  protected availableEndTimes = computed(() => {
+    const selectedStart = this.selectedStartTime();
+    const times = this.availableTimes();
+    if (!selectedStart) {
+      return times;
+    }
+    const [startHour, startMinute] = selectedStart.split(':').map(Number);
+    const startTotalMinutes = startHour * 60 + startMinute;
+
+    const nextUnavailable = times
+      .filter((option) => !option.available)
+      .map((option) => {
+        const [h, m] = option.time.split(':').map(Number);
+        return h * 60 + m;
+      })
+      .filter((min) => min > startTotalMinutes)
+      .sort((a, b) => a - b)[0];
+
+    return times.filter((option) => {
+      const [optionHour, optionMinute] = option.time.split(':').map(Number);
+      const optionTotalMinutes = optionHour * 60 + optionMinute;
+      if (nextUnavailable !== undefined) {
+        return (
+          optionTotalMinutes > startTotalMinutes &&
+          optionTotalMinutes <= nextUnavailable - 30
+        );
+      }
+      return optionTotalMinutes > startTotalMinutes && option.available;
     });
-
-    return appointment?.slots || [];
   });
 
   public readonly monthYearDisplay = computed(() => {
     const current = this.currentMonth();
-    return `${this.monthNames[current.getMonth()]} ${current.getFullYear()}`;
+    return `${monthNames[current.getMonth()]} ${current.getFullYear()}`;
   });
 
   public previousMonth(): void {
@@ -250,24 +258,35 @@ export class CalendarSchedule {
   }
 
   public onDateSelect(calendarDay: CalendarDay): void {
-    console.log('Calendar day clicked:', {
-      date: calendarDay.date,
-      hasAppointments: calendarDay.hasAppointments,
-      isCurrentMonth: calendarDay.isCurrentMonth,
-      dayNumber: calendarDay.dayNumber,
-    });
-
     if (this.editMode()) {
-      // In edit mode, don't allow selecting days from other months
       if (!calendarDay.isCurrentMonth) {
         return;
       }
-
-      // In edit mode, don't allow selecting days that already have appointments/slots
       if (calendarDay.hasAppointments) {
+        const ref = this.dialogService.open(AcceptActionDialogComponent, {
+          data: {
+            message: this.translationService.translate(
+              'shared.calendar.editModeAppointmentExists',
+            ),
+            acceptLabel: this.translationService.translate('shared.yes'),
+            rejectLabel: this.translationService.translate('shared.no'),
+          },
+        });
+        if (!ref) {
+          return;
+        }
+        ref.onClose.subscribe((accepted) => {
+          if (accepted) {
+            this.selectedDate.set(calendarDay.date);
+            this.selectedTime.set(null);
+            this.selectedStartTime.set('');
+            this.selectedEndTime.set('');
+            this.customTimeInputStart.set('');
+            this.customTimeInputEnd.set('');
+          }
+        });
         return;
       }
-
       this.selectedDate.set(calendarDay.date);
       this.selectedTime.set(null);
       this.selectedStartTime.set('');
@@ -277,7 +296,6 @@ export class CalendarSchedule {
       return;
     }
 
-    // In normal mode, only allow dates with appointments
     if (!calendarDay.hasAppointments) {
       return;
     }
@@ -316,6 +334,7 @@ export class CalendarSchedule {
       ? selected.toDateString() === calendarDay.date.toDateString()
       : false;
   }
+
   public getFirstColumn(): TimeSlot[] {
     const times = this.availableTimes();
     const half = Math.ceil(times.length / 2);
@@ -375,10 +394,28 @@ export class CalendarSchedule {
 
   public isDaySelectable(calendarDay: CalendarDay): boolean {
     if (this.editMode()) {
-      // In edit mode, selectable only if it's current month AND doesn't have appointments
       return calendarDay.isCurrentMonth && !calendarDay.hasAppointments;
     }
-    // In normal mode, selectable only if has appointments
     return calendarDay.hasAppointments;
+  }
+
+  private checkIfAppointmentIsFromThisInstitution(date: Date): boolean {
+    if (!this.institutionId()) {
+      return false;
+    }
+
+    const appointment = this.availableAppointments().find((app) => {
+      const appDate =
+        typeof app.date === 'string' ? new Date(app.date) : app.date;
+      return appDate.toDateString() === date.toDateString();
+    });
+
+    if (!appointment) {
+      return false;
+    }
+
+    return appointment.slots.some(
+      (slot) => slot.institutionId === this.institutionId(),
+    );
   }
 }

@@ -43,6 +43,7 @@ export interface TimeSlot {
   time: string;
   available: boolean;
   booked: boolean;
+  institutionId?: string;
 }
 
 export interface AvailableDay {
@@ -73,4 +74,12 @@ export interface InputSlot {
   };
   id: string;
   booked: boolean;
+}
+
+export interface CreateScheduleRequest {
+  doctorID: string;
+  institutionID: string;
+  startHour: string;
+  endHour: string;
+  interval: string;
 }

@@ -1,5 +1,5 @@
 :host {
-  width: 90%;
+  width: 95%;
   display: block;
 }
 
@@ -232,7 +232,8 @@
           }
 
           &:focus {
-            outline: var(--p-focus-ring-width) var(--p-focus-ring-style) var(--p-focus-ring-color);
+            outline: var(--p-focus-ring-width) var(--p-focus-ring-style)
+              var(--p-focus-ring-color);
             outline-offset: var(--p-focus-ring-offset);
           }
         }
@@ -352,7 +353,7 @@
   .doctor-profile {
     flex-direction: column;
     gap: 20px;
-    max-height:100% ;
+    max-height: 100%;
   }
 
   .doctor-info {

@@ -18,6 +18,7 @@ import { DoctorProfile } from '../../../../core/models/doctor.model';
 import { InstitutionShortInfo } from '../../../../core/models/institution.model';
 import { AvailableDay } from '../../../../core/models/schedule.model';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
+import { ScheduleService } from '../../../../core/services/schedule/schedule.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
@@ -44,10 +45,10 @@ export class CreateSchedule implements OnInit {
   protected translationService = inject(TranslationService);
   protected doctorOptions = signal<{ name: string; value: string }[]>([]);
   protected selectedDoctorId = signal<string>('');
-  protected intervalMinutes = signal<number>(30);
+  protected intervalMinutes = signal<number>(0);
   protected doctorsCache = signal<DoctorProfile[]>([]);
   protected selectedInstitution = signal<InstitutionShortInfo | null>(null);
-
+  private scheduleService = inject(ScheduleService);
   protected dateTimeSelected = signal<{
     date: Date;
     startTime: string;
@@ -103,6 +104,7 @@ export class CreateSchedule implements OnInit {
         time,
         available: !s.booked,
         booked: s.booked,
+        institutionId: s.institution.institutionId,
       });
     });
 
@@ -117,31 +119,65 @@ export class CreateSchedule implements OnInit {
   protected onInstitutionChange(value: InstitutionShortInfo) {
     this.selectedInstitution.set(value);
   }
-  // Day selection helpers (UI only for now)
-  // protected toggleDay(dayIndex: number) {
-  //   this.selectedDays.update((set) => {
-  //     const next = new Set(set);
-  //     if (next.has(dayIndex)) next.delete(dayIndex);
-  //     else next.add(dayIndex);
-  //     return next;
-  //   });
-  // }
-
-  // protected isDaySelected(dayIndex: number): boolean {
-  //   return this.selectedDays().has(dayIndex);
-  // }
+  protected today = new Date();
 
   protected onIntervalChange(value: number | null) {
     if (typeof value === 'number' && value > 0) {
       this.intervalMinutes.set(value);
     }
   }
+  protected onCreateSchedule() {
+    const doctorId = this.selectedDoctorId();
+    const dateTime = this.dateTimeSelected();
+    const interval = this.intervalMinutes();
+    const institutionId = '68c5dc05d2569d07e73a8456';
 
+    if (doctorId && dateTime && interval > 0) {
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const formatDateTime = (date: Date, time: string) => {
+        const [h, m] = time.split(':');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(Number(h))}:${pad(Number(m))}:00`;
+      };
+      const startTimeFormatted = formatDateTime(
+        dateTime.date,
+        dateTime.startTime,
+      );
+      const endTimeFormatted = formatDateTime(dateTime.date, dateTime.endTime);
+
+      const intervalFormatted = `${pad(Math.floor(interval / 60))}:${pad(interval % 60)}:00`;
+      this.scheduleService
+        .createSchedule({
+          doctorID: doctorId,
+          institutionID: institutionId,
+          startHour: startTimeFormatted,
+          endHour: endTimeFormatted,
+          interval: intervalFormatted,
+        })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            alert(
+              this.translationService.translate(
+                'admin.createSchedule.scheduleCreated',
+              ),
+            );
+            this.dateTimeSelected.set(null);
+            this.intervalMinutes.set(0);
+            this.updateSchedulesForSelectedDoctor();
+          },
+          error: () => {
+            alert(
+              this.translationService.translate(
+                'admin.createSchedule.scheduleCreationError',
+              ),
+            );
+          },
+        });
+    }
+  }
   private initDoctors() {
     this.institutionService
-      .getDoctorsForInstitution(
-        this.institutionStoreService.getInstitution().institutionId,
-      )
+      .getDoctorsForInstitution('68c5dc05d2569d07e73a8456')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((doctors: DoctorProfile[]) => {
         this.doctorsCache.set(doctors);
@@ -151,12 +187,9 @@ export class CreateSchedule implements OnInit {
             value: d.doctorId,
           })),
         );
-
-        // Select first doctor by default
         if (!this.selectedDoctorId() && doctors.length > 0) {
           this.selectedDoctorId.set(doctors[0].doctorId);
         }
-
         this.updateSchedulesForSelectedDoctor();
       });
   }
