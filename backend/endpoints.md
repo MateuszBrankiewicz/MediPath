@@ -816,3 +816,15 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 403 - doctor not found, user is not admin, user specified in doctorid is not doctor
 - 400 - missing fields in request body
 - 200 - success
+
+### /users/me/institutions
+#### Method; GET
+
+#### Parameters:
+- role - defines the role to filter the institutions by. Can be either staff or admin
+
+#### Returns:
+- 401 - User is not logged in
+- 400 - Bad role name
+- 200 - Success or empty
+
