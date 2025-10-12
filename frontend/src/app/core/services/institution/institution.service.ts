@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable, tap } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
+import { DoctorApiResponse, DoctorProfile } from '../../models/doctor.model';
 import {
   Institution,
   InstitutionResponse,
@@ -51,5 +52,13 @@ export class InstitutionService {
     return this.http
       .get(`${API_URL}/institution/admin`, { withCredentials: true })
       .pipe(tap((res) => console.log(res)));
+  }
+
+  public getDoctorsForInstitution(
+    institutionId: string,
+  ): Observable<DoctorProfile[]> {
+    return this.http
+      .get<DoctorApiResponse>(`${API_URL}/institution/${institutionId}/doctors`)
+      .pipe(map((res) => res.doctors));
   }
 }

@@ -1,0 +1,134 @@
+.schedule-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 30px;
+  @media (max-width: 1200px) {
+    grid-template-columns: 360px 1fr;
+  }
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.doctor-selection {
+  max-width: none;
+  margin: 0 0 16px 0;
+
+  ::ng-deep .p-card {
+    border-radius: 12px;
+    border: 1px solid var(--surface-border, #e6e6e6);
+  }
+
+  ::ng-deep .p-card .p-card-body {
+    display: grid;
+    gap: 16px;
+  }
+
+  ::ng-deep .p-card .p-card-header {
+    font-weight: 600;
+    padding-bottom: 8px;
+    font-size: 20px;
+    margin: 10px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-color-secondary, #6b7280);
+  }
+
+  .card-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+    &:first {
+      margin-top: 0;
+    }
+  }
+
+  .field-label {
+    font-size: 12px;
+    color: var(--text-color-secondary, #6b7280);
+  }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+    color: var(--text-color-secondary, #6b7280);
+  }
+
+  .status-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-separator {
+    opacity: 0.6;
+  }
+}
+
+app-calendar-schedule {
+  display: flex;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.calendar-wrap {
+  display: flex;
+  min-width: 100%;
+}
+
+.summary-card {
+  ::ng-deep .p-card-body {
+    display: grid;
+    gap: 12px;
+  }
+
+  .card-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+    margin: 10px;
+  }
+
+  .summary-grid {
+    display: grid;
+    gap: 10px;
+  }
+
+  .summary-row {
+    display: grid;
+    grid-template-columns: 20px 180px 1fr;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color, #111827);
+  }
+
+  .label {
+    color: var(--text-color-secondary, #6b7280);
+    font-size: 16px;
+  }
+
+  .value {
+    font-weight: 600;
+  }
+}
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  gap: 20px;
+}

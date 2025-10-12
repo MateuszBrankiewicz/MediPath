@@ -79,7 +79,7 @@ export class AuthenticationService {
             id: response.user.id,
             name: response.user.name,
             surname: response.user.surname,
-            roleCode: getRoleFromCode(response.user.roleCode),
+            roleCode: response.user.roleCode,
             notifications,
             email: response.user.email,
             userSettings: {
@@ -171,7 +171,7 @@ export class AuthenticationService {
           id: response.user.id,
           name: response.user.name,
           surname: response.user.surname,
-          roleCode: getRoleFromCode(response.user.roleCode),
+          roleCode: response.user.roleCode,
           notifications,
           email: response.user.email,
           userSettings: {

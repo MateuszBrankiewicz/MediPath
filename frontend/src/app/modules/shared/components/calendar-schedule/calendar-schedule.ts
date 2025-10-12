@@ -17,9 +17,13 @@ import {
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { TimeSlot } from '../ui/search-result.component/search-result.model';
 
+export interface TimeOption {
+  label: string;
+  value: string;
+}
+
 @Component({
   selector: 'app-calendar-schedule',
-  standalone: true,
   imports: [CommonModule, ButtonModule],
   templateUrl: './calendar-schedule.html',
   styleUrl: './calendar-schedule.scss',
@@ -30,10 +34,19 @@ export class CalendarSchedule {
 
   public readonly size = input<'small' | 'medium' | 'large'>('medium');
 
+  public readonly editMode = input<boolean>(false);
+
   public readonly dateTimeSelected = output<{
     date: Date;
     time: string;
     slotId?: string;
+  }>();
+
+  public readonly scheduleTimeSelected = output<{
+    date: Date;
+    startTime: string;
+    endTime: string;
+    customTime?: string;
   }>();
 
   public readonly initialSelectedDate = input<Date | string | null>(null);
@@ -42,6 +55,11 @@ export class CalendarSchedule {
   public readonly selectedDate = signal<Date | null>(null);
   public readonly selectedTime = signal<string | null>(null);
   public readonly currentMonth = signal<Date>(new Date());
+
+  public readonly selectedStartTime = signal<string>('');
+  public readonly selectedEndTime = signal<string>('');
+  public readonly customTimeInputStart = signal<string>('');
+  public readonly customTimeInputEnd = signal<string>('');
 
   public readonly availableAppointments = input<AvailableDay[]>([]);
 
@@ -61,6 +79,42 @@ export class CalendarSchedule {
   ];
 
   public readonly dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  public readonly timeOptions: TimeOption[] = [
+    { label: '06:00', value: '06:00' },
+    { label: '06:30', value: '06:30' },
+    { label: '07:00', value: '07:00' },
+    { label: '07:30', value: '07:30' },
+    { label: '08:00', value: '08:00' },
+    { label: '08:30', value: '08:30' },
+    { label: '09:00', value: '09:00' },
+    { label: '09:30', value: '09:30' },
+    { label: '10:00', value: '10:00' },
+    { label: '10:30', value: '10:30' },
+    { label: '11:00', value: '11:00' },
+    { label: '11:30', value: '11:30' },
+    { label: '12:00', value: '12:00' },
+    { label: '12:30', value: '12:30' },
+    { label: '13:00', value: '13:00' },
+    { label: '13:30', value: '13:30' },
+    { label: '14:00', value: '14:00' },
+    { label: '14:30', value: '14:30' },
+    { label: '15:00', value: '15:00' },
+    { label: '15:30', value: '15:30' },
+    { label: '16:00', value: '16:00' },
+    { label: '16:30', value: '16:30' },
+    { label: '17:00', value: '17:00' },
+    { label: '17:30', value: '17:30' },
+    { label: '18:00', value: '18:00' },
+    { label: '18:30', value: '18:30' },
+    { label: '19:00', value: '19:00' },
+    { label: '19:30', value: '19:30' },
+    { label: '20:00', value: '20:00' },
+    { label: '20:30', value: '20:30' },
+    { label: '21:00', value: '21:00' },
+    { label: '21:30', value: '21:30' },
+    { label: '22:00', value: '22:00' },
+  ];
 
   public Math = Math;
 
@@ -203,6 +257,27 @@ export class CalendarSchedule {
       dayNumber: calendarDay.dayNumber,
     });
 
+    if (this.editMode()) {
+      // In edit mode, don't allow selecting days from other months
+      if (!calendarDay.isCurrentMonth) {
+        return;
+      }
+
+      // In edit mode, don't allow selecting days that already have appointments/slots
+      if (calendarDay.hasAppointments) {
+        return;
+      }
+
+      this.selectedDate.set(calendarDay.date);
+      this.selectedTime.set(null);
+      this.selectedStartTime.set('');
+      this.selectedEndTime.set('');
+      this.customTimeInputStart.set('');
+      this.customTimeInputEnd.set('');
+      return;
+    }
+
+    // In normal mode, only allow dates with appointments
     if (!calendarDay.hasAppointments) {
       return;
     }
@@ -251,5 +326,59 @@ export class CalendarSchedule {
     const times = this.availableTimes();
     const half = Math.ceil(times.length / 2);
     return times.slice(half);
+  }
+
+  public onStartTimeSelect(time: string): void {
+    this.selectedStartTime.set(time);
+    this.emitScheduleTime();
+  }
+
+  public onEndTimeSelect(time: string): void {
+    this.selectedEndTime.set(time);
+    this.emitScheduleTime();
+  }
+
+  public onCustomTimeStartChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.customTimeInputStart.set(input.value);
+    this.selectedStartTime.set('');
+    this.emitScheduleTime();
+  }
+
+  public onCustomTimeEndChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.customTimeInputEnd.set(input.value);
+    this.emitScheduleTime();
+  }
+
+  private emitScheduleTime(): void {
+    const date = this.selectedDate();
+    let startTime = this.selectedStartTime();
+    let endTime = this.selectedEndTime();
+    const customTimeStart = this.customTimeInputStart();
+    const customTimeEnd = this.customTimeInputEnd();
+    if (!startTime) {
+      startTime = customTimeStart;
+    }
+    if (!endTime) {
+      endTime = customTimeEnd;
+    }
+
+    if (date && startTime && endTime) {
+      this.scheduleTimeSelected.emit({
+        date,
+        startTime,
+        endTime,
+      });
+    }
+  }
+
+  public isDaySelectable(calendarDay: CalendarDay): boolean {
+    if (this.editMode()) {
+      // In edit mode, selectable only if it's current month AND doesn't have appointments
+      return calendarDay.isCurrentMonth && !calendarDay.hasAppointments;
+    }
+    // In normal mode, selectable only if has appointments
+    return calendarDay.hasAppointments;
   }
 }

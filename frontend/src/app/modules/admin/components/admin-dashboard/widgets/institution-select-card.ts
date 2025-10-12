@@ -52,10 +52,10 @@ export interface InstitutionOption {
 export class InstitutionSelectCard {
   readonly title = input<string>('Select Institution');
   readonly institutions = input<InstitutionOption[]>([]);
-  readonly selected = input<string | null>(null);
-  readonly changed = output<string>();
+  readonly selected = input<InstitutionOption | undefined>(undefined);
+  readonly changed = output<InstitutionOption | null>();
 
-  onChange(id: unknown): void {
-    this.changed.emit(String(id ?? ''));
+  onChange(option: InstitutionOption | null): void {
+    this.changed.emit(option ? option : null);
   }
 }

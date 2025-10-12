@@ -13,6 +13,7 @@ import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
 import { Paginator, PaginatorState } from 'primeng/paginator';
 import { PanelModule } from 'primeng/panel';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RatingModule } from 'primeng/rating';
 import { Tooltip } from 'primeng/tooltip';
 import { map } from 'rxjs';
@@ -35,6 +36,7 @@ import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
     FilterComponent,
     Paginator,
     Tooltip,
+    ProgressSpinnerModule,
   ],
   templateUrl: './rating-component.html',
   styleUrl: './rating-component.scss',
@@ -58,8 +60,12 @@ export class RatingComponent implements OnInit {
     sortField: '',
     sortOrder: 'asc',
   });
+  protected readonly isCommentLoading = signal(false);
+  protected readonly isLoading = signal(false);
 
   ngOnInit(): void {
+    this.isCommentLoading.set(true);
+
     this.initCommentsData();
   }
 
@@ -130,7 +136,7 @@ export class RatingComponent implements OnInit {
         doctorRating: editedComment.doctorRating,
         institutionRating: editedComment.institutionRating,
       };
-
+      this.isLoading.set(true);
       this.commentService
         .editComment(comment)
         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -139,6 +145,8 @@ export class RatingComponent implements OnInit {
             this.toastService.showSuccess(
               this.translationService.translate('comment.edit.success'),
             );
+            this.isLoading.set(false);
+
             this.comments.update((val) => {
               return val.map((v) =>
                 v.id === comment.id
@@ -153,17 +161,18 @@ export class RatingComponent implements OnInit {
               );
             });
           },
-          error: (err: unknown) => {
-            console.log(err);
+          error: () => {
             this.toastService.showError(
               this.translationService.translate('comments.edit.failed'),
             );
+            this.isLoading.set(false);
           },
         });
     });
   }
 
   protected initCommentsData() {
+    this.isCommentLoading.set(true);
     this.commentService
       .getUsersComments()
       .pipe(
@@ -181,6 +190,7 @@ export class RatingComponent implements OnInit {
       )
       .subscribe((comments) => {
         this.comments.set(comments);
+        this.isCommentLoading.set(false);
       });
   }
 
@@ -209,6 +219,7 @@ export class RatingComponent implements OnInit {
   }
 
   protected confirmDelete(comment: CommentWithRating) {
+    this.isLoading.set(true);
     this.commentService
       .deleteComment(comment.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -220,8 +231,10 @@ export class RatingComponent implements OnInit {
           this.comments.update((comments) =>
             comments.filter((com) => com.id !== comment.id),
           );
+          this.isLoading.set(false);
         },
         error: () => {
+          this.isLoading.set(false);
           this.toastService.showError(
             this.translationService.translate('comment.deleted.error'),
           );

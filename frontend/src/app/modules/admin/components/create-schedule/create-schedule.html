@@ -1,1 +1,172 @@
-<p>create-schedule works!</p>
+<div class="schedule-layout">
+  <div class="doctor-selection">
+    <p-card>
+      <ng-template pTemplate="header">
+        <span class="card-header">
+          <i class="pi pi-user"></i>
+          {{
+            translationService.translate("admin.createSchedule.createSchedule")
+          }}
+        </span>
+      </ng-template>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <p-select
+            inputId="institutionSelect"
+            [options]="institutionOptions()"
+            [ngModel]="selectedInstitution()"
+            optionLabel="institutionName"
+            (onChange)="onInstitutionChange($event.value)"
+            [style]="{ width: '100%' }"
+          ></p-select>
+          <label class="field-label" for="institutionSelect">
+            {{
+              translationService.translate(
+                "admin.createSchedule.selectInstitution"
+              )
+            }}
+          </label>
+        </p-floatlabel>
+      </div>
+      <div class="field">
+        <p-floatlabel variant="on">
+          <p-select
+            inputId="doctorSelect"
+            [options]="doctorOptions()"
+            [ngModel]="selectedDoctorId()"
+            optionLabel="name"
+            (onChange)="onDoctorChange($event.value)"
+            [style]="{ width: '100%' }"
+          ></p-select>
+          <label class="field-label" for="doctorSelect">
+            {{
+              translationService.translate("admin.createSchedule.selectDoctor")
+            }}
+          </label>
+        </p-floatlabel>
+      </div>
+
+      <div class="field">
+        <p-floatlabel variant="on">
+          <p-input-number
+            inputId="visitInterval"
+            [ngModel]="intervalMinutes()"
+            (ngModelChange)="onIntervalChange($event)"
+            [min]="1"
+          ></p-input-number>
+          <label class="field-label" for="visitInterval">
+            {{
+              translationService.translate(
+                "admin.createSchedule.estimatedTimeForOneVisit"
+              )
+            }}
+          </label>
+        </p-floatlabel>
+      </div>
+
+      <div class="status">
+        <span class="status-item">
+          <i class="pi pi-building"></i>
+          {{ institutionStoreService.getInstitution().institutionName || "-" }}
+        </span>
+        <span class="status-item">
+          <i class="pi pi-user"></i>
+          {{ selectedDoctorName() || "-" }}
+        </span>
+        <span class="status-separator">•</span>
+        <span class="status-item">
+          <i class="pi pi-clock"></i>
+          {{ intervalMinutes() }} min
+        </span>
+      </div>
+      <ng-template pTemplate="footer"> </ng-template>
+    </p-card>
+  </div>
+  <div class="calendar-wrap">
+    <app-calendar-schedule
+      [availableAppointments]="schedulesForDoctor()"
+      [editMode]="true"
+      [size]="'large'"
+      (scheduleTimeSelected)="onScheduleTimeSelected($event)"
+    />
+  </div>
+  <p-card class="summary-card">
+    <ng-template pTemplate="header">
+      <span class="card-header">
+        <i class="pi pi-list-check"></i>
+        {{ translationService.translate("admin.createSchedule.summary.title") }}
+      </span>
+    </ng-template>
+
+    <div class="summary-grid">
+      <div class="summary-row">
+        <i class="pi pi-building"></i>
+        <span class="label">{{
+          translationService.translate(
+            "admin.createSchedule.summary.institution"
+          )
+        }}</span>
+        <span class="value">{{
+          institutionStoreService.getInstitution().institutionName || "-"
+        }}</span>
+      </div>
+      <div class="summary-row">
+        <i class="pi pi-user"></i>
+        <span class="label">{{
+          translationService.translate("admin.createSchedule.summary.doctor")
+        }}</span>
+        <span class="value">{{ selectedDoctorName() || "-" }}</span>
+      </div>
+      <div class="summary-row">
+        <i class="pi pi-clock"></i>
+        <span class="label">{{
+          translationService.translate("admin.createSchedule.summary.duration")
+        }}</span>
+        <span class="value">{{ intervalMinutes() }} min</span>
+      </div>
+      <div class="summary-row">
+        <i class="pi pi-calendar"></i>
+        <span class="label">{{
+          translationService.translate("admin.createSchedule.summary.date")
+        }}</span>
+        <span class="value">{{
+          (dateTimeSelected()?.date | date: "yyyy-MM-dd") || "-"
+        }}</span>
+      </div>
+      <div class="summary-row">
+        <i class="pi pi-arrow-right-arrow-left"></i>
+        <span class="label">{{
+          translationService.translate("admin.createSchedule.summary.start")
+        }}</span>
+        <span class="value">{{ dateTimeSelected()?.startTime || "-" }}</span>
+      </div>
+      <div class="summary-row">
+        <i class="pi pi-arrow-right-arrow-left"></i>
+        <span class="label">{{
+          translationService.translate("admin.createSchedule.summary.end")
+        }}</span>
+        <span class="value">{{ dateTimeSelected()?.endTime || "-" }}</span>
+      </div>
+    </div>
+  </p-card>
+  <div class="footer">
+    <p-button
+      pButton
+      type="button"
+      label="Reset"
+      icon="pi pi-times"
+      severity="danger"
+      size="small"
+      [disabled]="!selectedDoctorId()"
+    ></p-button>
+    <p-button
+      pButton
+      type="button"
+      label="Accept"
+      icon="pi pi-pencil"
+      size="small"
+      [disabled]="!selectedDoctorId()"
+    ></p-button>
+  </div>
+</div>

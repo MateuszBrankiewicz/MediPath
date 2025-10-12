@@ -6,6 +6,13 @@ export enum UserRoles {
   GUEST = 'guest',
 }
 
+export enum UserRolesNumbers {
+  PATIENT = 1,
+  DOCTOR = 2,
+  STAFF = 4,
+  ADMIN = 8,
+}
+
 export interface UserBasicInfo {
   id: string;
   name: string;

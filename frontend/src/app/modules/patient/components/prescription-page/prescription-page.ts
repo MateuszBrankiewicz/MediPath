@@ -1,9 +1,11 @@
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -32,6 +34,7 @@ import { PatientCodeDialogService } from './../../services/paitent-code-dialog.s
     CardModule,
     CommonModule,
     FilterComponent,
+    ProgressSpinnerModule,
     PaginatorModule,
   ],
   templateUrl: './prescription-page.html',
@@ -39,13 +42,13 @@ import { PatientCodeDialogService } from './../../services/paitent-code-dialog.s
   providers: [DialogService, PatientCodeDialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrescriptionPage {
+export class PrescriptionPage implements OnInit {
   private toastService = inject(ToastService);
   private manageDialogCodeService = inject(PatientCodeDialogService);
   protected translationService = inject(TranslationService);
   protected codeService = inject(CodesService);
   private filterCodesService = inject(CodesFilterService);
-
+  protected readonly isPrescriptionLoading = signal(false);
   protected readonly filters = signal<FilterParams>({
     searchTerm: '',
     status: 'all',
@@ -60,7 +63,7 @@ export class PrescriptionPage {
   protected readonly totalRecords = computed(
     () => this.prescriptions()?.length ?? 0,
   );
-
+  protected readonly isLoading = signal(false);
   protected readonly filteredPrescriptions = computed(() => {
     const filterValue = this.filters();
     const codes = this.filterCodesService.filterCodes(
@@ -84,6 +87,24 @@ export class PrescriptionPage {
     return this.filteredPrescriptions().slice(first, first + rows);
   });
 
+  ngOnInit(): void {
+    this.isPrescriptionLoading.set(true);
+    this.codeService
+      .getPrescriptions()
+      .pipe(
+        map((results: Refferal[]) => {
+          this.isPrescriptionLoading.set(true);
+          return results.filter(
+            (code) => code.codeType?.toLowerCase() === 'prescription',
+          );
+        }),
+      )
+      .subscribe((prescriptions) => {
+        this.prescriptions.set(prescriptions);
+        this.isPrescriptionLoading.set(false);
+      });
+  }
+
   protected onPageChange(event: PaginatorState) {
     this.first.set(event.first ?? 0);
     this.rows.set(event.rows ?? 10);
@@ -102,26 +123,21 @@ export class PrescriptionPage {
       value: 'USED',
     },
   ];
-  protected prescriptions = toSignal<Refferal[]>(
-    this.codeService
-      .getPrescriptions()
-      .pipe(
-        map((results: Refferal[]) =>
-          results.filter(
-            (code) => code.codeType?.toLowerCase() === 'prescription',
-          ),
-        ),
-      ),
-  );
+  protected prescriptions = signal<Refferal[]>([]);
 
   protected copyToClipboard(pin: number): void {
     navigator.clipboard
       .writeText(pin.toString())
       .then(() => {
-        this.toastService.showSuccess('PIN copied to clipboard');
+        this.toastService.showSuccess(
+          this.translationService.translate('patient.common.pinCopied'),
+        );
       })
       .catch((err) => {
         console.error('Failed to copy PIN:', err);
+        this.toastService.showError(
+          this.translationService.translate('patient.common.pinCopyFailed'),
+        );
       });
   }
 
@@ -132,7 +148,6 @@ export class PrescriptionPage {
   }
 
   protected markAsUsed(referral: Refferal): void {
-    console.log('Attempting to mark referral as used:', referral);
     if (referral.status === 'USED') {
       this.toastService.showInfo('This referral is already marked as used.');
       return;
@@ -144,6 +159,7 @@ export class PrescriptionPage {
       })
       .subscribe((success) => {
         if (success) {
+          this.isLoading.set(true);
           this.codeService
             .useCode({
               code: referral.prescriptionPin,
@@ -151,7 +167,7 @@ export class PrescriptionPage {
             })
             .pipe(
               catchError((err) => {
-                console.log(err);
+                this.isLoading.set(false);
                 throw err;
               }),
             )
@@ -162,6 +178,7 @@ export class PrescriptionPage {
                 }
                 return prescription;
               });
+              this.isLoading.set(false);
               this.toastService.showSuccess('Referral marked as used.');
             });
         }

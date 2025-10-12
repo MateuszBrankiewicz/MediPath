@@ -13,9 +13,9 @@ export interface DoctorPageModel {
   institutions: InstitutionShortInfo[];
   specialisation: string[];
   schedule: DaySchedule[];
-
   comments: Comment[];
 }
+
 export interface Comment {
   id: string;
   userName: string;
@@ -34,4 +34,40 @@ export interface DoctorDetailsApiResponse {
     surname: string;
     specialisations: string[];
   };
+}
+
+export interface ScheduleDoctorInfo {
+  userId: string;
+  doctorName: string;
+  doctorSurname: string;
+  specialisations: string[];
+}
+
+export interface ScheduleInstitutionInfo {
+  institutionId: string;
+  institutionName: string;
+}
+
+export interface DoctorSchedule {
+  id: string;
+  startHour: string;
+  endHour: string;
+  doctor: ScheduleDoctorInfo;
+  institution: ScheduleInstitutionInfo;
+  booked: boolean;
+}
+
+export interface DoctorProfile {
+  doctorId: string;
+  doctorName: string;
+  doctorSurname: string;
+  doctorPfp: string;
+  doctorSchedules: DoctorSchedule[];
+  rating: number;
+  licenceNumber: string;
+  numofratings: number;
+}
+
+export interface DoctorApiResponse {
+  doctors: DoctorProfile[];
 }

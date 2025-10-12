@@ -166,6 +166,12 @@
   "patient.referrals.validUntil": "Ważne do:",
   "patient.referrals.used": "UŻYTE",
 
+  "patient.common.copyPin": "Kopiuj PIN",
+  "patient.common.pinCopied": "PIN skopiowany do schowka",
+  "patient.common.pinCopyFailed": "Nie udało się skopiować PIN",
+  "patient.common.alreadyUsed": "To skierowanie jest już oznaczone jako użyte.",
+  "patient.common.markedAsUsed": "Skierowanie oznaczone jako użyte.",
+
   "patient.dashboard.prescriptions": "Recepty",
   "patient.dashboard.referrals": "Skierowania",
   "patient.dashboard.upcomingVisits": "Nadchodzące wizyty",
@@ -209,6 +215,10 @@
   "shared.calendar.selectDate": "Wybierz datę",
   "shared.calendar.availableTerms": "Dostępne terminy",
   "shared.calendar.pleaseSelectDate": "Proszę wybrać datę, aby zobaczyć dostępne godziny",
+  "shared.calendar.scheduleSettings": "Ustawienia harmonogramu",
+  "shared.calendar.startTime": "Godzina rozpoczęcia",
+  "shared.calendar.endTime": "Godzina zakończenia",
+  "shared.calendar.differentTime": "Inna godzina",
   "calendar.selectTimeRange": "Wybierz zakres czasu",
   "calendar.startTime": "Godzina rozpoczęcia",
   "calendar.endTime": "Godzina zakończenia",
@@ -434,7 +444,20 @@
   "notifications.toast.markOneError": "Nie udało się oznaczyć powiadomienia jako przeczytane",
   "notifications.toast.deleteSuccess": "Powiadomienie usunięte pomyślnie",
   "notifications.toast.deleteError": "Nie udało się usunąć powiadomienia",
-  "notifications.edit": "Edytuj"
-
+  "notifications.edit": "Edytuj",
+  "admin.createSchedule.selectDoctor": "Wybierz lekarza",
+  "admin.createSchedule.selectDoctorPlaceholder": "Wybierz lekarza",
+  "admin.createSchedule.selectedDoctor": "Wybrany lekarz",
+  "admin.createSchedule.estimatedTimeForOneVisit": "Szacowany czas jednej wizyty (min)"
+  ,
+  "admin.createSchedule.summary.title": "Podsumowanie",
+  "admin.createSchedule.summary.institution": "Placówka",
+  "admin.createSchedule.summary.doctor": "Lekarz",
+  "admin.createSchedule.summary.duration": "Czas jednej wizyty",
+  "admin.createSchedule.summary.date": "Wybrana data",
+  "admin.createSchedule.summary.start": "Godzina rozpoczęcia",
+  "admin.createSchedule.summary.end": "Godzina zakończenia",
+  "admin.createSchedule.createSchedule": "Utwórz harmonogram",
+  "admin.createSchedule.selectInstitution": "Wybierz instytucję"
 
 }

@@ -57,3 +57,20 @@ export interface CalendarDay {
   hasAppointments: boolean;
   dayNumber: number;
 }
+
+export interface InputSlot {
+  startHour: string;
+  endHour: string;
+  doctor: {
+    userId: string;
+    doctorName: string;
+    doctorSurname: string;
+    specialisations: string[];
+  };
+  institution: {
+    institutionId: string;
+    institutionName: string;
+  };
+  id: string;
+  booked: boolean;
+}

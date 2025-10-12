@@ -1,3 +1,9 @@
+import {
+  AvailableDay,
+  InputSlot,
+  TimeSlot,
+} from '../core/models/schedule.model';
+
 export function groupSchedulesByDate(
   schedules: { startTime: string; isBooked: boolean; id: string }[],
 ) {
@@ -49,4 +55,24 @@ export function groupSchedulesByDate(
       }),
     };
   });
+}
+
+export function mapInputSlotToAvailableDay(inputSlot: InputSlot): AvailableDay {
+  const datePart = inputSlot.startHour.split(' ')[0];
+
+  const timePart = inputSlot.startHour.split(' ')[1].substring(0, 5);
+
+  const timeSlot: TimeSlot = {
+    id: inputSlot.id,
+    time: timePart,
+    booked: inputSlot.booked,
+    available: !inputSlot.booked,
+  };
+
+  const availableDay: AvailableDay = {
+    date: datePart,
+    slots: [timeSlot],
+  };
+
+  return availableDay;
 }

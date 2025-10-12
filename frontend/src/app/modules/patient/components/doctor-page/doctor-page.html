@@ -1,4 +1,3 @@
-<p-breadcrumb [model]="breadcumbMenuItems()" [home]="homeItem()" />
 @if (isLoading()) {
   <div class="loading-container">
     <p-progress-spinner></p-progress-spinner>
@@ -10,9 +9,7 @@
         <div class="doctor-info-card">
           <img
             [src]="doctorInfo().photoUrl"
-            [alt]="
-              'Dr. ' + doctorInfo().name + ' ' + doctorInfo().surname
-            "
+            [alt]="'Dr. ' + doctorInfo().name + ' ' + doctorInfo().surname"
           />
           <div class="doctor-personal-information">
             <p class="doctor-name">
@@ -42,10 +39,7 @@
       <p-card>
         <div class="card-title">Institutions</div>
         <ul>
-          @for (
-            institution of doctorInfo().institutions;
-            track institution
-          ) {
+          @for (institution of doctorInfo().institutions; track institution) {
             <li>{{ institution.institutionName }}</li>
           }
         </ul>
@@ -97,13 +91,14 @@
       <div class="tab-panel">
         <div class="doctors-instutions">
           <h4>Choose institution:</h4>
-          @for (
-            institution of doctorInfo().institutions;
-            track institution
-          ) {
+          @for (institution of doctorInfo().institutions; track institution) {
             <p-card
               class="institution-chip"
-              [style]="{ cursor: 'pointer', background: selectedInstitution() === institution ? '#cce5ff' : '#f8f9fa' }"
+              [style]="{
+                cursor: 'pointer',
+                background:
+                  selectedInstitution() === institution ? '#cce5ff' : '#f8f9fa',
+              }"
               [header]="institution.institutionName"
               (click)="selectInstitution(institution)"
               [class]="selectedInstitution() === institution ? 'selected' : ''"
@@ -112,16 +107,17 @@
         </div>
 
         <div class="calendar-schedule-wrapper">
-  <app-calendar-schedule
-    [size]="'small'"
-    [availableAppointments]="mappedSchedule()"
-    (dateTimeSelected)="selectSlotId($event)"></app-calendar-schedule>
-  @if (isScheduleLoading() && !isLoading()) {
-    <div class="calendar-spinner-overlay">
-      <p-progress-spinner></p-progress-spinner>
-    </div>
-  }
-</div>
+          <app-calendar-schedule
+            [size]="'small'"
+            [availableAppointments]="mappedSchedule()"
+            (dateTimeSelected)="selectSlotId($event)"
+          ></app-calendar-schedule>
+          @if (isScheduleLoading() && !isLoading()) {
+            <div class="calendar-spinner-overlay">
+              <p-progress-spinner></p-progress-spinner>
+            </div>
+          }
+        </div>
         <div class="remarks-with-schedule">
           <textarea
             pTextarea

@@ -30,6 +30,7 @@ import { FilterComponent } from '../../../shared/components/ui/filter-component/
 import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
 import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
 import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-visit-page',
@@ -42,6 +43,7 @@ import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog
     CardModule,
     PaginatorModule,
     FilterComponent,
+    ProgressSpinnerModule,
   ],
   providers: [DialogService],
   templateUrl: './visit-page.html',
@@ -58,6 +60,9 @@ export class VisitPage implements OnInit {
   private destroyRef = inject(DestroyRef);
   private ref: DynamicDialogRef | null = null;
   private toastService = inject(ToastService);
+
+  protected readonly isVisitLoading = signal(false);
+  protected readonly isLoading = signal(false);
 
   protected readonly first = signal(0);
   protected readonly rows = signal(10);
@@ -324,6 +329,7 @@ export class VisitPage implements OnInit {
   }
 
   private initVisitList(): void {
+    this.isVisitLoading.set(true);
     this.visitService
       .getAllVisits()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -337,9 +343,11 @@ export class VisitPage implements OnInit {
             status: this.parseVisitStatus(visit.status),
           }));
           this.visits.set(visitList);
+          this.isVisitLoading.set(false);
         },
         error: (error: unknown) => {
           console.error('Failed to fetch visits:', error);
+          this.isVisitLoading.set(false);
         },
       });
   }
