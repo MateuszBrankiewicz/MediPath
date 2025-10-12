@@ -828,3 +828,15 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 400 - Bad role name
 - 200 - Success or empty
 
+### /doctors/me/visitsbydate/{date}
+#### Method: GET
+
+#### Path variables
+- date - date to retrieve the visits from. Accepted values are either 'today' or a date in the dd-mm-yyyy format
+
+#### Returns:
+- 401 - User is not logged in
+- 403 - invalid user or user is not doctor
+- 400 - invalid date
+- 200 - success
+
