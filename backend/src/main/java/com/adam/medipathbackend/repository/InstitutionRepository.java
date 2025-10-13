@@ -78,6 +78,18 @@ public interface InstitutionRepository extends MongoRepository<Institution, Stri
 
     @Aggregation({
             "{ \"$unwind\": \"$employees\" }",
+            "{ \"$match\": { \"employees.userId\": ?0, \"employees.roleCode\": { \"$in\": [8, 9, 10, 11, 12, 13, 14, 15] } } }",
+    })
+    ArrayList<Institution> findInstitutionsWhereAdmin(String adminid);
+
+    @Aggregation({
+            "{ \"$unwind\": \"$employees\" }",
+            "{ \"$match\": { \"employees.userId\": ?0, \"employees.roleCode\": { \"$in\": [4, 5, 6, 7, 12, 13, 14, 15] } } }",
+    })
+    ArrayList<Institution> findInstitutionsWhereStaff(String staffid);
+
+    @Aggregation({
+            "{ \"$unwind\": \"$employees\" }",
             "{ \"$match\": { \"employees.userId\": ?0 } }",
             "{ \"$project\": { \"_id\": 1, \"roleCode\": \"$employees.roleCode\"} }"
     })

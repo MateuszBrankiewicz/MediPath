@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -402,6 +404,33 @@ public class InstitutionController {
         institutionRepository.save(institution);
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping(value = {"/{institutionid}/schedules/{date}", "/{institutionid}/schedules/{date}/"})
+    public ResponseEntity<Map<String, Object>> updateInstitution(@PathVariable String institutionid, @PathVariable String date, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if (loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Institution> optionalInstitution = institutionRepository.findById(institutionid);
+        if(optionalInstitution.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(!isLoggedAsEmployeeOfInstitution(loggedUserID, institutionid)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(date.equals("today")) {
+            date = LocalDate.now().toString();
+        }
+        LocalDate startDate;
+        try {
+            startDate = LocalDate.parse(date);
+        } catch (DateTimeParseException e) {
+            return new ResponseEntity<>(Map.of("message","invalid date"), HttpStatus.BAD_REQUEST);
+        }
+        ArrayList<Schedule> schedules = scheduleRepository.getInstitutionSchedulesOnDay(institutionid, startDate.atStartOfDay(), startDate.plusDays(1).atStartOfDay());
+        return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
+
     }
 
     private boolean isLoggedAsEmployeeOfInstitution(String userID, String institutionID) {

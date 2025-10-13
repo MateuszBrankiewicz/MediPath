@@ -6,12 +6,15 @@ import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
+import com.adam.medipathbackend.repository.VisitRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @RestController
@@ -26,6 +29,9 @@ public class DoctorController {
 
     @Autowired
     ScheduleRepository scheduleRepository;
+
+    @Autowired
+    VisitRepository visitRepository;
 
     @GetMapping(value= {"/{id}", "/{id}/"})
     public ResponseEntity<Map<String, Object>> getDoctor(@PathVariable String id, @RequestParam(value = "fields", required = false) String[] fields) {
@@ -172,4 +178,33 @@ public class DoctorController {
         return new ResponseEntity<>(HttpStatus.OK);
 
     }
+
+    @GetMapping(value = {"/me/visitsbydate/{date}", "/me/visitsbydate/{date}/"})
+    public ResponseEntity<Map<String, Object>> getMyVisitsByDate(@PathVariable String date, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if(!Utils.isValidMongoOID(loggedUserID)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Optional<User> doctorOpt = userRepository.findDoctorById(loggedUserID);
+        if(doctorOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(date.equals("today")) {
+            date = LocalDate.now().toString();
+        }
+        LocalDate startDate;
+        try {
+            startDate = LocalDate.parse(date);
+        } catch (DateTimeParseException e) {
+            return new ResponseEntity<>(Map.of("message","invalid date"), HttpStatus.BAD_REQUEST);
+        }
+        ArrayList<Visit> visits = visitRepository.getDoctorVisitsOnDay(loggedUserID, startDate.atStartOfDay(), startDate.plusDays(1).atStartOfDay());
+        return new ResponseEntity<>(Map.of("visits", visits), HttpStatus.OK);
+
+
+    }
+
 }
