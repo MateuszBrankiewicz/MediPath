@@ -2,6 +2,7 @@ package com.adam.medipathbackend.controllers;
 
 import com.adam.medipathbackend.config.Utils;
 import com.adam.medipathbackend.forms.AddScheduleForm;
+import com.adam.medipathbackend.forms.ManySchedulesUpdateForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
@@ -132,6 +133,97 @@ public class ScheduleController {
         return missingFields;
     }
 
+    private static ArrayList<String> getMissingUpdateFields(ManySchedulesUpdateForm schedule) {
+        ArrayList<String> missingFields = new ArrayList<>();
+
+        if(schedule.getEndHour() == null) {
+            missingFields.add("endHour");
+        }
+        if(schedule.getDoctorID() == null || schedule.getDoctorID().isBlank()) {
+            missingFields.add("doctor");
+        }
+
+        if(schedule.getInstitutionID() == null || schedule.getInstitutionID().isBlank()) {
+            missingFields.add("institution");
+        }
+        if(schedule.getStartHour() == null) {
+            missingFields.add("startHour");
+        }
+        if(schedule.getNewInterval() == null) {
+            missingFields.add("newInterval");
+        }
+        if(schedule.getNewEndHour() == null) {
+            missingFields.add("newEndHour");
+        }
+        if(schedule.getNewStartHour() == null) {
+            missingFields.add("newStartHour");
+        }
+
+
+        return missingFields;
+    }
+
+    private boolean isNotInsideOrEqual(LocalDateTime insideStart, LocalDateTime insideEnd, LocalDateTime outsideStart, LocalDateTime outsideEnd) {
+       return !insideStart.isBefore(outsideStart) && !insideEnd.isAfter(outsideEnd);
+    }
+
+    @PutMapping(value = {"/updatemany", "/updatemany/"})
+    public ResponseEntity<Map<String, Object>> updateManySchedules(@RequestBody ManySchedulesUpdateForm newSchedule, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        ArrayList<String> missingFields = getMissingUpdateFields(newSchedule);
+        if(!missingFields.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
+        }
+        if(!isLoggedAsEmployeeOfInstitution(loggedUserID, newSchedule.getInstitutionID())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(!isLoggedAsDoctorOfInstitution(newSchedule.getDoctorID(), newSchedule.getInstitutionID())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        Optional<User> optUser = userRepository.findById(newSchedule.getDoctorID());
+        if(optUser.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        Optional<Institution> optInst = institutionRepository.findById(newSchedule.getInstitutionID());
+        if(optInst.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        ArrayList<Schedule> schedulesToReset = scheduleRepository.getSchedulesBetween(newSchedule.getDoctorID(), newSchedule.getStartHour(), newSchedule.getEndHour());
+        for(Schedule schedule: schedulesToReset) {
+            if(!schedule.getInstitution().getInstitutionId().equals(newSchedule.getInstitutionID())) {
+                return new ResponseEntity<>(Map.of("message", "schedule overlaps with another institution's schedule"), HttpStatus.BAD_REQUEST);
+            }
+        }
+        if(isNotInsideOrEqual(newSchedule.getNewStartHour(), newSchedule.getNewEndHour(), newSchedule.getStartHour(), newSchedule.getEndHour())) {
+            if(newSchedule.getNewStartHour().isBefore(newSchedule.getStartHour())) {
+                if(isScheduleOverlapping(newSchedule.getNewStartHour(), newSchedule.getStartHour(), newSchedule.getDoctorID(), "")) {
+                    return new ResponseEntity<>(Map.of("message", "schedule overlaps on start"), HttpStatus.BAD_REQUEST);
+                }
+            }
+            if(newSchedule.getNewEndHour().isAfter(newSchedule.getEndHour())) {
+                if(isScheduleOverlapping(newSchedule.getEndHour(), newSchedule.getNewEndHour(), newSchedule.getDoctorID(), "")) {
+                    return new ResponseEntity<>(Map.of("message", "schedule overlaps on end"), HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+        LocalDateTime start = newSchedule.getNewStartHour();
+        ArrayList<Schedule> newSchedules = new ArrayList<>();
+        User doctor = optUser.get();
+        scheduleRepository.deleteAll(schedulesToReset);
+        while(start.plusSeconds(newSchedule.getNewInterval().toSecondOfDay()).isBefore(newSchedule.getNewEndHour()) || start.plusSeconds(newSchedule.getNewInterval().toSecondOfDay()).isEqual(newSchedule.getNewEndHour())) {
+            newSchedules.add(new Schedule(start, start.plusSeconds(newSchedule.getNewInterval().toSecondOfDay()), new DoctorDigest(newSchedule.getDoctorID(), doctor.getName(), doctor.getSurname(), doctor.getSpecialisations()), new InstitutionDigest(newSchedule.getInstitutionID(), optInst.get().getName())));
+            start = start.plusSeconds(newSchedule.getNewInterval().toSecondOfDay());
+        }
+        scheduleRepository.saveAll(newSchedules);
+        return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.OK);
+
+
+    }
 
     @PutMapping(value = {"/{scheduleid}", "/{scheduleid}/"})
     public ResponseEntity<Map<String, Object>> updateSchedule(@PathVariable String scheduleid, @RequestBody AddScheduleForm newSchedule, HttpSession session) {
@@ -171,6 +263,8 @@ public class ScheduleController {
 
     }
 
+
+
     @DeleteMapping(value = {"/{scheduleid}", "/{scheduleid}/"})
     public ResponseEntity<Map<String, Object>> deleteSchedule(@PathVariable String scheduleid, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
@@ -193,6 +287,8 @@ public class ScheduleController {
         return new ResponseEntity<>(HttpStatus.OK);
 
     }
+
+
 
     private boolean isLoggedAsDoctorOfInstitution(String userID, String institutionID) {
         if(!Utils.isValidMongoOID(userID) || !Utils.isValidMongoOID(institutionID)) {

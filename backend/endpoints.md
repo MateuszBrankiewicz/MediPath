@@ -840,3 +840,21 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 400 - invalid date
 - 200 - success
 
+### /schedules/updatemany
+#### Method; PUT
+
+#### Body:
+- doctorID - doctor's user id
+- institutionID - institution's id
+- startHour - old start hour
+- endHour - old end hour
+- newStartHour - new start hour
+- newEndHour - new end hour 
+- newInterval - new length of a visit
+
+#### Returns:
+- 401 - user not logged in
+- 403 - user is not employee of institution, doctor does not exist, institution does not exist, doctor is not part of institution
+- 400 - missing fields in request body, new schedule overlaps, time period contains schedules for multiple institutions
+- 500 - doctor or institution with given id have no profile
+- 200 - success
