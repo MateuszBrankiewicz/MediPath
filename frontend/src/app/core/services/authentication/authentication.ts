@@ -43,8 +43,8 @@ export class AuthenticationService {
 
   public readonly userRole = computed(() => {
     const roleCode = this.user()?.roleCode;
-
-  }
+    return getRoleFromCode(typeof roleCode === 'number' ? roleCode : 0);
+  });
 
   public registerUser(userToRegister: RegisterUser) {
     return this.http.post(API_URL + '/users/register', userToRegister);
