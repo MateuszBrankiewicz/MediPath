@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -29,4 +30,7 @@ public interface VisitRepository extends MongoRepository<Visit, String> {
 
     @Query("{'institution.institutionId' : ?0, 'status': 'Upcoming' }}")
     ArrayList<Visit> getUpcomingVisitsInInstitution(String institutionId);
+
+    @Query("{'doctor.userId': ?0, 'time.startTime': {$gt: ?1, $lt: ?2}}")
+    ArrayList<Visit> getDoctorVisitsOnDay(String userId, LocalDateTime date1, LocalDateTime date2);
 }

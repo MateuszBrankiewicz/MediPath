@@ -816,3 +816,59 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 403 - doctor not found, user is not admin, user specified in doctorid is not doctor
 - 400 - missing fields in request body
 - 200 - success
+
+### /users/me/institutions
+#### Method; GET
+
+#### Parameters:
+- role - defines the role to filter the institutions by. Can be either staff or admin
+
+#### Returns:
+- 401 - User is not logged in
+- 400 - Bad role name
+- 200 - Success or empty
+
+### /doctors/me/visitsbydate/{date}
+#### Method: GET
+
+#### Path variables
+- date - date to retrieve the visits from. Accepted values are either 'today' or a date in the dd-mm-yyyy format
+
+#### Returns:
+- 401 - User is not logged in
+- 403 - invalid user or user is not doctor
+- 400 - invalid date
+- 200 - success
+
+### /schedules/updatemany
+#### Method; PUT
+
+#### Body:
+- doctorID - doctor's user id
+- institutionID - institution's id
+- startHour - old start hour
+- endHour - old end hour
+- newStartHour - new start hour
+- newEndHour - new end hour 
+- newInterval - new length of a visit
+
+#### Returns:
+- 401 - user not logged in
+- 403 - user is not employee of institution, doctor does not exist, institution does not exist, doctor is not part of institution
+- 400 - missing fields in request body, new schedule overlaps, time period contains schedules for multiple institutions
+- 500 - doctor or institution with given id have no profile
+- 200 - success
+
+
+### /institution/{institutionid}/schedules/{date}
+#### Method: GET
+
+#### Path variables
+- institutionid - id of the institution
+- date - date to filter the schedules by. Can be either "today" or a date in the dd-mm-yyyy format
+
+#### Returns:
+- 401 - user is not logged in
+- 403 - user is not admin or staff of institution or institution does not exist
+- 400 - invalid date
+- 200 - success

@@ -47,6 +47,9 @@ public class UserController {
     MedicalHistoryRepository mhRepository;
 
     @Autowired
+    InstitutionRepository institutionRepository;
+
+    @Autowired
     ScheduleRepository scheduleRepository;
 
     @Autowired
@@ -514,7 +517,7 @@ public class UserController {
         }
         Optional<User> userOpt = userRepository.findById(loggedUserID);
         if(userOpt.isEmpty()) {
-            return new ResponseEntity<>(Map.of("notifications", ""), HttpStatus.OK);
+            return new ResponseEntity<>(Map.of("notifications", new ArrayList<>()), HttpStatus.OK);
         }
         User user = userOpt.get();
         return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
@@ -522,6 +525,36 @@ public class UserController {
                         notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
                         notification.isRead(), "system", notification.isSystem())
         ).toList()), HttpStatus.OK);
+    }
+
+    @GetMapping(value = {"/me/institutions", "/me/institutions/"})
+    public ResponseEntity<Map<String, Object>> getMyInstitutions(HttpSession session, @RequestParam(value = "role") String role) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ResponseEntity<>(Map.of("institutions", new ArrayList<>()), HttpStatus.OK);
+        }
+        User admin = userOpt.get();
+        if(role.equals("admin")) {
+            if(admin.getRoleCode() < 8) {
+                return new ResponseEntity<>(Map.of("institutions", new ArrayList<>()), HttpStatus.OK);
+            }
+            ArrayList<Institution> institutions = institutionRepository.findInstitutionsWhereAdmin(loggedUserID);
+            return new ResponseEntity<>(Map.of("institutions", institutions), HttpStatus.OK);
+        } else if(role.equals("staff")) {
+            if(admin.getRoleCode() < 4) {
+                return new ResponseEntity<>(Map.of("institutions", new ArrayList<>()), HttpStatus.OK);
+            }
+            ArrayList<Institution> institutions = institutionRepository.findInstitutionsWhereStaff(loggedUserID);
+            return new ResponseEntity<>(Map.of("institutions", institutions), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(Map.of("message", "invalid role"), HttpStatus.BAD_REQUEST);
+        }
+
+
     }
 
     private static ArrayList<String> getMissingFields(RegistrationForm registrationForm) {
