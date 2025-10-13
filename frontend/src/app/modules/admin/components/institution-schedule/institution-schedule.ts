@@ -9,17 +9,13 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import {
-  DoctorSchedule,
-  DoctorWithSchedule,
-} from '../../../../core/models/doctor.model';
+import { DoctorWithSchedule } from '../../../../core/models/doctor.model';
+import { CalendarDay } from '../../../../core/models/schedule.model';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { ScheduleService } from '../../../../core/services/schedule/schedule.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import {
-  Calendar,
-  CalendarDay,
-} from '../../../shared/components/calendar/calendar';
+import { mapSchedulesToCalendarDays } from '../../../../utils/calendarMapper';
+import { Calendar } from '../../../shared/components/calendar/calendar';
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
 import { InstitutionOption } from '../admin-dashboard/widgets/institution-select-card';
 
@@ -183,75 +179,4 @@ export interface MapToCalendarDaysOptions {
   displayedMonth: number;
   displayedYear: number;
   selectedInstitutionIds?: string[];
-}
-export function mapSchedulesToCalendarDays(
-  schedules: DoctorSchedule[],
-  options: MapToCalendarDaysOptions,
-): CalendarDay[] {
-  const groupedByDate = new Map<
-    string,
-    {
-      appointments: { id: string }[];
-      institutionIds: Set<string>;
-    }
-  >();
-
-  schedules.forEach((schedule) => {
-    const dateKey = schedule.startHour.substring(0, 10);
-
-    if (!groupedByDate.has(dateKey)) {
-      groupedByDate.set(dateKey, {
-        appointments: [],
-        institutionIds: new Set(),
-      });
-    }
-
-    const dayData = groupedByDate.get(dateKey)!;
-    dayData.appointments.push({ id: schedule.id });
-    dayData.institutionIds.add(schedule.institution.institutionId);
-  });
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Krok 2: Mapujemy zgrupowane dane na obiekty CalendarDay
-  const calendarDays: CalendarDay[] = [];
-
-  groupedByDate.forEach((dayData, dateKey) => {
-    const date = new Date(dateKey + 'T00:00:00');
-
-    // --- ZMODYFIKOWANA LOGIKA ---
-    let isFromThisInstitution: boolean | undefined = undefined;
-
-    // Sprawdzamy, tylko jeśli tablica wybranych placówek nie jest pusta
-    if (
-      options.selectedInstitutionIds &&
-      options.selectedInstitutionIds.length > 0
-    ) {
-      // isFromThisInstitution będzie 'true', jeśli chociaż JEDEN z wybranych ID placówek
-      // znajduje się w zbiorze ID placówek dla tego dnia.
-      isFromThisInstitution = options.selectedInstitutionIds.some((id) =>
-        dayData.institutionIds.has(id),
-      );
-    }
-
-    const calendarDay: CalendarDay = {
-      date: date,
-      dayNumber: date.getDate(),
-      isCurrentMonth:
-        date.getFullYear() === options.displayedYear &&
-        date.getMonth() === options.displayedMonth,
-      isToday: date.getTime() === today.getTime(), // Dziś jest 13 października 2025
-      hasAppointments: true,
-      isSelected: false,
-      isFromThisInstitution: isFromThisInstitution,
-      appointments: dayData.appointments,
-    };
-
-    calendarDays.push(calendarDay);
-  });
-
-  calendarDays.sort((a, b) => a.date.getTime() - b.date.getTime());
-
-  return calendarDays;
 }

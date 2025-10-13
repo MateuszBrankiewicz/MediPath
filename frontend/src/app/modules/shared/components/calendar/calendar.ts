@@ -7,18 +7,8 @@ import {
   signal,
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { CalendarDay } from '../../../../core/models/schedule.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { AppointmentIndicator } from '../../../doctor/components/doctor-schedule/doctor-schedule';
-export interface CalendarDay {
-  date: Date;
-  dayNumber: number;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  hasAppointments: boolean;
-  isSelected: boolean;
-  isFromThisInstitution?: boolean;
-  appointments: AppointmentIndicator[];
-}
 
 @Component({
   selector: 'app-calendar',

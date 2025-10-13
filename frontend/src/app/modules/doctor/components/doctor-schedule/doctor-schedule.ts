@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { CalendarDay } from '../../../../core/models/schedule.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { Calendar } from '../../../shared/components/calendar/calendar';
 
@@ -10,20 +11,6 @@ export interface Appointment {
   patientName: string;
   remarks?: string;
   status: 'available' | 'booked' | 'unavailable';
-}
-
-export interface AppointmentIndicator {
-  id: string;
-}
-
-export interface CalendarDay {
-  dayNumber: number;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  isSelected: boolean;
-  hasAppointments: boolean;
-  appointments: AppointmentIndicator[];
-  date: Date;
 }
 
 @Component({

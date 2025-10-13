@@ -149,6 +149,8 @@ export class CalendarSchedule {
         isToday: false,
         hasAppointments: this.isDateAvailable(date),
         dayNumber: date.getDate(),
+        isSelected: false,
+        appointments: [],
       });
     }
 
@@ -160,6 +162,8 @@ export class CalendarSchedule {
         isToday: date.toDateString() === today.toDateString(),
         hasAppointments: this.isDateAvailable(date),
         dayNumber: day,
+        isSelected: false,
+        appointments: [],
       });
     }
 
@@ -172,6 +176,8 @@ export class CalendarSchedule {
         isToday: false,
         hasAppointments: this.isDateAvailable(date),
         dayNumber: day,
+        isSelected: false,
+        appointments: [],
       });
     }
     return days;

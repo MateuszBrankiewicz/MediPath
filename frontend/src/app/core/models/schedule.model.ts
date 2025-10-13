@@ -53,10 +53,17 @@ export interface AvailableDay {
 
 export interface CalendarDay {
   date: Date;
+  dayNumber: number;
   isCurrentMonth: boolean;
   isToday: boolean;
   hasAppointments: boolean;
-  dayNumber: number;
+  isSelected: boolean;
+  isFromThisInstitution?: boolean;
+  appointments: AppointmentIndicator[];
+}
+
+export interface AppointmentIndicator {
+  id: string;
 }
 
 export interface InputSlot {
