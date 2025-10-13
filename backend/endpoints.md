@@ -858,3 +858,17 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 400 - missing fields in request body, new schedule overlaps, time period contains schedules for multiple institutions
 - 500 - doctor or institution with given id have no profile
 - 200 - success
+
+
+### /institution/{institutionid}/schedules/{date}
+#### Method: GET
+
+#### Path variables
+- institutionid - id of the institution
+- date - date to filter the schedules by. Can be either "today" or a date in the dd-mm-yyyy format
+
+#### Returns:
+- 401 - user is not logged in
+- 403 - user is not admin or staff of institution or institution does not exist
+- 400 - invalid date
+- 200 - success
