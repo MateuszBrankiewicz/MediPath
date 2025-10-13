@@ -15,7 +15,10 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -406,8 +409,8 @@ public class InstitutionController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping(value = {"/{institutionid}/schedules/{date}", "/{institutionid}/schedules/{date}/"})
-    public ResponseEntity<Map<String, Object>> updateInstitution(@PathVariable String institutionid, @PathVariable String date, HttpSession session) {
+    @GetMapping(value = {"/{institutionid}/schedules/{date}", "/{institutionid}/schedules/{date}/", "/{institutionid}/schedules/", "/{institutionid}/schedules"})
+    public ResponseEntity<Map<String, Object>> updateInstitution(@PathVariable String institutionid, @PathVariable(required = false) String date, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if (loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -419,17 +422,27 @@ public class InstitutionController {
         if(!isLoggedAsEmployeeOfInstitution(loggedUserID, institutionid)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        if(date.equals("today")) {
-            date = LocalDate.now().toString();
+        if(date == null) {
+            ArrayList<Schedule> schedules = scheduleRepository.getInstitutionSchedules(institutionid);
+            return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
+        } else {
+            if(date.equals("now")) {
+                date = LocalDate.now().withDayOfMonth(1).toString();
+            }
+            LocalDate startDate;
+            try {
+                DateTimeFormatter fmt = new DateTimeFormatterBuilder()
+                        .appendPattern("MM-yyyy")
+                        .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+                        .toFormatter();
+                startDate = LocalDate.parse(date, fmt);
+            } catch (DateTimeParseException e) {
+                return new ResponseEntity<>(Map.of("message","invalid date"), HttpStatus.BAD_REQUEST);
+            }
+            ArrayList<Schedule> schedules = scheduleRepository.getInstitutionSchedulesOnDay(institutionid, startDate.atStartOfDay(), startDate.plusMonths(1).atStartOfDay());
+            return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
         }
-        LocalDate startDate;
-        try {
-            startDate = LocalDate.parse(date);
-        } catch (DateTimeParseException e) {
-            return new ResponseEntity<>(Map.of("message","invalid date"), HttpStatus.BAD_REQUEST);
-        }
-        ArrayList<Schedule> schedules = scheduleRepository.getInstitutionSchedulesOnDay(institutionid, startDate.atStartOfDay(), startDate.plusDays(1).atStartOfDay());
-        return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
+
 
     }
 

@@ -865,7 +865,7 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 
 #### Path variables
 - institutionid - id of the institution
-- date - date to filter the schedules by. Can be either "today" or a date in the dd-mm-yyyy format
+- date - month and year to filter the schedules by. Can be either "now" (will automatically fill the current month and year) or a date in the mm-yyyy format
 
 #### Returns:
 - 401 - user is not logged in
