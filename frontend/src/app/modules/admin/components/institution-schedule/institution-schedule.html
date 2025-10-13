@@ -1,0 +1,45 @@
+<h1 class="page-title">
+  {{ translationService.translate("navigation.schedule") }}
+</h1>
+
+<div class="schedule-layout">
+  <div class="day-schedule">
+    <div class="day-header">
+      <h2 class="day-title">
+        {{ translationService.translate("doctor.schedule.day") }}
+      </h2>
+
+      <div class="current-day">
+        <div class="day-number">{{ currentDayNumber }}</div>
+        <div class="day-info">
+          <div class="day-name">{{ currentDayName }}</div>
+          <div class="date">{{ currentMonthYear() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="appointments-list">
+      <p-floatlabel variant="on" [style]="{ width: '100%' }">
+        <p-multi-select
+          [style]="{ width: '100%' }"
+          [id]="'select'"
+          [options]="['twoja stara', 'nowa opcja']"
+        />
+        <label for="select">Zaznacz instytucje</label>
+      </p-floatlabel>
+      @for (appointment of todayAppointments; track appointment.id) {
+        <div class="appointment-slot available">
+          <span class="appointment-time">{{ appointment.time }}</span>
+          <span class="appointment-patient">{{ appointment.patientName }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <app-calendar></app-calendar>
+</div>
+<p-button
+  label="{{ translationService.translate('shared.buttons.save') }}"
+  icon="pi pi-check"
+  (onClick)="saveSchedule()"
+></p-button>

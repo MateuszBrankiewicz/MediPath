@@ -153,7 +153,7 @@ export class NavigationService {
               {
                 label: 'Schedule',
                 icon: 'pi pi-calendar',
-                routerLink: '/admin/add-schedule',
+                routerLink: '/admin/schedule',
                 visible: true,
               },
               {

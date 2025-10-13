@@ -14,4 +14,16 @@ export class ScheduleService {
       withCredentials: true,
     });
   }
+
+  public getSchedulesForDoctor(doctorId: string) {
+    return this.http.get(`${API_URL}/schedules/doctor/${doctorId}`, {
+      withCredentials: true,
+    });
+  }
+
+  public getSchedulesForInstitution(institutionId: string) {
+    return this.http.get(`${API_URL}/schedules/institution/${institutionId}`, {
+      withCredentials: true,
+    });
+  }
 }

@@ -1,7 +1,8 @@
-import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { Calendar } from '../../../shared/components/calendar/calendar';
 
 export interface Appointment {
   id: string;
@@ -27,7 +28,7 @@ export interface CalendarDay {
 
 @Component({
   selector: 'app-doctor-schedule',
-  imports: [CommonModule, ButtonModule],
+  imports: [CommonModule, ButtonModule, Calendar],
   templateUrl: './doctor-schedule.html',
   styleUrl: './doctor-schedule.scss',
 })
@@ -70,18 +71,28 @@ export class DoctorSchedule {
     },
   ];
 
-  public weekdays = [
-    this.translationService.translate('weekdays.short.monday'),
-    this.translationService.translate('weekdays.short.tuesday'),
-    this.translationService.translate('weekdays.short.wednesday'),
-    this.translationService.translate('weekdays.short.thursday'),
-    this.translationService.translate('weekdays.short.friday'),
-    this.translationService.translate('weekdays.short.saturday'),
-    this.translationService.translate('weekdays.short.sunday'),
-  ];
-
   public readonly currentDayNumber = new Date().getDate(); // 22
   public readonly currentDayName = this.getDayName(new Date());
+
+  protected readonly appointmentsByDate = computed(() => {
+    const map = new Map<string, { id: string }[]>();
+
+    const today = new Date().toISOString().split('T')[0];
+    const todaySlots = [
+      ...this.todayAppointments,
+      ...this.unavailableSlots,
+    ].map((app) => ({ id: app.id }));
+
+    if (todaySlots.length > 0) {
+      map.set(today, todaySlots);
+    }
+
+    return map;
+  });
+  protected onMonthChanged(event: { year: number; month: number }): void {
+    const newDate = new Date(event.year, event.month, 1);
+    this.selectedDate.set(newDate);
+  }
 
   public readonly currentMonthYear = computed(() => {
     const current = this.currentMonth();
@@ -104,79 +115,6 @@ export class DoctorSchedule {
     );
     return `${monthName} ${current.getFullYear()}`;
   });
-
-  public readonly calendarDays = computed(() => {
-    const currentMonth = this.currentMonth();
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-
-    const firstDayOfMonth = new Date(year, month, 1);
-    const lastDayOfMonth = new Date(year, month + 1, 0);
-    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
-
-    const days: CalendarDay[] = [];
-    const today = new Date();
-    const selected = this.selectedDate();
-
-    const prevMonth = new Date(year, month - 1, 0);
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const date = new Date(year, month - 1, prevMonth.getDate() - i);
-      days.push({
-        date,
-        dayNumber: date.getDate(),
-        isCurrentMonth: false,
-        isToday: false,
-        isSelected: false,
-        hasAppointments: this.hasAppointmentsOnDate(date),
-        appointments: [],
-      });
-    }
-
-    for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
-      const date = new Date(year, month, day);
-      days.push({
-        date,
-        dayNumber: day,
-        isCurrentMonth: true,
-        isToday: date.toDateString() === today.toDateString(),
-        isSelected: selected
-          ? date.toDateString() === selected.toDateString()
-          : false,
-        hasAppointments: this.hasAppointmentsOnDate(date),
-        appointments: this.getAppointmentsForDate(date),
-      });
-    }
-
-    const remainingDays = 42 - days.length;
-    for (let day = 1; day <= remainingDays; day++) {
-      const date = new Date(year, month + 1, day);
-      days.push({
-        date,
-        dayNumber: day,
-        isCurrentMonth: false,
-        isToday: false,
-        isSelected: false,
-        hasAppointments: false,
-        appointments: [],
-      });
-    }
-
-    return days;
-  });
-
-  public previousMonth(): void {
-    const current = this.currentMonth();
-    this.currentMonth.set(
-      new Date(current.getFullYear(), current.getMonth() - 1, 1),
-    );
-  }
-
-  public nextMonth(): void {
-    const current = this.currentMonth();
-    this.currentMonth.set(
-      new Date(current.getFullYear(), current.getMonth() + 1, 1),
-    );
-  }
 
   public selectDate(day: CalendarDay): void {
     if (day.isCurrentMonth) {
@@ -218,24 +156,5 @@ export class DoctorSchedule {
       'weekdays.saturday',
     ];
     return this.translationService.translate(dayKeys[date.getDay()]);
-  }
-
-  private hasAppointmentsOnDate(date: Date): boolean {
-    const appointmentDays = [
-      1, 3, 5, 8, 9, 10, 11, 14, 16, 18, 21, 22, 24, 29, 30, 31,
-    ];
-    return appointmentDays.includes(date.getDate());
-  }
-
-  private getAppointmentsForDate(date: Date): AppointmentIndicator[] {
-    const dayOfMonth = date.getDate();
-    const appointmentDays = [
-      1, 3, 5, 8, 9, 10, 11, 14, 16, 18, 21, 22, 24, 29, 30, 31,
-    ];
-
-    if (appointmentDays.includes(dayOfMonth)) {
-      return [{ id: `indicator-${dayOfMonth}` }];
-    }
-    return [];
   }
 }

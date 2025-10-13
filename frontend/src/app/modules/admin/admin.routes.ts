@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
+import { AddDoctorsPage } from './components/add-doctors-page/add-doctors-page';
 import { AdminDashboard } from './components/admin-dashboard/admin-dashboard';
 import { AdminInstitution } from './components/admin-institution/admin-institution';
-import { AddDoctorsPage } from './components/add-doctors-page/add-doctors-page';
 import { CreateSchedule } from './components/create-schedule/create-schedule';
+import { InstitutionSchedule } from './components/institution-schedule/institution-schedule';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -14,5 +15,6 @@ export const ADMIN_ROUTES: Routes = [
     component: AdminInstitution,
   },
   { path: 'add-doctor', component: AddDoctorsPage },
-  { path: 'add-schedule', component: CreateSchedule },
+  { path: 'schedule', component: InstitutionSchedule },
+  { path: 'schedule/add-schedule', component: CreateSchedule },
 ];
