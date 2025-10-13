@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { CommentService } from '../../../../core/services/comment/comment.service';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
@@ -21,6 +30,7 @@ import {
     InstitutionSelectCard,
     CommentsCard,
     UpcomingVisitsCard,
+    ProgressSpinner,
   ],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss',
@@ -30,24 +40,21 @@ export class AdminDashboard implements OnInit {
   private institutionStoreService = inject(InstitutionStoreService);
   private commentsService = inject(CommentService);
   private institutionService = inject(InstitutionService);
-  protected readonly institutions = signal<InstitutionOption[]>([
-    {
-      id: '68c5dc05d2569d07e73a8456',
-      name: 'Uniwersytecki Szpital Kliniczny nr 1',
-    },
-    { id: '68c5dc05d2569d07e73a8456', name: 'Instytut Kardiologii' },
-  ]);
+  private destroyRef = inject(DestroyRef);
+  protected readonly institutions = signal<InstitutionOption[]>([]);
+  protected readonly isInstitutionLoading = signal<boolean>(false);
+  protected readonly isCommentsLoading = signal<boolean>(false);
+  protected readonly isUpcomingVisitsLoading = signal<boolean>(false);
+  protected readonly comments = signal<CommentItem[]>([]);
 
-  protected readonly comments = signal<CommentItem[]>([
-    { id: 1, content: 'Ale super klinika moje serce jest w niebie' },
-    { id: 2, content: 'Lekarz bardzo miły obsługa również pozdrawiam!' },
-    { id: 3, content: 'Jedzenie takie średnia ale ujdzie' },
-  ]);
-
-  protected readonly upcomingVisits = signal<UpcomingVisitItem[]>([
-    { id: 1, time: '8:00 am', patientName: 'Kazimierz Nowak' },
-    { id: 2, time: '1:00 pm', patientName: 'Piotr Nowak' },
-  ]);
+  protected readonly upcomingVisits = signal<UpcomingVisitItem[]>([]);
+  protected readonly isLoading = computed(() => {
+    return (
+      this.isInstitutionLoading() ||
+      this.isCommentsLoading() ||
+      this.isUpcomingVisitsLoading()
+    );
+  });
 
   ngOnInit(): void {
     this.loadInstitutions();
@@ -59,10 +66,9 @@ export class AdminDashboard implements OnInit {
     if (!optionSelected) {
       return;
     }
-    this.institutionStoreService.setInstitution({
-      institutionId: optionSelected.id,
-      institutionName: optionSelected.name,
-    });
+    this.institutionStoreService.setInstitution(optionSelected);
+    this.loadCommentsForInstitution(optionSelected.id);
+    this.loadUpcomingVisits();
   }
 
   protected onChangeDoctor(_visit: UpcomingVisitItem): void {
@@ -70,21 +76,18 @@ export class AdminDashboard implements OnInit {
   }
 
   protected onCancelVisit(_visit: UpcomingVisitItem): void {
-    // TODO: call cancel visit flow
     console.log('Cancel visit clicked', _visit);
   }
 
   selectedInstitution = computed(() => {
     const institutionsList = this.institutions();
     const currentInstitution = this.institutionStoreService.getInstitution();
-    if (!institutionsList || !currentInstitution) return undefined;
-    // Adjust property names as needed
-    return institutionsList.find(
-      (i) => i.id === currentInstitution.institutionId,
-    );
+    if (!institutionsList || !currentInstitution) return null;
+    return institutionsList.find((i) => i.id === currentInstitution.id);
   });
 
   private loadCommentsForInstitution(institutionId: string): void {
+    this.isCommentsLoading.set(true);
     this.commentsService
       .getCommentByInstitution(institutionId)
       .subscribe((comments) => {
@@ -93,14 +96,40 @@ export class AdminDashboard implements OnInit {
           content: comment.content,
         }));
         this.comments.set(formattedComments);
+        this.isCommentsLoading.set(false);
       });
   }
 
   private loadInstitutions(): void {
+    this.isInstitutionLoading.set(true);
     this.institutionService
       .getInstitutionsForAdmin()
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((institutions) => {
-        console.log(institutions);
+        const formattedInstitutions = institutions.map((inst) => ({
+          id: inst.id,
+          name: inst.name,
+        }));
+        this.institutions.set(formattedInstitutions);
+        this.institutionStoreService.setInstitution(formattedInstitutions[0]);
+        this.institutionStoreService.setAvailableInstitutions(
+          formattedInstitutions,
+        );
+        this.loadUpcomingVisits();
+        this.loadCommentsForInstitution(formattedInstitutions[0].id);
+        this.isInstitutionLoading.set(false);
+      });
+  }
+
+  private loadUpcomingVisits(): void {
+    this.isUpcomingVisitsLoading.set(true);
+    this.institutionService
+      .getUpcomingVisitsForInstitution(this.selectedInstitution()?.id || '')
+      .subscribe((visits) => {
+        this.upcomingVisits.set(
+          visits.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5),
+        );
+        this.isUpcomingVisitsLoading.set(false);
       });
   }
 }

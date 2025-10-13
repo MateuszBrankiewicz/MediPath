@@ -1,4 +1,12 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabel } from 'primeng/floatlabel';
@@ -7,6 +15,8 @@ import { ScheduleService } from '../../../../core/services/schedule/schedule.ser
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { Appointment } from '../../../doctor/components/doctor-schedule/doctor-schedule';
 import { Calendar } from '../../../shared/components/calendar/calendar';
+import { InstitutionStoreService } from '../../services/institution/institution-store.service';
+import { InstitutionOption } from '../admin-dashboard/widgets/institution-select-card';
 
 @Component({
   selector: 'app-institution-schedule',
@@ -21,8 +31,19 @@ export class InstitutionSchedule implements OnInit {
   public readonly currentDayName = this.getDayName(new Date());
   private router = inject(Router);
   private scheduleService = inject(ScheduleService);
+  private institutionStoreService = inject(InstitutionStoreService);
+  private destroyRef = inject(DestroyRef);
+  protected readonly institutionOptions = signal<InstitutionOption[]>([]);
+  protected selectedInstitution = signal<string | null>(null);
   ngOnInit(): void {
-    // this.loadToDayAppointments();
+    this.institutionOptions.set(
+      this.institutionStoreService.getAvailableInstitutions(),
+    );
+    this.selectedInstitution.set(
+      this.institutionStoreService.getInstitution().id,
+    );
+
+    this.loadInstitutionSchedule();
   }
 
   public todayAppointments: Appointment[] = [
@@ -82,5 +103,17 @@ export class InstitutionSchedule implements OnInit {
 
   protected saveSchedule(): void {
     this.router.navigate(['/admin/schedule/add-schedule']);
+  }
+
+  private loadInstitutionSchedule(): void {
+    const institutionId = this.institutionStoreService.getInstitution().id;
+    this.scheduleService
+      .getSchedulesForInstitution(institutionId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (schedules) => {
+          console.log(schedules);
+        },
+      });
   }
 }

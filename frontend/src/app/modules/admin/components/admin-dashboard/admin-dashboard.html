@@ -1,46 +1,55 @@
-<div class="dashboard-container">
-  <h2 class="page-title">
-    {{ translationService.translate("breadcrumb.adminDashboard") }}
-  </h2>
+@if (isLoading()) {
+  <div class="spinner-container">
+    <p-progress-spinner
+      [style]="{ width: '20%', height: '20%' }"
+    ></p-progress-spinner>
+  </div>
+} @else {
+  <div class="dashboard-container">
+    <h2 class="page-title">
+      {{ translationService.translate("breadcrumb.adminDashboard") }}
+    </h2>
 
-  <div class="grid top-row">
-    <div class="col left">
-      <app-institution-select-card
-        [title]="
-          translationService.translate('admin.dashboard.selectInstitution') ||
-          'Select Institution'
-        "
-        [institutions]="institutions()"
-        [selected]="selectedInstitution()"
-        (changed)="onInstitutionChanged($event)"
-      />
+    <div class="grid top-row">
+      <div class="col left">
+        <app-institution-select-card
+          [title]="
+            translationService.translate('admin.dashboard.selectInstitution') ||
+            'Select Institution'
+          "
+          [institutions]="institutions()"
+          [selected]="selectedInstitution()?.id ?? null"
+          (changed)="onInstitutionChanged($event)"
+        />
+      </div>
+      <div class="col right">
+        <app-comments-card
+          [title]="
+            translationService.translate('admin.dashboard.comments') ||
+            'Comments'
+          "
+          [comments]="comments()"
+        />
+      </div>
     </div>
-    <div class="col right">
-      <app-comments-card
+
+    <div class="bottom-row">
+      <app-upcoming-visits-card
         [title]="
-          translationService.translate('admin.dashboard.comments') || 'Comments'
+          translationService.translate('admin.dashboard.upcomingVisits') ||
+          'Upcoming visits'
         "
-        [comments]="comments()"
+        [changeDoctorLabel]="
+          translationService.translate('admin.dashboard.changeDoctor') ||
+          'CHANGE DOCTOR'
+        "
+        [cancelVisitLabel]="
+          translationService.translate('patient.dashboard.cancelVisit')
+        "
+        [visits]="upcomingVisits()"
+        (changeDoctor)="onChangeDoctor($event)"
+        (cancelVisit)="onCancelVisit($event)"
       />
     </div>
   </div>
-
-  <div class="bottom-row">
-    <app-upcoming-visits-card
-      [title]="
-        translationService.translate('admin.dashboard.upcomingVisits') ||
-        'Upcoming visits'
-      "
-      [changeDoctorLabel]="
-        translationService.translate('admin.dashboard.changeDoctor') ||
-        'CHANGE DOCTOR'
-      "
-      [cancelVisitLabel]="
-        translationService.translate('patient.dashboard.cancelVisit')
-      "
-      [visits]="upcomingVisits()"
-      (changeDoctor)="onChangeDoctor($event)"
-      (cancelVisit)="onCancelVisit($event)"
-    />
-  </div>
-</div>
+}

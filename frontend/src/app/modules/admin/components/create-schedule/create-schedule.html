@@ -69,7 +69,7 @@
       <div class="status">
         <span class="status-item">
           <i class="pi pi-building"></i>
-          {{ institutionStoreService.getInstitution().institutionName || "-" }}
+          {{ institutionStoreService.getInstitution().name || "-" }}
         </span>
         <span class="status-item">
           <i class="pi pi-user"></i>
@@ -110,7 +110,7 @@
           )
         }}</span>
         <span class="value">{{
-          institutionStoreService.getInstitution().institutionName || "-"
+          institutionStoreService.getInstitution().name || "-"
         }}</span>
       </div>
       <div class="summary-row">

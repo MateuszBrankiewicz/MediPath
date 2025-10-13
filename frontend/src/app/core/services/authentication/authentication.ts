@@ -41,6 +41,11 @@ export class AuthenticationService {
   private readonly user = signal<UserBasicInfo | null>(null);
   public readonly userChanges = this.user.asReadonly();
 
+  public readonly userRole = computed(() => {
+    const roleCode = this.user()?.roleCode;
+
+  }
+
   public registerUser(userToRegister: RegisterUser) {
     return this.http.post(API_URL + '/users/register', userToRegister);
   }
