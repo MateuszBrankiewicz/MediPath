@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { CommentService } from '../../../../core/services/comment/comment.service';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { InstitutionStoreService } from './../../services/institution/institution-store.service';
@@ -24,9 +25,10 @@ import {
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss',
 })
-export class AdminDashboard {
+export class AdminDashboard implements OnInit {
   protected translationService = inject(TranslationService);
   private institutionStoreService = inject(InstitutionStoreService);
+  private commentsService = inject(CommentService);
   private institutionService = inject(InstitutionService);
   protected readonly institutions = signal<InstitutionOption[]>([
     {
@@ -46,6 +48,10 @@ export class AdminDashboard {
     { id: 1, time: '8:00 am', patientName: 'Kazimierz Nowak' },
     { id: 2, time: '1:00 pm', patientName: 'Piotr Nowak' },
   ]);
+
+  ngOnInit(): void {
+    this.loadInstitutions();
+  }
 
   protected onInstitutionChanged(
     optionSelected: InstitutionOption | null,
@@ -77,4 +83,24 @@ export class AdminDashboard {
       (i) => i.id === currentInstitution.institutionId,
     );
   });
+
+  private loadCommentsForInstitution(institutionId: string): void {
+    this.commentsService
+      .getCommentByInstitution(institutionId)
+      .subscribe((comments) => {
+        const formattedComments = comments.map((comment) => ({
+          id: comment.id,
+          content: comment.content,
+        }));
+        this.comments.set(formattedComments);
+      });
+  }
+
+  private loadInstitutions(): void {
+    this.institutionService
+      .getInstitutionsForAdmin()
+      .subscribe((institutions) => {
+        console.log(institutions);
+      });
+  }
 }

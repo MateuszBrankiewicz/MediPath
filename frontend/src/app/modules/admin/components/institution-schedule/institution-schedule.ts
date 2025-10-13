@@ -22,7 +22,7 @@ export class InstitutionSchedule implements OnInit {
   private router = inject(Router);
   private scheduleService = inject(ScheduleService);
   ngOnInit(): void {
-    this.loadToDayAppointments();
+    // this.loadToDayAppointments();
   }
 
   public todayAppointments: Appointment[] = [

@@ -50,7 +50,7 @@ export class InstitutionService {
 
   public getInstitutionsForAdmin() {
     return this.http
-      .get(`${API_URL}/institution/admin`, { withCredentials: true })
+      .get(`${API_URL}/users/me/institutions`, { withCredentials: true })
       .pipe(tap((res) => console.log(res)));
   }
 
