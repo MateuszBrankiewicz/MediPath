@@ -22,8 +22,14 @@ export class ScheduleService {
   }
 
   public getSchedulesForInstitution(institutionId: string) {
-    return this.http.get(`${API_URL}/schedules/institution/${institutionId}`, {
-      withCredentials: true,
-    });
+    const month = new Date().getMonth() + 1;
+    const year = new Date().getFullYear();
+    const combined = `${month < 10 ? '0' + month : month}-${year}`;
+    return this.http.get(
+      `${API_URL}/institution/${institutionId}/schedules/${combined}`,
+      {
+        withCredentials: true,
+      },
+    );
   }
 }

@@ -167,7 +167,12 @@
       &.available {
         background-color: #dcfce7;
         border: 1px solid #bbf7d0;
-
+        &.selected {
+          background: #2c3e50;
+          .appointment-patient {
+            color: #fff;
+          }
+        }
         &:hover {
           background-color: #bbf7d0;
         }
@@ -219,7 +224,6 @@
   }
 }
 
-// Appointment Details Modal
 .appointment-details-modal {
   position: fixed;
   top: 0;

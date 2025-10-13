@@ -1,4 +1,11 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { AppointmentIndicator } from '../../../doctor/components/doctor-schedule/doctor-schedule';
@@ -10,7 +17,7 @@ export interface CalendarDay {
   hasAppointments: boolean;
   isSelected: boolean;
   isFromThisInstitution?: boolean;
-  appointments: { id: string }[];
+  appointments: AppointmentIndicator[];
 }
 
 @Component({
@@ -21,9 +28,11 @@ export interface CalendarDay {
 })
 export class Calendar {
   public appointments = input<CalendarDay[]>([]);
+  public currentInstitutionId = input<string | null>(null);
   public currentMonth = signal<Date>(new Date());
   public selectedDate = signal<Date | null>(null);
   private translationService = inject(TranslationService);
+  public daySelected = output<Date>();
   public previousMonth(): void {
     const current = this.currentMonth();
     this.currentMonth.set(
@@ -77,9 +86,11 @@ export class Calendar {
         currentSelected &&
         day.date.toDateString() === currentSelected.toDateString()
       ) {
-        this.selectedDate.set(new Date());
+        return;
       } else {
         this.selectedDate.set(day.date);
+        this.daySelected.emit(day.date);
+        console.log(this.selectedDate());
       }
     }
   }
@@ -88,91 +99,105 @@ export class Calendar {
     const currentMonth = this.currentMonth();
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
+    const appointmentsData = this.appointments();
 
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
-    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
+    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7; // Convert to Monday = 0
 
     const days: CalendarDay[] = [];
     const today = new Date();
     const selected = this.selectedDate();
 
-    const prevMonth = new Date(year, month - 1, 0);
+    // Calculate previous month's year and month correctly
+    const prevMonthDate = new Date(year, month - 1, 1);
+    const prevYear = prevMonthDate.getFullYear();
+    const prevMonth = prevMonthDate.getMonth();
+    const lastDayOfPrevMonth = new Date(prevYear, prevMonth + 1, 0);
+
+    // Add days from previous month
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const date = new Date(year, month - 1, prevMonth.getDate() - i);
+      const dayNumber = lastDayOfPrevMonth.getDate() - i;
+      const date = new Date(prevYear, prevMonth, dayNumber);
+      const dayData = this.findAppointmentDataForDate(date, appointmentsData);
       days.push({
         date,
-        dayNumber: date.getDate(),
+        dayNumber: dayNumber,
         isCurrentMonth: false,
-        isToday: false,
-        isSelected: false,
-        hasAppointments: this.hasAppointmentsOnDate(date),
-        appointments: [],
+        isToday: this.isSameDay(date, today),
+        isSelected: selected ? this.isSameDay(date, selected) : false,
+        hasAppointments: dayData?.hasAppointments || false,
+        appointments: dayData?.appointments || [],
+        isFromThisInstitution: dayData?.isFromThisInstitution,
       });
     }
 
+    // Add days from current month
     for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
       const date = new Date(year, month, day);
+      const dayData = this.findAppointmentDataForDate(date, appointmentsData);
       days.push({
         date,
         dayNumber: day,
         isCurrentMonth: true,
-        isToday: date.toDateString() === today.toDateString(),
-        isSelected: selected
-          ? date.toDateString() === selected.toDateString()
-          : false,
-        hasAppointments: this.hasAppointmentsOnDate(date),
-        appointments: this.getAppointmentsForDate(date),
+        isToday: this.isSameDay(date, today),
+        isSelected: selected ? this.isSameDay(date, selected) : false,
+        hasAppointments: dayData?.hasAppointments || false,
+        appointments: dayData?.appointments || [],
+        isFromThisInstitution: dayData?.isFromThisInstitution,
       });
     }
 
+    // Calculate next month's year and month correctly
+    const nextMonthDate = new Date(year, month + 1, 1);
+    const nextYear = nextMonthDate.getFullYear();
+    const nextMonth = nextMonthDate.getMonth();
+
+    // Add days from next month to complete the 42-day grid (6 weeks × 7 days)
     const remainingDays = 42 - days.length;
     for (let day = 1; day <= remainingDays; day++) {
-      const date = new Date(year, month + 1, day);
+      const date = new Date(nextYear, nextMonth, day);
+      const dayData = this.findAppointmentDataForDate(date, appointmentsData);
       days.push({
         date,
         dayNumber: day,
         isCurrentMonth: false,
-        isToday: false,
-        isSelected: false,
-        hasAppointments: false,
-        appointments: [],
+        isToday: this.isSameDay(date, today),
+        isSelected: selected ? this.isSameDay(date, selected) : false,
+        hasAppointments: dayData?.hasAppointments || false,
+        appointments: dayData?.appointments || [],
+        isFromThisInstitution: dayData?.isFromThisInstitution,
       });
     }
 
     return days;
   });
 
-  private hasAppointmentsOnDate(date: Date): boolean {
-    const appointmentDays = [
-      1, 3, 5, 8, 9, 10, 11, 14, 16, 18, 21, 22, 24, 29, 30, 31,
-    ];
-    return appointmentDays.includes(date.getDate());
+  private findAppointmentDataForDate(
+    date: Date,
+    appointmentsData: CalendarDay[],
+  ): CalendarDay | undefined {
+    return appointmentsData.find(
+      (appointment) => appointment.date.toDateString() === date.toDateString(),
+    );
   }
 
-  private getAppointmentsForDate(date: Date): AppointmentIndicator[] {
-    const dayOfMonth = date.getDate();
-    const appointmentDays = [
-      1, 3, 5, 8, 9, 10, 11, 14, 16, 18, 21, 22, 24, 29, 30, 31,
-    ];
-
-    if (appointmentDays.includes(dayOfMonth)) {
-      return [{ id: `indicator-${dayOfMonth}` }];
-    }
-    return [];
+  private isSameDay(date1: Date, date2: Date): boolean {
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
   }
 
-  protected checkAppointmentsAvailability(day: CalendarDay): boolean {
-    console.log(day);
-    return day.appointments && day.appointments.length > 0;
+  private toLocalISOString(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
-  protected checkIfAppointmentIsAvailable(
-    indicator: AppointmentIndicator,
-  ): boolean {
-    const availableDays = [1, 3, 5, 8, 9, 10, 11];
-    const idParts = indicator.id.split('-');
-    const dayNumber = parseInt(idParts[1], 10);
-    return availableDays.includes(dayNumber);
+  protected checkIfAppointmentIsAvailable(): boolean {
+    return true;
   }
 }

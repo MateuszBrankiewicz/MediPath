@@ -31,8 +31,10 @@
         class="calendar-day"
         [class.other-month]="!day.isCurrentMonth"
         [class.today]="day.isToday"
-        [class.has-appointments]="checkAppointmentsAvailability(day)"
-        [class.has-available-appointments]="checkAppointmentsAvailability(day)"
+        [class.has-appointments]="day.hasAppointments"
+        [class.has-available-appointments]="
+          day.hasAppointments && day.isFromThisInstitution
+        "
         [class.selected]="day.isSelected"
         (click)="selectDate(day)"
       >
@@ -40,12 +42,19 @@
         @if (day.hasAppointments) {
           <div class="appointment-indicators">
             @for (indicator of day.appointments; track indicator.id) {
-              @if (checkIfAppointmentIsAvailable(indicator)) {
-                <div class="appointment-indicator__available"></div>
+              @if (checkIfAppointmentIsAvailable()) {
+                @if (day.isFromThisInstitution !== false) {
+                  <div
+                    class="appointment-indicator__available-same-institution"
+                  ></div>
+                } @else {
+                  <div
+                    class="appointment-indicator__available-other-institution"
+                  ></div>
+                }
               } @else {
                 <div class="appointment-indicator__unavailable"></div>
               }
-              <div class="appointment-indicator"></div>
             }
           </div>
         }

@@ -19,24 +19,24 @@
     </div>
 
     <div class="appointments-list">
-      <p-floatlabel variant="on" [style]="{ width: '100%' }">
-        <p-multi-select
-          [style]="{ width: '100%' }"
-          [id]="'select'"
-          [options]="['twoja stara', 'nowa opcja']"
-        />
-        <label for="select">Zaznacz instytucje</label>
-      </p-floatlabel>
-      @for (appointment of todayAppointments; track appointment.id) {
-        <div class="appointment-slot available">
-          <span class="appointment-time">{{ appointment.time }}</span>
-          <span class="appointment-patient">{{ appointment.patientName }}</span>
+      @for (doctor of doctorsForInstitution(); track doctor.doctorId) {
+        <div
+          class="appointment-slot available"
+          [class.selected]="selectedDoctorIdFn() === doctor.doctorId"
+          (click)="selectDoctor(doctor.doctorId)"
+        >
+          <span class="appointment-patient"
+            >{{ doctor.doctorName }} {{ doctor.doctorSurname }}</span
+          >
         </div>
       }
     </div>
   </div>
 
-  <app-calendar></app-calendar>
+  <app-calendar
+    [appointments]="mapSelectedDoctorScheduleToCalendarDays()"
+    (daySelected)="onDaySelected($event)"
+  ></app-calendar>
 </div>
 <p-button
   label="{{ translationService.translate('shared.buttons.save') }}"

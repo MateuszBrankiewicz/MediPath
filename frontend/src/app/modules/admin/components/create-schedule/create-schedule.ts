@@ -130,7 +130,7 @@ export class CreateSchedule implements OnInit {
     const doctorId = this.selectedDoctorId();
     const dateTime = this.dateTimeSelected();
     const interval = this.intervalMinutes();
-    const institutionId = '68c5dc05d2569d07e73a8456';
+    const institutionId = this.institutionStoreService.getInstitution().id;
 
     if (doctorId && dateTime && interval > 0) {
       const pad = (n: number) => n.toString().padStart(2, '0');

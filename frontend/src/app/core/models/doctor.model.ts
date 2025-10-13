@@ -71,3 +71,10 @@ export interface DoctorProfile {
 export interface DoctorApiResponse {
   doctors: DoctorProfile[];
 }
+
+export interface DoctorWithSchedule {
+  doctorId: string;
+  doctorName: string;
+  doctorSurname: string;
+  schedules: DoctorSchedule[];
+}
