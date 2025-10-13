@@ -24,6 +24,9 @@ public interface ScheduleRepository extends MongoRepository<Schedule, String> {
     ArrayList<Schedule> getSchedulesBetween(String doctorId, LocalDateTime date1, LocalDateTime date2);
 
     @Query("{'institution.institutionId': ?0, 'startHour': {$gt: ?1, $lt: ?2}}")
-    ArrayList<Schedule> getInstitutionSchedulesOnDay(String userId, LocalDateTime date1, LocalDateTime date2);
+    ArrayList<Schedule> getInstitutionSchedulesOnDay(String institutionId, LocalDateTime date1, LocalDateTime date2);
+
+    @Query("{'institution.institutionId': ?0}}")
+    ArrayList<Schedule> getInstitutionSchedules(String institutionId);
 
 }
