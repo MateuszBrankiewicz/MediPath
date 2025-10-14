@@ -1,5 +1,5 @@
 <p-dialog
-  [(visible)]="visible"
+  [visible]="visible()"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
@@ -20,7 +20,7 @@
     </div>
   </ng-template>
 
-  @if (isLoading) {
+  @if (isLoading()) {
     <div class="floating-center-spinner">
       <p-progress-spinner
         [style]="{ width: '40%', height: '40%' }"
@@ -28,7 +28,6 @@
     </div>
   }
 
-  <!-- Bulk Edit Form -->
   @if (showBulkEdit()) {
     <div class="bulk-edit-form">
       <div class="bulk-edit-header">
@@ -110,7 +109,6 @@
     </div>
   }
 
-  <!-- Schedule Slots List -->
   <div class="schedule-slots">
     @if (schedules().length === 0) {
       <div class="no-appointments">
@@ -212,6 +210,14 @@
                   severity="info"
                   [outlined]="true"
                   (onClick)="editSlot(slot.id)"
+                ></p-button>
+                <p-button
+                  label="{{ translationService.translate('shared.delete') }}"
+                  icon="pi pi-trash"
+                  size="small"
+                  severity="danger"
+                  [outlined]="true"
+                  (onClick)="deleteSlot(slot.id)"
                 ></p-button>
               }
             </div>

@@ -90,3 +90,9 @@ export interface CreateScheduleRequest {
   endHour: string;
   interval: string;
 }
+
+export interface MapToCalendarDaysOptions {
+  displayedMonth: number;
+  displayedYear: number;
+  selectedInstitutionIds?: string[];
+}

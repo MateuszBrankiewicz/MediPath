@@ -41,4 +41,10 @@ export class ScheduleService {
       withCredentials: true,
     });
   }
+
+  public deleteSchedule(scheduleId: string) {
+    return this.http.delete(`${API_URL}/schedules/${scheduleId}`, {
+      withCredentials: true,
+    });
+  }
 }

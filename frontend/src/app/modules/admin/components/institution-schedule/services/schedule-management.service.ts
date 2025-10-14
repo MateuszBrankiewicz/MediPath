@@ -26,55 +26,37 @@ export class ScheduleManagementService {
   private translationService = inject(TranslationService);
   private destroyRef = inject(DestroyRef);
 
-  // State signals
   private selectedDate = signal<Date | null>(null);
   private selectedDoctorId = signal<string | null>(null);
   private selectedInstitutionId = signal<string | null>(null);
   private doctorsForInstitution = signal<DoctorWithSchedule[]>([]);
   private selectedDaySchedules = signal<DoctorSchedule[]>([]);
   private isLoading = signal<boolean>(false);
+  public getSelectedDate = this.selectedDate.asReadonly();
+  public getSelectedDoctorId = this.selectedDoctorId.asReadonly();
+  public getSelectedInstitutionId = this.selectedInstitutionId.asReadonly();
+  public getDoctorsForInstitution = this.doctorsForInstitution.asReadonly();
+  public getSelectedDaySchedules = this.selectedDaySchedules.asReadonly();
+  public getIsLoading = this.isLoading.asReadonly();
 
-  // Getters for read-only access
-  getSelectedDate = this.selectedDate.asReadonly();
-  getSelectedDoctorId = this.selectedDoctorId.asReadonly();
-  getSelectedInstitutionId = this.selectedInstitutionId.asReadonly();
-  getDoctorsForInstitution = this.doctorsForInstitution.asReadonly();
-  getSelectedDaySchedules = this.selectedDaySchedules.asReadonly();
-  getIsLoading = this.isLoading.asReadonly();
-
-  /**
-   * Set selected date and load schedules for that day
-   */
-  setSelectedDate(date: Date): void {
+  public setSelectedDate(date: Date): void {
     this.selectedDate.set(date);
     this.loadSchedulesForDay(date);
   }
 
-  /**
-   * Set selected doctor
-   */
-  setSelectedDoctor(doctorId: string): void {
+  public setSelectedDoctor(doctorId: string): void {
     this.selectedDoctorId.set(doctorId);
   }
 
-  /**
-   * Set selected institution
-   */
-  setSelectedInstitution(institutionId: string): void {
+  public setSelectedInstitution(institutionId: string): void {
     this.selectedInstitutionId.set(institutionId);
   }
 
-  /**
-   * Set doctors for institution
-   */
-  setDoctorsForInstitution(doctors: DoctorWithSchedule[]): void {
+  public setDoctorsForInstitution(doctors: DoctorWithSchedule[]): void {
     this.doctorsForInstitution.set(doctors);
   }
 
-  /**
-   * Get formatted date string
-   */
-  getFormattedDate(date: Date): string {
+  public getFormattedDate(date: Date): string {
     const dayKeys = [
       'weekdays.sunday',
       'weekdays.monday',
@@ -88,10 +70,7 @@ export class ScheduleManagementService {
     return `${dayName}, ${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
   }
 
-  /**
-   * Get selected doctor name
-   */
-  getSelectedDoctorName(): string {
+  public getSelectedDoctorName(): string {
     const doctorId = this.selectedDoctorId();
     if (!doctorId) return '';
 
@@ -101,28 +80,33 @@ export class ScheduleManagementService {
     return doctor ? `${doctor.doctorName} ${doctor.doctorSurname}` : '';
   }
 
-  /**
-   * Format time from datetime string
-   */
-  formatTime(dateTimeString: string): string {
-    const date = new Date(dateTimeString);
+  public formatTime(dateTimeString: string): string {
+    const normalizedString = dateTimeString.replace(' ', 'T');
+    const date = new Date(normalizedString);
+
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date string:', dateTimeString);
+      return 'Invalid Date';
+    }
+
     return date.toLocaleTimeString('pl-PL', {
       hour: '2-digit',
       minute: '2-digit',
     });
   }
 
-  /**
-   * Format time for input field (HH:mm)
-   */
-  formatTimeForInput(dateTimeString: string): string {
-    const date = new Date(dateTimeString);
+  public formatTimeForInput(dateTimeString: string): string {
+    const normalizedString = dateTimeString.replace(' ', 'T');
+    const date = new Date(normalizedString);
+
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date string:', dateTimeString);
+      return '';
+    }
+
     return date.toTimeString().slice(0, 5);
   }
 
-  /**
-   * Load schedules for selected day
-   */
   private loadSchedulesForDay(date: Date): void {
     const doctor = this.doctorsForInstitution().find(
       (doc) => doc.doctorId === this.selectedDoctorId(),
@@ -132,7 +116,6 @@ export class ScheduleManagementService {
       this.selectedDaySchedules.set([]);
       return;
     }
-
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -145,13 +128,15 @@ export class ScheduleManagementService {
     this.selectedDaySchedules.set(schedulesForDay);
   }
 
-  /**
-   * Update single schedule slot
-   */
-  updateSingleSlot(slot: DoctorSchedule, formData: SingleEditFormData): void {
+  public updateSingleSlot(
+    slot: DoctorSchedule,
+    formData: SingleEditFormData,
+  ): void {
     this.isLoading.set(true);
 
-    const dateStr = slot.startHour.split('T')[0].split(' ')[0];
+    const dateStr = slot.startHour.includes('T')
+      ? slot.startHour.split('T')[0]
+      : slot.startHour.split(' ')[0];
     const startHour = `${dateStr} ${formData.startTime}:00`;
     const endHour = `${dateStr} ${formData.endTime}:00`;
 
@@ -164,13 +149,12 @@ export class ScheduleManagementService {
       .subscribe(() => {
         this.isLoading.set(false);
 
-        // Update local state
         const updatedSchedules = this.selectedDaySchedules().map((s) => {
           if (s.id === slot.id) {
             return {
               ...s,
-              startHour: `${slot.startHour.split('T')[0]}T${formData.startTime}:00`,
-              endHour: `${slot.endHour.split('T')[0]}T${formData.endTime}:00`,
+              startHour: `${dateStr} ${formData.startTime}:00`,
+              endHour: `${dateStr} ${formData.endTime}:00`,
             };
           }
           return s;
@@ -179,10 +163,7 @@ export class ScheduleManagementService {
       });
   }
 
-  /**
-   * Generate time slots based on bulk edit parameters
-   */
-  generateTimeSlots(formData: BulkEditFormData): DoctorSchedule[] {
+  public generateTimeSlots(formData: BulkEditFormData): DoctorSchedule[] {
     const selectedDate = this.selectedDate();
     const selectedDoctorId = this.selectedDoctorId();
     const selectedInstitutionId = this.selectedInstitutionId();
@@ -202,7 +183,6 @@ export class ScheduleManagementService {
     const slots: DoctorSchedule[] = [];
     const dateStr = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
 
-    // Parse start and end times
     const [startHours, startMinutes] = formData.startTime
       .split(':')
       .map(Number);
@@ -211,7 +191,6 @@ export class ScheduleManagementService {
     const startTimeMinutes = startHours * 60 + startMinutes;
     const endTimeMinutes = endHours * 60 + endMinutes;
 
-    // Generate slots
     for (
       let currentMinutes = startTimeMinutes;
       currentMinutes < endTimeMinutes;
@@ -224,7 +203,6 @@ export class ScheduleManagementService {
       const slotEndHours = Math.floor(slotEndMinutes / 60);
       const slotEndMinutesRemainder = slotEndMinutes % 60;
 
-      // Stop if end time would exceed the specified end time
       if (slotEndMinutes > endTimeMinutes) {
         break;
       }
@@ -253,25 +231,29 @@ export class ScheduleManagementService {
     return slots;
   }
 
-  /**
-   * Save bulk changes (replace all slots for the day)
-   */
-  saveBulkChanges(formData: BulkEditFormData): void {
+  public saveBulkChanges(formData: BulkEditFormData): void {
     const newSlots = this.generateTimeSlots(formData);
 
-    // Update local state immediately
     this.selectedDaySchedules.set(newSlots);
-
-    // TODO: Implement API call to save bulk changes
-    // this.scheduleService.createBulkSchedule(...)
-    console.log('Generated slots:', newSlots);
   }
 
-  /**
-   * Clear all state
-   */
-  clearState(): void {
+  public clearState(): void {
     this.selectedDate.set(null);
     this.selectedDaySchedules.set([]);
+  }
+
+  public deleteSlot(slotId: string): void {
+    this.isLoading.set(true);
+
+    this.scheduleService
+      .deleteSchedule(slotId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.isLoading.set(false);
+        const updatedSchedules = this.selectedDaySchedules().filter(
+          (s) => s.id !== slotId,
+        );
+        this.selectedDaySchedules.set(updatedSchedules);
+      });
   }
 }

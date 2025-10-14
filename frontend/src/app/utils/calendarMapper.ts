@@ -1,6 +1,8 @@
 import { DoctorSchedule } from '../core/models/doctor.model';
-import { CalendarDay } from '../core/models/schedule.model';
-import { MapToCalendarDaysOptions } from '../modules/admin/components/institution-schedule/institution-schedule';
+import {
+  CalendarDay,
+  MapToCalendarDaysOptions,
+} from '../core/models/schedule.model';
 
 export function mapSchedulesToCalendarDays(
   schedules: DoctorSchedule[],

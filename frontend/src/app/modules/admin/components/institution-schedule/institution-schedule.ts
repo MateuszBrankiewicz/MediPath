@@ -43,7 +43,6 @@ export class InstitutionSchedule implements OnInit {
   protected selectedInstitution = signal<string | null>(null);
   protected doctorsForInstitution = signal<DoctorWithSchedule[]>([]);
 
-  // Dialog state
   protected showScheduleModal = signal<boolean>(false);
   protected selectedDate = signal<Date | null>(null);
 
@@ -115,6 +114,7 @@ export class InstitutionSchedule implements OnInit {
     );
     return doctor ? `${doctor.doctorName} ${doctor.doctorSurname}` : '';
   });
+
   private getDayName(date: Date): string {
     const dayKeys = [
       'weekdays.sunday',
@@ -175,19 +175,19 @@ export class InstitutionSchedule implements OnInit {
     }
   }
   protected onDaySelected(date: Date): void {
-    // Update schedule management service state
-    this.scheduleManagementService.setSelectedDate(date);
+    // Set all necessary data first before setting the date
+    this.scheduleManagementService.setDoctorsForInstitution(
+      this.doctorsForInstitution(),
+    );
     this.scheduleManagementService.setSelectedDoctor(
       this.selectedDoctorId() || '',
     );
     this.scheduleManagementService.setSelectedInstitution(
       this.selectedInstitution() || '',
     );
-    this.scheduleManagementService.setDoctorsForInstitution(
-      this.doctorsForInstitution(),
-    );
+    // Set the date last, as it triggers loadSchedulesForDay
+    this.scheduleManagementService.setSelectedDate(date);
 
-    // Set local state for dialog
     this.selectedDate.set(date);
     this.showScheduleModal.set(true);
   }
@@ -197,9 +197,4 @@ export class InstitutionSchedule implements OnInit {
     this.selectedDate.set(null);
     this.scheduleManagementService.clearState();
   }
-}
-export interface MapToCalendarDaysOptions {
-  displayedMonth: number;
-  displayedYear: number;
-  selectedInstitutionIds?: string[];
 }

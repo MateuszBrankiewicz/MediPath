@@ -218,6 +218,7 @@
   "shared.calendar.startTime": "Start time",
   "shared.calendar.endTime": "End time",
   "shared.calendar.differentTime": "Different time",
+  "shared.delete": "DELETE",
   "calendar.selectTimeRange": "Select time range",
   "calendar.startTime": "Start time",
   "calendar.endTime": "End time",
