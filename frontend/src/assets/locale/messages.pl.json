@@ -459,5 +459,15 @@
   "admin.createSchedule.summary.end": "Godzina zakończenia",
   "admin.createSchedule.createSchedule": "Utwórz harmonogram",
   "admin.createSchedule.selectInstitution": "Wybierz instytucję",
-  "shared.calendar.editModeAppointmentExists": "W tym przedziale czasowym istnieją już zaplanowane wizyty. Edytowanie tego przedziału może spowodować usunięcie istniejących wizyt. Czy na pewno chcesz kontynuować?"
+  "shared.calendar.editModeAppointmentExists": "W tym przedziale czasowym istnieją już zaplanowane wizyty. Edytowanie tego przedziału może spowodować usunięcie istniejących wizyt. Czy na pewno chcesz kontynuować?",
+  "doctor.schedule.booked": "Zajęte",
+  "doctor.schedule.available": "Dostępne",
+  "doctor.schedule.no_appointments": "Brak wizyt zaplanowanych na ten dzień",
+  "doctor.schedule.bulk_edit": "Edytuj wszystkie",
+  "doctor.schedule.bulk_edit_title": "Nadpisz wszystkie wizyty",
+  "doctor.schedule.bulk_edit_description": "Wprowadź nowe godziny pracy i interwał wizyt dla tego dnia",
+  "doctor.schedule.bulk_start_time": "Godzina rozpoczęcia",
+  "doctor.schedule.bulk_end_time": "Godzina zakończenia",
+  "doctor.schedule.bulk_interval": "Interwał (minuty)",
+  "doctor.schedule.generate_appointments": "Wygeneruj wizyty"
 }

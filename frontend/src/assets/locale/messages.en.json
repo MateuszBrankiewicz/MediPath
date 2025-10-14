@@ -456,6 +456,16 @@
     "admin.createSchedule.summary.end": "End time",
   "admin.createSchedule.createSchedule": "Create Schedule",
   "admin.createSchedule.selectInstitution": "Select institution",
-  "shared.calendar.editModeAppointmentExists": "There are already scheduled appointments in this time slot. Editing this slot may remove existing appointments. Are you sure you want to continue?"
+  "shared.calendar.editModeAppointmentExists": "There are already scheduled appointments in this time slot. Editing this slot may remove existing appointments. Are you sure you want to continue?",
+  "doctor.schedule.booked": "Booked",
+  "doctor.schedule.available": "Available",
+  "doctor.schedule.no_appointments": "No appointments scheduled for this day",
+  "doctor.schedule.bulk_edit": "Edit All",
+  "doctor.schedule.bulk_edit_title": "Override All Appointments",
+  "doctor.schedule.bulk_edit_description": "Set new working hours and appointment interval for this day",
+  "doctor.schedule.bulk_start_time": "Start Time",
+  "doctor.schedule.bulk_end_time": "End Time",
+  "doctor.schedule.bulk_interval": "Interval (minutes)",
+  "doctor.schedule.generate_appointments": "Generate Appointments"
 }
 

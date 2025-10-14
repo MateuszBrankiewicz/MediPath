@@ -38,8 +38,20 @@
     (daySelected)="onDaySelected($event)"
   ></app-calendar>
 </div>
-<p-button
-  label="{{ translationService.translate('shared.buttons.save') }}"
-  icon="pi pi-check"
-  (onClick)="saveSchedule()"
-></p-button>
+<div class="button-container">
+  <p-button
+    label="{{ translationService.translate('shared.save') }}"
+    icon="pi pi-check"
+    (onClick)="saveSchedule()"
+    size="large"
+  ></p-button>
+</div>
+<!-- Schedule Details Dialog -->
+<app-schedule-details-dialog
+  [visible]="showScheduleModal()"
+  [doctorName]="selectedDoctorName()"
+  [selectedDate]="selectedDate()"
+  [schedules]="scheduleManagementService.getSelectedDaySchedules()"
+  (visibleChange)="showScheduleModal.set($event)"
+  (dialogClosed)="closeScheduleModal()"
+></app-schedule-details-dialog>
