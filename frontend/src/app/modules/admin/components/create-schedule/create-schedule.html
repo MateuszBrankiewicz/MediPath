@@ -1,4 +1,14 @@
+@if (isLoading()) {
+  <div class="spinner-container">
+    <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
+  </div>
+}
 <div class="schedule-layout">
+  @if (isSending()) {
+    <div class="floating-center-spinner">
+      <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
+    </div>
+  }
   <div class="doctor-selection">
     <p-card>
       <ng-template pTemplate="header">
@@ -16,7 +26,8 @@
             inputId="institutionSelect"
             [options]="institutionOptions()"
             [ngModel]="selectedInstitution()"
-            optionLabel="institutionName"
+            optionLabel="name"
+            [dataKey]="'id'"
             (onChange)="onInstitutionChange($event.value)"
             [style]="{ width: '100%' }"
           ></p-select>
@@ -36,6 +47,7 @@
             [options]="doctorOptions()"
             [ngModel]="selectedDoctorId()"
             optionLabel="name"
+            optionValue="value"
             (onChange)="onDoctorChange($event.value)"
             [style]="{ width: '100%' }"
           ></p-select>
