@@ -1,5 +1,6 @@
 import { DoctorSchedule } from '../core/models/doctor.model';
 import {
+  AppointmentIndicator,
   CalendarDay,
   MapToCalendarDaysOptions,
 } from '../core/models/schedule.model';
@@ -11,7 +12,7 @@ export function mapSchedulesToCalendarDays(
   const groupedByDate = new Map<
     string,
     {
-      appointments: { id: string }[];
+      appointments: AppointmentIndicator[];
       institutionIds: Set<string>;
     }
   >();
@@ -27,7 +28,22 @@ export function mapSchedulesToCalendarDays(
     }
 
     const dayData = groupedByDate.get(dateKey)!;
-    dayData.appointments.push({ id: schedule.id });
+
+    let type: 'available-same' | 'available-other' | 'unavailable';
+
+    if (schedule.booked) {
+      type = 'unavailable';
+    } else {
+      const isFromSelectedInstitution =
+        options.selectedInstitutionIds &&
+        options.selectedInstitutionIds.includes(
+          schedule.institution.institutionId,
+        );
+
+      type = isFromSelectedInstitution ? 'available-same' : 'available-other';
+    }
+
+    dayData.appointments.push({ id: schedule.id, type });
     dayData.institutionIds.add(schedule.institution.institutionId);
   });
 

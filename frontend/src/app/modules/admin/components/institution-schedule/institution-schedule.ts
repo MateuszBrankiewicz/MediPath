@@ -175,7 +175,6 @@ export class InstitutionSchedule implements OnInit {
     }
   }
   protected onDaySelected(date: Date): void {
-    // Set all necessary data first before setting the date
     this.scheduleManagementService.setDoctorsForInstitution(
       this.doctorsForInstitution(),
     );
@@ -185,7 +184,6 @@ export class InstitutionSchedule implements OnInit {
     this.scheduleManagementService.setSelectedInstitution(
       this.selectedInstitution() || '',
     );
-    // Set the date last, as it triggers loadSchedulesForDay
     this.scheduleManagementService.setSelectedDate(date);
 
     this.selectedDate.set(date);
@@ -199,7 +197,6 @@ export class InstitutionSchedule implements OnInit {
   }
 
   protected onScheduleUpdated(): void {
-    // Reload doctors to get updated schedules
     const institutionId = this.selectedInstitution();
     if (institutionId) {
       this.loadDoctorsForInstitution(institutionId);

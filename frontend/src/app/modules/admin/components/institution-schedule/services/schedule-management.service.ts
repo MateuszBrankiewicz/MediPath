@@ -291,6 +291,11 @@ export class ScheduleManagementService {
 
     this.isLoading.set(true);
 
+    // Convert interval (minutes) to HH:MM:SS format
+    const intervalHours = Math.floor(formData.interval / 60);
+    const intervalMinutes = formData.interval % 60;
+    const intervalFormatted = `${String(intervalHours).padStart(2, '0')}:${String(intervalMinutes).padStart(2, '0')}:00`;
+
     this.scheduleService
       .updateManySchedules({
         doctorID: selectedDoctorId,
@@ -299,7 +304,7 @@ export class ScheduleManagementService {
         endHour: oldEndHour || newEndHour,
         newStartHour: newStartHour,
         newEndHour: newEndHour,
-        newInterval: formData.interval,
+        newInterval: intervalFormatted,
       })
       .pipe(
         catchError(() => {

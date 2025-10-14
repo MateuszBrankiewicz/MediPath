@@ -64,6 +64,12 @@ export interface CalendarDay {
 
 export interface AppointmentIndicator {
   id: string;
+  type?: 'available-same' | 'available-other' | 'unavailable';
+}
+
+export interface AppointmentGroup {
+  type: 'available-same' | 'available-other' | 'unavailable';
+  count: number;
 }
 
 export interface InputSlot {

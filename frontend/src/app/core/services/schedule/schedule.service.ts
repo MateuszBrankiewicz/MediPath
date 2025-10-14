@@ -55,7 +55,7 @@ export class ScheduleService {
     endHour: string;
     newStartHour: string;
     newEndHour: string;
-    newInterval: number;
+    newInterval: string;
   }) {
     return this.http.put(`${API_URL}/schedules/updatemany`, body, {
       withCredentials: true,
