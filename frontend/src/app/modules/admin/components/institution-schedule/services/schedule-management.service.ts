@@ -1,10 +1,12 @@
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, of } from 'rxjs';
 import {
   DoctorSchedule,
   DoctorWithSchedule,
 } from '../../../../../core/models/doctor.model';
 import { ScheduleService } from '../../../../../core/services/schedule/schedule.service';
+import { ToastService } from '../../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
 
 export interface BulkEditFormData {
@@ -24,6 +26,7 @@ export interface SingleEditFormData {
 export class ScheduleManagementService {
   private scheduleService = inject(ScheduleService);
   private translationService = inject(TranslationService);
+  private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   private selectedDate = signal<Date | null>(null);
@@ -131,6 +134,7 @@ export class ScheduleManagementService {
   public updateSingleSlot(
     slot: DoctorSchedule,
     formData: SingleEditFormData,
+    onSuccess?: () => void,
   ): void {
     this.isLoading.set(true);
 
@@ -145,8 +149,18 @@ export class ScheduleManagementService {
         startHour: startHour,
         endHour: endHour,
       })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
+      .pipe(
+        catchError((error) => {
+          console.error('Error updating schedule:', error);
+          this.toastService.showError('doctor.schedule.error.update');
+          this.isLoading.set(false);
+          return of(null);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        if (response === null) return;
+
         this.isLoading.set(false);
 
         const updatedSchedules = this.selectedDaySchedules().map((s) => {
@@ -160,6 +174,12 @@ export class ScheduleManagementService {
           return s;
         });
         this.selectedDaySchedules.set(updatedSchedules);
+
+        this.toastService.showSuccess('doctor.schedule.success.update');
+
+        if (onSuccess) {
+          onSuccess();
+        }
       });
   }
 
@@ -181,7 +201,10 @@ export class ScheduleManagementService {
     }
 
     const slots: DoctorSchedule[] = [];
-    const dateStr = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
 
     const [startHours, startMinutes] = formData.startTime
       .split(':')
@@ -231,10 +254,73 @@ export class ScheduleManagementService {
     return slots;
   }
 
-  public saveBulkChanges(formData: BulkEditFormData): void {
-    const newSlots = this.generateTimeSlots(formData);
+  public saveBulkChanges(
+    formData: BulkEditFormData,
+    onSuccess?: () => void,
+  ): void {
+    const selectedDate = this.selectedDate();
+    const selectedDoctorId = this.selectedDoctorId();
+    const selectedInstitutionId = this.selectedInstitutionId();
+    const currentSchedules = this.selectedDaySchedules();
 
-    this.selectedDaySchedules.set(newSlots);
+    if (!selectedDate || !selectedDoctorId || !selectedInstitutionId) {
+      return;
+    }
+
+    let oldStartHour = '';
+    let oldEndHour = '';
+
+    if (currentSchedules.length > 0) {
+      const sortedSchedules = [...currentSchedules].sort((a, b) =>
+        a.startHour.localeCompare(b.startHour),
+      );
+      oldStartHour = sortedSchedules[0].startHour.replace('T', ' ');
+      oldEndHour = sortedSchedules[sortedSchedules.length - 1].endHour.replace(
+        'T',
+        ' ',
+      );
+    }
+
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    const newStartHour = `${dateStr} ${formData.startTime}:00`;
+    const newEndHour = `${dateStr} ${formData.endTime}:00`;
+
+    this.isLoading.set(true);
+
+    this.scheduleService
+      .updateManySchedules({
+        doctorID: selectedDoctorId,
+        institutionID: selectedInstitutionId,
+        startHour: oldStartHour || newStartHour,
+        endHour: oldEndHour || newEndHour,
+        newStartHour: newStartHour,
+        newEndHour: newEndHour,
+        newInterval: formData.interval,
+      })
+      .pipe(
+        catchError(() => {
+          this.toastService.showError('doctor.schedule.error.bulk_update');
+          this.isLoading.set(false);
+          return of(null);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        if (response === null) return;
+
+        this.isLoading.set(false);
+        this.loadSchedulesForDay(selectedDate);
+
+        this.toastService.showSuccess('doctor.schedule.success.bulk_update');
+
+        if (onSuccess) {
+          onSuccess();
+        }
+      });
   }
 
   public clearState(): void {
@@ -242,18 +328,33 @@ export class ScheduleManagementService {
     this.selectedDaySchedules.set([]);
   }
 
-  public deleteSlot(slotId: string): void {
+  public deleteSlot(slotId: string, onSuccess?: () => void): void {
     this.isLoading.set(true);
 
     this.scheduleService
       .deleteSchedule(slotId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
+      .pipe(
+        catchError(() => {
+          this.toastService.showError('doctor.schedule.error.delete');
+          this.isLoading.set(false);
+          return of(null);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        if (response === null) return;
+
         this.isLoading.set(false);
         const updatedSchedules = this.selectedDaySchedules().filter(
           (s) => s.id !== slotId,
         );
         this.selectedDaySchedules.set(updatedSchedules);
+
+        this.toastService.showSuccess('doctor.schedule.success.delete');
+
+        if (onSuccess) {
+          onSuccess();
+        }
       });
   }
 }

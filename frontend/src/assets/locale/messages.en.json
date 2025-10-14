@@ -467,6 +467,14 @@
   "doctor.schedule.bulk_start_time": "Start Time",
   "doctor.schedule.bulk_end_time": "End Time",
   "doctor.schedule.bulk_interval": "Interval (minutes)",
-  "doctor.schedule.generate_appointments": "Generate Appointments"
+  "doctor.schedule.generate_appointments": "Generate Appointments",
+  "doctor.schedule.success.update": "Successfully updated appointment",
+  "doctor.schedule.success.bulk_update": "Successfully updated all appointments",
+  "doctor.schedule.success.delete": "Successfully deleted appointment",
+  "doctor.schedule.error.update": "Failed to update appointment",
+  "doctor.schedule.error.bulk_update": "Failed to update appointments",
+  "doctor.schedule.error.delete": "Failed to delete appointment",
+  "schedules.add": "Add new schedule"
 }
+
 

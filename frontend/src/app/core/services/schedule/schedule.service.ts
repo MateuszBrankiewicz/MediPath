@@ -47,4 +47,18 @@ export class ScheduleService {
       withCredentials: true,
     });
   }
+
+  public updateManySchedules(body: {
+    doctorID: string;
+    institutionID: string;
+    startHour: string;
+    endHour: string;
+    newStartHour: string;
+    newEndHour: string;
+    newInterval: number;
+  }) {
+    return this.http.put(`${API_URL}/schedules/updatemany`, body, {
+      withCredentials: true,
+    });
+  }
 }

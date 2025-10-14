@@ -197,4 +197,12 @@ export class InstitutionSchedule implements OnInit {
     this.selectedDate.set(null);
     this.scheduleManagementService.clearState();
   }
+
+  protected onScheduleUpdated(): void {
+    // Reload doctors to get updated schedules
+    const institutionId = this.selectedInstitution();
+    if (institutionId) {
+      this.loadDoctorsForInstitution(institutionId);
+    }
+  }
 }

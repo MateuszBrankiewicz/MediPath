@@ -44,6 +44,7 @@ export class ScheduleDetailsDialog {
 
   visibleChange = output<boolean>();
   dialogClosed = output<void>();
+  scheduleUpdated = output<void>();
 
   protected editingSlotId = signal<string | null>(null);
   protected editMode = signal<'single' | 'bulk'>('single');
@@ -108,7 +109,13 @@ export class ScheduleDetailsDialog {
   }
 
   protected saveSlotChanges(slot: DoctorSchedule): void {
-    this.scheduleManagementService.updateSingleSlot(slot, this.editFormData());
+    this.scheduleManagementService.updateSingleSlot(
+      slot,
+      this.editFormData(),
+      () => {
+        this.scheduleUpdated.emit();
+      },
+    );
     this.editingSlotId.set(null);
   }
 
@@ -118,7 +125,12 @@ export class ScheduleDetailsDialog {
   }
 
   protected saveBulkChanges(): void {
-    this.scheduleManagementService.saveBulkChanges(this.bulkEditFormData());
+    this.scheduleManagementService.saveBulkChanges(
+      this.bulkEditFormData(),
+      () => {
+        this.scheduleUpdated.emit();
+      },
+    );
     this.showBulkEdit.set(false);
     this.editMode.set('single');
   }
@@ -147,6 +159,8 @@ export class ScheduleDetailsDialog {
   }
 
   protected deleteSlot(slotId: string): void {
-    this.scheduleManagementService.deleteSlot(slotId);
+    this.scheduleManagementService.deleteSlot(slotId, () => {
+      this.scheduleUpdated.emit();
+    });
   }
 }

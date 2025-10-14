@@ -470,6 +470,14 @@
   "doctor.schedule.bulk_end_time": "Godzina zakończenia",
   "doctor.schedule.bulk_interval": "Interwał (minuty)",
   "doctor.schedule.generate_appointments": "Wygeneruj wizyty",
-  "shared.delete": "USUŃ"
+  "doctor.schedule.success.update": "Pomyślnie zaktualizowano wizytę",
+  "doctor.schedule.success.bulk_update": "Pomyślnie zaktualizowano wszystkie wizyty",
+  "doctor.schedule.success.delete": "Pomyślnie usunięto wizytę",
+  "doctor.schedule.error.update": "Nie udało się zaktualizować wizyty",
+  "doctor.schedule.error.bulk_update": "Nie udało się zaktualizować wizyt",
+  "doctor.schedule.error.delete": "Nie udało się usunąć wizyty",
+  "shared.delete": "USUŃ",
+  "schedules.add": "Dodaj nowy harmonogram"
+
 
 }
