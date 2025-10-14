@@ -1,0 +1,26 @@
+<h1>Visits</h1>
+
+<div class="visits-container">
+  <div class="visits-grid">
+    @for (visit of visits(); track visit.id) {
+      <app-appointment-card
+        [primaryActionButton]="{ icon: 'pi pi-pencil', label: 'Edit' }"
+        [appointment]="visit"
+      ></app-appointment-card>
+    }
+  </div>
+  @if (visits().length === 0) {
+    <div class="no-visits">
+      <div class="no-visits-content">
+        <i
+          class="pi pi-calendar"
+          style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem"
+        ></i>
+        <h3>{{ translationService.translate("doctor.visits.noVisits") }}</h3>
+        <p>
+          {{ translationService.translate("doctor.visits.noVisitsMessage") }}
+        </p>
+      </div>
+    </div>
+  }
+</div>

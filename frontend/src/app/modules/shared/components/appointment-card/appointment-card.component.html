@@ -30,8 +30,8 @@
   <div class="appointment-card-actions">
     @if (showPatientDetails()) {
       <p-button
-        [label]="actionButtonText()"
-        icon="pi pi-user"
+        [label]="primaryActionButton().label"
+        [icon]="primaryActionButton().icon"
         styleClass="btn-details p-button-outlined"
         (onClick)="onPatientDetailsClick()"
       />

@@ -159,7 +159,7 @@ export class NavigationService {
               {
                 label: 'Visits',
                 icon: 'pi pi-file-medical',
-                routerLink: '/patient/records',
+                routerLink: '/admin/visits',
                 visible: true,
               },
               {
