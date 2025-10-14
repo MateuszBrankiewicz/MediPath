@@ -111,7 +111,8 @@
       height: 3.5rem;
       @include hover-lift;
 
-      .appointment-time, .appointment-patient {
+      .appointment-time,
+      .appointment-patient {
         font-size: 0.95rem;
       }
 
@@ -161,115 +162,20 @@
   }
 }
 
-// Monthly Calendar Section
-.monthly-calendar {
-  background: var(--p-content-background);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  margin-bottom: 0;
+  border-bottom: 2px solid #e2e8f0;
 
-  .calendar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-
-    .nav-button {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 50%;
-      border: none;
-      background: var(--p-surface-100);
-      color: var(--p-text-muted-color);
-
-      &:hover {
-        background: var(--p-surface-200);
-        color: var(--p-text-color);
-      }
-    }
-
-    .month-year {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--p-text-color);
-    }
-  }
-
-  .calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0;
-    margin-bottom: 0;
-    border-bottom: 2px solid #e2e8f0;
-
-    .weekday {
-      text-align: center;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--p-text-muted-color);
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--p-surface-border);
-    }
-  }
-
-  .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0;
-
-    .calendar-day {
-      position: relative;
-      height: 4.5rem;
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-end;
-      font-size: 0.875rem;
-      background-color: var(--p-content-background);
-      border-bottom: 1px solid var(--p-surface-border);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      padding: 0.5rem;
-
-      &:hover {
-        background-color: var(--p-surface-100);
-      }
-
-      &.other-month {
-        color: var(--p-text-muted-color);
-      }
-
-      &.today, &.selected {
-        color: var(--p-primary-color);
-        font-weight: 600;
-
-        &:hover {
-          background-color: var(--p-primary-50);
-        }
-      }
-
-      &.selected {
-        border: 3px solid var(--p-primary-color);
-        box-sizing: border-box;
-      }
-
-      &.has-appointments {
-        .appointment-indicators {
-          position: absolute;
-          bottom: 0.5rem;
-          left: 0.5rem;
-          right: 0.5rem;
-          display: flex;
-          justify-content: center;
-
-          .appointment-indicator {
-            width: 100%;
-            height: 12px;
-            background-color: rgba(34, 197, 94, 0.3);
-            border-radius: 6px;
-          }
-        }
-      }
-    }
+  .weekday {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--p-text-muted-color);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--p-surface-border);
   }
 }
 
@@ -325,7 +231,8 @@
       .appointment-time-patient {
         margin-bottom: 1.5rem;
 
-        .time, .patient-name {
+        .time,
+        .patient-name {
           font-size: 1.1rem;
           color: var(--p-text-color);
         }
@@ -463,7 +370,8 @@
       }
     }
 
-    &.reschedule-btn-fixed, &.cancel-btn-fixed {
+    &.reschedule-btn-fixed,
+    &.cancel-btn-fixed {
       width: 100% !important;
       font-size: 0.875rem !important;
     }

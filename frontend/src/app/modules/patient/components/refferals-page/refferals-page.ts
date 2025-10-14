@@ -4,9 +4,9 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -21,6 +21,7 @@ import { TranslationService } from '../../../../core/services/translation/transl
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { CodesFilterService } from '../../services/codesFilter.service';
 import { PatientCodeDialogService } from '../../services/paitent-code-dialog.service';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-refferals-page',
@@ -32,28 +33,22 @@ import { PatientCodeDialogService } from '../../services/paitent-code-dialog.ser
     DatePipe,
     PaginatorModule,
     FilterComponent,
+    ProgressSpinnerModule,
   ],
   templateUrl: './refferals-page.html',
   styleUrl: './refferals-page.scss',
   providers: [DialogService, PatientCodeDialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RefferalsPage {
+export class RefferalsPage implements OnInit {
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
   private codeService = inject(CodesService);
   private filterCodesService = inject(CodesFilterService);
   private readonly manageDialogCodeService = inject(PatientCodeDialogService);
-
-  protected referrals = toSignal<Refferal[]>(
-    this.codeService
-      .getPrescriptions()
-      .pipe(
-        map((results: Refferal[]) =>
-          results.filter((code) => code.codeType?.toLowerCase() === 'referral'),
-        ),
-      ),
-  );
+  protected readonly isPrescriptionLoading = signal(false);
+  protected readonly isLoading = signal(false);
+  protected referrals = signal<Refferal[]>([]);
 
   protected readonly first = signal(0);
   protected readonly rows = signal(10);
@@ -96,6 +91,21 @@ export class RefferalsPage {
     return this.filteredPrescriptions().slice(start, end);
   });
 
+  ngOnInit(): void {
+    this.isPrescriptionLoading.set(true);
+    this.codeService
+      .getPrescriptions()
+      .pipe(
+        map((results: Refferal[]) =>
+          results.filter((code) => code.codeType?.toLowerCase() === 'referral'),
+        ),
+      )
+      .subscribe((refferalResponse) => {
+        this.referrals.set(refferalResponse);
+        this.isPrescriptionLoading.set(false);
+      });
+  }
+
   protected onFiltersChange(ev: FilterParams): void {
     this.filters.set(ev);
     this.first.set(0);
@@ -105,10 +115,14 @@ export class RefferalsPage {
     navigator.clipboard
       .writeText(pin.toString())
       .then(() => {
-        this.toastService.showSuccess('PIN copied to clipboard');
+        this.toastService.showSuccess(
+          this.translationService.translate('patient.common.pinCopied'),
+        );
       })
       .catch(() => {
-        this.toastService.showError('Failed to copy PIN');
+        this.toastService.showError(
+          this.translationService.translate('patient.common.pinCopyFailed'),
+        );
       });
   }
 
@@ -120,7 +134,9 @@ export class RefferalsPage {
 
   protected markAsUsed(referral: Refferal): void {
     if (referral.status === 'USED') {
-      this.toastService.showInfo('This referral is already marked as used.');
+      this.toastService.showInfo(
+        this.translationService.translate('patient.common.alreadyUsed'),
+      );
       return;
     }
     this.manageDialogCodeService
@@ -130,6 +146,7 @@ export class RefferalsPage {
       })
       .subscribe((success) => {
         if (success) {
+          this.isLoading.set(true);
           this.codeService
             .useCode({
               code: referral.prescriptionPin,
@@ -137,7 +154,7 @@ export class RefferalsPage {
             })
             .pipe(
               catchError((err) => {
-                console.log(err);
+                this.isLoading.set(false);
                 throw err;
               }),
             )
@@ -148,7 +165,12 @@ export class RefferalsPage {
                 }
                 return refferal;
               });
-              this.toastService.showSuccess('Referral marked as used.');
+              this.toastService.showSuccess(
+                this.translationService.translate(
+                  'patient.common.markedAsUsed',
+                ),
+              );
+              this.isLoading.set(false);
             });
         }
       });

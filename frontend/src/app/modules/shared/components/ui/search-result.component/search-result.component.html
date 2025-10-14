@@ -1,25 +1,29 @@
-<app-breadcumb-component />
-
-@if (category() === "institution") {
-  @for (institution of hospitals(); track $index) {
-    <app-hospital-card
-      (institutionClicked)="onInstitutionClicked($event)"
-      [hospital]="getDataForInstitutionCard()[$index]"
-    ></app-hospital-card>
-  }
+@if (isLoading()) {
+  <div class="spinner-container">
+    <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
+  </div>
 } @else {
-  @for (doctor of doctors(); track $index) {
-    <app-doctor-card
-      [doctor]="doctor"
-      (bookAppointment)="onBookAppointment($event)"
-      (showMoreInfo)="onShowMoreInfo($event)"
-      (addressChange)="onAddressChange($event)"
-      [isScheduleLoading]="
-        doctor.id === isNewScheduleLoaded().cardId
-          ? isNewScheduleLoaded().isLoading
-          : false
-      "
-    >
-    </app-doctor-card>
+  @if (category() === "institution") {
+    @for (institution of hospitals(); track $index) {
+      <app-hospital-card
+        (institutionClicked)="onInstitutionClicked($event)"
+        [hospital]="getDataForInstitutionCard()[$index]"
+      ></app-hospital-card>
+    }
+  } @else {
+    @for (doctor of doctors(); track $index) {
+      <app-doctor-card
+        [doctor]="doctor"
+        (bookAppointment)="onBookAppointment($event)"
+        (showMoreInfo)="onShowMoreInfo($event)"
+        (addressChange)="onAddressChange($event)"
+        [isScheduleLoading]="
+          doctor.id === isNewScheduleLoaded().cardId
+            ? isNewScheduleLoaded().isLoading
+            : false
+        "
+      >
+      </app-doctor-card>
+    }
   }
 }

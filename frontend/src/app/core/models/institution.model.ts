@@ -51,3 +51,7 @@ export interface InstitutionShortInfo {
   institutionId: string;
   institutionName: string;
 }
+
+export interface AdminInstitutionResponse {
+  institutions: Institution[];
+}

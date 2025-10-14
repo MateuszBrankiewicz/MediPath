@@ -12,11 +12,13 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Textarea } from 'primeng/textarea';
 import {
   AvailableDay,
+  InputSlot,
   ScheduleResponse,
 } from '../../../../core/models/schedule.model';
 import { RescheduleData } from '../../../../core/models/visit.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
+
 import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
 
 @Component({
@@ -51,47 +53,54 @@ export class ScheduleVisitDialog implements OnInit {
 
   private initializeAvailableDays(): void {
     const backendData = this.config.data?.availableTerms || [];
-    const convertedDays: AvailableDay[] = backendData.map(
-      (term: {
-        date: string;
-        dayName: string;
-        dayNumber: string;
-        slots: {
-          id?: string;
-          isBooked?: boolean;
-          startTime?: string;
-          time?: string;
-          available?: boolean;
-          booked?: boolean;
-        }[];
-      }) => ({
-        date: term.date,
-        slots:
-          term.slots?.map((slot) => {
-            let time: string;
 
-            if (slot.startTime) {
-              time = slot.startTime.includes('T')
-                ? slot.startTime.split('T')[1]
-                : slot.startTime;
-            } else if (slot.time) {
-              time = slot.time;
-            } else {
-              time = '00:00';
-            }
+    if (backendData.length === 0) {
+      this.availableDays.set([]);
+      return;
+    }
 
-            const convertedSlot = {
-              id: slot.id,
-              time: time,
-              available:
-                slot.available !== undefined ? slot.available : !slot.isBooked,
-              booked: slot.booked !== undefined ? slot.booked : !!slot.isBooked,
-            };
+    if (
+      backendData[0] &&
+      typeof backendData[0] === 'object' &&
+      'date' in backendData[0] &&
+      'slots' in backendData[0]
+    ) {
+      const convertedDays: AvailableDay[] = backendData as AvailableDay[];
+      this.availableDays.set(convertedDays);
+      return;
+    }
 
-            return convertedSlot;
-          }) || [],
-      }),
-    );
+    let allSlots: InputSlot[] = [];
+
+    if (Array.isArray(backendData[0])) {
+      allSlots = backendData.flat();
+    } else {
+      allSlots = backendData;
+    }
+
+    const groupedByDate = new Map<string, InputSlot[]>();
+
+    allSlots.forEach((slot: InputSlot) => {
+      if (slot.startHour) {
+        const datePart = slot.startHour.split(' ')[0];
+        if (!groupedByDate.has(datePart)) {
+          groupedByDate.set(datePart, []);
+        }
+        groupedByDate.get(datePart)!.push(slot);
+      }
+    });
+
+    const convertedDays: AvailableDay[] = Array.from(
+      groupedByDate.entries(),
+    ).map(([date, slots]) => ({
+      date: date,
+      slots: slots.map((slot) => ({
+        id: slot.id,
+        time: slot.startHour.split(' ')[1].substring(0, 5),
+        booked: slot.booked,
+        available: !slot.booked,
+      })),
+    }));
 
     this.availableDays.set(convertedDays);
   }

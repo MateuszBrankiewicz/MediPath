@@ -1,3 +1,9 @@
+@if(isVisitLoading()){
+<div class="spinner-container">
+    <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
+  </div>
+}
+@else{
 <h2>{{ translationService.translate("patient.visits.title") }}</h2>
 <app-filter-component
   [style]="{ width: '80%', marginTop: '1rem' }"
@@ -12,6 +18,13 @@
   }"
 ></app-filter-component>
 <div class="visits-list">
+  @if(isLoading()){
+    <div class="floating-center-spinner">
+      <p-progress-spinner
+        [style]="{ width: '20%', height: '20%' }"
+      ></p-progress-spinner>
+    </div>
+  }
   @for (visit of paginatedVisits(); track visit.id) {
     <p-card class="visit-card">
       <div class="visit-card-content">
@@ -86,3 +99,4 @@
     style="margin-bottom: 10px"
   />
 </div>
+}

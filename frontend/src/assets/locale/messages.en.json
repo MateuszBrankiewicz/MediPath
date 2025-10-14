@@ -165,6 +165,12 @@
   "patient.referrals.validUntil": "Valid until:",
   "patient.referrals.used": "USED",
 
+  "patient.common.copyPin": "Copy PIN",
+  "patient.common.pinCopied": "PIN copied to clipboard",
+  "patient.common.pinCopyFailed": "Failed to copy PIN",
+  "patient.common.alreadyUsed": "This referral is already marked as used.",
+  "patient.common.markedAsUsed": "Referral marked as used.",
+
   "patient.dashboard.prescriptions": "Prescriptions",
   "patient.dashboard.referrals": "Referrals",
   "patient.dashboard.upcomingVisits": "Upcoming visits",
@@ -208,6 +214,14 @@
   "shared.calendar.selectDate": "Select date",
   "shared.calendar.availableTerms": "Available terms",
   "shared.calendar.pleaseSelectDate": "Please select a date to see available times",
+  "shared.calendar.scheduleSettings": "Schedule settings",
+  "shared.calendar.startTime": "Start time",
+  "shared.calendar.endTime": "End time",
+  "shared.calendar.differentTime": "Different time",
+  "calendar.selectTimeRange": "Select time range",
+  "calendar.startTime": "Start time",
+  "calendar.endTime": "End time",
+  "calendar.differentHour": "Different hour",
 
   "shared.forms.noResultsFound": "No results found",
   "shared.forms.loading": "Loading...",
@@ -428,7 +442,20 @@
   "notifications.toast.markOneError": "Failed to mark notification as read",
   "notifications.toast.deleteSuccess": "Notification deleted successfully",
   "notifications.toast.deleteError": "Failed to delete notification",
-  "notifications.edit": "Edit"
-
-
+  "notifications.edit": "Edit",
+  "admin.createSchedule.selectDoctor": "Select doctor",
+  "admin.createSchedule.selectDoctorPlaceholder": "Choose a doctor",
+  "admin.createSchedule.selectedDoctor": "Selected doctor",
+  "admin.createSchedule.estimatedTimeForOneVisit": "Estimated time for one visit (min)",
+    "admin.createSchedule.summary.title": "Summary",
+    "admin.createSchedule.summary.institution": "Institution",
+    "admin.createSchedule.summary.doctor": "Doctor",
+    "admin.createSchedule.summary.duration": "Visit duration for one visit",
+    "admin.createSchedule.summary.date": "Selected date",
+    "admin.createSchedule.summary.start": "Start time",
+    "admin.createSchedule.summary.end": "End time",
+  "admin.createSchedule.createSchedule": "Create Schedule",
+  "admin.createSchedule.selectInstitution": "Select institution",
+  "shared.calendar.editModeAppointmentExists": "There are already scheduled appointments in this time slot. Editing this slot may remove existing appointments. Are you sure you want to continue?"
 }
+

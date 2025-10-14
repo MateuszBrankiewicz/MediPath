@@ -41,6 +41,11 @@ export class AuthenticationService {
   private readonly user = signal<UserBasicInfo | null>(null);
   public readonly userChanges = this.user.asReadonly();
 
+  public readonly userRole = computed(() => {
+    const roleCode = this.user()?.roleCode;
+    return getRoleFromCode(typeof roleCode === 'number' ? roleCode : 0);
+  });
+
   public registerUser(userToRegister: RegisterUser) {
     return this.http.post(API_URL + '/users/register', userToRegister);
   }
@@ -79,7 +84,7 @@ export class AuthenticationService {
             id: response.user.id,
             name: response.user.name,
             surname: response.user.surname,
-            roleCode: getRoleFromCode(response.user.roleCode),
+            roleCode: response.user.roleCode,
             notifications,
             email: response.user.email,
             userSettings: {
@@ -171,7 +176,7 @@ export class AuthenticationService {
           id: response.user.id,
           name: response.user.name,
           surname: response.user.surname,
-          roleCode: getRoleFromCode(response.user.roleCode),
+          roleCode: response.user.roleCode,
           notifications,
           email: response.user.email,
           userSettings: {

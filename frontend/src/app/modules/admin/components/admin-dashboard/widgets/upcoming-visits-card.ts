@@ -7,6 +7,9 @@ export interface UpcomingVisitItem {
   id: string | number;
   time: string;
   patientName: string;
+  doctorName: string;
+  doctorId: string;
+  date: string;
 }
 
 @Component({

@@ -27,6 +27,7 @@ import { AuthenticationService } from '../../../../../core/services/authenticati
 import {
   getRoleFromCode,
   UserRoles,
+  UserRolesNumbers,
 } from '../../../../../core/services/authentication/authentication.model';
 import { NotificationMessage } from '../../../../../core/services/notifications/user-notifications.model';
 import { UserNotificationsService } from '../../../../../core/services/notifications/user-notifications.service';
@@ -39,8 +40,16 @@ export interface TopBarConfig {
 }
 interface RoleOption {
   label: string;
-  value: UserRoles;
+  value: UserRolesNumbers;
 }
+
+const ALL_POSSIBLE_ROLES: RoleOption[] = [
+  { label: 'Patient', value: UserRolesNumbers.PATIENT },
+  { label: 'Doctor', value: UserRolesNumbers.DOCTOR },
+  { label: 'Staff', value: UserRolesNumbers.STAFF },
+  { label: 'Admin', value: UserRolesNumbers.ADMIN },
+];
+
 @Component({
   selector: 'app-top-bar-component',
   templateUrl: './top-bar-component.html',
@@ -71,7 +80,6 @@ export class TopBarComponent implements OnInit {
   private readonly authService = inject(AuthenticationService);
 
   private readonly toastService = inject(ToastService);
-  private readonly notificationsService = inject(UserNotificationsService);
 
   protected readonly translationService = inject(TranslationService);
 
@@ -99,11 +107,18 @@ export class TopBarComponent implements OnInit {
     },
   ]);
 
-  protected readonly roleOptions = computed<RoleOption[]>(() => [
-    { label: 'Doctor', value: UserRoles.DOCTOR },
-    { label: 'Admin', value: UserRoles.ADMIN },
-    { label: 'Patient', value: UserRoles.PATIENT },
-  ]);
+  protected readonly roleOptions = computed<RoleOption[]>(() => {
+    const user = this.authService.userChanges();
+    if (!user || !user.roleCode) {
+      return [];
+    }
+
+    const userRolesValue = user.roleCode as number;
+
+    return ALL_POSSIBLE_ROLES.filter(
+      (roleOption) => (userRolesValue & roleOption.value) === roleOption.value,
+    );
+  });
 
   protected readonly selectedRole = computed<UserRoles>(() => {
     const lastPanel = this.user()?.userSettings.lastPanel;
@@ -335,13 +350,16 @@ export class TopBarComponent implements OnInit {
     return this.translationService.translate(key, params);
   }
 
-  protected onRoleChange(newRole: UserRoles | null): void {
+  protected onRoleChange(newRole: UserRolesNumbers | null): void {
     if (!newRole) {
       return;
     }
-
+    const mappedRole = getRoleFromCode(newRole);
+    if (!mappedRole) {
+      return;
+    }
     this.authService
-      .changeLastPanel(newRole)
+      .changeLastPanel(mappedRole)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (role) => {

@@ -1,0 +1,45 @@
+<h1 class="page-title">
+  {{ translationService.translate("navigation.schedule") }}
+</h1>
+
+<div class="schedule-layout">
+  <div class="day-schedule">
+    <div class="day-header">
+      <h2 class="day-title">
+        {{ translationService.translate("doctor.schedule.day") }}
+      </h2>
+
+      <div class="current-day">
+        <div class="day-number">{{ currentDayNumber }}</div>
+        <div class="day-info">
+          <div class="day-name">{{ currentDayName }}</div>
+          <div class="date">{{ currentMonthYear() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="appointments-list">
+      @for (doctor of doctorsForInstitution(); track doctor.doctorId) {
+        <div
+          class="appointment-slot available"
+          [class.selected]="selectedDoctorIdFn() === doctor.doctorId"
+          (click)="selectDoctor(doctor.doctorId)"
+        >
+          <span class="appointment-patient"
+            >{{ doctor.doctorName }} {{ doctor.doctorSurname }}</span
+          >
+        </div>
+      }
+    </div>
+  </div>
+
+  <app-calendar
+    [appointments]="mapSelectedDoctorScheduleToCalendarDays()"
+    (daySelected)="onDaySelected($event)"
+  ></app-calendar>
+</div>
+<p-button
+  label="{{ translationService.translate('shared.buttons.save') }}"
+  icon="pi pi-check"
+  (onClick)="saveSchedule()"
+></p-button>

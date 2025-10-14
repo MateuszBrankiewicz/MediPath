@@ -67,7 +67,7 @@
     } @else {
       @if (doctor().schedule && doctor().schedule.length > 0) {
         <div class="schedule-days">
-          @for (day of doctor().schedule; track day) {
+          @for (day of getSortedDays(); track day) {
             <div class="day-column">
               <div class="day-header">
                 <div class="day-name">{{ day.dayName }}</div>
@@ -82,7 +82,10 @@
                   </button>
                 }
 
-                @for (slot of getVisibleSlots(day.slots, day.dayName); track slot) {
+                @for (
+                  slot of getVisibleSlots(day.slots, day.dayName);
+                  track slot
+                ) {
                   <button
                     class="time-slot"
                     [class.available]="slot.available && !slot.booked"

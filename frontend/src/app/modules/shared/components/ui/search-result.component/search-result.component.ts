@@ -17,6 +17,7 @@ import { TranslationService } from '../../../../../core/services/translation/tra
 import { groupSchedulesByDate } from '../../../../../utils/scheduleMapper';
 import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
 
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {
   ScheduleByInstitutionResponse,
   ScheduleItem,
@@ -44,6 +45,7 @@ import {
     HospitalCardComponent,
     DoctorCardComponent,
     BreadcumbComponent,
+    ProgressSpinnerModule,
   ],
   providers: [DialogService],
   templateUrl: './search-result.component.html',
@@ -62,6 +64,7 @@ export class SearchResultComponent implements OnInit {
   protected readonly category = signal('');
   private doctorService = inject(DoctorService);
   protected isNewScheduleLoaded = signal({ isLoading: false, cardId: '' });
+  protected isLoading = signal(false);
 
   protected readonly values = signal<SearchResponse | null>(null);
 
@@ -86,11 +89,13 @@ export class SearchResultComponent implements OnInit {
   }
 
   protected performSearch(params: SearchQuery): void {
+    this.isLoading.set(true);
     this.searchService
       .search(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((results) => {
         this.values.set(results);
+        this.isLoading.set(false);
       });
   }
 

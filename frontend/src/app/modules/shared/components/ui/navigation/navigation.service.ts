@@ -153,7 +153,7 @@ export class NavigationService {
               {
                 label: 'Schedule',
                 icon: 'pi pi-calendar',
-                routerLink: '/patient/appointments',
+                routerLink: '/admin/schedule',
                 visible: true,
               },
               {
@@ -165,7 +165,7 @@ export class NavigationService {
               {
                 label: 'Institutions',
                 icon: 'pi pi-user',
-                routerLink: '/patient/profile',
+                routerLink: 'admin/institutions',
                 visible: true,
               },
               {

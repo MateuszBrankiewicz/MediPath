@@ -1,4 +1,4 @@
-<div class="calendar-schedule">
+<div class="calendar-schedule" [class]="'size-' + size()">
   <div class="schedule-layout">
     <div class="date-selection">
       <h3>{{ translationService.translate("shared.calendar.selectDate") }}</h3>
@@ -40,7 +40,8 @@
               [class.today]="calendarDay.isToday"
               [class.has-appointments]="calendarDay.hasAppointments"
               [class.selected]="isDateSelected(calendarDay)"
-              [class.selectable]="calendarDay.hasAppointments"
+              [class.selectable]="isDaySelectable(calendarDay)"
+              [class.edit-mode]="editMode()"
               (click)="onDateSelect(calendarDay)"
             >
               {{ calendarDay.dayNumber }}
@@ -51,30 +52,125 @@
     </div>
 
     <div class="time-selection">
-      <h3>
-        {{ translationService.translate("shared.calendar.availableTerms") }}
-      </h3>
+      @if (editMode()) {
+        <h3>
+          {{ translationService.translate("shared.calendar.scheduleSettings") }}
+        </h3>
 
-      @if (selectedDate()) {
-        <div class="time-slots">
-          <div class="time-grid">
-            @for (slot of availableTimes(); track slot.time) {
-              <button
-                class="time-slot"
-                [class.selected]="selectedTime() === slot.time"
-                [class.unavailable]="!slot.available"
-                [disabled]="!slot.available"
-                (click)="onTimeSelect(slot)"
-              >
-                {{ slot.time }}
-              </button>
-            }
+        @if (selectedDate()) {
+          <div class="schedule-settings">
+            <div class="time-group">
+              <div class="time-label">
+                {{ translationService.translate("shared.calendar.startTime") }}
+              </div>
+              <div class="time-buttons">
+                @for (timeOption of availableTimes(); track timeOption.time) {
+                  <button
+                    class="time-button"
+                    [class.selected]="selectedStartTime() === timeOption.time"
+                    (click)="onStartTimeSelect(timeOption.time)"
+                    [class.unavailable]="!timeOption.available"
+                    [disabled]="!timeOption.available"
+                  >
+                    {{ timeOption.time }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="custom-time-group">
+              <label class="time-label" for="custom-start-time-input">
+                {{
+                  translationService.translate("shared.calendar.differentTime")
+                }}
+                ({{
+                  translationService.translate("shared.calendar.startTime")
+                }})
+              </label>
+              <input
+                id="custom-start-time-input"
+                type="time"
+                class="custom-time-input"
+                [value]="customTimeInputStart()"
+                (input)="onCustomTimeStartChange($event)"
+                placeholder="HH:MM"
+              />
+            </div>
+
+            <div class="time-group">
+              <div class="time-label">
+                {{ translationService.translate("shared.calendar.endTime") }}
+              </div>
+              <div class="time-buttons">
+                @for (
+                  timeOption of availableEndTimes();
+                  track timeOption.time
+                ) {
+                  <button
+                    class="time-button"
+                    [class.selected]="selectedEndTime() === timeOption.time"
+                    (click)="onEndTimeSelect(timeOption.time)"
+                    [class.unavailable]="!timeOption.available"
+                    [disabled]="!timeOption.available"
+                  >
+                    {{ timeOption.time }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="custom-time-group">
+              <label class="time-label" for="custom-end-time-input">
+                {{
+                  translationService.translate("shared.calendar.differentTime")
+                }}
+                ({{ translationService.translate("shared.calendar.endTime") }})
+              </label>
+              <input
+                id="custom-end-time-input"
+                type="time"
+                class="custom-time-input"
+                [value]="customTimeInputEnd()"
+                (input)="onCustomTimeEndChange($event)"
+                placeholder="HH:MM"
+              />
+            </div>
           </div>
-        </div>
+        } @else {
+          <p class="no-date-message">
+            {{
+              translationService.translate("shared.calendar.pleaseSelectDate")
+            }}
+          </p>
+        }
       } @else {
-        <p class="no-date-message">
-          {{ translationService.translate("shared.calendar.pleaseSelectDate") }}
-        </p>
+        <h3>
+          {{ translationService.translate("shared.calendar.availableTerms") }}
+        </h3>
+
+        @if (selectedDate()) {
+          <div class="time-slots">
+            <div class="time-grid">
+              @for (slot of availableTimes(); track slot.time) {
+                <button
+                  class="time-slot"
+                  [class.selected]="selectedTime() === slot.time"
+                  [class.unavailable]="!slot.available"
+                  [disabled]="!slot.available"
+                  (click)="onTimeSelect(slot)"
+                >
+                  {{ slot.time }}
+                </button>
+              }
+            </div>
+          </div>
+        } @else {
+          <p class="no-date-message">
+            {{
+              translationService.translate("shared.calendar.pleaseSelectDate")
+            }}
+          </p>
+        }
       }
     </div>
   </div>

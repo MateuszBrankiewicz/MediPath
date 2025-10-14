@@ -1,0 +1,64 @@
+<div class="monthly-calendar">
+  <div class="calendar-header">
+    <p-button
+      icon="pi pi-chevron-left"
+      styleClass="nav-button"
+      (onClick)="previousMonth()"
+      [text]="true"
+    >
+    </p-button>
+
+    <span class="month-year">{{ currentMonthYear() }}</span>
+
+    <p-button
+      icon="pi pi-chevron-right"
+      styleClass="nav-button"
+      (onClick)="nextMonth()"
+      [text]="true"
+    >
+    </p-button>
+  </div>
+
+  <div class="calendar-weekdays">
+    @for (day of weekdays; track day) {
+      <div class="weekday">{{ day }}</div>
+    }
+  </div>
+
+  <div class="calendar-grid">
+    @for (day of calendarDays(); track day.date.getTime()) {
+      <div
+        class="calendar-day"
+        [class.other-month]="!day.isCurrentMonth"
+        [class.today]="day.isToday"
+        [class.has-appointments]="day.hasAppointments"
+        [class.has-available-appointments]="
+          day.hasAppointments && day.isFromThisInstitution
+        "
+        [class.selected]="day.isSelected"
+        (click)="selectDate(day)"
+      >
+        {{ day.dayNumber }}
+        @if (day.hasAppointments) {
+          <div class="appointment-indicators">
+            @for (indicator of day.appointments; track indicator.id) {
+              @if (checkIfAppointmentIsAvailable()) {
+                @if (day.isFromThisInstitution !== false) {
+                  <div
+                    class="appointment-indicator__available-same-institution"
+                  ></div>
+                } @else {
+                  <div
+                    class="appointment-indicator__available-other-institution"
+                  ></div>
+                }
+              } @else {
+                <div class="appointment-indicator__unavailable"></div>
+              }
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
