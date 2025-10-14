@@ -101,6 +101,13 @@ export class AuthenticationService {
       );
   }
 
+  public getLastPanel(): UserRoles | null {
+    const lastPanel = this.user()?.userSettings.lastPanel;
+    return typeof lastPanel === 'number'
+      ? getRoleFromCode(lastPanel)
+      : (lastPanel ?? null);
+  }
+
   public resetPassword(email: string) {
     return this.http.get<{ message: string }>(
       API_URL + '/users/resetpassword?address=' + email,

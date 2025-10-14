@@ -2,15 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   output,
 } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ButtonModule } from 'primeng/button';
-import { TranslationService } from '../../../../../../../core/services/translation/translation.service';
 import { AddressFormatPipe } from '../../../../../../../core/pipes/address-format-pipe';
+import { TranslationService } from '../../../../../../../core/services/translation/translation.service';
 
 export interface Hospital {
   id: string;
@@ -43,6 +42,7 @@ export class HospitalCardComponent {
 
   protected readonly imageUrl = computed<SafeUrl | null>(() => {
     const rawImageUrl = this.hospital().imageUrl;
+    console.log(this.canEdit());
     if (rawImageUrl) {
       return this.sanitizer.bypassSecurityTrustResourceUrl(rawImageUrl);
     }
@@ -71,13 +71,5 @@ export class HospitalCardComponent {
       return 'None';
     }
     return this.hospital().specialisation?.join(', ') ?? '';
-  }
-  constructor() {
-    effect(() => {
-      console.log('hospital imageUrl:', this.hospital().imageUrl);
-    });
-  }
-  protected onImageLoad(event: Event): void {
-    console.log('Image loaded successfully:', event);
   }
 }
