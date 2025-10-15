@@ -42,4 +42,30 @@ public class CityController {
         return new ResponseEntity<>(List.of(provinces), HttpStatus.OK);
     }
 
+    @GetMapping(value= {"/specialisations", "/specialisations/"})
+    public ResponseEntity<List<String>> getSpecialisations() {
+        String[] specialisations = {
+                "Allergy and immunology",
+                "Anesthesiology",
+                "Dermatology",
+                "Diagnostic radiology" ,
+                "Emergency medicine",
+                "Family medicine",
+                "Internal medicine",
+                "Medical genetics",
+                "Neurology",
+                "Nuclear medicine",
+                "Obstetrics and gynecology",
+                "Ophthalmology",
+                "Pathology",
+                "Pediatrics",
+                "Physical medicine and rehabilitation",
+                "Preventive medicine",
+                "Psychiatry",
+                "Radiation oncology",
+                "Surgery",
+                "Urology"
+                };
+        return new ResponseEntity<>(List.of(specialisations), HttpStatus.OK);
+    }
 }
