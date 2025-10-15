@@ -410,7 +410,7 @@ public class InstitutionController {
     }
 
     @GetMapping(value = {"/{institutionid}/schedules/{date}", "/{institutionid}/schedules/{date}/", "/{institutionid}/schedules/", "/{institutionid}/schedules"})
-    public ResponseEntity<Map<String, Object>> updateInstitution(@PathVariable String institutionid, @PathVariable(required = false) String date, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> getSchedulesForInstitution(@PathVariable String institutionid, @PathVariable(required = false) String date, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if (loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -441,6 +441,43 @@ public class InstitutionController {
             }
             ArrayList<Schedule> schedules = scheduleRepository.getInstitutionSchedulesOnDay(institutionid, startDate.atStartOfDay(), startDate.plusMonths(1).atStartOfDay());
             return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
+        }
+
+
+    }
+
+    @GetMapping(value = {"/{institutionid}/visits/{date}", "/{institutionid}/visits/{date}/", "/{institutionid}/visits/", "/{institutionid}/visits"})
+    public ResponseEntity<Map<String, Object>> getVisitsForInstitution(@PathVariable String institutionid, @PathVariable(required = false) String date, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if (loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Optional<Institution> optionalInstitution = institutionRepository.findById(institutionid);
+        if(optionalInstitution.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(!isLoggedAsEmployeeOfInstitution(loggedUserID, institutionid)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if(date == null) {
+            ArrayList<Visit> visits = visitRepository.getAllVisitsInInstitution(institutionid);
+            return new ResponseEntity<>(Map.of("visits", visits), HttpStatus.OK);
+        } else {
+            if(date.equals("now")) {
+                date = LocalDate.now().withDayOfMonth(1).toString();
+            }
+            LocalDate startDate;
+            try {
+                DateTimeFormatter fmt = new DateTimeFormatterBuilder()
+                        .appendPattern("MM-yyyy")
+                        .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+                        .toFormatter();
+                startDate = LocalDate.parse(date, fmt);
+            } catch (DateTimeParseException e) {
+                return new ResponseEntity<>(Map.of("message","invalid date"), HttpStatus.BAD_REQUEST);
+            }
+            ArrayList<Visit> visits = visitRepository.getInstitutionVisitsOnDay(institutionid, startDate.atStartOfDay(), startDate.plusMonths(1).atStartOfDay());
+            return new ResponseEntity<>(Map.of("visits", visits), HttpStatus.OK);
         }
 
 

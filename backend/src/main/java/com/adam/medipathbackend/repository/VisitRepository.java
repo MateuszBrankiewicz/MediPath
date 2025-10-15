@@ -33,4 +33,10 @@ public interface VisitRepository extends MongoRepository<Visit, String> {
 
     @Query("{'doctor.userId': ?0, 'time.startTime': {$gt: ?1, $lt: ?2}}")
     ArrayList<Visit> getDoctorVisitsOnDay(String userId, LocalDateTime date1, LocalDateTime date2);
+
+    @Query("{'institution.institutionId': ?0, 'time.startTime': {$gt: ?1, $lt: ?2}}")
+    ArrayList<Visit> getInstitutionVisitsOnDay(String userId, LocalDateTime date1, LocalDateTime date2);
+
+    @Query("{'institution.institutionId' : ?0}}")
+    ArrayList<Visit> getAllVisitsInInstitution(String institutionId);
 }
