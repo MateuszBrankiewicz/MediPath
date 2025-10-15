@@ -257,6 +257,7 @@ export class ScheduleManagementService {
   public saveBulkChanges(
     formData: BulkEditFormData,
     onSuccess?: () => void,
+    onDataRefreshNeeded?: () => void,
   ): void {
     const selectedDate = this.selectedDate();
     const selectedDoctorId = this.selectedDoctorId();
@@ -291,7 +292,6 @@ export class ScheduleManagementService {
 
     this.isLoading.set(true);
 
-    // Convert interval (minutes) to HH:MM:SS format
     const intervalHours = Math.floor(formData.interval / 60);
     const intervalMinutes = formData.interval % 60;
     const intervalFormatted = `${String(intervalHours).padStart(2, '0')}:${String(intervalMinutes).padStart(2, '0')}:00`;
@@ -318,9 +318,12 @@ export class ScheduleManagementService {
         if (response === null) return;
 
         this.isLoading.set(false);
-        this.loadSchedulesForDay(selectedDate);
 
         this.toastService.showSuccess('doctor.schedule.success.bulk_update');
+
+        if (onDataRefreshNeeded) {
+          onDataRefreshNeeded();
+        }
 
         if (onSuccess) {
           onSuccess();
@@ -346,14 +349,13 @@ export class ScheduleManagementService {
         }),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((response) => {
-        if (response === null) return;
-
+      .subscribe(() => {
         this.isLoading.set(false);
         const updatedSchedules = this.selectedDaySchedules().filter(
           (s) => s.id !== slotId,
         );
         this.selectedDaySchedules.set(updatedSchedules);
+        this.isLoading.set(false);
 
         this.toastService.showSuccess('doctor.schedule.success.delete');
 

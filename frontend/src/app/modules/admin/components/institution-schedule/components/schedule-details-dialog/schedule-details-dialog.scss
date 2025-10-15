@@ -72,22 +72,6 @@
   }
 }
 
-// Loading Spinner
-.floating-center-spinner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 2rem;
-  border-radius: 16px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-// Bulk Edit Form Styles
 .bulk-edit-form {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   border: 2px solid var(--p-primary-color);
@@ -209,7 +193,6 @@
   }
 }
 
-// Schedule Slots
 .schedule-slots {
   display: flex;
   flex-direction: column;

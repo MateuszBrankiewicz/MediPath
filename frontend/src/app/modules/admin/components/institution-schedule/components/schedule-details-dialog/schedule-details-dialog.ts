@@ -128,11 +128,13 @@ export class ScheduleDetailsDialog {
     this.scheduleManagementService.saveBulkChanges(
       this.bulkEditFormData(),
       () => {
+        this.showBulkEdit.set(false);
+        this.editMode.set('single');
+      },
+      () => {
         this.scheduleUpdated.emit();
       },
     );
-    this.showBulkEdit.set(false);
-    this.editMode.set('single');
   }
 
   protected cancelBulkEdit(): void {

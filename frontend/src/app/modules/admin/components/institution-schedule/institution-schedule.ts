@@ -199,7 +199,26 @@ export class InstitutionSchedule implements OnInit {
   protected onScheduleUpdated(): void {
     const institutionId = this.selectedInstitution();
     if (institutionId) {
-      this.loadDoctorsForInstitution(institutionId);
+      this.institutionService
+        .getDoctorsForInstitution(institutionId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((doctors) => {
+          const doctorsWithSchedule = doctors.map((doctor) => ({
+            doctorId: doctor.doctorId,
+            doctorName: doctor.doctorName,
+            doctorSurname: doctor.doctorSurname,
+            schedules: doctor.doctorSchedules,
+          }));
+          this.doctorsForInstitution.set(doctorsWithSchedule);
+          this.scheduleManagementService.setDoctorsForInstitution(
+            doctorsWithSchedule,
+          );
+
+          const selectedDate = this.scheduleManagementService.getSelectedDate();
+          if (selectedDate) {
+            this.scheduleManagementService.setSelectedDate(selectedDate);
+          }
+        });
     }
   }
 }
