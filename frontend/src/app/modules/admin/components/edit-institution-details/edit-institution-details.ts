@@ -1,11 +1,21 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
 import { ChipModule } from 'primeng/chip';
+import { Divider } from 'primeng/divider';
 import { FileUploadModule } from 'primeng/fileupload';
+import { InputMaskModule } from 'primeng/inputmask';
 import { InputTextModule } from 'primeng/inputtext';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { Institution } from '../../../../core/models/institution.model';
@@ -31,13 +41,19 @@ interface InstitutionType {
 @Component({
   selector: 'app-edit-institution-details',
   imports: [
+    ReactiveFormsModule,
     FormsModule,
+    RouterLink,
     ButtonModule,
     InputTextModule,
+    InputMaskModule,
     FileUploadModule,
     TagModule,
     ChipModule,
     ProgressSpinnerModule,
+    CardModule,
+    MultiSelectModule,
+    Divider,
   ],
   templateUrl: './edit-institution-details.html',
   styleUrl: './edit-institution-details.scss',
@@ -49,61 +65,89 @@ export class EditInstitutionDetails implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private fb = inject(FormBuilder);
 
   protected isLoading = signal<boolean>(false);
   protected isSaving = signal<boolean>(false);
-
-  // Institution data
+  protected institutionForm!: FormGroup;
   protected institutionId = signal<string>('');
-  protected institutionName = signal<string>('');
-  protected description = signal<string>('');
   protected institutionImage = signal<string>('');
-  protected isPublic = signal<boolean>(true);
-
-  // Address
-  protected province = signal<string>('');
-  protected city = signal<string>('');
-  protected street = signal<string>('');
-  protected number = signal<string>('');
-  protected postalCode = signal<string>('');
 
   // Types and employees
   protected selectedTypes = signal<string[]>([]);
-  protected selectedInstitutionType = signal<string>('');
   protected employees = signal<Employee[]>([]);
   protected searchQuery = signal<string>('');
 
-  protected availableTypes: InstitutionType[] = [
-    { name: 'Cardiologist', code: 'cardiology' },
-    { name: 'Dermatologist', code: 'dermatology' },
-    { name: 'Neurologist', code: 'neurology' },
-    { name: 'Pediatrician', code: 'pediatrics' },
-    { name: 'Psychiatrist', code: 'psychiatry' },
-    { name: 'General Practice', code: 'general' },
-  ];
-
-  // New employee form
-  protected showAddEmployee = signal<boolean>(false);
-  protected newEmployee = signal<{
-    name: string;
-    surname: string;
-    userId: string;
-    roleCode: number;
-    pfpImage?: string;
-  }>({
-    name: '',
-    surname: '',
-    userId: '',
-    roleCode: 2, // Default to doctor
-    pfpImage: '',
-  });
+  protected availableTypes: InstitutionType[] = [];
 
   ngOnInit(): void {
+    this.initializeForm();
+    this.loadAvailableTypes();
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.institutionId.set(id);
       this.loadInstitution(id);
     }
+  }
+
+  private initializeForm(): void {
+    this.institutionForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      description: [''],
+      specialisation: [[], [Validators.required]],
+      address: this.fb.group({
+        province: ['', [Validators.required, Validators.minLength(2)]],
+        postalCode: [
+          '',
+          [Validators.required, Validators.pattern(/^\d{2}-\d{3}$/)],
+        ],
+        city: ['', [Validators.required, Validators.minLength(2)]],
+        number: ['', [Validators.required]],
+        street: ['', [Validators.required, Validators.minLength(2)]],
+      }),
+    });
+  }
+
+  private loadAvailableTypes(): void {
+    this.availableTypes = [
+      {
+        name: this.translationService.translate(
+          'admin.institution.types.cardiology',
+        ),
+        code: 'cardiology',
+      },
+      {
+        name: this.translationService.translate(
+          'admin.institution.types.dermatology',
+        ),
+        code: 'dermatology',
+      },
+      {
+        name: this.translationService.translate(
+          'admin.institution.types.neurology',
+        ),
+        code: 'neurology',
+      },
+      {
+        name: this.translationService.translate(
+          'admin.institution.types.pediatrics',
+        ),
+        code: 'pediatrics',
+      },
+      {
+        name: this.translationService.translate(
+          'admin.institution.types.psychiatry',
+        ),
+        code: 'psychiatry',
+      },
+      {
+        name: this.translationService.translate(
+          'admin.institution.types.general',
+        ),
+        code: 'general',
+      },
+    ];
   }
 
   private loadInstitution(id: string): void {
@@ -114,18 +158,20 @@ export class EditInstitutionDetails implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (institution: Institution) => {
-          this.institutionName.set(institution.name);
+          this.institutionForm.patchValue({
+            name: institution.name,
+            description: '',
+            specialisation: institution.specialisation || [],
+            address: {
+              province: institution.address.province,
+              city: institution.address.city,
+              street: institution.address.street || '',
+              number: institution.address.number,
+              postalCode: institution.address.postalCode,
+            },
+          });
+
           this.institutionImage.set(institution.image || '');
-          this.isPublic.set(institution.isPublic);
-
-          // Address
-          this.province.set(institution.address.province);
-          this.city.set(institution.address.city);
-          this.street.set(institution.address.street || '');
-          this.number.set(institution.address.number);
-          this.postalCode.set(institution.address.postalCode);
-
-          // Types
           this.selectedTypes.set(institution.specialisation || []);
 
           // Employees
@@ -144,10 +190,46 @@ export class EditInstitutionDetails implements OnInit {
         },
         error: (error) => {
           console.error('Error loading institution:', error);
-          this.toastService.showError('institution.error.load');
+          this.toastService.showError(
+            this.translationService.translate(
+              'admin.institution.error.loadFailed',
+            ),
+          );
           this.isLoading.set(false);
         },
       });
+  }
+
+  protected isFieldInvalid(fieldPath: string): boolean {
+    const field = this.getField(fieldPath);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  protected getFieldError(fieldPath: string): string {
+    const field = this.getField(fieldPath);
+    if (!field || !field.errors) return '';
+
+    if (field.errors['required']) {
+      return this.translationService.translate(
+        'admin.institution.validation.required',
+      );
+    }
+    if (field.errors['minlength']) {
+      return this.translationService.translate(
+        'admin.institution.validation.minLength',
+        { min: field.errors['minlength'].requiredLength },
+      );
+    }
+    if (field.errors['pattern']) {
+      return this.translationService.translate(
+        'admin.institution.validation.invalidFormat',
+      );
+    }
+    return '';
+  }
+
+  private getField(fieldPath: string) {
+    return this.institutionForm.get(fieldPath);
   }
 
   protected getRoleName(roleCode: number): string {
@@ -158,11 +240,6 @@ export class EditInstitutionDetails implements OnInit {
       4: this.translationService.translate('roles.receptionist'),
     };
     return roles[roleCode] || this.translationService.translate('roles.staff');
-  }
-
-  protected getTypeName(typeCode: string): string {
-    const type = this.availableTypes.find((t) => t.code === typeCode);
-    return type ? type.name : typeCode;
   }
 
   protected addEmployeeFromSearch(): void {
@@ -181,7 +258,11 @@ export class EditInstitutionDetails implements OnInit {
 
     this.employees.update((list) => [...list, newEmp]);
     this.searchQuery.set('');
-    this.toastService.showSuccess('institution.success.employee_added');
+    this.toastService.showSuccess(
+      this.translationService.translate(
+        'admin.institution.success.employeeAdded',
+      ),
+    );
   }
 
   protected onImageUpload(event: { files: File[] }): void {
@@ -195,61 +276,34 @@ export class EditInstitutionDetails implements OnInit {
     }
   }
 
-  protected onEmployeeImageUpload(event: { files: File[] }): void {
-    const file = event.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        this.newEmployee.update((emp) => ({
-          ...emp,
-          pfpImage: e.target?.result as string,
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  protected addEmployee(): void {
-    const emp = this.newEmployee();
-    if (emp.name && emp.surname && emp.userId) {
-      const newEmp: Employee = {
-        ...emp,
-        roleName: this.getRoleName(emp.roleCode),
-      };
-      this.employees.update((list) => [...list, newEmp]);
-      this.resetEmployeeForm();
-      this.showAddEmployee.set(false);
-      this.toastService.showSuccess('institution.success.employee_added');
-    } else {
-      this.toastService.showError('institution.error.employee_incomplete');
-    }
-  }
-
   protected removeEmployee(userId: string): void {
     this.employees.update((list) =>
       list.filter((emp) => emp.userId !== userId),
     );
-    this.toastService.showSuccess('institution.success.employee_removed');
-  }
-
-  private resetEmployeeForm(): void {
-    this.newEmployee.set({
-      name: '',
-      surname: '',
-      userId: '',
-      roleCode: 2,
-      pfpImage: '',
-    });
-  }
-
-  protected cancelAddEmployee(): void {
-    this.resetEmployeeForm();
-    this.showAddEmployee.set(false);
+    this.toastService.showSuccess(
+      this.translationService.translate(
+        'admin.institution.success.employeeRemoved',
+      ),
+    );
   }
 
   protected saveInstitution(): void {
-    if (!this.validateForm()) {
-      this.toastService.showError('institution.error.validation');
+    if (this.institutionForm.invalid) {
+      Object.keys(this.institutionForm.controls).forEach((key) => {
+        const control = this.institutionForm.get(key);
+        control?.markAsTouched();
+        if (control && 'controls' in control) {
+          const formGroup = control as { controls: Record<string, unknown> };
+          Object.keys(formGroup.controls).forEach((nestedKey) => {
+            control.get(nestedKey)?.markAsTouched();
+          });
+        }
+      });
+      this.toastService.showError(
+        this.translationService.translate(
+          'admin.institution.error.validationFailed',
+        ),
+      );
       return;
     }
 
@@ -258,19 +312,11 @@ export class EditInstitutionDetails implements OnInit {
     // TODO: Implement actual save to backend
     setTimeout(() => {
       this.isSaving.set(false);
-      this.toastService.showSuccess('institution.success.saved');
+      this.toastService.showSuccess(
+        this.translationService.translate('admin.institution.success.saved'),
+      );
       this.router.navigate(['/admin/institutions']);
     }, 1000);
-  }
-
-  private validateForm(): boolean {
-    return !!(
-      this.institutionName() &&
-      this.city() &&
-      this.province() &&
-      this.postalCode() &&
-      this.number()
-    );
   }
 
   protected cancel(): void {

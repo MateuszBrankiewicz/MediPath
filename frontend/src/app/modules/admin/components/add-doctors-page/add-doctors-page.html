@@ -1,91 +1,389 @@
-<p-card styleClass="institution-form-card">
-  <ng-template pTemplate="title">
-    <div class="card-title">
-      <span>Institutions</span>
-      <i class="pi pi-angle-right"></i>
-      <strong>Szpital kliniczny</strong>
+<div class="add-doctor-page">
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a routerLink="/admin/doctors" class="breadcrumb-link">
+        {{ translationService.translate("admin.addDoctor.breadcrumb.doctors") }}
+      </a>
+      <i class="pi pi-angle-right breadcrumb-separator"></i>
+      <span class="breadcrumb-current">
+        {{ translationService.translate("admin.addDoctor.breadcrumb.addNew") }}
+      </span>
     </div>
-  </ng-template>
+  </div>
 
-  <form [formGroup]="institutionForm" (ngSubmit)="onSubmit()">
-    <div class="form-grid">
-      <div class="form-field full-width">
-        <label for="name">Name</label>
-        <input pInputText id="name" formControlName="name" />
-      </div>
+  <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()" class="doctor-form">
+    <p-card>
+      <div class="form-container">
+        <div class="form-section">
+          <h3 class="section-title">
+            {{ translationService.translate("admin.addDoctor.personalInfo") }}
+          </h3>
 
-      <div class="form-field full-width">
-        <label for="description">Description</label>
-        <textarea pInputTextarea id="description" formControlName="description" rows="6"></textarea>
-      </div>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="name" class="field-label">
+                <i class="pi pi-user"></i>
+                {{ translationService.translate("admin.addDoctor.name") }}
+              </label>
+              <input
+                pInputText
+                id="name"
+                formControlName="name"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.name'
+                  )
+                "
+                [class.invalid]="isFieldInvalid('name')"
+              />
+              @if (isFieldInvalid("name")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("name") }}
+                </small>
+              }
+            </div>
 
-      <div class="form-field">
-        <label for="doctors">Search and add doctor</label>
-        <p-autoComplete
-          formControlName="doctors"
-          [suggestions]="filteredDoctors()"
-          (completeMethod)="searchDoctor($event)"
-          field="name"
-          [multiple]="true"
-          placeholder="Type name or PWZ number"
-          inputId="doctors">
-        </p-autoComplete>
-      </div>
+            <div class="form-field">
+              <label for="surname" class="field-label">
+                <i class="pi pi-user"></i>
+                {{ translationService.translate("admin.addDoctor.surname") }}
+              </label>
+              <input
+                pInputText
+                id="surname"
+                formControlName="surname"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.surname'
+                  )
+                "
+                [class.invalid]="isFieldInvalid('surname')"
+              />
+              @if (isFieldInvalid("surname")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("surname") }}
+                </small>
+              }
+            </div>
 
-      <div class="form-field">
-        <label for="types">Institution type</label>
-        <p-multiSelect
-          formControlName="institutionTypes"
-          [options]="allInstitutionTypes()"
-          optionLabel="name"
-          display="chip"
-          placeholder="Select from list"
-          inputId="types">
-        </p-multiSelect>
-      </div>
+            <div class="form-field">
+              <label for="email" class="field-label">
+                <i class="pi pi-envelope"></i>
+                {{ translationService.translate("admin.addDoctor.email") }}
+              </label>
+              <input
+                pInputText
+                id="email"
+                type="email"
+                formControlName="email"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.email'
+                  )
+                "
+                [class.invalid]="isFieldInvalid('email')"
+              />
+              @if (isFieldInvalid("email")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("email") }}
+                </small>
+              }
+            </div>
 
-      <div class="form-field address-group full-width">
-        <h3 class="group-title">Institution address</h3>
-        <div class="address-grid">
-          <div class="form-field">
-            <label for="province">Province</label>
-            <input pInputText id="province" formControlName="province" formGroupName="address"/>
-          </div>
-          <div class="form-field">
-            <label for="postalCode">Postal code</label>
-            <p-inputMask mask="99-999" id="postalCode" formControlName="postalCode" formGroupName="address"></p-inputMask>
-          </div>
-          <div class="form-field">
-            <label for="city">City</label>
-            <input pInputText id="city" formControlName="city" formGroupName="address"/>
-          </div>
-          <div class="form-field">
-            <label for="number">Number</label>
-            <input pInputText id="number" formControlName="number" formGroupName="address"/>
-          </div>
-          <div class="form-field street-field">
-            <label for="street">Street</label>
-            <input pInputText id="street" formControlName="street" formGroupName="address"/>
+            <div class="form-field">
+              <label for="birthDate" class="field-label">
+                <i class="pi pi-calendar"></i>
+                {{ translationService.translate("admin.addDoctor.birthDate") }}
+              </label>
+              <p-datepicker
+                inputId="birthDate"
+                formControlName="birthDate"
+                dateFormat="dd-mm-yy"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.birthDate'
+                  )
+                "
+                [showIcon]="true"
+                iconDisplay="input"
+                [class.invalid]="isFieldInvalid('birthDate')"
+              />
+              @if (isFieldInvalid("birthDate")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("birthDate") }}
+                </small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="phoneNumber" class="field-label">
+                <i class="pi pi-phone"></i>
+                {{
+                  translationService.translate("admin.addDoctor.phoneNumber")
+                }}
+              </label>
+              <p-inputmask
+                id="phoneNumber"
+                formControlName="phoneNumber"
+                mask="+99 999 999 999"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.phoneNumber'
+                  )
+                "
+                [class.invalid]="isFieldInvalid('phoneNumber')"
+              />
+              @if (isFieldInvalid("phoneNumber")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("phoneNumber") }}
+                </small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="personalId" class="field-label">
+                <i class="pi pi-id-card"></i>
+                {{ translationService.translate("admin.addDoctor.personalId") }}
+              </label>
+              <input
+                pInputText
+                id="personalId"
+                formControlName="personalId"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.personalId'
+                  )
+                "
+                maxlength="11"
+                [class.invalid]="isFieldInvalid('personalId')"
+              />
+              @if (isFieldInvalid("personalId")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("personalId") }}
+                </small>
+              }
+            </div>
           </div>
         </div>
+
+        <div class="form-section">
+          <p-divider />
+
+          <h3 class="section-title">
+            {{
+              translationService.translate("admin.addDoctor.professionalInfo")
+            }}
+          </h3>
+
+          <div class="form-flex">
+            <div class="form-field flex-item-wide">
+              <label for="specialisation" class="field-label">
+                <i class="pi pi-briefcase"></i>
+                {{
+                  translationService.translate("admin.addDoctor.specialisation")
+                }}
+              </label>
+              <p-multiselect
+                inputId="specialisation"
+                formControlName="specialisation"
+                [options]="specialisations"
+                optionLabel="name"
+                optionValue="code"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.specialisation'
+                  )
+                "
+                display="chip"
+                [showToggleAll]="false"
+                [class.invalid]="isFieldInvalid('specialisation')"
+              />
+              @if (isFieldInvalid("specialisation")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("specialisation") }}
+                </small>
+              }
+            </div>
+
+            <div class="form-field flex-item-narrow">
+              <label for="pwzNumber" class="field-label">
+                <i class="pi pi-shield"></i>
+                {{ translationService.translate("admin.addDoctor.pwzNumber") }}
+              </label>
+              <input
+                pInputText
+                id="pwzNumber"
+                formControlName="pwzNumber"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.pwzNumber'
+                  )
+                "
+                maxlength="7"
+                [class.invalid]="isFieldInvalid('pwzNumber')"
+              />
+              @if (isFieldInvalid("pwzNumber")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("pwzNumber") }}
+                </small>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section" formGroupName="residentialAddress">
+          <p-divider />
+
+          <h3 class="section-title">
+            {{
+              translationService.translate("admin.addDoctor.residentialAddress")
+            }}
+          </h3>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="province" class="field-label">
+                <i class="pi pi-map"></i>
+                {{ translationService.translate("admin.addDoctor.province") }}
+              </label>
+              <input
+                pInputText
+                id="province"
+                formControlName="province"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.province'
+                  )
+                "
+                [class.invalid]="isFieldInvalid('residentialAddress.province')"
+              />
+              @if (isFieldInvalid("residentialAddress.province")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("residentialAddress.province") }}
+                </small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="postalCode" class="field-label">
+                <i class="pi pi-inbox"></i>
+                {{ translationService.translate("admin.addDoctor.postalCode") }}
+              </label>
+              <p-inputmask
+                id="postalCode"
+                formControlName="postalCode"
+                mask="99-999"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.postalCode'
+                  )
+                "
+                [class.invalid]="
+                  isFieldInvalid('residentialAddress.postalCode')
+                "
+              />
+              @if (isFieldInvalid("residentialAddress.postalCode")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("residentialAddress.postalCode") }}
+                </small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="city" class="field-label">
+                <i class="pi pi-building"></i>
+                {{ translationService.translate("admin.addDoctor.city") }}
+              </label>
+              <input
+                pInputText
+                id="city"
+                formControlName="city"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.city'
+                  )
+                "
+                [class.invalid]="isFieldInvalid('residentialAddress.city')"
+              />
+              @if (isFieldInvalid("residentialAddress.city")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("residentialAddress.city") }}
+                </small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="number" class="field-label">
+                <i class="pi pi-hashtag"></i>
+                {{ translationService.translate("admin.addDoctor.number") }}
+              </label>
+              <input
+                pInputText
+                id="number"
+                formControlName="number"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.number'
+                  )
+                "
+                [class.invalid]="isFieldInvalid('residentialAddress.number')"
+              />
+              @if (isFieldInvalid("residentialAddress.number")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("residentialAddress.number") }}
+                </small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="street" class="field-label">
+                <i class="pi pi-map-marker"></i>
+                {{ translationService.translate("admin.addDoctor.street") }}
+              </label>
+              <input
+                pInputText
+                id="street"
+                formControlName="street"
+                [placeholder]="
+                  translationService.translate(
+                    'admin.addDoctor.placeholders.street'
+                  )
+                "
+                [class.invalid]="isFieldInvalid('residentialAddress.street')"
+              />
+              @if (isFieldInvalid("residentialAddress.street")) {
+                <small class="error-message">
+                  <i class="pi pi-exclamation-circle"></i>
+                  {{ getFieldError("residentialAddress.street") }}
+                </small>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <p-button
+            [label]="translationService.translate('admin.addDoctor.confirm')"
+            [loading]="isSubmitting()"
+            [disabled]="isSubmitting()"
+            type="submit"
+            styleClass="confirm-button"
+          />
+        </div>
       </div>
-
-      <div class="form-field full-width">
-         <label>Image</label>
-         <p-fileUpload
-            name="image"
-            mode="basic"
-            chooseLabel="Add file"
-            [auto]="true"
-            accept="image/*"
-            [maxFileSize]="1000000">
-        </p-fileUpload>
-      </div>
-
-    </div>
-
-    <div class="actions">
-      <p-button label="CONFIRM" type="submit" [disabled]="institutionForm.invalid" styleClass="p-button-confirm"></p-button>
-    </div>
+    </p-card>
   </form>
-</p-card>
+</div>

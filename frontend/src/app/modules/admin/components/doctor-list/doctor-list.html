@@ -1,0 +1,182 @@
+<div class="doctor-list-page">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1 class="page-title">
+          {{ translationService.translate("navigation.doctors") }}
+        </h1>
+        <p class="page-subtitle">
+          {{ institutionName() }}
+        </p>
+      </div>
+      <div class="header-actions">
+        <p-button
+          [label]="translationService.translate('admin.doctorList.addDoctor')"
+          icon="pi pi-plus"
+          (onClick)="onAddDoctor()"
+          styleClass="add-button"
+        />
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="doctors-grid">
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <p-card styleClass="doctor-card-skeleton">
+          <div class="skeleton-content">
+            <div class="skeleton-header">
+              <p-skeleton shape="circle" size="4rem" />
+              <div class="skeleton-info">
+                <p-skeleton width="10rem" height="1.5rem" />
+                <p-skeleton width="8rem" height="1rem" />
+              </div>
+            </div>
+            <p-skeleton width="100%" height="3rem" />
+            <div class="skeleton-footer">
+              <p-skeleton width="5rem" height="2rem" />
+              <p-skeleton width="5rem" height="2rem" />
+            </div>
+          </div>
+        </p-card>
+      }
+    </div>
+  }
+
+  @if (!isLoading()) {
+    @if (filteredDoctors().length > 0) {
+      <div class="doctors-grid">
+        @for (doctor of filteredDoctors(); track doctor.doctorId) {
+          <p-card styleClass="doctor-card">
+            <div class="card-header">
+              <div class="doctor-avatar">
+                @if (doctor.doctorPfp) {
+                  <img [src]="doctor.doctorPfp" [alt]="doctor.doctorName" />
+                } @else {
+                  <i class="pi pi-user"></i>
+                }
+              </div>
+              <div class="doctor-info">
+                <h3 class="doctor-name">
+                  {{ doctor.doctorName }} {{ doctor.doctorSurname }}
+                </h3>
+                <p class="doctor-licence">
+                  <i class="pi pi-shield"></i>
+                  {{ translationService.translate("patient.institution.pwz") }}
+                  {{ doctor.licenceNumber }}
+                </p>
+              </div>
+              <div class="rating-badge">
+                <p-tag
+                  [value]="formatRating(doctor.rating)"
+                  [severity]="getRatingColor(doctor.rating)"
+                  icon="pi pi-star-fill"
+                />
+                <span class="rating-count"> ({{ doctor.numofratings }}) </span>
+              </div>
+            </div>
+
+            <div class="card-content">
+              <div class="specializations">
+                <h4 class="section-label">
+                  <i class="pi pi-briefcase"></i>
+                  {{
+                    translationService.translate(
+                      "admin.doctorList.specializations"
+                    )
+                  }}
+                </h4>
+                @if (
+                  doctor.doctorSchedules && doctor.doctorSchedules.length > 0
+                ) {
+                  <div class="spec-tags">
+                    @for (
+                      spec of doctor.doctorSchedules[0].doctor.specialisations.slice(
+                        0,
+                        3
+                      );
+                      track spec
+                    ) {
+                      <span class="spec-tag">{{ spec }}</span>
+                    }
+                    @if (
+                      doctor.doctorSchedules[0].doctor.specialisations.length >
+                      3
+                    ) {
+                      <span class="spec-tag more">
+                        +{{
+                          doctor.doctorSchedules[0].doctor.specialisations
+                            .length - 3
+                        }}
+                      </span>
+                    }
+                  </div>
+                } @else {
+                  <p class="no-data">
+                    {{
+                      translationService.translate(
+                        "admin.doctorList.noSpecializations"
+                      )
+                    }}
+                  </p>
+                }
+              </div>
+
+              <div class="appointments-info">
+                <div class="info-item">
+                  <i class="pi pi-calendar"></i>
+                  <span>
+                    {{ doctor.doctorSchedules.length || 0 }}
+                    {{
+                      translationService.translate("admin.doctorList.schedules")
+                    }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <p-button
+                [label]="
+                  translationService.translate('admin.doctorList.viewDetails')
+                "
+                icon="pi pi-eye"
+                (onClick)="onViewDoctor(doctor.doctorId)"
+                [outlined]="true"
+                severity="secondary"
+                size="small"
+              />
+              <p-button
+                [label]="translationService.translate('admin.doctorList.edit')"
+                icon="pi pi-pencil"
+                (onClick)="onEditDoctor(doctor.doctorId)"
+                severity="primary"
+                size="small"
+              />
+            </div>
+          </p-card>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <i class="pi pi-users empty-icon"></i>
+        <h3 class="empty-title">
+          {{ translationService.translate("admin.doctorList.noDoctors") }}
+        </h3>
+        <p class="empty-message">
+          {{
+            translationService.translate("admin.doctorList.noDoctorsMessage")
+          }}
+        </p>
+        <p-button
+          [label]="
+            translationService.translate('admin.doctorList.addFirstDoctor')
+          "
+          icon="pi pi-plus"
+          (onClick)="onAddDoctor()"
+        />
+      </div>
+    }
+  }
+</div>
