@@ -1,0 +1,221 @@
+<div class="edit-institution-container">
+  @if (isLoading()) {
+    <div class="floating-center-spinner">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+  } @else {
+    <div class="form-content">
+      <div class="breadcrumb">
+        <span>{{
+          translationService.translate("navigation.institutions")
+        }}</span>
+        <i class="pi pi-angle-right"></i>
+        <span>{{
+          institutionName() || translationService.translate("institution.new")
+        }}</span>
+      </div>
+
+      <div class="form-section">
+        <label for="name">{{
+          translationService.translate("institution.name")
+        }}</label>
+        <input
+          id="name"
+          type="text"
+          pInputText
+          [(ngModel)]="institutionName"
+          [placeholder]="institutionName()"
+        />
+      </div>
+
+      <div class="form-section">
+        <label for="description">{{
+          translationService.translate("institution.description")
+        }}</label>
+        <textarea
+          id="description"
+          pInputText
+          [(ngModel)]="description"
+          rows="3"
+          [placeholder]="
+            translationService.translate('institution.description_placeholder')
+          "
+        ></textarea>
+      </div>
+
+      <div class="form-section">
+        <label>{{
+          translationService.translate("institution.search_add_doctor")
+        }}</label>
+        <div class="search-container">
+          <input
+            type="text"
+            pInputText
+            [(ngModel)]="searchQuery"
+            [placeholder]="
+              translationService.translate('institution.search_placeholder')
+            "
+            class="search-input"
+          />
+          <p-button
+            [label]="translationService.translate('shared.add')"
+            (onClick)="addEmployeeFromSearch()"
+            [disabled]="!searchQuery()"
+          ></p-button>
+        </div>
+
+        <div class="selected-items">
+          @for (employee of employees(); track employee.userId) {
+            <p-chip
+              [label]="
+                employee.name +
+                ' ' +
+                employee.surname +
+                ' (PWZ: ' +
+                employee.userId +
+                ')'
+              "
+              [removable]="true"
+              (onRemove)="removeEmployee(employee.userId)"
+              styleClass="custom-chip"
+            ></p-chip>
+          }
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label for="types">{{
+          translationService.translate("institution.type")
+        }}</label>
+        <select
+          id="types"
+          [(ngModel)]="selectedInstitutionType"
+          class="form-select"
+        >
+          <option value="">
+            {{ translationService.translate("institution.select_type") }}
+          </option>
+          @for (type of availableTypes; track type.code) {
+            <option [value]="type.code">{{ type.name }}</option>
+          }
+        </select>
+
+        <div class="selected-items">
+          @if (selectedInstitutionType()) {
+            <p-chip
+              [label]="getTypeName(selectedInstitutionType())"
+              [removable]="true"
+              (onRemove)="selectedInstitutionType.set('')"
+              severity="info"
+            ></p-chip>
+          }
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>{{ translationService.translate("institution.address") }}</h3>
+
+        <div class="address-grid">
+          <div class="form-group">
+            <label for="province">{{
+              translationService.translate("institution.province")
+            }}</label>
+            <input
+              id="province"
+              type="text"
+              pInputText
+              [(ngModel)]="province"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="postalCode">{{
+              translationService.translate("institution.postal_code")
+            }}</label>
+            <input
+              id="postalCode"
+              type="text"
+              pInputText
+              [(ngModel)]="postalCode"
+              placeholder="99-999"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="city">{{
+              translationService.translate("institution.city")
+            }}</label>
+            <input id="city" type="text" pInputText [(ngModel)]="city" />
+          </div>
+
+          <div class="form-group">
+            <label for="number">{{
+              translationService.translate("institution.number")
+            }}</label>
+            <input id="number" type="text" pInputText [(ngModel)]="number" />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="street">{{
+              translationService.translate("institution.street")
+            }}</label>
+            <input id="street" type="text" pInputText [(ngModel)]="street" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label>{{ translationService.translate("institution.image") }}</label>
+        <div class="image-upload">
+          @if (institutionImage()) {
+            <div class="image-preview-box">
+              <img [src]="institutionImage()" alt="Institution" />
+              <button
+                type="button"
+                class="remove-image"
+                (click)="institutionImage.set('')"
+                pButton
+                icon="pi pi-times"
+                [rounded]="true"
+                [text]="true"
+                severity="danger"
+              >
+                {{ translationService.translate("shared.remove") }}
+              </button>
+            </div>
+          } @else {
+            <div class="upload-placeholder">
+              <p-button
+                icon="pi pi-plus"
+                [rounded]="true"
+                [outlined]="true"
+                (onClick)="fileUpload.choose()"
+              ></p-button>
+            </div>
+          }
+          <p-fileUpload
+            #fileUpload
+            mode="basic"
+            accept="image/*"
+            [maxFileSize]="5000000"
+            (onSelect)="onImageUpload($event)"
+            [auto]="true"
+            [chooseLabel]="
+              translationService.translate('institution.upload_image')
+            "
+            [style]="{ display: 'none' }"
+          ></p-fileUpload>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <p-button
+          [label]="translationService.translate('shared.confirm')"
+          (onClick)="saveInstitution()"
+          [loading]="isSaving()"
+          styleClass="confirm-btn"
+        ></p-button>
+      </div>
+    </div>
+  }
+</div>

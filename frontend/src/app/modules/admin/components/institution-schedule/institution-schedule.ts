@@ -12,33 +12,39 @@ import { ButtonModule } from 'primeng/button';
 import { DoctorWithSchedule } from '../../../../core/models/doctor.model';
 import { CalendarDay } from '../../../../core/models/schedule.model';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
-import { ScheduleService } from '../../../../core/services/schedule/schedule.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { mapSchedulesToCalendarDays } from '../../../../utils/calendarMapper';
 import { Calendar } from '../../../shared/components/calendar/calendar';
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
 import { InstitutionOption } from '../admin-dashboard/widgets/institution-select-card';
+import { ScheduleDetailsDialog } from './components/schedule-details-dialog/schedule-details-dialog';
+import { ScheduleManagementService } from './services/schedule-management.service';
 
 @Component({
   selector: 'app-institution-schedule',
-  imports: [Calendar, ButtonModule],
+  imports: [Calendar, ButtonModule, ScheduleDetailsDialog],
   templateUrl: './institution-schedule.html',
   styleUrl: './institution-schedule.scss',
 })
 export class InstitutionSchedule implements OnInit {
   protected translationService = inject(TranslationService);
+  protected scheduleManagementService = inject(ScheduleManagementService);
+
   public currentMonth = signal<Date>(new Date());
   public readonly currentDayNumber = new Date().getDate();
   public readonly currentDayName = this.getDayName(new Date());
   private router = inject(Router);
-  private scheduleService = inject(ScheduleService);
   private institutionStoreService = inject(InstitutionStoreService);
   private destroyRef = inject(DestroyRef);
   private institutionService = inject(InstitutionService);
+
   protected selectedDoctorId = signal<string | null>(null);
   protected readonly institutionOptions = signal<InstitutionOption[]>([]);
   protected selectedInstitution = signal<string | null>(null);
   protected doctorsForInstitution = signal<DoctorWithSchedule[]>([]);
+
+  protected showScheduleModal = signal<boolean>(false);
+  protected selectedDate = signal<Date | null>(null);
 
   ngOnInit(): void {
     this.institutionOptions.set(
@@ -70,7 +76,6 @@ export class InstitutionSchedule implements OnInit {
       const availableInstitutionIds = this.institutionStoreService
         .getAvailableInstitutions()
         .map((inst) => inst.id);
-      console.log('Available Institution IDs:', availableInstitutionIds);
       return mapSchedulesToCalendarDays(schedule, {
         displayedMonth: date.getMonth(),
         displayedYear: date.getFullYear(),
@@ -100,6 +105,16 @@ export class InstitutionSchedule implements OnInit {
     );
     return `${monthName} ${current.getFullYear()}`;
   });
+
+  protected readonly selectedDoctorName = computed(() => {
+    const doctorId = this.selectedDoctorId();
+    if (!doctorId) return '';
+    const doctor = this.doctorsForInstitution().find(
+      (d) => d.doctorId === doctorId,
+    );
+    return doctor ? `${doctor.doctorName} ${doctor.doctorSurname}` : '';
+  });
+
   private getDayName(date: Date): string {
     const dayKeys = [
       'weekdays.sunday',
@@ -160,23 +175,50 @@ export class InstitutionSchedule implements OnInit {
     }
   }
   protected onDaySelected(date: Date): void {
-    const doctor = this.doctorsForInstitution().find(
-      (doc) => doc.doctorId === this.selectedDoctorId(),
+    this.scheduleManagementService.setDoctorsForInstitution(
+      this.doctorsForInstitution(),
     );
-    if (!doctor) {
-      return;
-    }
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const isoDate = `${year}-${month}-${day}`;
-    console.log(
-      doctor.schedules.filter((s) => s.startHour.startsWith(isoDate)),
+    this.scheduleManagementService.setSelectedDoctor(
+      this.selectedDoctorId() || '',
     );
+    this.scheduleManagementService.setSelectedInstitution(
+      this.selectedInstitution() || '',
+    );
+    this.scheduleManagementService.setSelectedDate(date);
+
+    this.selectedDate.set(date);
+    this.showScheduleModal.set(true);
   }
-}
-export interface MapToCalendarDaysOptions {
-  displayedMonth: number;
-  displayedYear: number;
-  selectedInstitutionIds?: string[];
+
+  protected closeScheduleModal(): void {
+    this.showScheduleModal.set(false);
+    this.selectedDate.set(null);
+    this.scheduleManagementService.clearState();
+  }
+
+  protected onScheduleUpdated(): void {
+    const institutionId = this.selectedInstitution();
+    if (institutionId) {
+      this.institutionService
+        .getDoctorsForInstitution(institutionId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((doctors) => {
+          const doctorsWithSchedule = doctors.map((doctor) => ({
+            doctorId: doctor.doctorId,
+            doctorName: doctor.doctorName,
+            doctorSurname: doctor.doctorSurname,
+            schedules: doctor.doctorSchedules,
+          }));
+          this.doctorsForInstitution.set(doctorsWithSchedule);
+          this.scheduleManagementService.setDoctorsForInstitution(
+            doctorsWithSchedule,
+          );
+
+          const selectedDate = this.scheduleManagementService.getSelectedDate();
+          if (selectedDate) {
+            this.scheduleManagementService.setSelectedDate(selectedDate);
+          }
+        });
+    }
+  }
 }

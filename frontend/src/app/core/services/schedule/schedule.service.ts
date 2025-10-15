@@ -32,4 +32,33 @@ export class ScheduleService {
       },
     );
   }
+
+  public editSchedule(
+    scheduleId: string,
+    body: { startHour: string; endHour: string },
+  ) {
+    return this.http.put(`${API_URL}/schedules/${scheduleId}`, body, {
+      withCredentials: true,
+    });
+  }
+
+  public deleteSchedule(scheduleId: string) {
+    return this.http.delete(`${API_URL}/schedules/${scheduleId}`, {
+      withCredentials: true,
+    });
+  }
+
+  public updateManySchedules(body: {
+    doctorID: string;
+    institutionID: string;
+    startHour: string;
+    endHour: string;
+    newStartHour: string;
+    newEndHour: string;
+    newInterval: string;
+  }) {
+    return this.http.put(`${API_URL}/schedules/updatemany`, body, {
+      withCredentials: true,
+    });
+  }
 }

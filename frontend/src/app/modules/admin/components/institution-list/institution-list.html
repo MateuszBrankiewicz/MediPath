@@ -1,0 +1,15 @@
+@if (isLoading()) {
+  <div class="spinner-container">
+    <p-progress-spinner></p-progress-spinner>
+  </div>
+} @else {
+  <div class="insitution-container">
+    @for (institution of getDataForInstitutionCard(); track institution.id) {
+      <app-hospital-card
+        [hospital]="institution"
+        [canDisabled]="roleCode() === 'admin'"
+        [canEdit]="roleCode() === 'admin'"
+      ></app-hospital-card>
+    }
+  </div>
+}

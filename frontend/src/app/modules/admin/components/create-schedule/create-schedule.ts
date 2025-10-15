@@ -13,15 +13,18 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputNumber } from 'primeng/inputnumber';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Select } from 'primeng/select';
+import { catchError, of } from 'rxjs';
 import { DoctorProfile } from '../../../../core/models/doctor.model';
-import { InstitutionShortInfo } from '../../../../core/models/institution.model';
 import { AvailableDay } from '../../../../core/models/schedule.model';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { ScheduleService } from '../../../../core/services/schedule/schedule.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
+import { InstitutionOption } from '../admin-dashboard/widgets/institution-select-card';
 
 @Component({
   selector: 'app-create-schedule',
@@ -34,6 +37,7 @@ import { InstitutionStoreService } from '../../services/institution/institution-
     FormsModule,
     InputNumber,
     FloatLabelModule,
+    ProgressSpinnerModule,
   ],
   templateUrl: './create-schedule.html',
   styleUrl: './create-schedule.scss',
@@ -43,19 +47,22 @@ export class CreateSchedule implements OnInit {
   private institutionService = inject(InstitutionService);
   protected schedulesForDoctor = signal<AvailableDay[]>([]);
   protected translationService = inject(TranslationService);
+  private toastService = inject(ToastService);
   protected doctorOptions = signal<{ name: string; value: string }[]>([]);
   protected selectedDoctorId = signal<string>('');
   protected intervalMinutes = signal<number>(0);
   protected doctorsCache = signal<DoctorProfile[]>([]);
-  protected selectedInstitution = signal<InstitutionShortInfo | null>(null);
+  protected selectedInstitution = signal<InstitutionOption | null>(null);
   private scheduleService = inject(ScheduleService);
+  protected isLoading = signal<boolean>(false);
+  protected isSending = signal<boolean>(false);
   protected dateTimeSelected = signal<{
     date: Date;
     startTime: string;
     endTime: string;
   } | null>(null);
 
-  protected institutionOptions = signal<InstitutionShortInfo[]>([]);
+  protected institutionOptions = signal<InstitutionOption[]>([]);
 
   protected selectedDoctorName = computed(() => {
     const id = this.selectedDoctorId();
@@ -66,6 +73,22 @@ export class CreateSchedule implements OnInit {
   private destroyRef = inject(DestroyRef);
   ngOnInit() {
     this.initDoctors();
+    const availableInstitutions =
+      this.institutionStoreService.getAvailableInstitutions();
+    if (availableInstitutions.length === 0) {
+      this.loadInstitutions();
+    }
+    this.institutionOptions.set(availableInstitutions);
+
+    const institution = this.institutionStoreService.getInstitution();
+    if (institution.id) {
+      const foundInstitution = availableInstitutions.find(
+        (inst) => inst.id === institution.id,
+      );
+      this.selectedInstitution.set(foundInstitution || null);
+    } else {
+      this.selectedInstitution.set(null);
+    }
   }
 
   onScheduleTimeSelected(event: {
@@ -116,7 +139,7 @@ export class CreateSchedule implements OnInit {
 
     this.schedulesForDoctor.set(availableDays);
   }
-  protected onInstitutionChange(value: InstitutionShortInfo) {
+  protected onInstitutionChange(value: InstitutionOption) {
     this.selectedInstitution.set(value);
   }
   protected today = new Date();
@@ -127,58 +150,82 @@ export class CreateSchedule implements OnInit {
     }
   }
   protected onCreateSchedule() {
+    this.isSending.set(true);
     const doctorId = this.selectedDoctorId();
     const dateTime = this.dateTimeSelected();
     const interval = this.intervalMinutes();
     const institutionId = this.institutionStoreService.getInstitution().id;
 
-    if (doctorId && dateTime && interval > 0) {
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      const formatDateTime = (date: Date, time: string) => {
-        const [h, m] = time.split(':');
-        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(Number(h))}:${pad(Number(m))}:00`;
-      };
-      const startTimeFormatted = formatDateTime(
-        dateTime.date,
-        dateTime.startTime,
+    if (!doctorId || !dateTime || interval <= 0) {
+      this.toastService.showError(
+        this.translationService.translate('admin.createSchedule.validation'),
       );
-      const endTimeFormatted = formatDateTime(dateTime.date, dateTime.endTime);
-
-      const intervalFormatted = `${pad(Math.floor(interval / 60))}:${pad(interval % 60)}:00`;
-      this.scheduleService
-        .createSchedule({
-          doctorID: doctorId,
-          institutionID: institutionId,
-          startHour: startTimeFormatted,
-          endHour: endTimeFormatted,
-          interval: intervalFormatted,
-        })
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: () => {
-            alert(
-              this.translationService.translate(
-                'admin.createSchedule.scheduleCreated',
-              ),
-            );
-            this.dateTimeSelected.set(null);
-            this.intervalMinutes.set(0);
-            this.updateSchedulesForSelectedDoctor();
-          },
-          error: () => {
-            alert(
-              this.translationService.translate(
-                'admin.createSchedule.scheduleCreationError',
-              ),
-            );
-          },
-        });
+      return;
     }
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const formatDateTime = (date: Date, time: string) => {
+      const [h, m] = time.split(':');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(Number(h))}:${pad(Number(m))}:00`;
+    };
+    const startTimeFormatted = formatDateTime(
+      dateTime.date,
+      dateTime.startTime,
+    );
+    const endTimeFormatted = formatDateTime(dateTime.date, dateTime.endTime);
+
+    const intervalFormatted = `${pad(Math.floor(interval / 60))}:${pad(interval % 60)}:00`;
+
+    this.scheduleService
+      .createSchedule({
+        doctorID: doctorId,
+        institutionID: institutionId,
+        startHour: startTimeFormatted,
+        endHour: endTimeFormatted,
+        interval: intervalFormatted,
+      })
+      .pipe(
+        catchError(() => {
+          this.toastService.showError(
+            this.translationService.translate(
+              'admin.createSchedule.scheduleCreationError',
+            ),
+          );
+          this.isSending.set(false);
+          return of(null);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        if (response) {
+          this.toastService.showSuccess(
+            this.translationService.translate(
+              'admin.createSchedule.scheduleCreated',
+            ),
+          );
+          this.dateTimeSelected.set(null);
+          this.intervalMinutes.set(0);
+          this.updateSchedulesForSelectedDoctor();
+          this.isSending.set(false);
+        }
+      });
   }
   private initDoctors() {
+    this.isLoading.set(true);
     this.institutionService
       .getDoctorsForInstitution('68c5dc05d2569d07e73a8456')
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        catchError(() => {
+          this.toastService.showError(
+            this.translationService.translate(
+              'admin.createSchedule.doctorsLoadError',
+            ),
+          );
+          this.isLoading.set(false);
+          return of([]);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe((doctors: DoctorProfile[]) => {
         this.doctorsCache.set(doctors);
         this.doctorOptions.set(
@@ -190,7 +237,40 @@ export class CreateSchedule implements OnInit {
         if (!this.selectedDoctorId() && doctors.length > 0) {
           this.selectedDoctorId.set(doctors[0].doctorId);
         }
+
         this.updateSchedulesForSelectedDoctor();
+        this.isLoading.set(false);
+      });
+  }
+
+  private loadInstitutions() {
+    this.isLoading.set(true);
+    this.institutionStoreService
+      .loadAvailableInstitutions()
+      .pipe(
+        catchError(() => {
+          this.toastService.showError(
+            this.translationService.translate(
+              'admin.createSchedule.institutionsLoadError',
+            ),
+          );
+          this.isLoading.set(false);
+          return of([]);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((institutions) => {
+        this.institutionOptions.set(institutions);
+        const institution = this.institutionStoreService.getInstitution();
+        if (institution.id) {
+          const foundInstitution = institutions.find(
+            (inst) => inst.id === institution.id,
+          );
+          this.selectedInstitution.set(foundInstitution || null);
+        } else {
+          this.selectedInstitution.set(null);
+        }
+        this.isLoading.set(false);
       });
   }
 }

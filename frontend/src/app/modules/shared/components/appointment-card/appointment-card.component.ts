@@ -25,14 +25,19 @@ export interface AppointmentCardData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppointmentCardComponent {
-  appointment = input.required<AppointmentCardData>();
-  showPatientDetails = input<boolean>(true);
-  showCancelButton = input<boolean>(true);
-  actionButtonText = input<string>('Szczegóły pacjenta');
-  cancelButtonText = input<string>('Anuluj');
+  public appointment = input.required<AppointmentCardData>();
+  public showPatientDetails = input<boolean>(true);
+  public showCancelButton = input<boolean>(true);
+  public actionButtonText = input<string>('Szczegóły pacjenta');
+  public cancelButtonText = input<string>('Anuluj');
 
-  patientDetailsClick = output<string>();
-  cancelVisitClick = output<string>();
+  public patientDetailsClick = output<string>();
+  public cancelVisitClick = output<string>();
+
+  public readonly primaryActionButton = input<{ icon: string; label: string }>({
+    icon: 'pi pi-user',
+    label: 'Szczegóły pacjenta',
+  });
 
   statusClass = computed(() => {
     switch (this.appointment().status) {

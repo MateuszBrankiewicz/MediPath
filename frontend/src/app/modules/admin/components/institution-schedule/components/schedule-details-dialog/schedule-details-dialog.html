@@ -1,0 +1,251 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  styleClass="schedule-modal"
+  [style]="{ 'max-width': '600px', width: '90vw' }"
+  (onHide)="closeDialog()"
+>
+  <ng-template pTemplate="header">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        {{ translationService.translate("doctor.schedule.day") }}
+      </h3>
+      <div class="modal-subtitle">
+        <div class="doctor-name">{{ doctorName() }}</div>
+        <div class="selected-date">{{ selectedDateFormatted() }}</div>
+      </div>
+    </div>
+  </ng-template>
+
+  @if (isLoading()) {
+    <div class="floating-center-spinner">
+      <p-progress-spinner
+        [style]="{ width: '40%', height: '40%' }"
+      ></p-progress-spinner>
+    </div>
+  }
+
+  @if (showBulkEdit()) {
+    <div class="bulk-edit-form">
+      <div class="bulk-edit-header">
+        <h4>
+          {{ translationService.translate("doctor.schedule.bulk_edit_title") }}
+        </h4>
+        <p>
+          {{
+            translationService.translate(
+              "doctor.schedule.bulk_edit_description"
+            )
+          }}
+        </p>
+      </div>
+
+      <div class="bulk-edit-inputs">
+        <div class="input-row">
+          <div class="input-group">
+            <label for="bulkStartTime">{{
+              translationService.translate("doctor.schedule.bulk_start_time")
+            }}</label>
+            <input
+              id="bulkStartTime"
+              type="time"
+              pInputText
+              [(ngModel)]="bulkEditFormData().startTime"
+              class="time-input"
+            />
+          </div>
+          <div class="input-group">
+            <label for="bulkEndTime">{{
+              translationService.translate("doctor.schedule.bulk_end_time")
+            }}</label>
+            <input
+              id="bulkEndTime"
+              type="time"
+              pInputText
+              [(ngModel)]="bulkEditFormData().endTime"
+              class="time-input"
+            />
+          </div>
+          <div class="input-group">
+            <label for="bulkInterval">{{
+              translationService.translate("doctor.schedule.bulk_interval")
+            }}</label>
+            <input
+              id="bulkInterval"
+              type="number"
+              pInputText
+              [(ngModel)]="bulkEditFormData().interval"
+              class="interval-input"
+              min="15"
+              max="120"
+              step="15"
+            />
+          </div>
+        </div>
+
+        <div class="bulk-edit-actions">
+          <p-button
+            label="{{
+              translationService.translate(
+                'doctor.schedule.generate_appointments'
+              )
+            }}"
+            icon="pi pi-check"
+            severity="success"
+            (onClick)="saveBulkChanges()"
+          ></p-button>
+          <p-button
+            label="{{ translationService.translate('patient.visits.cancel') }}"
+            icon="pi pi-times"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="cancelBulkEdit()"
+          ></p-button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="schedule-slots">
+    @if (schedules().length === 0) {
+      <div class="no-appointments">
+        <i class="pi pi-calendar-times"></i>
+        <p>
+          {{ translationService.translate("doctor.schedule.no_appointments") }}
+        </p>
+      </div>
+    } @else {
+      @for (slot of schedules(); track slot.id) {
+        <div
+          class="time-slot"
+          [class.booked]="slot.booked"
+          [class.editing]="editingSlotId() === slot.id"
+        >
+          <div class="slot-header">
+            <div class="time-info">
+              <span class="start-time">{{ formatTime(slot.startHour) }}</span>
+              <span class="separator">-</span>
+              <span class="end-time">{{ formatTime(slot.endHour) }}</span>
+            </div>
+            <div class="slot-status">
+              @if (slot.booked) {
+                <p-tag
+                  value="{{
+                    translationService.translate('doctor.schedule.booked')
+                  }}"
+                  severity="danger"
+                  icon="pi pi-lock"
+                ></p-tag>
+              } @else {
+                <p-tag
+                  value="{{
+                    translationService.translate('doctor.schedule.available')
+                  }}"
+                  severity="success"
+                  icon="pi pi-check"
+                ></p-tag>
+              }
+            </div>
+          </div>
+
+          @if (!slot.booked) {
+            <div class="slot-actions">
+              @if (editingSlotId() === slot.id) {
+                <div class="edit-form">
+                  <div class="time-inputs">
+                    <div class="input-group">
+                      <label for="startTime">{{
+                        translationService.translate(
+                          "shared.calendar.startTime"
+                        )
+                      }}</label>
+                      <input
+                        id="startTime"
+                        type="time"
+                        pInputText
+                        [(ngModel)]="editFormData().startTime"
+                        class="time-input"
+                      />
+                    </div>
+                    <div class="input-group">
+                      <label for="endTime">{{
+                        translationService.translate("shared.calendar.endTime")
+                      }}</label>
+                      <input
+                        id="endTime"
+                        type="time"
+                        pInputText
+                        [(ngModel)]="editFormData().endTime"
+                        class="time-input"
+                      />
+                    </div>
+                  </div>
+                  <div class="edit-actions">
+                    <p-button
+                      label="{{ translationService.translate('shared.save') }}"
+                      icon="pi pi-check"
+                      size="small"
+                      severity="success"
+                      (onClick)="saveSlotChanges(slot)"
+                    ></p-button>
+                    <p-button
+                      label="{{
+                        translationService.translate('patient.visits.cancel')
+                      }}"
+                      icon="pi pi-times"
+                      size="small"
+                      severity="secondary"
+                      (onClick)="cancelSlotEdit()"
+                    ></p-button>
+                  </div>
+                </div>
+              } @else {
+                <p-button
+                  label="{{ translationService.translate('shared.edit') }}"
+                  icon="pi pi-pencil"
+                  size="small"
+                  severity="info"
+                  [outlined]="true"
+                  (onClick)="editSlot(slot.id)"
+                ></p-button>
+                <p-button
+                  label="{{ translationService.translate('shared.delete') }}"
+                  icon="pi pi-trash"
+                  size="small"
+                  severity="danger"
+                  [outlined]="true"
+                  (onClick)="deleteSlot(slot.id)"
+                ></p-button>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      @if (!showBulkEdit()) {
+        <p-button
+          label="{{
+            translationService.translate('doctor.schedule.bulk_edit')
+          }}"
+          icon="pi pi-list"
+          severity="info"
+          [outlined]="true"
+          (onClick)="toggleBulkEdit()"
+        ></p-button>
+      }
+      <p-button
+        label="{{ translationService.translate('patient.visits.cancel') }}"
+        icon="pi pi-times"
+        severity="secondary"
+        (onClick)="closeDialog()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

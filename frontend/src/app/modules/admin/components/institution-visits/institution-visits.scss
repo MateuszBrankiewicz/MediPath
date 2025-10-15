@@ -1,0 +1,15 @@
+.visits-container {
+  padding: 1rem;
+  margin: 0 auto;
+}
+.visits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  max-width: 100%;
+  gap: 1.25rem;
+
+  @media (min-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: none;
+  }
+}

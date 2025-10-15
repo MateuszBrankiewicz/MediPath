@@ -41,20 +41,21 @@
         {{ day.dayNumber }}
         @if (day.hasAppointments) {
           <div class="appointment-indicators">
-            @for (indicator of day.appointments; track indicator.id) {
-              @if (checkIfAppointmentIsAvailable()) {
-                @if (day.isFromThisInstitution !== false) {
+            @for (group of groupAppointmentsByType(day); track group.type) {
+              <div class="appointment-group">
+                @if (group.type === "available-same") {
                   <div
                     class="appointment-indicator__available-same-institution"
                   ></div>
-                } @else {
+                } @else if (group.type === "available-other") {
                   <div
                     class="appointment-indicator__available-other-institution"
                   ></div>
+                } @else {
+                  <div class="appointment-indicator__unavailable"></div>
                 }
-              } @else {
-                <div class="appointment-indicator__unavailable"></div>
-              }
+                <span class="appointment-count">{{ group.count }}</span>
+              </div>
             }
           </div>
         }

@@ -93,19 +93,17 @@ export class Calendar {
 
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
-    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7; // Convert to Monday = 0
+    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
 
     const days: CalendarDay[] = [];
     const today = new Date();
     const selected = this.selectedDate();
 
-    // Calculate previous month's year and month correctly
     const prevMonthDate = new Date(year, month - 1, 1);
     const prevYear = prevMonthDate.getFullYear();
     const prevMonth = prevMonthDate.getMonth();
     const lastDayOfPrevMonth = new Date(prevYear, prevMonth + 1, 0);
 
-    // Add days from previous month
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
       const dayNumber = lastDayOfPrevMonth.getDate() - i;
       const date = new Date(prevYear, prevMonth, dayNumber);
@@ -122,7 +120,6 @@ export class Calendar {
       });
     }
 
-    // Add days from current month
     for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
       const date = new Date(year, month, day);
       const dayData = this.findAppointmentDataForDate(date, appointmentsData);
@@ -138,12 +135,10 @@ export class Calendar {
       });
     }
 
-    // Calculate next month's year and month correctly
     const nextMonthDate = new Date(year, month + 1, 1);
     const nextYear = nextMonthDate.getFullYear();
     const nextMonth = nextMonthDate.getMonth();
 
-    // Add days from next month to complete the 42-day grid (6 weeks × 7 days)
     const remainingDays = 42 - days.length;
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(nextYear, nextMonth, day);
@@ -180,14 +175,27 @@ export class Calendar {
     );
   }
 
-  private toLocalISOString(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
   protected checkIfAppointmentIsAvailable(): boolean {
     return true;
+  }
+
+  protected groupAppointmentsByType(
+    day: CalendarDay,
+  ): { type: string; count: number }[] {
+    if (!day.hasAppointments || !day.appointments.length) {
+      return [];
+    }
+
+    const groups = new Map<string, number>();
+
+    day.appointments.forEach((appointment) => {
+      const type = appointment.type || 'available-same';
+      groups.set(type, (groups.get(type) || 0) + 1);
+    });
+
+    return Array.from(groups.entries()).map(([type, count]) => ({
+      type,
+      count,
+    }));
   }
 }

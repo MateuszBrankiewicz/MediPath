@@ -64,6 +64,12 @@ export interface CalendarDay {
 
 export interface AppointmentIndicator {
   id: string;
+  type?: 'available-same' | 'available-other' | 'unavailable';
+}
+
+export interface AppointmentGroup {
+  type: 'available-same' | 'available-other' | 'unavailable';
+  count: number;
 }
 
 export interface InputSlot {
@@ -89,4 +95,10 @@ export interface CreateScheduleRequest {
   startHour: string;
   endHour: string;
   interval: string;
+}
+
+export interface MapToCalendarDaysOptions {
+  displayedMonth: number;
+  displayedYear: number;
+  selectedInstitutionIds?: string[];
 }
