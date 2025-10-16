@@ -1,134 +1,259 @@
-/* ==========================================================================
-   Stylistyka oparta na oryginalnym zrzucie ekranu z poprawionym layoutem
-   ========================================================================== */
+.add-doctor-page {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
 
-// --- Paleta kolorów z oryginalnego zrzutu ekranu ---
-$primary-blue: #3b82f6;      // Niebieski dla focusa i interaktywnych elementów
-$dark-blue: #1e293b;        // Ciemny niebieski/grafit dla głównego przycisku
-$danger-red: #ef4444;       // Czerwień dla usuwania
-$text-color: #334155;      // Ciemnoszary dla tekstu w polach
-$label-color: #475569;     // Kolor etykiet
-$background-color: #f1f5f9; // Jasnoszare tło strony
-$surface-card: #ffffff;    // Białe tło karty
-$border-color: #cbd5e1;     // Kolor obramowań pól
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
 
-// --- Stylizacja hosta komponentu ---
-:host {
-  display: block;
-  background-color: $background-color;
+.page-header {
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-color-secondary);
+
+  @media (max-width: 640px) {
+    font-size: 0.85rem;
+  }
+
+  .breadcrumb-link {
+    color: var(--text-color-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: var(--primary-color);
+    }
+  }
+
+  .breadcrumb-separator {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+  }
+
+  .breadcrumb-current {
+    color: var(--text-color);
+    font-weight: 500;
+  }
+}
+
+.doctor-form {
+  ::ng-deep .p-card {
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .p-card-body {
+      padding: 0;
+    }
+
+    .p-card-content {
+      padding: 0;
+    }
+  }
+}
+
+.form-container {
   padding: 2rem;
+
+  @media (max-width: 1024px) {
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    padding: 1rem;
+  }
 }
 
-// --- Główny kontener (karta) ---
-.institution-form-card {
-  background: $surface-card;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+.form-section {
+  margin-bottom: 2.5rem;
+
+  &:last-of-type {
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    margin-bottom: 2rem;
+  }
 }
 
-// --- Nagłówek ---
-:host ::ng-deep .p-card-title {
-  font-size: 1.125rem;
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--surface-border);
+
+  @media (max-width: 640px) {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+  }
 }
 
-:host ::ng-deep .p-card-body {
-  padding: 2rem;
-}
-
-// --- Etykiety pól ---
-.form-field > label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: $label-color;
-}
-
-// --- Główna siatka formularza ---
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.5rem 2rem; // Odstęp pionowy i poziomy
-}
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
 
-.full-width {
-  grid-column: 1 / -1;
-}
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
 
-// --- Sekcja adresu ---
-.address-group {
-  grid-column: 1 / -1;
-  .group-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: $text-color;
-    margin: 1rem 0;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid $border-color;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 
-.address-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem 2rem;
-  .street-field {
-    grid-column: 1 / -1; // Ulica zawsze zajmuje całą szerokość
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .field-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    @media (max-width: 640px) {
+      font-size: 0.8125rem;
+    }
+
+    i {
+      color: var(--text-color-secondary);
+      font-size: 0.875rem;
+    }
+  }
+
+  .error-message {
+    color: var(--p-red-500);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+
+    @media (max-width: 640px) {
+      font-size: 0.75rem;
+    }
+
+    i {
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
   }
 }
 
-// --- Ogólne style dla pól PrimeNG ---
-:host ::ng-deep {
-  .p-inputtext, .p-inputtextarea, .p-autocomplete, .p-multiselect, .p-inputmask {
-    width: 100%;
-    border-color: $border-color;
-    color: $text-color;
-  }
-
-  // Efekt focus zgodny z oryginałem
-  .p-inputwrapper-focus, .p-inputtext:focus {
-    border-color: $primary-blue !important;
-    box-shadow: none !important;
-  }
-}
-
-// --- Przycisk przesyłania pliku ---
-:host ::ng-deep .p-fileupload-basic {
-  .p-button {
-    background-color: #ffffff;
-    color: $text-color;
-    border: 1px solid $border-color;
-  }
-}
-
-// --- Przyciski na dole ---
-.actions {
+.form-actions {
   display: flex;
   justify-content: flex-end;
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
-}
+  border-top: 1px solid var(--surface-border);
 
-:host ::ng-deep {
-  // Główny przycisk CONFIRM
-  .p-button-confirm {
-    background-color: $dark-blue;
-    border-color: $dark-blue;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    &:hover {
-      background-color: lighten($dark-blue, 5%);
-      border-color: lighten($dark-blue, 5%);
-    }
+  @media (max-width: 640px) {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
   }
 
-  // Czerwone przyciski "Remove" na chipach
-  .p-chip .p-chip-remove-icon {
-    color: $danger-red;
-    &:hover {
-      color: darken($danger-red, 10%);
+  ::ng-deep .confirm-button {
+    min-width: 200px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border-radius: 0.5rem;
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    transition: all 0.2s;
+
+    @media (max-width: 640px) {
+      width: 100%;
+      min-width: unset;
+      padding: 0.65rem 1.5rem;
+      font-size: 0.875rem;
     }
+
+    &:hover:not(:disabled) {
+      background: var(--primary-600);
+      border-color: var(--primary-600);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .form-field ::ng-deep {
+    input.p-inputtext,
+    .p-inputmask,
+    .p-datepicker,
+    .p-multiselect {
+      border-width: 2px;
+    }
+  }
+}
+
+.form-field ::ng-deep {
+  input:focus-visible,
+  .p-inputtext:focus-visible,
+  button:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+.form-flex {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .flex-item-wide {
+    flex: 2;
+  }
+
+  .flex-item-narrow {
+    flex: 1;
   }
 }

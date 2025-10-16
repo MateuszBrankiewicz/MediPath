@@ -9,6 +9,7 @@
         [hospital]="institution"
         [canDisabled]="roleCode() === 'admin'"
         [canEdit]="roleCode() === 'admin'"
+        (institutionClicked)="redirectToInstitutionView(institution.id)"
       ></app-hospital-card>
     }
   </div>

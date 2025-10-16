@@ -171,13 +171,13 @@ export class NavigationService {
               {
                 label: 'Notifications',
                 icon: 'pi pi-user',
-                routerLink: '/patient/profile',
+                routerLink: '/admin/notifications',
                 visible: true,
               },
               {
                 label: 'Doctors',
                 icon: 'pi pi-user',
-                routerLink: '/patient/profile',
+                routerLink: '/admin/doctors',
                 visible: true,
               },
             ],

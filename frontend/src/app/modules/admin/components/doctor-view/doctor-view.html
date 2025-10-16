@@ -1,0 +1,156 @@
+<div class="doctor-view-page">
+  @if (isLoading()) {
+    <div class="floating-center-spinner">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+  } @else if (doctor()) {
+    <div class="page-header">
+      <div class="breadcrumb">
+        <a routerLink="/admin/doctors" class="breadcrumb-link">
+          {{ translationService.translate("admin.doctor.breadcrumb.list") }}
+        </a>
+        <i class="pi pi-angle-right breadcrumb-separator"></i>
+        <span class="breadcrumb-current">
+          {{ doctor()!.name }} {{ doctor()!.surname }}
+        </span>
+      </div>
+
+      <div class="header-actions">
+        <p-button
+          [label]="translationService.translate('admin.doctor.edit')"
+          icon="pi pi-pencil"
+          (onClick)="onEditDoctor()"
+          styleClass="edit-button"
+        />
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- Main Information Card -->
+      <app-info-card
+        [imageUrl]="doctor()!.photoUrl"
+        [imageAlt]="doctor()!.name + ' ' + doctor()!.surname"
+      >
+        <!-- Personal Information -->
+        <app-detail-section
+          [title]="
+            translationService.translate('admin.doctor.view.personalInfo')
+          "
+          icon="pi-user"
+        >
+          <app-detail-item
+            [label]="translationService.translate('admin.doctor.view.name')"
+            icon="pi-tag"
+          >
+            {{ doctor()!.name }} {{ doctor()!.surname }}
+          </app-detail-item>
+
+          <app-detail-item
+            [label]="translationService.translate('admin.doctor.view.pwz')"
+            icon="pi-shield"
+          >
+            {{ doctor()!.pwz }}
+          </app-detail-item>
+
+          <app-detail-item
+            [label]="translationService.translate('admin.doctor.view.rating')"
+            icon="pi-star-fill"
+          >
+            <p-tag
+              [value]="doctor()!.rating.stars.toFixed(1)"
+              [severity]="getRatingColor(doctor()!.rating.stars)"
+              icon="pi pi-star-fill"
+            />
+            <span class="opinion-count">
+              ({{ doctor()!.rating.opinions }}
+              {{ translationService.translate("admin.doctor.view.opinions") }})
+            </span>
+          </app-detail-item>
+        </app-detail-section>
+
+        <!-- Professional Information -->
+        <app-detail-section
+          [title]="
+            translationService.translate('admin.doctor.view.professionalInfo')
+          "
+          icon="pi-briefcase"
+        >
+          <div class="section-content">
+            <h4 class="subsection-title">
+              <i class="pi pi-bookmark"></i>
+              {{
+                translationService.translate(
+                  "admin.doctor.view.specialisations"
+                )
+              }}
+            </h4>
+
+            @if (doctor()!.specialisation.length > 0) {
+              <div class="specialisations-list">
+                @for (spec of doctor()!.specialisation; track spec) {
+                  <p-chip
+                    [label]="getTypeName(spec)"
+                    styleClass="specialisation-chip"
+                  />
+                }
+              </div>
+            } @else {
+              <p class="no-data">
+                {{
+                  translationService.translate(
+                    "admin.doctor.view.noSpecialisations"
+                  )
+                }}
+              </p>
+            }
+          </div>
+        </app-detail-section>
+
+        <!-- Institutions -->
+        <app-detail-section
+          [title]="
+            translationService.translate('admin.doctor.view.institutions')
+          "
+          icon="pi-building"
+          [showDivider]="false"
+        >
+          @if (doctor()!.institutions.length > 0) {
+            <div class="institutions-list">
+              @for (
+                institution of doctor()!.institutions;
+                track institution.institutionId
+              ) {
+                <div class="institution-card">
+                  <div class="institution-info">
+                    <h4 class="institution-name">
+                      <i class="pi pi-building"></i>
+                      {{ institution.institutionName }}
+                    </h4>
+                  </div>
+                  <p-button
+                    icon="pi pi-eye"
+                    [outlined]="true"
+                    [rounded]="true"
+                    (onClick)="onViewInstitution(institution.institutionId)"
+                    severity="secondary"
+                    [attr.aria-label]="
+                      translationService.translate(
+                        'admin.doctor.view.viewInstitution'
+                      )
+                    "
+                  />
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="no-data">
+              {{
+                translationService.translate("admin.doctor.view.noInstitutions")
+              }}
+            </p>
+          }
+        </app-detail-section>
+      </app-info-card>
+    </div>
+  }
+</div>
