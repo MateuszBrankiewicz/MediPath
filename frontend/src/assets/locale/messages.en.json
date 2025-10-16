@@ -630,7 +630,35 @@
   "admin.institution.types.neurology": "Neurology",
   "admin.institution.types.pediatrics": "Pediatrics",
   "admin.institution.types.psychiatry": "Psychiatry",
-  "admin.institution.types.general": "General Practice"
+  "admin.institution.types.general": "General Practice",
+  "admin.institution.edit": "Edit Institution",
+  "admin.institution.view.basicInfo": "Basic Information",
+  "admin.institution.view.rating": "Rating",
+  "admin.institution.view.visibility": "Visibility",
+  "admin.institution.view.public": "Public",
+  "admin.institution.view.private": "Private",
+  "admin.institution.view.noSpecialisations": "No specialisations added",
+
+  "admin.doctor.breadcrumb.list": "Doctors",
+  "admin.doctor.breadcrumb.view": "Doctor Details",
+  "admin.doctor.edit": "Edit Doctor",
+  "admin.doctor.view.personalInfo": "Personal Information",
+  "admin.doctor.view.professionalInfo": "Professional Information",
+  "admin.doctor.view.institutions": "Institutions",
+  "admin.doctor.view.schedule": "Schedule",
+  "admin.doctor.view.contact": "Contact Information",
+  "admin.doctor.view.name": "Name",
+  "admin.doctor.view.pwz": "PWZ License Number",
+  "admin.doctor.view.rating": "Rating",
+  "admin.doctor.view.opinions": "Opinions",
+  "admin.doctor.view.specialisations": "Specialisations",
+  "admin.doctor.view.noSpecialisations": "No specialisations",
+  "admin.doctor.view.email": "Email",
+  "admin.doctor.view.phone": "Phone",
+  "admin.doctor.view.noInstitutions": "No institutions assigned",
+  "admin.doctor.view.noSchedule": "No schedule available",
+  "admin.doctor.view.viewInstitution": "View Institution",
+  "admin.doctor.error.loadFailed": "Failed to load doctor data"
 }
 
 

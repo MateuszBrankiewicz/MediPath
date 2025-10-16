@@ -1,0 +1,14 @@
+<div class="detail-section">
+  <h3 class="section-title">
+    <i [class]="'pi ' + icon()"></i>
+    {{ title() }}
+  </h3>
+
+  <div class="section-content">
+    <ng-content />
+  </div>
+</div>
+
+@if (showDivider()) {
+  <p-divider />
+}

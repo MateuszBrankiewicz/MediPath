@@ -1,0 +1,74 @@
+<p-card class="employee-card">
+  <div class="employee-card-content">
+    <div class="employee-avatar">
+      @if (employee().pfpImage) {
+        <img [src]="employee().pfpImage" [alt]="employee().name" />
+      } @else {
+        <div class="avatar-placeholder">
+          <i class="pi pi-user"></i>
+        </div>
+      }
+    </div>
+
+    <div class="employee-info">
+      <h4 class="employee-name">
+        {{ employee().name }} {{ employee().surname }}
+      </h4>
+
+      @if (employee().roleName) {
+        <p class="employee-role">
+          <i class="pi pi-id-card"></i>
+          {{ employee().roleName }}
+        </p>
+      }
+
+      @if (employee().pwz) {
+        <p class="employee-pwz">
+          <i class="pi pi-shield"></i>
+          PWZ: {{ employee().pwz }}
+        </p>
+      }
+
+      @if (employee().rating !== undefined) {
+        <p class="employee-rating">
+          <i class="pi pi-star-fill"></i>
+          {{ employee().rating!.toFixed(1) }}
+        </p>
+      }
+
+      @if (employee().specialisation && employee().specialisation!.length > 0) {
+        <div class="employee-specialisations">
+          @for (spec of employee().specialisation!.slice(0, 2); track spec) {
+            <p-chip [label]="spec" styleClass="spec-chip-small" />
+          }
+          @if (employee().specialisation!.length > 2) {
+            <span class="more-specs">
+              +{{ employee().specialisation!.length - 2 }}
+            </span>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="employee-actions">
+      @if (showViewButton()) {
+        <p-button
+          icon="pi pi-eye"
+          [outlined]="true"
+          [rounded]="true"
+          (onClick)="onView()"
+          severity="secondary"
+          [attr.aria-label]="viewLabel()"
+        />
+      }
+      @if (showEditButton()) {
+        <p-button
+          icon="pi pi-pencil"
+          [rounded]="true"
+          (onClick)="onEdit()"
+          [attr.aria-label]="editLabel()"
+        />
+      }
+    </div>
+  </div>
+</p-card>
