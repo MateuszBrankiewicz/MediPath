@@ -34,8 +34,13 @@ export class UserNotificationsService implements OnDestroy {
 
     this.client.onConnect = () => {
       this.client.subscribe('/user/notifications', (message: IMessage) => {
-        const parsedMessage = JSON.parse(message.body) as NotificationMessage;
-        this.notificationSubject.next(parsedMessage);
+        try {
+          console.log(message.body);
+          const parsedMessage = JSON.parse(message.body) as NotificationMessage;
+          this.notificationSubject.next(parsedMessage);
+        } catch {
+          // Handle parsing error
+        }
       });
     };
 

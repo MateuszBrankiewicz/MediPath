@@ -129,9 +129,9 @@
                     translationService.translate("admin.institution.province")
                   }}
                 </label>
-                <input
-                  pInputText
+                <p-select
                   id="province"
+                  [options]="provinces()"
                   formControlName="province"
                   [placeholder]="
                     translationService.translate(
@@ -179,9 +179,10 @@
                   <i class="pi pi-building"></i>
                   {{ translationService.translate("admin.institution.city") }}
                 </label>
-                <input
-                  pInputText
+                <p-select
                   id="city"
+                  [filter]="true"
+                  [options]="cities()"
                   formControlName="city"
                   [placeholder]="
                     translationService.translate(
@@ -248,7 +249,7 @@
             </div>
           </div>
 
-          <div class="form-section">
+          <!-- <div class="form-section">
             <p-divider />
             <h3 class="section-title">
               {{ translationService.translate("admin.institution.doctors") }}
@@ -303,7 +304,7 @@
                 </div>
               }
             </div>
-          </div>
+          </div> -->
 
           <p-divider />
           <div class="form-section">
@@ -331,14 +332,14 @@
                   ></button>
                 </div>
               } @else {
-                <div class="upload-placeholder">
+                <!-- <div class="upload-placeholder">
                   <p-button
                     icon="pi pi-plus"
                     [rounded]="true"
                     [outlined]="true"
                     (onClick)="fileUpload.choose()"
                   ></p-button>
-                </div>
+                </div> -->
               }
               <p-fileUpload
                 #fileUpload
@@ -346,11 +347,9 @@
                 accept="image/*"
                 [maxFileSize]="5000000"
                 (onSelect)="onImageUpload($event)"
-                [auto]="true"
                 [chooseLabel]="
                   translationService.translate('institution.upload_image')
                 "
-                [style]="{ display: 'none' }"
               ></p-fileUpload>
             </div>
           </div>

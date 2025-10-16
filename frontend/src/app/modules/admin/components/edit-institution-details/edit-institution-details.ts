@@ -17,8 +17,11 @@ import { InputMaskModule } from 'primeng/inputmask';
 import { InputTextModule } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
+import { map } from 'rxjs';
 import { Institution } from '../../../../core/models/institution.model';
+import { AddressService } from '../../../../core/services/address/address.service';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
@@ -54,6 +57,7 @@ interface InstitutionType {
     CardModule,
     MultiSelectModule,
     Divider,
+    SelectModule,
   ],
   templateUrl: './edit-institution-details.html',
   styleUrl: './edit-institution-details.scss',
@@ -67,13 +71,17 @@ export class EditInstitutionDetails implements OnInit {
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
 
+  private addressService = inject(AddressService);
+
   protected isLoading = signal<boolean>(false);
   protected isSaving = signal<boolean>(false);
   protected institutionForm!: FormGroup;
   protected institutionId = signal<string>('');
   protected institutionImage = signal<string>('');
 
-  // Types and employees
+  protected provinces = signal<string[]>([]);
+  protected cities = signal<string[]>([]);
+
   protected selectedTypes = signal<string[]>([]);
   protected employees = signal<Employee[]>([]);
   protected searchQuery = signal<string>('');
@@ -82,6 +90,8 @@ export class EditInstitutionDetails implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
+    this.loadAvailableCities();
+    this.loadAvailableProvinces();
     this.loadAvailableTypes();
 
     const id = this.route.snapshot.paramMap.get('id');
@@ -174,17 +184,17 @@ export class EditInstitutionDetails implements OnInit {
           this.institutionImage.set(institution.image || '');
           this.selectedTypes.set(institution.specialisation || []);
 
-          // Employees
-          const employeeList: Employee[] = institution.employees.map((emp) => ({
-            name: emp.name,
-            surname: emp.surname,
-            userId: emp.userId,
-            roleCode: emp.roleCode,
-            roleName: this.getRoleName(emp.roleCode),
-            pfpImage: emp.pfpImage,
-            specialisation: emp.specialisation,
-          }));
-          this.employees.set(employeeList);
+          // // Employees
+          // const employeeList: Employee[] = institution.employees.map((emp) => ({
+          //   name: emp.name,
+          //   surname: emp.surname,
+          //   userId: emp.userId,
+          //   roleCode: emp.roleCode,
+          //   roleName: this.getRoleName(emp.roleCode),
+          //   pfpImage: emp.pfpImage,
+          //   specialisation: emp.specialisation,
+          // }));
+          // this.employees.set(employeeList);
 
           this.isLoading.set(false);
         },
@@ -242,28 +252,28 @@ export class EditInstitutionDetails implements OnInit {
     return roles[roleCode] || this.translationService.translate('roles.staff');
   }
 
-  protected addEmployeeFromSearch(): void {
-    const query = this.searchQuery().trim();
-    if (!query) return;
+  // protected addEmployeeFromSearch(): void {
+  //   const query = this.searchQuery().trim();
+  //   if (!query) return;
 
-    // Mock: w rzeczywistości tutaj byłoby zapytanie do API
-    // Dla przykładu dodajemy z PWZ jako userId
-    const newEmp: Employee = {
-      name: 'Jan',
-      surname: 'Kowalski',
-      userId: query,
-      roleCode: 2,
-      roleName: this.getRoleName(2),
-    };
+  //   // Mock: w rzeczywistości tutaj byłoby zapytanie do API
+  //   // Dla przykładu dodajemy z PWZ jako userId
+  //   const newEmp: Employee = {
+  //     name: 'Jan',
+  //     surname: 'Kowalski',
+  //     userId: query,
+  //     roleCode: 2,
+  //     roleName: this.getRoleName(2),
+  //   };
 
-    this.employees.update((list) => [...list, newEmp]);
-    this.searchQuery.set('');
-    this.toastService.showSuccess(
-      this.translationService.translate(
-        'admin.institution.success.employeeAdded',
-      ),
-    );
-  }
+  //   this.employees.update((list) => [...list, newEmp]);
+  //   this.searchQuery.set('');
+  //   this.toastService.showSuccess(
+  //     this.translationService.translate(
+  //       'admin.institution.success.employeeAdded',
+  //     ),
+  //   );
+  // }
 
   protected onImageUpload(event: { files: File[] }): void {
     const file = event.files[0];
@@ -276,16 +286,16 @@ export class EditInstitutionDetails implements OnInit {
     }
   }
 
-  protected removeEmployee(userId: string): void {
-    this.employees.update((list) =>
-      list.filter((emp) => emp.userId !== userId),
-    );
-    this.toastService.showSuccess(
-      this.translationService.translate(
-        'admin.institution.success.employeeRemoved',
-      ),
-    );
-  }
+  // protected removeEmployee(userId: string): void {
+  //   this.employees.update((list) =>
+  //     list.filter((emp) => emp.userId !== userId),
+  //   );
+  //   this.toastService.showSuccess(
+  //     this.translationService.translate(
+  //       'admin.institution.success.employeeRemoved',
+  //     ),
+  //   );
+  // }
 
   protected saveInstitution(): void {
     if (this.institutionForm.invalid) {
@@ -306,17 +316,53 @@ export class EditInstitutionDetails implements OnInit {
       );
       return;
     }
-
+    const institutionObject: Partial<Institution> = {
+      ...this.institutionForm.value,
+      image: this.institutionImage(),
+    };
     this.isSaving.set(true);
 
-    // TODO: Implement actual save to backend
-    setTimeout(() => {
-      this.isSaving.set(false);
-      this.toastService.showSuccess(
-        this.translationService.translate('admin.institution.success.saved'),
-      );
-      this.router.navigate(['/admin/institutions']);
-    }, 1000);
+    this.institutionService
+      .addInstitution(institutionObject)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isSaving.set(false);
+          this.toastService.showSuccess(
+            this.translationService.translate(
+              'admin.institution.success.saved',
+            ),
+          );
+          this.router.navigate(['/admin/institutions']);
+        },
+        error: (error) => {
+          console.error('Error saving institution:', error);
+          this.toastService.showError(
+            this.translationService.translate(
+              'admin.institution.error.saveFailed',
+            ),
+          );
+          this.isSaving.set(false);
+        },
+      });
+  }
+
+  protected loadAvailableCities(): void {
+    console.log('Loading cities');
+    this.addressService
+      .getCities('')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map((cities) => cities.map((c) => c.name)),
+      )
+      .subscribe((cities) => this.cities.set(cities));
+  }
+
+  protected loadAvailableProvinces(): void {
+    this.addressService
+      .getProvinces()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((provinces) => this.provinces.set(provinces));
   }
 
   protected cancel(): void {

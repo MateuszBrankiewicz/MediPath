@@ -94,4 +94,26 @@ export class InstitutionService {
         ),
       );
   }
+
+  public addInstitution(institution: Partial<Institution>): Observable<void> {
+    return this.http
+      .post<void>(
+        `${API_URL}/institution/add`,
+        {
+          name: institution.name,
+          types: institution.specialisation,
+          address: institution.address,
+          image: institution.image,
+          isPublic: institution.isPublic,
+        },
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(
+        map(() => {
+          console.log('Institution added successfully');
+        }),
+      );
+  }
 }

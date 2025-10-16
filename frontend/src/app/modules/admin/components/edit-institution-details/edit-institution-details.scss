@@ -173,6 +173,7 @@
 
   ::ng-deep {
     .p-multiselect,
+    .p-select,
     .p-inputmask {
       &.invalid {
         border-color: var(--p-red-500);
