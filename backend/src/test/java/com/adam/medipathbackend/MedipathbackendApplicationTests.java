@@ -5,18 +5,18 @@ import com.adam.medipathbackend.config.HttpSessionConfig;
 import com.adam.medipathbackend.config.MailConfig;
 import com.adam.medipathbackend.controllers.CityController;
 import com.adam.medipathbackend.models.*;
-import com.adam.medipathbackend.repository.CityRepository;
-import com.adam.medipathbackend.repository.PasswordResetEntryRepository;
-import com.adam.medipathbackend.repository.UserRepository;
+import com.adam.medipathbackend.repository.*;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpSession;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,22 +25,28 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.session.SessionRepository;
+import org.springframework.session.data.mongo.MongoSession;
 import org.springframework.test.context.*;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -48,6 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest
+@Import(HttpSessionConfig.class) // <-- Add this!
 class MedipathbackendApplicationTests {
 
     @RegisterExtension
@@ -71,7 +78,26 @@ class MedipathbackendApplicationTests {
     private UserRepository userRepository;
 
     @MockitoBean
+    private InstitutionRepository institutionRepository;
+
+    @MockitoBean
     private PasswordResetEntryRepository preRepository;
+
+    @MockitoBean
+    private ScheduleRepository scheduleRepository;
+
+    @MockitoBean
+    private VisitRepository visitRepository;
+
+    @MockitoBean
+    private CommentRepository commentRepository;
+
+    @MockitoBean
+    private MedicalHistoryRepository medicalHistoryRepository;
+
+    @Autowired
+    private SessionRepository<MongoSession> sessionRepository;
+
 
     private List<City> cityList;
 
@@ -380,5 +406,277 @@ class MedipathbackendApplicationTests {
                 .andExpect(status().isGone())
                 .andExpect(jsonPath("$.message").value("token invalid or expired"));
     }
+
+    @Test
+    public void trySearchInvalidType() throws Exception {
+        mvc.perform(post("/api/search/?type=sneed"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("unknown type"));
+    }
+
+    ArrayList<StaffDigest> exampleStaffDigests = new ArrayList<>(List.of(new StaffDigest("1", "Example", "User", new ArrayList<>(List.of("spec")), 2, "")));
+
+    @Test
+    public void trySearchDoctorSuccess() throws Exception {
+
+        when(institutionRepository.findDoctorsByCity(".*.*", ".*")).thenReturn(exampleStaffDigests);
+
+        mvc.perform(post("/api/search/?type=doctor"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").isArray())
+                .andExpect(jsonPath("$.result").isNotEmpty())
+                .andExpect(jsonPath("$.result[0].userId").value("1"));
+    }
+
+    @Test
+    public void trySearchDoctorSpec() throws Exception {
+        String[] spec = {"spec"};
+
+        when(institutionRepository.findDoctorsByCityAndSpec(".*.*", ".*", spec)).thenReturn(exampleStaffDigests);
+
+        mvc.perform(post("/api/search/?type=doctor"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").isArray())
+                .andExpect(jsonPath("$.result").isNotEmpty())
+                .andExpect(jsonPath("$.result[0].userId").value("1"));
+    }
+
+    ArrayList<Institution> exampleInstitutions = new ArrayList<>(List.of(new Institution("1", true,
+            new Address("a", "b", "c", "d", "e"), "")));
+
+
+    @Test
+    public void trySearchInstitutionSpec() throws Exception {
+        String[] spec = {"spec"};
+
+        when(institutionRepository.findInstitutionByCityAndSpec(".*.*", ".*", spec)).thenReturn(exampleInstitutions);
+
+        mvc.perform(post("/api/search/?type=institution"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").isArray())
+                .andExpect(jsonPath("$.result").isNotEmpty())
+                .andExpect(jsonPath("$.result[0].id").value("1"));
+    }
+
+    @Test
+    public void trySearchInstitution() throws Exception {
+        String[] spec = {"spec"};
+
+        when(institutionRepository.findInstitutionByCity(".*.*", ".*")).thenReturn(exampleInstitutions);
+
+        mvc.perform(post("/api/search/?type=institution"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").isArray())
+                .andExpect(jsonPath("$.result").isNotEmpty())
+                .andExpect(jsonPath("$.result[0].id").value("1"));
+    }
+
+    Visit exampleVisit = new Visit(new PatientDigest("1", "Example", "Patient", "123456789"),
+            new DoctorDigest("2", "Example", "Doctor", new ArrayList<>(List.of("spec"))),
+            new VisitTime("1", LocalDateTime.of(2025, 1, 1, 12, 12, 12),
+                    LocalDateTime.of(2025, 1, 1, 13, 13, 13)),
+            new InstitutionDigest("1", "TestInstitution"), "");
+
+    @Test
+    public void tryAddVisitUnauthorizedIfNoSessionId() throws Exception {
+
+        String exampleAdd = "{" +
+                "\"scheduleID\": \"schedule123\"," +
+                "\"patientRemarks\": \"remarks\"" +
+                "}";
+
+
+        mvc.perform(post("/api/visits/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(exampleAdd))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(userRepository, scheduleRepository, visitRepository);
+    }
+
+    @Test
+    public void addVisit_badRequestIfMissingScheduleID() throws Exception {
+        String userId = "user1";
+
+        MongoSession session = sessionRepository.createSession();
+        // 2. Set the 'id' attribute on the real Spring Session object
+        session.setAttribute("id", userId);
+        // 3. Save the session to the repository (MongoDB)
+        sessionRepository.save(session);
+
+        MockHttpSession httpsession = new MockHttpSession(mvc.getDispatcherServlet().getServletContext(), session.getId());
+        httpsession.setAttribute("id", userId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(exampleValidUser));
+        String exampleAdd = "{" +
+                "\"patientRemarks\": \"remarks\"" +
+                "}";
+
+        mvc.perform(post("/api/visits/add")
+                        .session(httpsession)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(exampleAdd))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("missing fields in request body"))
+                .andExpect(jsonPath("$.fields[0]").value("scheduleID"));
+
+
+
+        verifyNoInteractions(userRepository, scheduleRepository, visitRepository);
+    }
+
+    @Test
+    public void addVisit_badRequestIfScheduleNotFound() throws Exception {
+        String userId = "user1";
+        String scheduleId = "nonExistentSchedule";
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("id", userId);
+
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(exampleValidUser));
+        when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.empty());
+
+        String exampleAdd = "{" +
+                "\"scheduleID\": \"schedule123\"," +
+                "\"patientRemarks\": \"remarks\"" +
+                "}";
+
+        mvc.perform(post("/api/visits/add")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(exampleAdd))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("visit time is invalid or booked"));
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(scheduleRepository, times(1)).findById(scheduleId);
+        verifyNoInteractions(visitRepository);
+    }
+
+
+
+
+    @Test
+    public void addVisit_badRequestIfScheduleAlreadyBooked() throws Exception {
+        String userId = "user1";
+        String scheduleId = "schedule123";
+
+        String exampleAdd = "{" +
+                "\"scheduleID\": \"" + scheduleId +"\"," +
+                "\"patientRemarks\": \"remarks\"" +
+                "}";
+        MockHttpSession session = new MockHttpSession();
+
+        session.setAttribute("id", userId);
+
+        Schedule exampleSchedule = new Schedule(LocalDateTime.of(2025, 1, 1, 12, 0, 0),
+                LocalDateTime.of(2025, 1, 1, 13, 0, 0),
+                new DoctorDigest("doctor1", "Example", "doctor", new ArrayList<>()),
+                new InstitutionDigest("institution1", "institutionName"));
+
+        exampleSchedule.setBooked(true);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(exampleValidUser));
+
+
+        when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(exampleSchedule));
+
+
+        mvc.perform(post("/api/visits/add")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(exampleAdd))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("visit time is invalid or booked"));
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(scheduleRepository, times(1)).findById(scheduleId);
+        verifyNoInteractions(visitRepository);
+    }
+
+    @Test
+    public void addVisit_successWithNotificationEnglish() throws Exception {
+        String userId = "user1";
+        String scheduleId = "availableSchedule";
+
+
+        String exampleAdd = "{" +
+                "\"scheduleID\": \"" + scheduleId +"\"," +
+                "\"patientRemarks\": \"remarks\"" +
+                "}";
+        MockHttpSession session = new MockHttpSession();
+
+        session.setAttribute("id", userId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(exampleValidUser));
+
+
+        Schedule exampleSchedule = new Schedule(LocalDateTime.of(2025, 1, 1, 12, 0, 0),
+                LocalDateTime.of(2025, 1, 1, 13, 0, 0),
+                new DoctorDigest("doctor1", "Example", "doctor", new ArrayList<>()),
+                new InstitutionDigest("institution1", "institutionName"));
+
+        when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(exampleSchedule));
+
+        when(visitRepository.save(any(Visit.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(scheduleRepository.save(any(Schedule.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        mvc.perform(post("/api/visits/add")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(exampleAdd))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("success"));
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(scheduleRepository, times(1)).findById(scheduleId);
+        verify(visitRepository, times(1)).save(any(Visit.class));
+        verify(scheduleRepository, times(1)).save(argThat(Schedule::isBooked));
+        verify(userRepository, times(1)).save(argThat(u -> !u.getNotifications().isEmpty()));
+
+    }
+
+
+    @Test
+    public void addVisit_successWithEmptyPatientRemarks() throws Exception {
+        String userId = "user1";
+        String scheduleId = "availableSchedule";
+
+
+        String exampleAdd = "{" +
+                "\"scheduleID\": \"" + scheduleId +"\"" +
+                "}";
+        MockHttpSession session = new MockHttpSession();
+
+        session.setAttribute("id", userId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(exampleValidUser));
+
+
+        Schedule exampleSchedule = new Schedule(LocalDateTime.of(2025, 1, 1, 12, 0, 0),
+                LocalDateTime.of(2025, 1, 1, 13, 0, 0),
+                new DoctorDigest("doctor1", "Example", "doctor", new ArrayList<>()),
+                new InstitutionDigest("institution1", "institutionName"));
+
+        when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(exampleSchedule));
+
+        when(visitRepository.save(any(Visit.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(scheduleRepository.save(any(Schedule.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        mvc.perform(post("/api/visits/add")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(exampleAdd))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("success"));
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(scheduleRepository, times(1)).findById(scheduleId);
+        verify(visitRepository, times(1)).save(any(Visit.class));
+        verify(scheduleRepository, times(1)).save(argThat(Schedule::isBooked));
+        verify(userRepository, times(1)).save(argThat(u -> !u.getNotifications().isEmpty()));
+    }
+
 
 }
