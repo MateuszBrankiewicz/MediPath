@@ -7,12 +7,21 @@ import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
 import com.adam.medipathbackend.repository.VisitRepository;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.time.zone.ZoneRulesProvider;
 import java.util.ArrayList;
 import java.util.Map;
@@ -34,6 +43,9 @@ public class VisitController {
 
     @Autowired
     InstitutionRepository institutionRepository;
+
+    @Autowired
+    private JavaMailSender sender;
 
     @PostMapping(value = {"/add", "/add/"})
     public ResponseEntity<Map<String, Object>> add(@RequestBody AddVisitForm visit, HttpSession session) {
@@ -130,10 +142,83 @@ public class VisitController {
                 foundIndex = i;
             }
         }
+
+
+        if(patient.getUserSettings().isSystemNotifications()) {
+            Notification cancellationNotification;
+            if(patient.getUserSettings().getLanguage().equals("PL")) {
+                cancellationNotification = new Notification("Odwołanie wizyty",
+                        "Twoja wizyta w placówce" + visitToCancel.getInstitution().getInstitutionName() +
+                                " u specjalisty " + visitToCancel.getDoctor().getDoctorName() + " " +
+                                visitToCancel.getDoctor().getDoctorSurname() + " została odwołana.<br>Skontaktuj się z placówką, by dowiedzieć się więcej.",
+                        LocalDateTime.now().plusMinutes(5), true, false);
+
+            } else {
+                cancellationNotification = new Notification("Visit cancellation",
+                        "Your visit in " + visitToCancel.getInstitution().getInstitutionName() + " with " +
+                        visitToCancel.getDoctor().getDoctorName() + " " + visitToCancel.getDoctor().getDoctorSurname() + " was cancelled. <br>Contact the institution for details.",
+                        LocalDateTime.now().plusMinutes(5), true, false);
+            }
+            patient.addNotification(cancellationNotification);
+        }
         patient.removeNotification(patient.getNotifications().get(foundIndex));
         userRepository.save(patient);
         scheduleRepository.save(oldSchedule);
         visitRepository.save(visitToCancel);
+
+        try {
+
+            MimeMessage message = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message);
+            helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
+
+            if(patient.getUserSettings().getLanguage().equals("PL")) {
+                helper.setSubject("Twoja wizyta została odwołana");
+            } else {
+                helper.setSubject("Your visit has been cancelled");
+            }
+            helper.setTo(patient.getEmail());
+            String content;
+            if(patient.getUserSettings().getLanguage().equals("PL")) {
+                content = "<!DOCTYPE html>\n" +
+                        "<html>\n" +
+                        "<head>\n" +
+                        "    <meta charset=\"UTF-8\" />\n" +
+                        "    <title>Wizyta odwołana</title>\n" +
+                        "</head>\n" +
+                        "<body>\n" +
+                        "    <h2>MediPath</h2>\n" +
+                        "    <p>Twoja wizyta w placówce " + visitToCancel.getInstitution().getInstitutionName() + " u specjalisty " +
+                        visitToCancel.getDoctor().getDoctorName() + " " + visitToCancel.getDoctor().getDoctorSurname() + " została odwołana.<br>Skontaktuj się z placówką, by dowiedzieć się więcej.</p>\n" +
+                        "    <p>-MediPath</p>\n" +
+                        "    \n" +
+                        "</body>\n" +
+                        "</html>";
+            } else {
+                content = "<!DOCTYPE html>\n" +
+                        "<html>\n" +
+                        "<head>\n" +
+                        "    <meta charset=\"UTF-8\" />\n" +
+                        "    <title>Visit cancelled</title>\n" +
+                        "</head>\n" +
+                        "<body>\n" +
+                        "    <h2>MediPath</h2>\n" +
+                        "    <p>Your visit in " + visitToCancel.getInstitution().getInstitutionName() + " with " +
+                        visitToCancel.getDoctor().getDoctorName() + " " + visitToCancel.getDoctor().getDoctorSurname() + " was cancelled. <br>Contact the institution for details.</p>\n" +
+                        "    <p>-MediPath</p>\n" +
+                        "    \n" +
+                        "</body>\n" +
+                        "</html>";
+            }
+
+
+            helper.setText(content);
+            sender.send(message);
+
+        } catch (MailException | MessagingException | UnsupportedEncodingException e) {
+            System.out.println("Mail serivce threw an error: " + e.getMessage());
+        }
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -195,13 +280,102 @@ public class VisitController {
             Notification notification = new Notification(title,  content, newSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
             patient.addNotification(notification);
         }
-        userRepository.save(patient);
+
         oldSchedule.setBooked(false);
         newSchedule.setBooked(true);
         visitToReschedule.setTime(new VisitTime(newSchedule.getId(), newSchedule.getStartHour(), newSchedule.getEndHour()));
+        visitToReschedule.setDoctor(newSchedule.getDoctor());
+        visitToReschedule.setInstitution(newSchedule.getInstitution());
         scheduleRepository.save(oldSchedule);
         scheduleRepository.save(newSchedule);
         visitRepository.save(visitToReschedule);
+
+        if(patient.getUserSettings().isSystemNotifications()) {
+            Notification cancellationNotification;
+            if(patient.getUserSettings().getLanguage().equals("PL")) {
+                cancellationNotification = new Notification("Odwołanie wizyty",
+                        "Twoja wizyta w placówce" + visitToReschedule.getInstitution().getInstitutionName() +
+                                " u specjalisty " + visitToReschedule.getDoctor().getDoctorName() + " " +
+                                visitToReschedule.getDoctor().getDoctorSurname() + " została zmieniona. Nowa wizyta odbędzie się " +
+                                visitToReschedule.getTime().getStartTime() + " w placówce " + visitToReschedule.getInstitution().getInstitutionName() +
+                                " u specjalisty " + visitToReschedule.getDoctor().getDoctorName() + " " + visitToReschedule.getDoctor().getDoctorSurname() + ".<br>Skontaktuj się z placówką, by dowiedzieć się więcej.",
+                        LocalDateTime.now().plusMinutes(5), true, false);
+
+            } else {
+                cancellationNotification = new Notification("Visit cancellation",
+                        "Your visit in " + visitToReschedule.getInstitution().getInstitutionName() +
+                                " with " + visitToReschedule.getDoctor().getDoctorName() + " " +
+                                visitToReschedule.getDoctor().getDoctorSurname() + " has been changed. New visit will occur on" +
+                                visitToReschedule.getTime().getStartTime() + " in " + visitToReschedule.getInstitution().getInstitutionName() +
+                                " with " + visitToReschedule.getDoctor().getDoctorName() + " " + visitToReschedule.getDoctor().getDoctorSurname() + ".<br>Contact the institution for details.",
+                        LocalDateTime.now().plusMinutes(5), true, false);
+            }
+            patient.addNotification(cancellationNotification);
+        }
+
+        try {
+
+            MimeMessage message = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message);
+            helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
+
+            if(patient.getUserSettings().getLanguage().equals("PL")) {
+                helper.setSubject("Twoja wizyta została odwołana");
+            } else {
+                helper.setSubject("Your visit has been cancelled");
+            }
+            helper.setTo(patient.getEmail());
+            String content;
+            if(patient.getUserSettings().getLanguage().equals("PL")) {
+                content = "<!DOCTYPE html>\n" +
+                        "<html>\n" +
+                        "<head>\n" +
+                        "    <meta charset=\"UTF-8\" />\n" +
+                        "    <title>Wizyta odwołana</title>\n" +
+                        "</head>\n" +
+                        "<body>\n" +
+                        "    <h2>MediPath</h2>\n" +
+                        "    <p>\"Twoja wizyta w placówce" + visitToReschedule.getInstitution().getInstitutionName() +
+                        " u specjalisty " + visitToReschedule.getDoctor().getDoctorName() + " " +
+                        visitToReschedule.getDoctor().getDoctorSurname() + " została zmieniona. Nowa wizyta odbędzie się " +
+                        visitToReschedule.getTime().getStartTime() + " w placówce " + visitToReschedule.getInstitution().getInstitutionName() +
+                        " u specjalisty " + visitToReschedule.getDoctor().getDoctorName() + " " + visitToReschedule.getDoctor().getDoctorSurname() +
+                        ".<br>Skontaktuj się z placówką, by dowiedzieć się więcej.\"</p>\n" +
+                        "<p>-MediPath</p>\n" +
+                        "    \n" +
+                        "</body>\n" +
+                        "</html>";
+            } else {
+                content = "<!DOCTYPE html>\n" +
+                        "<html>\n" +
+                        "<head>\n" +
+                        "    <meta charset=\"UTF-8\" />\n" +
+                        "    <title>Visit cancelled</title>\n" +
+                        "</head>\n" +
+                        "<body>\n" +
+                        "    <h2>MediPath</h2>\n" +
+                        "    <p>Your visit in " + visitToReschedule.getInstitution().getInstitutionName() +
+                        " with " + visitToReschedule.getDoctor().getDoctorName() + " " +
+                        visitToReschedule.getDoctor().getDoctorSurname() + " has been changed. New visit will occur on " +
+                        visitToReschedule.getTime().getStartTime() + " in " + visitToReschedule.getInstitution().getInstitutionName() +
+                        " with " + visitToReschedule.getDoctor().getDoctorName() + " " + visitToReschedule.getDoctor().getDoctorSurname() +
+                        ".<br>Contact the institution for details..</p>\n" +
+                        "    <p>-MediPath</p>\n" +
+                        "    \n" +
+                        "</body>\n" +
+                        "</html>";
+            }
+
+
+            helper.setText(content);
+            sender.send(message);
+
+        } catch (MailException | MessagingException | UnsupportedEncodingException e) {
+            System.out.println("Mail serivce threw an error: " + e.getMessage());
+        }
+
+        userRepository.save(patient);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
