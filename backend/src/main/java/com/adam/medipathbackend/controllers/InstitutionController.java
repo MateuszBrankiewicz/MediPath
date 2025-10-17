@@ -1,26 +1,38 @@
 package com.adam.medipathbackend.controllers;
 
 import com.adam.medipathbackend.config.Utils;
+import com.adam.medipathbackend.forms.AddComboForm;
 import com.adam.medipathbackend.forms.AddEmployeeForm;
+import com.adam.medipathbackend.forms.DoctorUpdateForm;
+import com.adam.medipathbackend.forms.RegistrationForm;
 import com.adam.medipathbackend.models.*;
-import com.adam.medipathbackend.repository.InstitutionRepository;
-import com.adam.medipathbackend.repository.ScheduleRepository;
-import com.adam.medipathbackend.repository.UserRepository;
-import com.adam.medipathbackend.repository.VisitRepository;
+import com.adam.medipathbackend.repository.*;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.parameters.P;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.util.*;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 
 @RestController
 @RequestMapping("/api/institution")
@@ -37,6 +49,12 @@ public class InstitutionController {
 
     @Autowired
     VisitRepository visitRepository;
+
+    @Autowired
+    PasswordResetEntryRepository preRepository;
+
+    @Autowired
+    private JavaMailSender sender;
 
     @PostMapping(value = {"/add", "/add/"})
     public ResponseEntity<Map<String, Object>> addInstitution(@RequestBody Institution institution, HttpSession session) {
@@ -172,6 +190,103 @@ public class InstitutionController {
             }).toList()), HttpStatus.OK);
         }
 
+    }
+
+    @PostMapping(value = {"/{institutionid}/employee/register", "/{institutionid}/employee/register/"})
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody AddComboForm comboForm, HttpSession session, @PathVariable String institutionid) {
+
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<Institution> optionalInstitution = institutionRepository.findById(institutionid);
+        if(optionalInstitution.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        if(!isAdminOfInstitution(loggedUserID, institutionid)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        ArrayList<String> missingFields = getMissingFields(comboForm);
+
+        if(!missingFields.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
+        }
+
+        RegistrationForm registrationForm = comboForm.getUserDetails();
+        if(userRepository.findByEmail(registrationForm.getEmail()).isPresent() || userRepository.findByGovID(registrationForm.getGovID()).isPresent()) {
+            return new ResponseEntity<>(Map.of("message", "this email or person is already registered"), HttpStatus.CONFLICT);
+        }
+
+        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+        SecureRandom secureRandom = new SecureRandom();
+        String passwordHash = argon2PasswordEncoder.encode(Long.toHexString(secureRandom.nextLong()));
+        UserSettings userSettings = new UserSettings("PL", true, true, 1);
+
+
+        User newUser = new User(
+                registrationForm.getEmail(),
+                registrationForm.getName(),
+                registrationForm.getSurname(),
+                registrationForm.getGovID(),
+                LocalDate.parse(registrationForm.getBirthDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy")),
+                new Address(registrationForm.getProvince(), registrationForm.getCity(), registrationForm.getStreet(), registrationForm.getNumber(), registrationForm.getPostalCode()),
+                registrationForm.getPhoneNumber(),
+                passwordHash,
+                userSettings
+        );
+        Institution institution = optionalInstitution.get();
+        newUser.addEmployer(new InstitutionDigest(institution.getId(), institution.getName()));
+        newUser.setRoleCode(1+comboForm.getRoleCode());
+        if(comboForm.getDoctorDetails() != null) {
+            newUser.setSpecialisations(comboForm.getDoctorDetails().getSpecialisations());
+            newUser.setLicenceNumber(comboForm.getDoctorDetails().getLicenceNumber());
+        }
+        userRepository.save(newUser);
+        institution.addEmployee(new StaffDigest(newUser.getId(), newUser.getName(), newUser.getSurname(),
+                newUser.getSpecialisations(), comboForm.getRoleCode(), newUser.getPfpimage()));
+        PasswordResetEntry passwordResetEntry = null;
+        try {
+
+            MimeMessage message = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message);
+            helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
+            helper.setSubject("An account has been created for you");
+            helper.setTo(registrationForm.getEmail());
+            String token = Long.toHexString(secureRandom.nextLong());
+            String content = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "    <meta charset=\"UTF-8\" />\n" +
+                    "    <title>Password Reset</title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "    <h2>MediPath</h2>\n" +
+                    "    <p>An administrator for " + institution.getName()+ " has created an account for you in the Medipath system. Use the link below to set a new password. /p>\n" +
+                    "    <a href=\"http://localhost:4200/auth/resetpassword/"+token+"\">http://localhost:4200/auth/resetpassword/"+token+"</a>\n" +
+                    "    <br>\n" +
+                    "    <p>The link will expire within 24 hours</p>\n" +
+                    "    <p>If you have not sent a password reset request, ignore this email.</p>\n" +
+                    "    <p>-MediPath development team</p>\n" +
+                    "    \n" +
+                    "</body>\n" +
+                    "</html>";
+            PasswordResetEntry newPass = new PasswordResetEntry(registrationForm.getEmail(), token);
+            newPass.setDateExpiry(LocalDateTime.now().plusDays(1));
+            passwordResetEntry = preRepository.save(newPass);
+
+            helper.setText(content);
+            sender.send(message);
+
+        } catch (MailException | MessagingException | UnsupportedEncodingException e) {
+            if(passwordResetEntry != null) {
+                preRepository.delete(passwordResetEntry);
+            }
+            return new ResponseEntity<>(Map.of("message", "the mail service threw an error", "error", e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        return new ResponseEntity<>(Map.of("message", "Success"), HttpStatus.CREATED);
     }
 
     @PutMapping(value = {"/{institutionid}/employee", "/{institutionid}/employee/"})
@@ -494,5 +609,63 @@ public class InstitutionController {
             return false;
         }
         return institutionRepository.findStaffById(userID, institutionID).isPresent();
+    }
+
+    private static ArrayList<String> getMissingFields(AddComboForm comboForm) {
+        ArrayList<String> missingFields = new ArrayList<>();
+        if(comboForm.getUserDetails() == null) {
+            missingFields.add("userDetails");
+        } else {
+            RegistrationForm registrationForm = comboForm.getUserDetails();
+            if(registrationForm.getName() == null || registrationForm.getName().isBlank()) {
+                missingFields.add("userDetails.name");
+            }
+            if(registrationForm.getSurname() == null || registrationForm.getSurname().isBlank()) {
+                missingFields.add("userDetails.surname");
+            }
+            if(registrationForm.getEmail() == null || registrationForm.getEmail().isBlank()) {
+                missingFields.add("userDetails.email");
+            }
+            if(registrationForm.getCity() == null || registrationForm.getCity().isBlank()) {
+                missingFields.add("userDetails.city");
+            }
+            if(registrationForm.getProvince() == null || registrationForm.getProvince().isBlank()) {
+                missingFields.add("userDetails.province");
+            }
+            if(registrationForm.getNumber() == null || registrationForm.getNumber().isBlank()) {
+                missingFields.add("userDetails.number");
+            }
+            if(registrationForm.getPostalCode() == null || registrationForm.getPostalCode().isBlank()) {
+                missingFields.add("userDetails.postalCode");
+            }
+            if(registrationForm.getBirthDate() == null || registrationForm.getBirthDate().isBlank()) {
+                missingFields.add("userDetails.birthDate");
+            }
+            if(registrationForm.getGovID() == null || registrationForm.getGovID().isBlank()) {
+                missingFields.add("userDetails.govID");
+            }
+            if(registrationForm.getPhoneNumber() == null || registrationForm.getPhoneNumber().isBlank()) {
+                missingFields.add("userDetails.phoneNumber");
+            }
+        }
+
+        if(Stream.of(2, 6, 14).anyMatch(code -> code == comboForm.getRoleCode())) {
+            if(comboForm.getDoctorDetails() == null) {
+                missingFields.add("doctorDetails");
+            } else {
+                DoctorUpdateForm doctorUpdateForm = comboForm.getDoctorDetails();
+                if(doctorUpdateForm.getLicenceNumber() == null) {
+                    missingFields.add("doctorDetails.licenceNumber");
+                }
+                if(doctorUpdateForm.getSpecialisations() == null || doctorUpdateForm.getSpecialisations().isEmpty()) {
+                    missingFields.add("doctorDetails.specialisations");
+                }
+
+            }
+        } else if(Stream.of(2, 8, 12).noneMatch(code -> code == comboForm.getRoleCode())) {
+            missingFields.add("roleCode");
+        }
+
+        return missingFields;
     }
 }
