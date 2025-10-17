@@ -87,6 +87,7 @@ export class AuthenticationService {
             roleCode: response.user.roleCode,
             notifications,
             email: response.user.email,
+            pfpImage: response.user.pfpImage,
             userSettings: {
               ...normalizedSettings,
               lastPanel,
@@ -186,6 +187,7 @@ export class AuthenticationService {
           roleCode: response.user.roleCode,
           notifications,
           email: response.user.email,
+          pfpImage: response.user.pfpImage,
           userSettings: {
             ...normalizedSettings,
             lastPanel,

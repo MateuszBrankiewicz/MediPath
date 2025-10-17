@@ -157,7 +157,19 @@
     }
 
     <div class="user-info" (click)="toggleUserMenu($event)">
-      <div class="user-menu-header"></div>
+      <div class="user-avatar">
+        @if (user()?.pfpImage) {
+          <img
+            [src]="user()!.pfpImage"
+            [alt]="user()!.name"
+            class="avatar-image"
+          />
+        } @else {
+          <div class="avatar-placeholder">
+            <i class="pi pi-user"></i>
+          </div>
+        }
+      </div>
       <span class="user-name">{{ user()?.name }} {{ user()?.surname }}</span>
       <i
         [class]="

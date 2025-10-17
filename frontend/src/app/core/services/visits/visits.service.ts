@@ -75,4 +75,15 @@ export class VisitsService {
       },
     );
   }
+
+  public getDoctorVisitByDate(date: string) {
+    return this.http
+      .get<UpcomingVisitsResponse>(
+        `${API_URL}/doctors/me/visitsbydate/${date}`,
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(map((response) => response.visits ?? []));
+  }
 }

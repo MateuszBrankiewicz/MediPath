@@ -21,6 +21,8 @@ export interface UserBasicInfo {
   notifications: Notification[];
   email: string;
   userSettings: UserSettings;
+  pfpImage?: string;
+  rating?: number;
 }
 
 export interface Notification {
@@ -58,6 +60,7 @@ export interface ApiUserResponse {
     notifications: ApiNotification[];
     email: string;
     userSettings: UserSettings;
+    pfpImage?: string;
   };
 }
 

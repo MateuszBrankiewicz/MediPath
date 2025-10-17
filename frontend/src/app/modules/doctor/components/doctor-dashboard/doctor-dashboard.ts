@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 import { Router } from '@angular/router';
 
 import { AvailableDay, TimeSlot } from '../../../../core/models/schedule.model';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
 import {
   AppointmentItem,
   AppointmentsList,
@@ -43,10 +45,12 @@ interface LocalTimeSlot extends TimeSlot {
   templateUrl: './doctor-dashboard.html',
   styleUrl: './doctor-dashboard.scss',
 })
-export class DoctorDashboard {
+export class DoctorDashboard implements OnInit {
   protected translationService = inject(TranslationService);
   protected router = inject(Router);
+  private visitsService = inject(VisitsService);
 
+  private readonly authService = inject(AuthenticationService);
   protected readonly doctorName = signal('Jan');
   protected readonly currentDate = signal(new Date());
   protected readonly patientsToday = signal(14);
@@ -54,9 +58,10 @@ export class DoctorDashboard {
   protected readonly selectedDate = signal<Date | null>(new Date());
   protected readonly selectedTimeSlot = signal<string | null>(null);
 
+  protected readonly user = computed(() => this.authService.getUser());
   get welcomeCardData(): WelcomeCardData {
     return {
-      userName: this.doctorName(),
+      userName: this.user()?.name || '',
       welcomeMessage: this.translationService.translate(
         'doctor.dashboard.welcomeBack',
       ),
@@ -68,9 +73,11 @@ export class DoctorDashboard {
   }
 
   get ratingCardData(): StatsCardData {
+    const user = this.user();
+    const ratingValue = user?.rating != null ? user.rating.toFixed(1) : 'N/A';
     return {
       title: this.translationService.translate('doctor.dashboard.myRating'),
-      value: '4.8',
+      value: ratingValue,
       subtitle: `/5★ ${this.translationService.translate('doctor.dashboard.satisfiedPatients')}`,
       variant: 'default',
     };
@@ -86,17 +93,9 @@ export class DoctorDashboard {
     };
   }
 
-  readonly currentVisit = signal<AppointmentItem>({
-    time: '9:40 am',
-    type: 'Consultation',
-    patientName: 'Mr. Kowalska',
-  });
+  readonly currentVisit = signal<AppointmentItem | null>(null);
 
-  protected readonly todaysAppointments = signal<AppointmentItem[]>([
-    { time: '8:00 am', patientName: 'Kazimierz Nowak' },
-    { time: '10:00 am', patientName: 'Jan Kowalski' },
-    { time: '1:00 pm', patientName: 'Piotr Nowak' },
-  ]);
+  protected readonly todaysAppointments = signal<AppointmentItem[]>([]);
 
   protected readonly availableAppointments = signal<AvailableDay[]>([
     {
@@ -131,6 +130,10 @@ export class DoctorDashboard {
       month: 'long',
       year: 'numeric',
     });
+  }
+
+  ngOnInit(): void {
+    this.loadAppointments();
   }
 
   get calendarDays(): CalendarDay[] {
@@ -228,6 +231,7 @@ export class DoctorDashboard {
       day.date,
     );
     this.selectedDate.set(selectedDate);
+    this.loadAppointments();
     this.selectedTimeSlot.set(null);
   }
 
@@ -279,6 +283,34 @@ export class DoctorDashboard {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
+    });
+  }
+
+  private loadAppointments() {
+    const selected: Date | null = this.selectedDate();
+    const dateString = selected
+      ? `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(
+          selected.getDate(),
+        ).padStart(2, '0')}`
+      : '';
+    this.visitsService.getDoctorVisitByDate(dateString).subscribe({
+      next: (visits) => {
+        const appointments: AppointmentItem[] = visits
+          .filter((visit) => visit.status === 'Upcoming')
+          .map((visit) => ({
+            time:
+              typeof visit.time === 'string'
+                ? visit.time
+                : visit.time.startTime,
+            patientName: `${visit.patient.name} ${visit.patient.surname}`,
+            type: '',
+          }));
+        this.todaysAppointments.set(appointments);
+        this.currentVisit.set(appointments.length > 0 ? appointments[0] : null);
+      },
+      error: (error) => {
+        console.error('Error loading appointments:', error);
+      },
     });
   }
 }
