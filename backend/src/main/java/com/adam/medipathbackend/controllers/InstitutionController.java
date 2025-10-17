@@ -69,6 +69,9 @@ public class InstitutionController {
             return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
         }
 
+        if(institution.getDescription() == null) {
+            institution.setDescription("");
+        }
         ArrayList<Institution> possibleDuplicates = institutionRepository.findInstitutionByName(institution.getName());
         for(Institution dupl: possibleDuplicates) {
             if(dupl.isSimilar(institution)) {
@@ -298,7 +301,7 @@ public class InstitutionController {
         System.out.println(fields == null);
         List<String> fieldsList;
         if(fields == null) {
-            fieldsList = List.of("id", "name", "types", "isPublic", "address", "employees", "rating", "image");
+            fieldsList = List.of("id", "name", "types", "isPublic", "address", "employees", "rating", "image", "description");
         } else {
             fieldsList = List.of(fields);
         }
@@ -333,6 +336,9 @@ public class InstitutionController {
         }
         if(fieldsList.contains("image")) {
             outputFields.put("image", institution.getImage());
+        }
+        if(fieldsList.contains("description")) {
+            outputFields.put("description", institution.getDescription());
         }
         return new ResponseEntity<>(Map.of("institution", outputFields), HttpStatus.OK);
     }
