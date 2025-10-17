@@ -364,6 +364,8 @@
   "weekdays.short.sunday": "SUN",
 
   "doctor.schedule.patientRemarks": "Patient's remarks:",
+  "doctor.schedule.noAppointments": "No appointments",
+  "doctor.schedule.noAppointmentsDescription": "There are no scheduled appointments for the selected day",
 
   "doctor.visits.title": "Visits History",
   "doctor.visits.allStatuses": "All Statuses",

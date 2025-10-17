@@ -8,6 +8,7 @@ import {
 export function mapSchedulesToCalendarDays(
   schedules: DoctorSchedule[],
   options: MapToCalendarDaysOptions,
+  isToDoctorSchedule?: boolean,
 ): CalendarDay[] {
   const groupedByDate = new Map<
     string,
@@ -31,18 +32,26 @@ export function mapSchedulesToCalendarDays(
 
     let type: 'available-same' | 'available-other' | 'unavailable';
 
-    if (schedule.booked) {
-      type = 'unavailable';
+    if (isToDoctorSchedule) {
+      if (schedule.booked) {
+        console.log(schedule);
+        type = 'available-same';
+      } else {
+        type = 'unavailable';
+      }
     } else {
-      const isFromSelectedInstitution =
-        options.selectedInstitutionIds &&
-        options.selectedInstitutionIds.includes(
-          schedule.institution.institutionId,
-        );
+      if (schedule.booked) {
+        type = 'unavailable';
+      } else {
+        const isFromSelectedInstitution =
+          options.selectedInstitutionIds &&
+          options.selectedInstitutionIds.includes(
+            schedule.institution.institutionId,
+          );
 
-      type = isFromSelectedInstitution ? 'available-same' : 'available-other';
+        type = isFromSelectedInstitution ? 'available-same' : 'available-other';
+      }
     }
-
     dayData.appointments.push({ id: schedule.id, type });
     dayData.institutionIds.add(schedule.institution.institutionId);
   });

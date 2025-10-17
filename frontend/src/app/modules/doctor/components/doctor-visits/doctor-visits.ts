@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
 import {
   AppointmentCardComponent,
   AppointmentCardData,
@@ -16,6 +17,7 @@ import {
 })
 export class DoctorVisits implements OnInit {
   translationService = inject(TranslationService);
+  private visitService = inject(VisitsService);
 
   visits: AppointmentCardData[] = [
     {
@@ -116,5 +118,9 @@ export class DoctorVisits implements OnInit {
       visit.status = 'canceled';
       this.filterVisits();
     }
+  }
+
+  private initDoctorVisits(): void {
+    // Tutaj będzie logika inicjalizacji wizyt lekarza z API
   }
 }

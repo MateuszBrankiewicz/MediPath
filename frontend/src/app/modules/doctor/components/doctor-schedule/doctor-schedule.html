@@ -18,33 +18,48 @@
           </div>
         </div>
       </div>
-
+      <span>Pozostało wolnych miejsc na wizyty: {{ availableCount() }}</span>
       <div class="appointments-list">
-        @for (appointment of todayAppointments; track appointment.id) {
-          <div
-            class="appointment-slot available"
-            (click)="changeSelectedAppointment(appointment)"
-          >
-            <span class="appointment-time">{{ appointment.time }}</span>
-            <span class="appointment-patient">{{
-              appointment.patientName
-            }}</span>
+        @if (selectedDateAppointments().length === 0) {
+          <div class="empty-state">
+            <i class="pi pi-calendar-times empty-state-icon"></i>
+            <h3 class="empty-state-title">
+              {{
+                translationService.translate("doctor.schedule.noAppointments")
+              }}
+            </h3>
+            <p class="empty-state-description">
+              {{
+                translationService.translate(
+                  "doctor.schedule.noAppointmentsDescription"
+                )
+              }}
+            </p>
           </div>
-        }
-
-        @for (slot of unavailableSlots; track slot.id) {
-          <div
-            class="appointment-slot unavailable"
-            (click)="changeSelectedAppointment(slot)"
-          >
-            <span class="appointment-time">{{ slot.time }}</span>
-            <span class="appointment-patient">{{ slot.patientName }}</span>
-          </div>
+        } @else {
+          @for (
+            appointment of selectedDateAppointments();
+            track appointment.id
+          ) {
+            <div
+              class="appointment-slot"
+              [class]="getStatusClass(appointment.status)"
+              (click)="changeSelectedAppointment(appointment)"
+            >
+              <span class="appointment-time">{{ appointment.time }}</span>
+              <span class="appointment-patient">{{
+                appointment.patientName
+              }}</span>
+            </div>
+          }
         }
       </div>
     </div>
 
-    <app-calendar></app-calendar>
+    <app-calendar
+      [appointments]="calendarDays()"
+      (daySelected)="onDateSelected($event)"
+    ></app-calendar>
   </div>
   <div class="fixed-appointment-card">
     <div class="appointment-card-content">

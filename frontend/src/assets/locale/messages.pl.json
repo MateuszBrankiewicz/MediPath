@@ -365,6 +365,8 @@
   "weekdays.short.sunday": "NIE",
 
   "doctor.schedule.patientRemarks": "Uwagi pacjenta:",
+  "doctor.schedule.noAppointments": "Brak wizyt",
+  "doctor.schedule.noAppointmentsDescription": "Nie ma zaplanowanych wizyt na wybrany dzień",
 
   "doctor.visits.title": "Historia wizyt",
   "doctor.visits.allStatuses": "Wszystkie statusy",
