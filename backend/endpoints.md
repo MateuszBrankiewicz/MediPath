@@ -872,3 +872,39 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 403 - user is not admin or staff of institution or institution does not exist
 - 400 - invalid date
 - 200 - success
+
+
+### /institution/{id}/employee/register
+#### Method: POST
+
+#### Path Variables:
+- id - institution id
+
+#### Body:
+```
+"userDetails": {
+    name: String,
+    surname: String,
+    email: Email
+    govID: String
+    birthDate: DD-MM-YYYY
+    province: String
+    city: String
+    postalCode: XX-XXX
+    phoneNumber: String,
+    street: String
+    number:  String
+},
+roleCode: int,
+doctorDetails: {
+    licenceNumber: String
+    specialisations: [String]
+}
+```
+#### Returns:
+- 401 - User not logged in
+- 403 - Institution does not exist, user is not admin of institution
+- 400 - missing fields
+- 409 - Account with this mail or govId exists
+- 503 - mail error
+- 201 - success
