@@ -10,7 +10,8 @@ import {
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService } from 'primeng/dynamicdialog';
-import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { PaginatorModule } from 'primeng/paginator';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { catchError, map } from 'rxjs';
 import { FilterParams } from '../../../../core/models/filter.model';
@@ -18,10 +19,10 @@ import { Refferal, UsedState } from '../../../../core/models/refferal.model';
 import { CodesService } from '../../../../core/services/codes/codes.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { CodesFilterService } from '../../services/codesFilter.service';
 import { PatientCodeDialogService } from '../../services/paitent-code-dialog.service';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-refferals-page',
@@ -40,7 +41,10 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
   providers: [DialogService, PatientCodeDialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RefferalsPage implements OnInit {
+export class RefferalsPage
+  extends PaginatedComponentBase<Refferal>
+  implements OnInit
+{
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
   private codeService = inject(CodesService);
@@ -50,9 +54,6 @@ export class RefferalsPage implements OnInit {
   protected readonly isLoading = signal(false);
   protected referrals = signal<Refferal[]>([]);
 
-  protected readonly first = signal(0);
-  protected readonly rows = signal(10);
-
   protected readonly filters = signal<FilterParams>({
     searchTerm: '',
     status: 'all',
@@ -61,11 +62,6 @@ export class RefferalsPage implements OnInit {
     sortField: 'date',
     sortOrder: 'desc',
   });
-
-  protected onPageChange(event: PaginatorState): void {
-    this.first.set(event.first ?? 0);
-    this.rows.set(event.rows ?? 10);
-  }
 
   protected readonly filteredPrescriptions = computed(() => {
     const filterValue = this.filters();
@@ -81,14 +77,16 @@ export class RefferalsPage implements OnInit {
     return codes;
   });
 
-  protected readonly totalRecords = computed(
+  protected override get sourceData() {
+    return this.filteredPrescriptions();
+  }
+
+  protected override readonly totalRecords = computed(
     () => this.filteredPrescriptions().length,
   );
 
   protected readonly paginatedReferrals = computed(() => {
-    const start = this.first();
-    const end = start + this.rows();
-    return this.filteredPrescriptions().slice(start, end);
+    return this.paginatedData();
   });
 
   ngOnInit(): void {

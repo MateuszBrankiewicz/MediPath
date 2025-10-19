@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DoctorWithSchedule } from '../../../../core/models/doctor.model';
 import { CalendarDay } from '../../../../core/models/schedule.model';
+import { DateTimeService } from '../../../../core/services/date-time/date-time.service';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { mapSchedulesToCalendarDays } from '../../../../utils/calendarMapper';
@@ -29,10 +30,11 @@ import { ScheduleManagementService } from './services/schedule-management.servic
 export class InstitutionSchedule implements OnInit {
   protected translationService = inject(TranslationService);
   protected scheduleManagementService = inject(ScheduleManagementService);
+  protected dateTimeService = inject(DateTimeService);
 
   public currentMonth = signal<Date>(new Date());
   public readonly currentDayNumber = new Date().getDate();
-  public readonly currentDayName = this.getDayName(new Date());
+  public readonly currentDayName = this.dateTimeService.getDayName(new Date());
   private router = inject(Router);
   private institutionStoreService = inject(InstitutionStoreService);
   private destroyRef = inject(DestroyRef);
@@ -85,25 +87,7 @@ export class InstitutionSchedule implements OnInit {
   );
 
   public readonly currentMonthYear = computed(() => {
-    const current = this.currentMonth();
-    const monthKeys = [
-      'months.january',
-      'months.february',
-      'months.march',
-      'months.april',
-      'months.may',
-      'months.june',
-      'months.july',
-      'months.august',
-      'months.september',
-      'months.october',
-      'months.november',
-      'months.december',
-    ];
-    const monthName = this.translationService.translate(
-      monthKeys[current.getMonth()],
-    );
-    return `${monthName} ${current.getFullYear()}`;
+    return this.dateTimeService.formatMonthYear(this.currentMonth());
   });
 
   protected readonly selectedDoctorName = computed(() => {
@@ -114,19 +98,6 @@ export class InstitutionSchedule implements OnInit {
     );
     return doctor ? `${doctor.doctorName} ${doctor.doctorSurname}` : '';
   });
-
-  private getDayName(date: Date): string {
-    const dayKeys = [
-      'weekdays.sunday',
-      'weekdays.monday',
-      'weekdays.tuesday',
-      'weekdays.wednesday',
-      'weekdays.thursday',
-      'weekdays.friday',
-      'weekdays.saturday',
-    ];
-    return this.translationService.translate(dayKeys[date.getDay()]);
-  }
 
   protected saveSchedule(): void {
     this.router.navigate(['/admin/schedule/add-schedule']);

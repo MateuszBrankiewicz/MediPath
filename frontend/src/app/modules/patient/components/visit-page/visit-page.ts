@@ -13,8 +13,9 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuModule } from 'primeng/menu';
-import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { PaginatorModule } from 'primeng/paginator';
 import { PopoverModule } from 'primeng/popover';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { AddComentRequest } from '../../../../core/models/review.model';
 import {
@@ -26,11 +27,11 @@ import { CommentService } from '../../../../core/services/comment/comment.servic
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
+import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
 import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
 import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-visit-page',
@@ -50,7 +51,10 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
   styleUrl: './visit-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VisitPage implements OnInit {
+export class VisitPage
+  extends PaginatedComponentBase<VisitPageModel>
+  implements OnInit
+{
   protected readonly showVisitDetailsDialog = signal(false);
   protected readonly selectedVisitId = signal<string | null>(null);
   private commentService = inject(CommentService);
@@ -64,8 +68,6 @@ export class VisitPage implements OnInit {
   protected readonly isVisitLoading = signal(false);
   protected readonly isLoading = signal(false);
 
-  protected readonly first = signal(0);
-  protected readonly rows = signal(10);
   protected readonly filters = signal<{
     searchTerm: string;
     status: string;
@@ -82,13 +84,8 @@ export class VisitPage implements OnInit {
     sortOrder: 'desc',
   });
 
-  protected onPageChange(event: PaginatorState): void {
-    this.first.set(event.first ?? 0);
-    this.rows.set(event.rows ?? 10);
-  }
-
-  protected readonly totalRecords = computed(
-    () => this.filteredVisits().length,
+  protected override readonly totalRecords = computed(
+    () => this.sortedVisits().length,
   );
 
   protected readonly visits = signal<VisitPageModel[]>([]);
@@ -184,10 +181,12 @@ export class VisitPage implements OnInit {
     return list;
   });
 
+  protected override get sourceData() {
+    return this.sortedVisits();
+  }
+
   protected readonly paginatedVisits = computed(() => {
-    const start = this.first();
-    const end = start + this.rows();
-    return this.sortedVisits().slice(start, end);
+    return this.paginatedData();
   });
 
   protected onFiltersChange(ev: {

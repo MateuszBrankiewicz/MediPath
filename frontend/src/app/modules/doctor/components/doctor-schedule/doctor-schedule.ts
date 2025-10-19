@@ -8,13 +8,18 @@ import {
   signal,
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { Paginator, PaginatorState } from 'primeng/paginator';
 import { CalendarDay, InputSlot } from '../../../../core/models/schedule.model';
+import { DateTimeService } from '../../../../core/services/date-time/date-time.service';
 import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
 import { mapSchedulesToCalendarDays } from '../../../../utils/calendarMapper';
+import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
 import { Calendar } from '../../../shared/components/calendar/calendar';
+import {
+  FilterButtonConfig,
+  FilterButtonsComponent,
+} from '../../../shared/components/filter-buttons/filter-buttons.component';
 
 export interface Appointment {
   id: string;
@@ -26,30 +31,56 @@ export interface Appointment {
 
 @Component({
   selector: 'app-doctor-schedule',
-  imports: [CommonModule, ButtonModule, Calendar, Paginator],
+  imports: [CommonModule, ButtonModule, Calendar, FilterButtonsComponent],
   templateUrl: './doctor-schedule.html',
   styleUrl: './doctor-schedule.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DoctorSchedule implements OnInit {
+export class DoctorSchedule
+  extends PaginatedComponentBase<Appointment>
+  implements OnInit
+{
   protected translationService = inject(TranslationService);
+  protected dateTimeService = inject(DateTimeService);
   private doctorService = inject(DoctorService);
+  private visitsService = inject(VisitsService);
+
   public selectedAppointment = signal<Appointment | null>(null);
   public currentMonth = signal<Date>(new Date());
   public selectedDate = signal<Date | null>(new Date());
   protected calendarDays = signal<CalendarDay[]>([]);
-  private visitsService = inject(VisitsService);
   public todayAppointments = signal<Appointment[]>([]);
   // Przechowujemy wszystkie sloty aby mieć dostęp do ich godzin
   private allScheduleSlots = signal<InputSlot[]>([]);
   // Filtr widoku: 'all' | 'booked' | 'available'
   public viewFilter = signal<'all' | 'booked' | 'available'>('all');
 
-  protected readonly rows = signal<number>(10);
-  protected readonly first = signal<number>(0);
+  public readonly filterConfig: FilterButtonConfig<
+    'all' | 'booked' | 'available'
+  >[] = [
+    {
+      value: 'all',
+      labelKey: 'doctor.schedule.filter.all',
+      icon: 'pi-list',
+    },
+    {
+      value: 'booked',
+      labelKey: 'doctor.schedule.filter.booked',
+      icon: 'pi-user',
+    },
+    {
+      value: 'available',
+      labelKey: 'doctor.schedule.filter.available',
+      icon: 'pi-calendar-plus',
+    },
+  ];
 
-  public readonly currentDayNumber = new Date().getDate(); // 22
-  public readonly currentDayName = this.getDayName(new Date());
+  public readonly currentDayNumber = new Date().getDate();
+  public readonly currentDayName = this.dateTimeService.getDayName(new Date());
+
+  protected override get sourceData() {
+    return this.todayAppointments();
+  }
 
   protected readonly appointmentsByDate = computed(() => {
     const map = new Map<string, { id: string }[]>();
@@ -66,13 +97,21 @@ export class DoctorSchedule implements OnInit {
     return map;
   });
 
-  protected onPageChange(event: PaginatorState) {
-    this.first.set(event.first ?? 0);
-    this.rows.set(event.rows ?? 10);
-  }
-
   protected readonly getCountToPaginate = computed(() => {
-    return this.selectedDateAppointments().length;
+    const filter = this.viewFilter();
+    const all = this.todayAppointments();
+
+    switch (filter) {
+      case 'booked':
+        return all.filter(
+          (apt) => apt.status === 'booked' || apt.status === 'unavailable',
+        ).length;
+      case 'available':
+        return all.filter((apt) => apt.status === 'available').length;
+      case 'all':
+      default:
+        return all.length;
+    }
   });
 
   protected readonly selectedDateAppointments = computed(() => {
@@ -102,25 +141,7 @@ export class DoctorSchedule implements OnInit {
   }
 
   public readonly currentMonthYear = computed(() => {
-    const current = this.currentMonth();
-    const monthKeys = [
-      'months.january',
-      'months.february',
-      'months.march',
-      'months.april',
-      'months.may',
-      'months.june',
-      'months.july',
-      'months.august',
-      'months.september',
-      'months.october',
-      'months.november',
-      'months.december',
-    ];
-    const monthName = this.translationService.translate(
-      monthKeys[current.getMonth()],
-    );
-    return `${monthName} ${current.getFullYear()}`;
+    return this.dateTimeService.formatMonthYear(this.currentMonth());
   });
 
   public selectDate(day: CalendarDay): void {
@@ -167,19 +188,6 @@ export class DoctorSchedule implements OnInit {
 
   public setViewFilter(filter: 'all' | 'booked' | 'available'): void {
     this.viewFilter.set(filter);
-  }
-
-  private getDayName(date: Date): string {
-    const dayKeys = [
-      'weekdays.sunday',
-      'weekdays.monday',
-      'weekdays.tuesday',
-      'weekdays.wednesday',
-      'weekdays.thursday',
-      'weekdays.friday',
-      'weekdays.saturday',
-    ];
-    return this.translationService.translate(dayKeys[date.getDay()]);
   }
 
   ngOnInit(): void {
