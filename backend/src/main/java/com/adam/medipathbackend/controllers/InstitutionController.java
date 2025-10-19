@@ -26,14 +26,15 @@ public class InstitutionController {
     @Autowired
     private EmployeeManagementService employeeManagementService;
 
-    @Autowired
-    private InstitutionAuthorizationService authorizationService;
+//    @Autowired
+//    private AuthorizationService authorizationService;
 
     @Autowired
     private InstitutionQueryService queryService;
 
     @Autowired
     private EmailService emailService;
+
 
     @Autowired
     private UserRepository userRepository;
@@ -72,16 +73,17 @@ public class InstitutionController {
         if (loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-
-        if (!authorizationService.isAdminOfInstitution(loggedUserID, institutionid)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
         try {
+            AuthorizationService authorizationService = new AuthorizationService();
+            authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
             employeeManagementService.addEmployeesToInstitution(institutionid, employeeIds);
+
             return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.OK);
+
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 
@@ -105,14 +107,14 @@ public class InstitutionController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        if (!authorizationService.isAdminOfInstitution(loggedUserID, institutionid)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
-        Institution institution = institutionService.getInstitution(institutionid)
-                .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
-
         try {
+
+            AuthorizationService authorizationService = new AuthorizationService();
+            authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
+
+            Institution institution = institutionService.getInstitution(institutionid)
+                    .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
+
             User newUser = employeeManagementService.registerEmployee(comboForm, institutionid);
             PasswordResetEntry passwordResetEntry = employeeManagementService
                     .createPasswordResetEntry(newUser.getEmail());
@@ -131,6 +133,8 @@ public class InstitutionController {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 
@@ -142,17 +146,19 @@ public class InstitutionController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        if (!authorizationService.isAdminOfInstitution(loggedUserID, institutionid)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
         try {
+
+            AuthorizationService authorizationService = new AuthorizationService();
+            authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
+
             employeeManagementService.updateEmployee(institutionid, employeeUpdate, loggedUserID);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 
@@ -164,17 +170,19 @@ public class InstitutionController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        if (!authorizationService.isAdminOfInstitution(loggedUserID, institutionid)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
         try {
+
+            AuthorizationService authorizationService = new AuthorizationService();
+            authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
+
             employeeManagementService.removeEmployee(institutionid, userId, loggedUserID);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 
@@ -183,7 +191,14 @@ public class InstitutionController {
             @RequestParam(value = "fields", required = false) String[] fields, HttpSession session) {
         try {
             String loggedUserID = (String) session.getAttribute("id");
-            boolean isEmployee = authorizationService.isLoggedAsEmployeeOfInstitution(loggedUserID, id);
+            boolean isEmployee = false;
+            try {
+                AuthorizationService authorizationService = new AuthorizationService();
+                authorizationService.startAuthChain(loggedUserID, id).employeeOfInstitution().check();
+                isEmployee = true;
+            } catch (IllegalAccessException _) {
+
+            }
 
             Map<String, Object> institutionFields = queryService.getInstitutionFields(id, fields, isEmployee);
             return new ResponseEntity<>(Map.of("institution", institutionFields), HttpStatus.OK);
@@ -199,10 +214,13 @@ public class InstitutionController {
         if (loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-
-        if (!authorizationService.isLoggedAsEmployeeOfInstitution(loggedUserID, institutionid)) {
+        try {
+            AuthorizationService authorizationService = new AuthorizationService();
+            authorizationService.startAuthChain(loggedUserID, institutionid).employeeOfInstitution().check();
+        } catch (IllegalAccessException e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+
 
         ArrayList<Visit> visits = queryService.getUpcomingVisits(institutionid);
         return new ResponseEntity<>(Map.of("visits", visits), HttpStatus.OK);
@@ -216,9 +234,14 @@ public class InstitutionController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        if (!authorizationService.isAdminOfInstitution(loggedUserID, institutionid)) {
+        try {
+            AuthorizationService authorizationService = new AuthorizationService();
+            authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
+        } catch (IllegalAccessException e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+
+
 
         try {
             institutionService.updateInstitution(institutionid, newInstitution);
@@ -239,15 +262,18 @@ public class InstitutionController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        if (!authorizationService.isLoggedAsEmployeeOfInstitution(loggedUserID, institutionid)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+
 
         try {
+            AuthorizationService authorizationService = new AuthorizationService();
+            authorizationService.startAuthChain(loggedUserID, institutionid).employeeOfInstitution().check();
+
             ArrayList<Schedule> schedules = queryService.getSchedules(institutionid, date);
             return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 
@@ -260,15 +286,17 @@ public class InstitutionController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        if (!authorizationService.isLoggedAsEmployeeOfInstitution(loggedUserID, institutionid)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
         try {
+
+            AuthorizationService authorizationService = new AuthorizationService();
+            authorizationService.startAuthChain(loggedUserID, institutionid).employeeOfInstitution().check();
+
             ArrayList<Visit> visits = queryService.getVisits(institutionid, date);
             return new ResponseEntity<>(Map.of("visits", visits), HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 }
