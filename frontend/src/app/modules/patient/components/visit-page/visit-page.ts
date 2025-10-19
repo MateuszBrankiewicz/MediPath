@@ -24,6 +24,14 @@ import {
   VisitStatus,
 } from '../../../../core/models/visit.model';
 import { CommentService } from '../../../../core/services/comment/comment.service';
+import {
+  FilterFieldConfig,
+  FilteringService,
+} from '../../../../core/services/filtering/filtering.service';
+import {
+  SortFieldConfig,
+  SortingService,
+} from '../../../../core/services/sorting/sorting.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
@@ -64,9 +72,29 @@ export class VisitPage
   private destroyRef = inject(DestroyRef);
   private ref: DynamicDialogRef | null = null;
   private toastService = inject(ToastService);
+  private sortingService = inject(SortingService);
+  private filteringService = inject(FilteringService);
 
   protected readonly isVisitLoading = signal(false);
   protected readonly isLoading = signal(false);
+
+  private readonly visitFilterConfig: FilterFieldConfig<VisitPageModel> =
+    this.filteringService.combineConfigs(
+      this.filteringService.searchConfig<VisitPageModel>(
+        (v) => v.doctorName,
+        (v) => v.institution,
+        (v) => String(v.status),
+      ),
+      this.filteringService.statusConfig<VisitPageModel>((v) => v.status),
+      this.filteringService.dateRangeConfig<VisitPageModel>((v) => v.date),
+    );
+
+  private readonly visitSortConfig: SortFieldConfig<VisitPageModel>[] = [
+    this.sortingService.dateField('date', (v) => v.date),
+    this.sortingService.stringField('doctorName', (v) => v.doctorName),
+    this.sortingService.stringField('institution', (v) => v.institution),
+    this.sortingService.stringField('status', (v) => String(v.status)),
+  ];
 
   protected readonly filters = signal<{
     searchTerm: string;
@@ -123,62 +151,26 @@ export class VisitPage
 
   protected readonly filteredVisits = computed(() => {
     const filters = this.filters();
-    const search = filters.searchTerm?.toLowerCase().trim() ?? '';
-    const statusFilterRaw = (filters.status ?? 'all').toLowerCase();
-    const statusFilter =
-      statusFilterRaw === 'cancelled' ? 'canceled' : statusFilterRaw;
-    const from = filters.dateFrom ? new Date(filters.dateFrom) : null;
-    const to = filters.dateTo ? new Date(filters.dateTo) : null;
-
-    return this.visits().filter((value) => {
-      if (
-        statusFilter !== 'all' &&
-        value.status !== (statusFilter as VisitStatus)
-      ) {
-        return false;
-      }
-      if (from && value.date < from) return false;
-      if (to && value.date > to) return false;
-      if (search) {
-        const hay = `${value.doctorName} ${value.institution} ${value.status}`
-          .toLowerCase()
-          .trim();
-        if (!hay.includes(search)) return false;
-      }
-      return true;
-    });
+    return this.filteringService.filter(
+      this.visits(),
+      {
+        searchTerm: filters.searchTerm,
+        status: filters.status,
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
+      },
+      this.visitFilterConfig,
+    );
   });
 
   protected readonly sortedVisits = computed(() => {
-    const list = this.filteredVisits().slice();
     const { sortField, sortOrder } = this.filters();
-    const dir = sortOrder === 'asc' ? 1 : -1;
-    list.sort((firstValue, secondValue) => {
-      let aValue: number | string = 0;
-      let bValue: number | string = 0;
-      switch (sortField) {
-        case 'doctorName':
-          aValue = firstValue.doctorName?.toLowerCase() ?? '';
-          bValue = secondValue.doctorName?.toLowerCase() ?? '';
-          break;
-        case 'institution':
-          aValue = firstValue.institution?.toLowerCase() ?? '';
-          bValue = secondValue.institution?.toLowerCase() ?? '';
-          break;
-        case 'status':
-          aValue = String(firstValue.status).toLowerCase();
-          bValue = String(secondValue.status).toLowerCase();
-          break;
-        case 'date':
-        default:
-          aValue = firstValue.date?.getTime?.() ?? 0;
-          bValue = secondValue.date?.getTime?.() ?? 0;
-      }
-      if (aValue < bValue) return -1 * dir;
-      if (aValue > bValue) return 1 * dir;
-      return 0;
-    });
-    return list;
+    return this.sortingService.sort(
+      this.filteredVisits(),
+      sortField,
+      sortOrder,
+      this.visitSortConfig,
+    );
   });
 
   protected override get sourceData() {
