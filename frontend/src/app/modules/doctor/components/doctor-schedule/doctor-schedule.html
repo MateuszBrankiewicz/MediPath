@@ -18,7 +18,40 @@
           </div>
         </div>
       </div>
-      <span>Pozostało wolnych miejsc na wizyty: {{ availableCount() }}</span>
+
+      <div class="view-filters">
+        <button
+          class="filter-btn"
+          [class.active]="viewFilter() === 'all'"
+          (click)="setViewFilter('all')"
+        >
+          <i class="pi pi-list"></i>
+          <span>{{
+            translationService.translate("doctor.schedule.filter.all")
+          }}</span>
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="viewFilter() === 'booked'"
+          (click)="setViewFilter('booked')"
+        >
+          <i class="pi pi-user"></i>
+          <span>{{
+            translationService.translate("doctor.schedule.filter.booked")
+          }}</span>
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="viewFilter() === 'available'"
+          (click)="setViewFilter('available')"
+        >
+          <i class="pi pi-calendar-plus"></i>
+          <span>{{
+            translationService.translate("doctor.schedule.filter.available")
+          }}</span>
+        </button>
+      </div>
+
       <div class="appointments-list">
         @if (selectedDateAppointments().length === 0) {
           <div class="empty-state">
@@ -46,14 +79,32 @@
               [class]="getStatusClass(appointment.status)"
               (click)="changeSelectedAppointment(appointment)"
             >
-              <span class="appointment-time">{{ appointment.time }}</span>
-              <span class="appointment-patient">{{
-                appointment.patientName
-              }}</span>
+              <div class="slot-info">
+                <span class="appointment-time">{{ appointment.time }}</span>
+                @if (appointment.status === "available") {
+                  <div class="available-badge">
+                    <i class="pi pi-check-circle"></i>
+                    <span>{{
+                      translationService.translate("doctor.schedule.available")
+                    }}</span>
+                  </div>
+                } @else {
+                  <span class="appointment-patient">{{
+                    appointment.patientName
+                  }}</span>
+                }
+              </div>
             </div>
           }
         }
       </div>
+      <!-- <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="first()"
+        [rows]="rows()"
+        [totalRecords]="getCountToPaginate()"
+        style="margin-bottom: 10px"
+      /> -->
     </div>
 
     <app-calendar

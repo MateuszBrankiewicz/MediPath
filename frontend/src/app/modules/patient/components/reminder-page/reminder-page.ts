@@ -122,14 +122,12 @@ export class ReminderPage implements OnInit {
     }
 
     let filtered = list.filter((n) => {
-      // date range
       if (from || to) {
         if (!n.timestamp) return false;
         const ts = new Date(n.timestamp);
         if (from && ts < from) return false;
         if (to && ts > to) return false;
       }
-      // search
       if (term.length > 0) {
         const title = (n.title ?? '').toLowerCase();
         const content = (n.content ?? '').toLowerCase();
@@ -138,7 +136,6 @@ export class ReminderPage implements OnInit {
       return true;
     });
 
-    // sorting
     const dir = sortOrder === 'asc' ? 1 : -1;
     filtered = [...filtered].sort((a, b) => {
       if (sortField === 'title') {

@@ -367,6 +367,9 @@
   "doctor.schedule.patientRemarks": "Uwagi pacjenta:",
   "doctor.schedule.noAppointments": "Brak wizyt",
   "doctor.schedule.noAppointmentsDescription": "Nie ma zaplanowanych wizyt na wybrany dzień",
+  "doctor.schedule.filter.all": "Wszystkie",
+  "doctor.schedule.filter.booked": "Zaplanowane",
+  "doctor.schedule.filter.available": "Dostępne",
 
   "doctor.visits.title": "Historia wizyt",
   "doctor.visits.allStatuses": "Wszystkie statusy",
