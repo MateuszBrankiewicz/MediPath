@@ -3,13 +3,9 @@ package com.adam.medipathbackend.controllers;
 import com.adam.medipathbackend.forms.AddVisitForm;
 import com.adam.medipathbackend.forms.CompleteVisitForm;
 import com.adam.medipathbackend.models.*;
-import com.adam.medipathbackend.repository.InstitutionRepository;
-import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
-import com.adam.medipathbackend.repository.VisitRepository;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
+import com.adam.medipathbackend.services.CodeService;
+import com.adam.medipathbackend.services.VisitService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +15,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.*;
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -33,384 +30,86 @@ import java.util.Set;
 public class VisitController {
 
     @Autowired
-    VisitRepository visitRepository;
+    private VisitService visitService;
 
     @Autowired
-    ScheduleRepository scheduleRepository;
+    private CodeService codeService;
 
     @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    InstitutionRepository institutionRepository;
-
-    @Autowired
-    private JavaMailSender sender;
+    private UserRepository userRepository;
 
     @PostMapping(value = {"/add", "/add/"})
     public ResponseEntity<Map<String, Object>> add(@RequestBody AddVisitForm visit, HttpSession session) {
-
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-
-        ArrayList<String> missingFields = new ArrayList<>();
-
-        if(visit.getPatientRemarks() == null) {
-            visit.setPatientRemarks("");
-        }
-        if(visit.getScheduleID() == null || visit.getScheduleID().isBlank()) {
-            missingFields.add("scheduleID");
-        }
-        if(!missingFields.isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
-        }
-
         Optional<User> optionalUser = userRepository.findById(loggedUserID);
         if(optionalUser.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        Optional<Schedule> schedule = scheduleRepository.findById(visit.getScheduleID());
-        if(schedule.isEmpty() || schedule.get().isBooked()) {
-            return new ResponseEntity<>(Map.of("message", "visit time is invalid or booked"), HttpStatus.BAD_REQUEST);
+        try {
+            visitService.addVisit(visit, optionalUser.get());
+            return new ResponseEntity<>(Map.of("message", "Success"), HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        Schedule foundSchedule = schedule.get();
-        User foundUser = optionalUser.get();
-        PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(), foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
-        VisitTime time = new VisitTime(foundSchedule.getId(), foundSchedule.getStartHour(), foundSchedule.getEndHour());
-        Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(), time,foundSchedule.getInstitution(), visit.getPatientRemarks());
-        foundSchedule.setBooked(true);
-        ArrayList<Code> codes = new ArrayList<>();
-        newVisit.setCodes(codes);
-        if(foundUser.getUserSettings().isSystemNotifications()) {
-            String content, title;
 
-            if(foundUser.getUserSettings().getLanguage().equals("PL")) {
-                content = String.format("Przypominamy o wizycie w ośrodku %s dnia %s o godzinie %s", foundSchedule.getInstitution().getInstitutionName(), foundSchedule.getStartHour().toLocalDate(), foundSchedule.getStartHour().toLocalTime());
-                title = "Przypomnienie o wizycie";
-            } else {
-                content = String.format("We would like to remind you of your upcoming visit in %s on the day %s at %s", foundSchedule.getInstitution().getInstitutionName(), foundSchedule.getStartHour().toLocalDate(), foundSchedule.getStartHour().toLocalTime());
-                title = "Visit reminder";
-            }
-            Notification notification = new Notification(title,  content, foundSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
-            foundUser.addNotification(notification);
-            userRepository.save(foundUser);
-        }
-        visitRepository.save(newVisit);
-        scheduleRepository.save(foundSchedule);
-
-        return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.CREATED);
     }
 
     @DeleteMapping(value = {"/{visitid}", "/{visitid}/"})
     public ResponseEntity<Map<String, Object>> cancelVisit(@PathVariable String visitid, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(org.springframework.http.HttpStatus.UNAUTHORIZED);
         }
-        Optional<Visit> optVisit = visitRepository.findById(visitid);
-        if(optVisit.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        Visit visitToCancel = optVisit.get();
-        if(!(visitToCancel.getPatient().getUserId().equals(loggedUserID) || isLoggedAsEmployeeOfInstitution(loggedUserID, visitToCancel.getInstitution().getInstitutionId()))) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        if(visitToCancel.getStatus().equals("Completed")) {
-            return new ResponseEntity<>(Map.of("message", "this visit is completed"), HttpStatus.BAD_REQUEST);
-        }
-        if(visitToCancel.getStatus().equals("Cancelled")) {
-            return new ResponseEntity<>(Map.of("message", "this visit is already cancelled"), HttpStatus.BAD_REQUEST);
-        }
-        Optional<User> userOptional = userRepository.findById(visitToCancel.getPatient().getUserId());
-        if(userOptional.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        visitToCancel.setStatus("Cancelled");
-        Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToCancel.getTime().getScheduleId());
-        if(scheduleOptional.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        Schedule oldSchedule = scheduleOptional.get();
-        oldSchedule.setBooked(false);
-        User patient = userOptional.get();
-        int foundIndex = 0;
-        for(int i = 0; i < patient.getNotifications().size(); i++) {
-            Notification notification = patient.getNotifications().get(i);
-            if(notification.getTimestamp().isEqual(oldSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0)) && notification.isSystem()) {
-                foundIndex = i;
-            }
-        }
-
-
-        if(patient.getUserSettings().isSystemNotifications()) {
-            Notification cancellationNotification;
-            if(patient.getUserSettings().getLanguage().equals("PL")) {
-                cancellationNotification = new Notification("Odwołanie wizyty",
-                        "Twoja wizyta w placówce" + visitToCancel.getInstitution().getInstitutionName() +
-                                " u specjalisty " + visitToCancel.getDoctor().getDoctorName() + " " +
-                                visitToCancel.getDoctor().getDoctorSurname() + " została odwołana.<br>Skontaktuj się z placówką, by dowiedzieć się więcej.",
-                        LocalDateTime.now().plusMinutes(5), true, false);
-
-            } else {
-                cancellationNotification = new Notification("Visit cancellation",
-                        "Your visit in " + visitToCancel.getInstitution().getInstitutionName() + " with " +
-                        visitToCancel.getDoctor().getDoctorName() + " " + visitToCancel.getDoctor().getDoctorSurname() + " was cancelled. <br>Contact the institution for details.",
-                        LocalDateTime.now().plusMinutes(5), true, false);
-            }
-            patient.addNotification(cancellationNotification);
-        }
-        patient.removeNotification(patient.getNotifications().get(foundIndex));
-        userRepository.save(patient);
-        scheduleRepository.save(oldSchedule);
-        visitRepository.save(visitToCancel);
-
         try {
-
-            MimeMessage message = sender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message);
-            helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
-
-            if(patient.getUserSettings().getLanguage().equals("PL")) {
-                helper.setSubject("Twoja wizyta została odwołana");
-            } else {
-                helper.setSubject("Your visit has been cancelled");
-            }
-            helper.setTo(patient.getEmail());
-            String content;
-            if(patient.getUserSettings().getLanguage().equals("PL")) {
-                content = "<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        "<head>\n" +
-                        "    <meta charset=\"UTF-8\" />\n" +
-                        "    <title>Wizyta odwołana</title>\n" +
-                        "</head>\n" +
-                        "<body>\n" +
-                        "    <h2>MediPath</h2>\n" +
-                        "    <p>Twoja wizyta w placówce " + visitToCancel.getInstitution().getInstitutionName() + " u specjalisty " +
-                        visitToCancel.getDoctor().getDoctorName() + " " + visitToCancel.getDoctor().getDoctorSurname() + " została odwołana.<br>Skontaktuj się z placówką, by dowiedzieć się więcej.</p>\n" +
-                        "    <p>-MediPath</p>\n" +
-                        "    \n" +
-                        "</body>\n" +
-                        "</html>";
-            } else {
-                content = "<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        "<head>\n" +
-                        "    <meta charset=\"UTF-8\" />\n" +
-                        "    <title>Visit cancelled</title>\n" +
-                        "</head>\n" +
-                        "<body>\n" +
-                        "    <h2>MediPath</h2>\n" +
-                        "    <p>Your visit in " + visitToCancel.getInstitution().getInstitutionName() + " with " +
-                        visitToCancel.getDoctor().getDoctorName() + " " + visitToCancel.getDoctor().getDoctorSurname() + " was cancelled. <br>Contact the institution for details.</p>\n" +
-                        "    <p>-MediPath</p>\n" +
-                        "    \n" +
-                        "</body>\n" +
-                        "</html>";
-            }
-
-
-            helper.setText(content);
-            sender.send(message);
-
-        } catch (MailException | MessagingException | UnsupportedEncodingException e) {
-            System.out.println("Mail serivce threw an error: " + e.getMessage());
+            visitService.cancelVisit(visitid, loggedUserID);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(IllegalStateException ise) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (IllegalArgumentException iae) {
+            return new ResponseEntity<>(Map.of("message", iae.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch(IllegalAccessException iae) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping(value = {"/{visitid}/reschedule/", "/{visitid}/reschedule"})
     public ResponseEntity<Map<String, Object>> rescheduleVisit(@PathVariable String visitid, @RequestParam(value = "newschedule", defaultValue = "") String newScheduleId, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(org.springframework.http.HttpStatus.UNAUTHORIZED);
         }
-        if(newScheduleId.isBlank()) {
-            return new ResponseEntity<>(Map.of("message", "newschedule parameter missing"), HttpStatus.BAD_REQUEST);
-        }
-        Optional<Visit> optVisit = visitRepository.findById(visitid);
-        if(optVisit.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        Visit visitToReschedule = optVisit.get();
-        if(!(visitToReschedule.getPatient().getUserId().equals(loggedUserID) || isLoggedAsEmployeeOfInstitution(loggedUserID, visitToReschedule.getInstitution().getInstitutionId()))) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        if(visitToReschedule.getStatus().equals("Completed")) {
-            return new ResponseEntity<>(Map.of("message", "this visit is completed"), HttpStatus.BAD_REQUEST);
-        }
-        if(visitToReschedule.getStatus().equals("Cancelled")) {
-            return new ResponseEntity<>(Map.of("message", "this visit is already cancelled"), HttpStatus.BAD_REQUEST);
-        }
-        Optional<Schedule> newScheduleOptional = scheduleRepository.findById(newScheduleId);
-        if(newScheduleOptional.isEmpty() || newScheduleOptional.get().isBooked()) {
-            return new ResponseEntity<>(Map.of("message", "invalid new schedule id or schedule is booked"), HttpStatus.BAD_REQUEST);
-        }
-        Schedule newSchedule = newScheduleOptional.get();
-        Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToReschedule.getTime().getScheduleId());
-        if(scheduleOptional.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        Optional<User> userOptional = userRepository.findById(visitToReschedule.getPatient().getUserId());
-        if(userOptional.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        Schedule oldSchedule = scheduleOptional.get();
-        User patient = userOptional.get();
-        if(patient.getUserSettings().isSystemNotifications()) {
-            int foundIndex = 0;
-            for(int i = 0; i < patient.getNotifications().size(); i++) {
-                Notification notification = patient.getNotifications().get(i);
-                if(notification.getTimestamp().isEqual(oldSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0)) && notification.isSystem()) {
-                    foundIndex = i;
-                }
-            }
-            patient.removeNotification(patient.getNotifications().get(foundIndex));
-            String content, title;
-            if(patient.getUserSettings().getLanguage().equals("PL")) {
-                content = String.format("Przypominamy o wizycie w ośrodku %s dnia %s o godzinie %s", newSchedule.getInstitution().getInstitutionName(), newSchedule.getStartHour().toLocalDate(), newSchedule.getStartHour().toLocalTime());
-                title = "Przypomnienie o wizycie";
-            } else {
-                content = String.format("We would like to remind you of your upcoming visit in %s on the day %s at %s", newSchedule.getInstitution().getInstitutionName(), newSchedule.getStartHour().toLocalDate(), newSchedule.getStartHour().toLocalTime());
-                title = "Visit reminder";
-            }
-            Notification notification = new Notification(title,  content, newSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
-            patient.addNotification(notification);
-        }
-
-        oldSchedule.setBooked(false);
-        newSchedule.setBooked(true);
-        visitToReschedule.setTime(new VisitTime(newSchedule.getId(), newSchedule.getStartHour(), newSchedule.getEndHour()));
-        visitToReschedule.setDoctor(newSchedule.getDoctor());
-        visitToReschedule.setInstitution(newSchedule.getInstitution());
-        scheduleRepository.save(oldSchedule);
-        scheduleRepository.save(newSchedule);
-        visitRepository.save(visitToReschedule);
-
-        if(patient.getUserSettings().isSystemNotifications()) {
-            Notification cancellationNotification;
-            if(patient.getUserSettings().getLanguage().equals("PL")) {
-                cancellationNotification = new Notification("Odwołanie wizyty",
-                        "Twoja wizyta w placówce" + visitToReschedule.getInstitution().getInstitutionName() +
-                                " u specjalisty " + visitToReschedule.getDoctor().getDoctorName() + " " +
-                                visitToReschedule.getDoctor().getDoctorSurname() + " została zmieniona. Nowa wizyta odbędzie się " +
-                                visitToReschedule.getTime().getStartTime() + " w placówce " + visitToReschedule.getInstitution().getInstitutionName() +
-                                " u specjalisty " + visitToReschedule.getDoctor().getDoctorName() + " " + visitToReschedule.getDoctor().getDoctorSurname() + ".<br>Skontaktuj się z placówką, by dowiedzieć się więcej.",
-                        LocalDateTime.now().plusMinutes(5), true, false);
-
-            } else {
-                cancellationNotification = new Notification("Visit cancellation",
-                        "Your visit in " + visitToReschedule.getInstitution().getInstitutionName() +
-                                " with " + visitToReschedule.getDoctor().getDoctorName() + " " +
-                                visitToReschedule.getDoctor().getDoctorSurname() + " has been changed. New visit will occur on" +
-                                visitToReschedule.getTime().getStartTime() + " in " + visitToReschedule.getInstitution().getInstitutionName() +
-                                " with " + visitToReschedule.getDoctor().getDoctorName() + " " + visitToReschedule.getDoctor().getDoctorSurname() + ".<br>Contact the institution for details.",
-                        LocalDateTime.now().plusMinutes(5), true, false);
-            }
-            patient.addNotification(cancellationNotification);
-        }
-
         try {
-
-            MimeMessage message = sender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message);
-            helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
-
-            if(patient.getUserSettings().getLanguage().equals("PL")) {
-                helper.setSubject("Twoja wizyta została odwołana");
-            } else {
-                helper.setSubject("Your visit has been cancelled");
-            }
-            helper.setTo(patient.getEmail());
-            String content;
-            if(patient.getUserSettings().getLanguage().equals("PL")) {
-                content = "<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        "<head>\n" +
-                        "    <meta charset=\"UTF-8\" />\n" +
-                        "    <title>Wizyta odwołana</title>\n" +
-                        "</head>\n" +
-                        "<body>\n" +
-                        "    <h2>MediPath</h2>\n" +
-                        "    <p>\"Twoja wizyta w placówce" + visitToReschedule.getInstitution().getInstitutionName() +
-                        " u specjalisty " + visitToReschedule.getDoctor().getDoctorName() + " " +
-                        visitToReschedule.getDoctor().getDoctorSurname() + " została zmieniona. Nowa wizyta odbędzie się " +
-                        visitToReschedule.getTime().getStartTime() + " w placówce " + visitToReschedule.getInstitution().getInstitutionName() +
-                        " u specjalisty " + visitToReschedule.getDoctor().getDoctorName() + " " + visitToReschedule.getDoctor().getDoctorSurname() +
-                        ".<br>Skontaktuj się z placówką, by dowiedzieć się więcej.\"</p>\n" +
-                        "<p>-MediPath</p>\n" +
-                        "    \n" +
-                        "</body>\n" +
-                        "</html>";
-            } else {
-                content = "<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        "<head>\n" +
-                        "    <meta charset=\"UTF-8\" />\n" +
-                        "    <title>Visit cancelled</title>\n" +
-                        "</head>\n" +
-                        "<body>\n" +
-                        "    <h2>MediPath</h2>\n" +
-                        "    <p>Your visit in " + visitToReschedule.getInstitution().getInstitutionName() +
-                        " with " + visitToReschedule.getDoctor().getDoctorName() + " " +
-                        visitToReschedule.getDoctor().getDoctorSurname() + " has been changed. New visit will occur on " +
-                        visitToReschedule.getTime().getStartTime() + " in " + visitToReschedule.getInstitution().getInstitutionName() +
-                        " with " + visitToReschedule.getDoctor().getDoctorName() + " " + visitToReschedule.getDoctor().getDoctorSurname() +
-                        ".<br>Contact the institution for details..</p>\n" +
-                        "    <p>-MediPath</p>\n" +
-                        "    \n" +
-                        "</body>\n" +
-                        "</html>";
-            }
-
-
-            helper.setText(content);
-            sender.send(message);
-
-        } catch (MailException | MessagingException | UnsupportedEncodingException e) {
-            System.out.println("Mail serivce threw an error: " + e.getMessage());
+            visitService.rescheduleVisit(visitid, newScheduleId, loggedUserID);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(IllegalAccessException ise) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (IllegalArgumentException iae) {
+            return new ResponseEntity<>(Map.of("message", iae.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch(IllegalComponentStateException iae) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        userRepository.save(patient);
 
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping(value = {"/{visitid}/complete/", "/{visitid}/complete"})
     public ResponseEntity<Map<String, String>> completeVisit(@PathVariable String visitid, @RequestBody CompleteVisitForm completionForm, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(org.springframework.http.HttpStatus.UNAUTHORIZED);
         }
-        Optional<Visit> optVisit = visitRepository.findById(visitid);
-        if(optVisit.isEmpty()) {
+        try {
+            visitService.completeVisit(visitid, completionForm, loggedUserID);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(IllegalAccessException ise) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (IllegalArgumentException iae) {
+            return new ResponseEntity<>(Map.of("message", iae.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        Visit visit = optVisit.get();
-        if(!visit.getDoctor().getUserId().equals(loggedUserID)) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        if(visit.getStatus().equals("Completed")) {
-            return new ResponseEntity<>(Map.of("message", "this visit is already completed"), HttpStatus.BAD_REQUEST);
-        }
-        if(visit.getStatus().equals("Cancelled")) {
-            return new ResponseEntity<>(Map.of("message", "this visit is already cancelled"), HttpStatus.BAD_REQUEST);
-        }
-        visit.setStatus("Completed");
-        ArrayList<Code> codes = new ArrayList<>();
-        for(String prescriptionCode: completionForm.getPrescriptions()) {
-            codes.add(new Code(Code.CodeType.PRESCRIPTION, prescriptionCode, true));
-        }
-        for(String prescriptionCode: completionForm.getReferrals()) {
-            codes.add(new Code(Code.CodeType.REFERRAL, prescriptionCode, true));
-        }
-        visit.setCodes(codes);
-        visit.setNote(completionForm.getNote());
-        visitRepository.save(visit);
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping(value = {"/{visitid}", "/{visitid}/"})
@@ -419,96 +118,45 @@ public class VisitController {
         if(loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        Optional<Visit> optVisit = visitRepository.findById(visitid);
-        if(optVisit.isEmpty()) {
+        try {
+            Visit visit = visitService.getVisitDetails(visitid, loggedUserID);
+            return new ResponseEntity<>(Map.of("visit", visit), HttpStatus.OK);
+        } catch(IllegalAccessException ise) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        Visit visit = optVisit.get();
-        if(!(visit.getPatient().getUserId().equals(loggedUserID) || isLoggedInAsStaffOrDoctorInInstitution(loggedUserID, visit.getInstitution().getInstitutionId()))) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        return new ResponseEntity<>(Map.of("visit", visit), HttpStatus.OK);
-    }
 
-    private boolean isLoggedAsEmployeeOfInstitution(String userID, String institutionID) {
-        return institutionRepository.findStaffById(userID, institutionID).isPresent();
-    }
-    private boolean isLoggedInAsStaffOrDoctorInInstitution(String userid, String institutionID) {
-        return institutionRepository.findStaffORDoctorById(userid, institutionID).isPresent();
     }
 
     @PutMapping(value = {"/code", "/code/"})
     public ResponseEntity<Map<String, Object>> updateCode(@RequestBody Code code, HttpSession session) {
-        String loggedUserID = (String) session.getAttribute("id");
-        if(loggedUserID == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        ArrayList<String> missingfields = new ArrayList<>();
-        if(code.getCode() == null || code.getCode().isBlank()) {
-            missingfields.add("code");
-        }
-        if(code.getCodeType() == null) {
-            missingfields.add("codeType");
-        }
-        if(!missingfields.isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingfields), HttpStatus.BAD_REQUEST);
-        }
-        ArrayList<Visit> visits = visitRepository.getAllVisitsForPatient(loggedUserID);
-        boolean found = false;
-        for(Visit visit: visits) {
-            ArrayList<Code> codes = visit.getCodes();
-            for(int i = 0; i < codes.size(); i++) {
-                if(codes.get(i).getCodeType() == code.getCodeType() && codes.get(i).getCode().equals(code.getCode())) {
-                    codes.set(i, new Code(code.getCodeType(), code.getCode(), false));
-                    found = true;
-                    break;
-                }
-            }
-            if(found) {
-                visit.setCodes(codes);
-                visitRepository.save(visit);
-                break;
-            }
-        }
-        return new ResponseEntity<>(found ? HttpStatus.OK : HttpStatus.NOT_FOUND);
 
+        String loggedUserID = (String) session.getAttribute("id");
+        if (loggedUserID == null) {
+            return new org.springframework.http.ResponseEntity<>(org.springframework.http.HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            boolean found = codeService.updateCode(code, loggedUserID);
+            return new ResponseEntity<>(found ? org.springframework.http.HttpStatus.OK : org.springframework.http.HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException iae) {
+            return new ResponseEntity<>(Map.of("message", iae.getMessage()), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping(value = {"/code", "/code/"})
     public ResponseEntity<Map<String, Object>> deleteeCode(@RequestBody Code code, HttpSession session) {
+
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return new org.springframework.http.ResponseEntity<>(org.springframework.http.HttpStatus.UNAUTHORIZED);
         }
-        ArrayList<String> missingfields = new ArrayList<>();
-        if(code.getCode() == null || code.getCode().isBlank()) {
-            missingfields.add("code");
-        }
-        if(code.getCodeType() == null) {
-            missingfields.add("codeType");
-        }
-        if(!missingfields.isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingfields), HttpStatus.BAD_REQUEST);
-        }
-        ArrayList<Visit> visits = visitRepository.getAllVisitsForPatient(loggedUserID);
-        boolean found = false;
-        for(Visit visit: visits) {
-            ArrayList<Code> codes = visit.getCodes();
-            for(int i = 0; i < codes.size(); i++) {
-                if(codes.get(i).getCodeType() == code.getCodeType() && codes.get(i).getCode().equals(code.getCode())) {
-                    codes.remove(i);
-                    found = true;
-                    break;
-                }
-            }
-            if(found) {
-                visit.setCodes(codes);
-                visitRepository.save(visit);
-                break;
-            }
-        }
-        return new ResponseEntity<>(found ? HttpStatus.OK : HttpStatus.NOT_FOUND);
 
+        try {
+            boolean found = codeService.deleteCode(code, loggedUserID);
+            return new ResponseEntity<>(found ? org.springframework.http.HttpStatus.OK
+                    : org.springframework.http.HttpStatus.NOT_FOUND);
+        } catch(IllegalArgumentException iae) {
+            return new ResponseEntity<>(Map.of("message", iae.getMessage()), HttpStatus.BAD_REQUEST);
+        }
     }
 
 }
