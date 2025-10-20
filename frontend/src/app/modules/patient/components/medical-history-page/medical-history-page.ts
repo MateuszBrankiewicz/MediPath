@@ -18,7 +18,15 @@ import { TooltipModule } from 'primeng/tooltip';
 import { map } from 'rxjs';
 import { FilterParams } from '../../../../core/models/filter.model';
 import { MedicalRecord } from '../../../../core/models/medical-history.model';
+import {
+  FilterFieldConfig,
+  FilteringService,
+} from '../../../../core/services/filtering/filtering.service';
 import { MedicalHistoryService } from '../../../../core/services/medical-history/medical-history.service';
+import {
+  SortFieldConfig,
+  SortingService,
+} from '../../../../core/services/sorting/sorting.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { MedicalHistoryDialog } from './components/medical-history-dialog/medical-history-dialog';
@@ -44,7 +52,8 @@ export class MedicalHistoryPage implements OnInit {
   protected translationService = inject(TranslationService);
   private destroyRef = inject(DestroyRef);
   private dialogService = inject(DialogService);
-
+  private sortingService = inject(SortingService);
+  private filteringService = inject(FilteringService);
   protected readonly isLoading = signal(false);
 
   protected readonly isSending = signal(false);
@@ -58,64 +67,51 @@ export class MedicalHistoryPage implements OnInit {
   });
 
   private readonly medicalHistoryService = inject(MedicalHistoryService);
+
+  private readonly recordFilterConfig: FilterFieldConfig<MedicalRecord> =
+    this.filteringService.combineConfigs(
+      this.filteringService.searchConfig<MedicalRecord>(
+        (r) => r.title,
+        (r) => r.notes || '',
+        (r) => `${r.doctor.doctorName} ${r.doctor.doctorSurname}`,
+      ),
+      this.filteringService.dateRangeConfig<MedicalRecord>((r) => r.date),
+    );
+
+  private readonly recordSortConfig: SortFieldConfig<MedicalRecord>[] = [
+    this.sortingService.dateField('date', (r) => r.date),
+    this.sortingService.stringField('title', (r) => r.title),
+    this.sortingService.stringField(
+      'doctor',
+      (r) => `${r.doctor.doctorName} ${r.doctor.doctorSurname}`,
+    ),
+  ];
+
   ngOnInit(): void {
     this.isLoading.set(true);
     this.loadMedicalHistory();
   }
 
   protected filteredRecords = computed(() => {
-    let records = this.medicalRecords();
+    const records = this.medicalRecords();
     const filter = this.filters();
 
-    if (filter.searchTerm) {
-      const searchTermLower = filter.searchTerm.toLowerCase();
-      records = records.filter(
-        (record) =>
-          record.title.toLowerCase().includes(searchTermLower) ||
-          record.notes?.toLowerCase().includes(searchTermLower) ||
-          `${record.doctor.doctorName} ${record.doctor.doctorSurname}`
-            .toLowerCase()
-            .includes(searchTermLower),
-      );
-    }
+    const filtered = this.filteringService.filter(
+      records,
+      {
+        searchTerm: filter.searchTerm,
+        dateFrom: filter.dateFrom,
+        dateTo: filter.dateTo,
+      },
+      this.recordFilterConfig,
+    );
 
-    if (filter.dateFrom) {
-      records = records.filter(
-        (record) => record.date >= (filter.dateFrom as Date),
-      );
-    }
-
-    if (filter.dateTo) {
-      records = records.filter(
-        (record) => record.date <= (filter.dateTo as Date),
-      );
-    }
-
-    if (filter.sortField) {
-      records = records.sort((a, b) => {
-        const fieldA = a[filter.sortField as keyof MedicalRecord];
-        const fieldB = b[filter.sortField as keyof MedicalRecord];
-
-        if (fieldA == null && fieldB == null) {
-          return 0;
-        }
-        if (fieldA == null) {
-          return filter.sortOrder === 'asc' ? 1 : -1;
-        }
-        if (fieldB == null) {
-          return filter.sortOrder === 'asc' ? -1 : 1;
-        }
-        if (fieldA < fieldB) {
-          return filter.sortOrder === 'asc' ? -1 : 1;
-        }
-        if (fieldA > fieldB) {
-          return filter.sortOrder === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-
-    return records;
+    return this.sortingService.sort(
+      filtered,
+      filter.sortField,
+      filter.sortOrder,
+      this.recordSortConfig,
+    );
   });
 
   protected viewRecord(record: MedicalRecord): void {
