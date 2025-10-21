@@ -1,4 +1,3 @@
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -8,22 +7,22 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService } from 'primeng/dynamicdialog';
-import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { PaginatorModule } from 'primeng/paginator';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { catchError, map } from 'rxjs';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
-
 import { FilterParams } from '../../../../core/models/filter.model';
 import { Refferal, UsedState } from '../../../../core/models/refferal.model';
 import { CodesService } from '../../../../core/services/codes/codes.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
+import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { CodesFilterService } from '../../services/codesFilter.service';
-import { ToastService } from './../../../../core/services/toast/toast.service';
-import { PatientCodeDialogService } from './../../services/paitent-code-dialog.service';
+import { PatientCodeDialogService } from '../../services/paitent-code-dialog.service';
 
 @Component({
   selector: 'app-prescription-page',
@@ -42,7 +41,10 @@ import { PatientCodeDialogService } from './../../services/paitent-code-dialog.s
   providers: [DialogService, PatientCodeDialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrescriptionPage implements OnInit {
+export class PrescriptionPage
+  extends PaginatedComponentBase<Refferal>
+  implements OnInit
+{
   private toastService = inject(ToastService);
   private manageDialogCodeService = inject(PatientCodeDialogService);
   protected translationService = inject(TranslationService);
@@ -57,11 +59,9 @@ export class PrescriptionPage implements OnInit {
     sortField: 'date',
     sortOrder: 'desc',
   });
-  protected readonly first = signal(0);
-  protected readonly rows = signal(10);
 
-  protected readonly totalRecords = computed(
-    () => this.prescriptions()?.length ?? 0,
+  protected override readonly totalRecords = computed(
+    () => this.filteredPrescriptions().length,
   );
   protected readonly isLoading = signal(false);
   protected readonly filteredPrescriptions = computed(() => {
@@ -81,10 +81,12 @@ export class PrescriptionPage implements OnInit {
     return codes;
   });
 
+  protected override get sourceData() {
+    return this.filteredPrescriptions();
+  }
+
   protected readonly paginatedPrescriptions = computed(() => {
-    const first = this.first();
-    const rows = this.rows();
-    return this.filteredPrescriptions().slice(first, first + rows);
+    return this.paginatedData();
   });
 
   ngOnInit(): void {
@@ -105,10 +107,6 @@ export class PrescriptionPage implements OnInit {
       });
   }
 
-  protected onPageChange(event: PaginatorState) {
-    this.first.set(event.first ?? 0);
-    this.rows.set(event.rows ?? 10);
-  }
   protected statusOptions = [
     {
       label: this.translationService.translate('shared.filters.all'),

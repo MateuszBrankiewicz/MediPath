@@ -19,32 +19,71 @@
         </div>
       </div>
 
-      <div class="appointments-list">
-        @for (appointment of todayAppointments; track appointment.id) {
-          <div
-            class="appointment-slot available"
-            (click)="changeSelectedAppointment(appointment)"
-          >
-            <span class="appointment-time">{{ appointment.time }}</span>
-            <span class="appointment-patient">{{
-              appointment.patientName
-            }}</span>
-          </div>
-        }
+      <app-filter-buttons
+        [filters]="filterConfig"
+        [activeFilter]="viewFilter()"
+        (filterChange)="setViewFilter($event)"
+      />
 
-        @for (slot of unavailableSlots; track slot.id) {
-          <div
-            class="appointment-slot unavailable"
-            (click)="changeSelectedAppointment(slot)"
-          >
-            <span class="appointment-time">{{ slot.time }}</span>
-            <span class="appointment-patient">{{ slot.patientName }}</span>
+      <div class="appointments-list">
+        @if (selectedDateAppointments().length === 0) {
+          <div class="empty-state">
+            <i class="pi pi-calendar-times empty-state-icon"></i>
+            <h3 class="empty-state-title">
+              {{
+                translationService.translate("doctor.schedule.noAppointments")
+              }}
+            </h3>
+            <p class="empty-state-description">
+              {{
+                translationService.translate(
+                  "doctor.schedule.noAppointmentsDescription"
+                )
+              }}
+            </p>
           </div>
+        } @else {
+          @for (
+            appointment of selectedDateAppointments();
+            track appointment.id
+          ) {
+            <div
+              class="appointment-slot"
+              [class]="getStatusClass(appointment.status)"
+              (click)="changeSelectedAppointment(appointment)"
+            >
+              <div class="slot-info">
+                <span class="appointment-time">{{ appointment.time }}</span>
+                @if (appointment.status === "available") {
+                  <div class="available-badge">
+                    <i class="pi pi-check-circle"></i>
+                    <span>{{
+                      translationService.translate("doctor.schedule.available")
+                    }}</span>
+                  </div>
+                } @else {
+                  <span class="appointment-patient">{{
+                    appointment.patientName
+                  }}</span>
+                }
+              </div>
+            </div>
+          }
         }
       </div>
+      <!-- <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="first()"
+        [rows]="rows()"
+        [totalRecords]="getCountToPaginate()"
+        style="margin-bottom: 10px"
+      /> -->
     </div>
 
-    <app-calendar></app-calendar>
+    <app-calendar
+      [appointments]="calendarDays()"
+      (daySelected)="onDateSelected($event)"
+    ></app-calendar>
   </div>
   <div class="fixed-appointment-card">
     <div class="appointment-card-content">

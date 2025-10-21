@@ -11,11 +11,15 @@
 
       <div class="current-visit-container">
         <app-appointments-list
-          [title]="translationService.translate('doctor.dashboard.currentVisit')"
+          [title]="
+            translationService.translate('doctor.dashboard.currentVisit')
+          "
           [currentAppointment]="currentVisit()"
           [showCurrentAppointment]="true"
           [showViewButton]="true"
-          [viewButtonLabel]="translationService.translate('doctor.dashboard.view')"
+          [viewButtonLabel]="
+            translationService.translate('doctor.dashboard.view')
+          "
           [patientLabel]="translationService.translate('doctor.dashboard.with')"
           [appointments]="[]"
           (viewAppointment)="onViewCurrentVisit()"
@@ -25,7 +29,9 @@
 
     <div class="appointments-section">
       <app-appointments-list
-        [title]="translationService.translate('doctor.dashboard.todaysAppointments')"
+        [title]="
+          translationService.translate('doctor.dashboard.todaysAppointments')
+        "
         [appointments]="todaysAppointments()"
         [showCurrentAppointment]="false"
         (appointmentClick)="onAppointmentClick($event)"
@@ -40,21 +46,27 @@
       </div>
       <div class="count-content">
         <span class="count-number">{{ todaysAppointments().length }}</span>
-        <div class="count-label">{{ translationService.translate('doctor.dashboard.patientsForToday') }}</div>
+        <div class="count-label">
+          {{
+            translationService.translate("doctor.dashboard.patientsForToday")
+          }}
+        </div>
       </div>
     </div>
 
-    <!-- Calendar Section -->
     <div class="calendar-section">
       <div class="calendar-header">
         <div class="calendar-title">
-          <h3>{{ translationService.translate('shared.calendar.selectDate') }}</h3>
+          <h3>
+            {{ translationService.translate("shared.calendar.selectDate") }}
+          </h3>
           <p-button
             [label]="translationService.translate('doctor.dashboard.today')"
             [text]="true"
             size="small"
             icon="pi pi-calendar"
-            (onClick)="goToToday()">
+            (onClick)="goToToday()"
+          >
           </p-button>
         </div>
         <div class="calendar-nav">
@@ -63,7 +75,8 @@
             [text]="true"
             size="small"
             [rounded]="true"
-            (onClick)="previousMonth()">
+            (onClick)="previousMonth()"
+          >
           </p-button>
           <span class="month-year">{{ currentMonthDisplay }}</span>
           <p-button
@@ -71,7 +84,8 @@
             [text]="true"
             size="small"
             [rounded]="true"
-            (onClick)="nextMonth()">
+            (onClick)="nextMonth()"
+          >
           </p-button>
         </div>
       </div>
@@ -96,8 +110,9 @@
               [class.today]="day.isToday"
               [class.selected]="day.isSelected"
               [class.has-appointments]="day.hasAppointments"
-              (click)="onCalendarDayClick(day)">
-              {{ day.date || '' }}
+              (click)="onCalendarDayClick(day)"
+            >
+              {{ day.date || "" }}
             </div>
           }
         </div>

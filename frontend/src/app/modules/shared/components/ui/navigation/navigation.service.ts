@@ -72,6 +72,14 @@ export class NavigationService {
                 routerLink: '/doctor/patients',
                 visible: true,
               },
+              {
+                label: this.translationService.translate(
+                  'navigation.notifications',
+                ),
+                icon: 'pi pi-bell',
+                routerLink: '/doctor/reminders',
+                visible: true,
+              },
             ],
           },
         ];

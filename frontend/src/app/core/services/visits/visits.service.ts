@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
 import {
   ScheduleResponse,
@@ -9,6 +9,7 @@ import {
 import {
   SingleVisitResponse,
   UpcomingVisitsResponse,
+  VisitResponse,
 } from '../../models/visit.model';
 
 @Injectable({
@@ -74,5 +75,16 @@ export class VisitsService {
         withCredentials: true,
       },
     );
+  }
+
+  public getDoctorVisitByDate(date: string): Observable<VisitResponse[]> {
+    return this.http
+      .get<UpcomingVisitsResponse>(
+        `${API_URL}/doctors/me/visitsbydate/${date}`,
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(map((response) => response.visits ?? []));
   }
 }

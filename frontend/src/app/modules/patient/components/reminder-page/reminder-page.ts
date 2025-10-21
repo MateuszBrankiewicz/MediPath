@@ -12,15 +12,24 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
-import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { PaginatorModule } from 'primeng/paginator';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { FilterParams } from '../../../../core/models/filter.model';
+import {
+  FilterFieldConfig,
+  FilteringService,
+} from '../../../../core/services/filtering/filtering.service';
 import { NotificationMessage } from '../../../../core/services/notifications/user-notifications.model';
 import { UserNotificationsService } from '../../../../core/services/notifications/user-notifications.service';
+import {
+  SortFieldConfig,
+  SortingService,
+} from '../../../../core/services/sorting/sorting.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder-dialog';
 
@@ -42,14 +51,17 @@ import { AddReminderDialog } from './components/add-reminder-dialog/add-reminder
   providers: [DialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReminderPage implements OnInit {
+export class ReminderPage
+  extends PaginatedComponentBase<NotificationMessage>
+  implements OnInit
+{
   private readonly notificationsService = inject(UserNotificationsService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly sortingService = inject(SortingService);
+  private readonly filteringService = inject(FilteringService);
   protected readonly notifications = signal<NotificationMessage[]>([]);
   protected readonly translationService = inject(TranslationService);
-  protected readonly first = signal(0);
-  protected readonly rows = signal(10);
   protected readonly isRefreshing = signal(false);
   protected readonly isMarkingAll = signal(false);
   protected readonly filtersDefaults: FilterParams = {
@@ -65,6 +77,24 @@ export class ReminderPage implements OnInit {
   });
 
   private dialogService = inject(DialogService);
+
+  private readonly notificationFilterConfig: FilterFieldConfig<NotificationMessage> =
+    this.filteringService.combineConfigs(
+      this.filteringService.searchConfig<NotificationMessage>(
+        (n) => n.title || '',
+        (n) => n.content || '',
+      ),
+      this.filteringService.dateRangeConfig<NotificationMessage>(
+        (n) => n.timestamp,
+      ),
+    );
+
+  private readonly notificationSortConfig: SortFieldConfig<NotificationMessage>[] =
+    [
+      this.sortingService.dateField('date', (n) => n.timestamp),
+      this.sortingService.stringField('title', (n) => n.title || n.content),
+      this.sortingService.booleanField('read', (n) => n.read),
+    ];
 
   protected readonly hasNotifications = computed(
     () => this.notifications().length !== 0,
@@ -111,60 +141,23 @@ export class ReminderPage implements OnInit {
     const { searchTerm, dateFrom, dateTo, sortField, sortOrder } =
       this.filters();
 
-    const term = (searchTerm ?? '').trim().toLowerCase();
-    const from = dateFrom ? new Date(dateFrom) : null;
-    const to = dateTo ? new Date(dateTo) : null;
-    if (from) {
-      from.setHours(0, 0, 0, 0);
-    }
-    if (to) {
-      to.setHours(23, 59, 59, 999);
-    }
+    const filtered = this.filteringService.filter(
+      list,
+      { searchTerm, dateFrom, dateTo },
+      this.notificationFilterConfig,
+    );
 
-    let filtered = list.filter((n) => {
-      // date range
-      if (from || to) {
-        if (!n.timestamp) return false;
-        const ts = new Date(n.timestamp);
-        if (from && ts < from) return false;
-        if (to && ts > to) return false;
-      }
-      // search
-      if (term.length > 0) {
-        const title = (n.title ?? '').toLowerCase();
-        const content = (n.content ?? '').toLowerCase();
-        if (!title.includes(term) && !content.includes(term)) return false;
-      }
-      return true;
-    });
-
-    // sorting
-    const dir = sortOrder === 'asc' ? 1 : -1;
-    filtered = [...filtered].sort((a, b) => {
-      if (sortField === 'title') {
-        const at = (a.title || a.content || '').toLowerCase();
-        const bt = (b.title || b.content || '').toLowerCase();
-        if (at < bt) return -1 * dir;
-        if (at > bt) return 1 * dir;
-        return 0;
-      }
-      if (sortField === 'read') {
-        const av = a.read ? 1 : 0;
-        const bv = b.read ? 1 : 0;
-        if (av < bv) return -1 * dir;
-        if (av > bv) return 1 * dir;
-        return 0;
-      }
-      // default: date
-      const ad = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-      const bd = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-      if (ad < bd) return -1 * dir;
-      if (ad > bd) return 1 * dir;
-      return 0;
-    });
-
-    return filtered;
+    return this.sortingService.sort(
+      filtered,
+      sortField,
+      sortOrder,
+      this.notificationSortConfig,
+    );
   });
+
+  protected override get sourceData() {
+    return this.filteredAndSorted();
+  }
 
   protected getCountToPaginate() {
     return this.filteredAndSorted().length;
@@ -173,8 +166,7 @@ export class ReminderPage implements OnInit {
   protected showPlanned = signal(false);
 
   protected readonly paginatedNotifications = computed(() => {
-    const list = this.filteredAndSorted();
-    return list.slice(this.first(), this.first() + this.rows());
+    return this.paginatedData();
   });
 
   ngOnInit(): void {
@@ -184,14 +176,8 @@ export class ReminderPage implements OnInit {
     this.initNotifcations();
   }
 
-  protected onPageChange(event: PaginatorState) {
-    this.first.set(event.first ?? 0);
-    this.rows.set(event.rows ?? 10);
-  }
-
   protected onFiltersChange(params: FilterParams) {
     this.filters.set(params);
-    // reset to first page whenever filters change
     this.first.set(0);
   }
 

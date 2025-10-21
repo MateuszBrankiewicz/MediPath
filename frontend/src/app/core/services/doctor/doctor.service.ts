@@ -6,6 +6,7 @@ import {
   DoctorDetailsApiResponse,
   DoctorPageModel,
 } from '../../models/doctor.model';
+import { DoctorScheduleResponse, InputSlot } from '../../models/schedule.model';
 
 @Injectable({
   providedIn: 'root',
@@ -91,5 +92,13 @@ export class DoctorService {
       schedule: [], // Schedule will be fetched separately
       comments: [], // Comments will be fetched separately
     };
+  }
+
+  public getDoctorsSchedule(): Observable<InputSlot[]> {
+    return this.http
+      .get<DoctorScheduleResponse>(`${API_URL}/doctors/me/schedules`, {
+        withCredentials: true,
+      })
+      .pipe(map((response) => response.schedules));
   }
 }

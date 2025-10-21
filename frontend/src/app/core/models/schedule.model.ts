@@ -102,3 +102,7 @@ export interface MapToCalendarDaysOptions {
   displayedYear: number;
   selectedInstitutionIds?: string[];
 }
+
+export interface DoctorScheduleResponse {
+  schedules: InputSlot[];
+}
