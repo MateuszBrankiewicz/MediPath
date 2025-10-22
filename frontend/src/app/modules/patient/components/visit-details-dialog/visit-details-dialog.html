@@ -1,77 +1,125 @@
 @if (visit()) {
-<div class="visit-details">
-  <div class="visit-info">
-    <div class="date-section">
-      <span class="date-label">{{ translationService.translate('patient.visitDetails.dateOfVisit') }}</span>
-      <span class="date-value">{{ visit()!.date | date: 'dd-MM-yyyy' }}</span>
-    </div>
-
-    <div class="content-row">
-      <div class="left-section">
-        <div class="doctor-card">
-          <img [src]="visit()!.doctorPhoto || 'assets/imageDoctor.png'" alt="Doctor photo" class="doctor-photo">
-          <div class="doctor-info">
-            <div class="doctor-label">{{ translationService.translate('patient.visitDetails.doctorName') }}</div>
-            <div class="doctor-name">{{ visit()!.doctorName }}</div>
-            <div class="doctor-label">{{ translationService.translate('patient.visitDetails.specialisation') }}</div>
-            <div class="doctor-specialisation">{{ visit()!.specialisation }}</div>
-          </div>
-        </div>
-
-        <div class="institution-card">
-          <img [src]="visit()!.institutionPhoto || 'assets/footer-landing.png'" alt="Institution photo" class="institution-photo">
-          <div class="institution-info">
-            <div class="institution-label">{{ translationService.translate('patient.visitDetails.institutionName') }}</div>
-            <div class="institution-name">{{ visit()!.institution }}</div>
-            <div class="institution-label">{{ translationService.translate('patient.visitDetails.address') }}</div>
-            <div class="institution-address">{{ visit()!.address | addressFormat }}</div>
-          </div>
-        </div>
+  <div class="visit-details">
+    <div class="visit-info">
+      <div class="date-section">
+        <span class="date-label">{{
+          translationService.translate("patient.visitDetails.dateOfVisit")
+        }}</span>
+        <span class="date-value">{{ visit()!.date | date: "dd-MM-yyyy" }}</span>
       </div>
 
-      <div class="right-section">
-        <div class="pins-section">
-          @if (visit()!.prescriptionPin) {
-          <div class="pin-item">
-            <span class="pin-label">{{ translationService.translate('patient.visitDetails.prescriptionPin') }}</span>
-            <span class="pin-value">{{ visit()!.prescriptionPin }}</span>
+      <div class="content-row">
+        <div class="left-section">
+          <div class="doctor-card">
+            <img
+              [src]="visit()!.doctorPhoto || 'assets/imageDoctor.png'"
+              alt="Doctor photo"
+              class="doctor-photo"
+            />
+            <div class="doctor-info">
+              <div class="doctor-label">
+                {{
+                  translationService.translate(
+                    "patient.visitDetails.doctorName"
+                  )
+                }}
+              </div>
+              <div class="doctor-name">{{ visit()!.doctorName }}</div>
+              <div class="doctor-label">
+                {{
+                  translationService.translate(
+                    "patient.visitDetails.specialisation"
+                  )
+                }}
+              </div>
+              <div class="doctor-specialisation">
+                {{ visit()!.specialisation }}
+              </div>
+            </div>
           </div>
-          }
-          @if (visit()!.referralPin) {
-          <div class="pin-item">
-            <span class="pin-label">{{ translationService.translate('patient.visitDetails.referralPin') }}</span>
-            <span class="pin-value">{{ visit()!.referralPin }}</span>
+
+          <div class="institution-card">
+            <img
+              [src]="visit()!.institutionPhoto || 'assets/footer-landing.png'"
+              alt="Institution photo"
+              class="institution-photo"
+            />
+            <div class="institution-info">
+              <div class="institution-label">
+                {{
+                  translationService.translate(
+                    "patient.visitDetails.institutionName"
+                  )
+                }}
+              </div>
+              <div class="institution-name">{{ visit()!.institution }}</div>
+              <div class="institution-label">
+                {{
+                  translationService.translate("patient.visitDetails.address")
+                }}
+              </div>
+              <div class="institution-address">
+                {{ visit()!.address | addressFormat }}
+              </div>
+            </div>
           </div>
-          }
         </div>
 
-        @if (visit()!.notes) {
-        <div class="notes-section">
-          <div class="notes-label">{{ translationService.translate('patient.visitDetails.notes') }}</div>
-          <div class="notes-content">
-            {{ visit()!.notes }}
+        <div class="right-section">
+          <div class="pins-section">
+            @if (visit()!.prescriptionPin) {
+              <div class="pin-item">
+                <span class="pin-label">{{
+                  translationService.translate(
+                    "patient.visitDetails.prescriptionPin"
+                  )
+                }}</span>
+                <span class="pin-value">{{ visit()!.prescriptionPin }}</span>
+              </div>
+            }
+            @if (visit()!.referralPin) {
+              <div class="pin-item">
+                <span class="pin-label">{{
+                  translationService.translate(
+                    "patient.visitDetails.referralPin"
+                  )
+                }}</span>
+                <span class="pin-value">{{ visit()!.referralPin }}</span>
+              </div>
+            }
           </div>
+
+          @if (visit()!.notes) {
+            <div class="notes-section">
+              <div class="notes-label">
+                {{ translationService.translate("patient.visitDetails.notes") }}
+              </div>
+              <div class="notes-content">
+                {{ visit()!.notes }}
+              </div>
+            </div>
+          }
         </div>
-        }
       </div>
     </div>
-  </div>
 
-  <div class="footer">
-    <p-button
-      label="CLOSE"
-      styleClass="close-btn"
-      severity="danger"
-      [rounded]="true"
-      [raised]="true"
-      (onClick)="closeDialog()">
-    </p-button>
-    <p-button
-      label="REVIEW VISIT"
-      [rounded]="true"
-      [raised]="true"
-      (onClick)="reviewVisit()">
-    </p-button>
+    <div class="footer">
+      <p-button
+        label="CLOSE"
+        styleClass="close-btn"
+        severity="danger"
+        [rounded]="true"
+        [raised]="true"
+        (onClick)="closeDialog()"
+      >
+      </p-button>
+      <p-button
+        label="REVIEW VISIT"
+        [rounded]="true"
+        [raised]="true"
+        (onClick)="reviewVisit()"
+      >
+      </p-button>
+    </div>
   </div>
-</div>
 }
