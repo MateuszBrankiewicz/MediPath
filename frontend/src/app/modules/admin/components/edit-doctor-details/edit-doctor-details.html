@@ -1,12 +1,14 @@
-<div class="add-doctor-page">
+<div class="edit-doctor-page">
   <div class="page-header">
     <div class="breadcrumb">
       <a routerLink="/admin/doctors" class="breadcrumb-link">
-        {{ translationService.translate("admin.addDoctor.breadcrumb.doctors") }}
+        {{
+          translationService.translate("admin.editDoctor.breadcrumb.doctors")
+        }}
       </a>
       <i class="pi pi-angle-right breadcrumb-separator"></i>
       <span class="breadcrumb-current">
-        {{ translationService.translate("admin.addDoctor.breadcrumb.addNew") }}
+        {{ translationService.translate("admin.editDoctor.breadcrumb.edit") }}
       </span>
     </div>
   </div>
@@ -16,7 +18,7 @@
       <div class="form-container">
         <app-doctor-personal-info-form
           [formGroup]="doctorForm"
-          [translationKey]="'admin.addDoctor'"
+          [translationKey]="'admin.editDoctor'"
           [isFieldInvalid]="isFieldInvalid"
           [getFieldError]="getFieldErrorFn"
         />
@@ -25,28 +27,43 @@
 
         <app-doctor-professional-info-form
           [formGroup]="doctorForm"
-          [translationKey]="'admin.addDoctor'"
+          [translationKey]="'admin.editDoctor'"
           [specialisations]="specialisations"
-          [roleOptions]="roleOptions"
-          [showRoleSelect]="true"
           [isFieldInvalid]="isFieldInvalid"
           [getFieldError]="getFieldErrorFn"
-          (roleChanged)="roleChanged($event)"
         />
 
         <p-divider />
 
         <app-doctor-address-form
           [formGroup]="residentialAddressForm"
-          [translationKey]="'admin.addDoctor'"
+          [translationKey]="'admin.editDoctor'"
           [formGroupName]="'residentialAddress'"
           [isFieldInvalid]="isFieldInvalid"
           [getFieldError]="getFieldErrorFn"
         />
 
+        <p-divider />
+
+        <app-doctor-institutions-list
+          [institutions]="doctorInstitutions()"
+          [availableInstitutions]="availableInstitutions()"
+          [translationKey]="'admin.editDoctor'"
+          (institutionAdded)="onAddInstitution($event)"
+          (institutionRemoved)="onRemoveInstitution($event)"
+        />
+
         <div class="form-actions">
           <p-button
-            [label]="translationService.translate('admin.addDoctor.confirm')"
+            [label]="translationService.translate('admin.editDoctor.cancel')"
+            severity="secondary"
+            (onClick)="onCancel()"
+            type="button"
+          />
+          <p-button
+            [label]="
+              translationService.translate('admin.editDoctor.saveChanges')
+            "
             [loading]="isSubmitting()"
             [disabled]="isSubmitting()"
             type="submit"

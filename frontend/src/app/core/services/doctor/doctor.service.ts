@@ -20,8 +20,7 @@ export class DoctorService {
       .pipe(
         map((response) => {
           const mapped = this.mapDoctorDetailsResponse(response);
-          console.log('Mapped doctor details:', mapped);
-          return this.mapDoctorDetailsResponse(response);
+          return mapped;
         }),
       );
   }
@@ -89,8 +88,8 @@ export class DoctorService {
       },
       institutions: response.doctor.employers,
       specialisation: response.doctor.specialisations,
-      schedule: [], // Schedule will be fetched separately
-      comments: [], // Comments will be fetched separately
+      schedule: [],
+      comments: [],
     };
   }
 

@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { UpcomingVisitItem } from '../../../modules/admin/components/admin-dashboard/widgets/upcoming-visits-card';
 import { API_URL } from '../../../utils/constants';
 import { DoctorApiResponse, DoctorProfile } from '../../models/doctor.model';
@@ -126,6 +126,12 @@ export class InstitutionService {
       `${API_URL}/institution/${id}/employee/register`,
       employee,
       { withCredentials: true },
+    );
+  }
+
+  public getVisits(institutionId: string): Observable<unknown> {
+    return this.http.get(
+      `${API_URL}/institutions/${institutionId}/visits/today`,
     );
   }
 }

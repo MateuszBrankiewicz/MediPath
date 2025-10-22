@@ -15,7 +15,7 @@ import {
   EmployeeCard,
   type EmployeeCardData,
   InfoCard,
-} from '../../shared/components/index';
+} from '../../shared/components';
 
 @Component({
   selector: 'app-institution-view',
@@ -40,7 +40,6 @@ export class InstitutionView implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
-
 
   protected isLoading = signal<boolean>(false);
   protected institutionId = signal<string>('');
@@ -132,7 +131,7 @@ export class InstitutionView implements OnInit {
   }
 
   protected onAddDoctor(): void {
-    this.router.navigate(['/admin/doctors',this.institutionId(), 'add']);
+    this.router.navigate(['/admin/doctors', this.institutionId(), 'add']);
   }
 
   protected onViewDoctor(doctorId: string): void {

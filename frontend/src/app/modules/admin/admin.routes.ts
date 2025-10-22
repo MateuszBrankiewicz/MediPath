@@ -10,6 +10,7 @@ import { InstitutionList } from './components/institution-list/institution-list'
 import { InstitutionSchedule } from './components/institution-schedule/institution-schedule';
 import { InstitutionVisits } from './components/institution-visits/institution-visits';
 import { InstitutionView } from './institution-view/institution-view';
+import { EditDoctorDetailsComponent } from './components/edit-doctor-details/edit-doctor-details';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -30,4 +31,5 @@ export const ADMIN_ROUTES: Routes = [
   { path: 'institutions/:id', component: InstitutionView },
   { path: 'institutions/:id/edit', component: EditInstitutionDetails },
   { path: 'doctors/:doctorId', component: DoctorView },
+  { path: 'doctors/:doctorId/edit', component: EditDoctorDetailsComponent },
 ];

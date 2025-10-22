@@ -1,0 +1,92 @@
+<div class="form-section">
+  <div class="section-header">
+    <h3 class="section-title">
+      {{ translationService.translate(translationKey() + ".institutions") }}
+    </h3>
+    <p-button
+      [label]="
+        translationService.translate(translationKey() + '.addInstitution')
+      "
+      icon="pi pi-plus"
+      size="small"
+      (onClick)="showAddDialog()"
+    />
+  </div>
+
+  <div class="institutions-container">
+    @if (institutions().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-building empty-icon"></i>
+        <p class="empty-text">
+          {{
+            translationService.translate(translationKey() + ".noInstitutions")
+          }}
+        </p>
+      </div>
+    } @else {
+      <div class="institutions-list">
+        @for (institution of institutions(); track institution.institutionId) {
+          <div class="institution-item">
+            <div class="institution-info">
+              <i class="pi pi-building"></i>
+              <span class="institution-name">
+                {{ institution.institutionName }}
+              </span>
+            </div>
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [rounded]="true"
+              size="small"
+              (onClick)="removeInstitution(institution.institutionId)"
+            />
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<p-dialog
+  [(visible)]="displayAddDialog"
+  [header]="
+    translationService.translate(translationKey() + '.addInstitutionDialog')
+  "
+  [modal]="true"
+  [style]="{ width: '450px' }"
+>
+  <div class="dialog-content">
+    <label for="institution-search" class="field-label">
+      {{
+        translationService.translate(translationKey() + ".searchInstitution")
+      }}
+    </label>
+    <p-autocomplete
+      [(ngModel)]="selectedInstitution"
+      [suggestions]="filteredInstitutions()"
+      (completeMethod)="searchInstitution($event)"
+      field="institutionName"
+      [placeholder]="
+        translationService.translate(translationKey() + '.searchPlaceholder')
+      "
+      [dropdown]="true"
+      id="institution-search"
+    />
+  </div>
+
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <p-button
+        [label]="translationService.translate('common.cancel')"
+        severity="secondary"
+        (onClick)="hideAddDialog()"
+      />
+      <p-button
+        [label]="translationService.translate('common.add')"
+        (onClick)="confirmAddInstitution()"
+        [disabled]="!selectedInstitution"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

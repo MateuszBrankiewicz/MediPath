@@ -7,23 +7,21 @@ import {
 } from '@angular/forms';
 
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { DatePickerModule } from 'primeng/datepicker';
 import { DividerModule } from 'primeng/divider';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { InputMaskModule } from 'primeng/inputmask';
-import { InputTextModule } from 'primeng/inputtext';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { SelectChangeEvent, SelectModule } from 'primeng/select';
-import { ToastService } from '../../../../core/services/toast/toast.service';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { SelectChangeEvent } from 'primeng/select';
 import { AddDoctorRequest } from '../../../../core/models/add-docotr.model';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { InstitutionStoreService } from '../../services/institution/institution-store.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { getCorrectDayFormat } from '../../../../utils/dateFormatter';
+import { InstitutionStoreService } from '../../services/institution/institution-store.service';
+import { DoctorAddressFormComponent } from '../shared/doctor-address-form/doctor-address-form';
+import { DoctorPersonalInfoFormComponent } from '../shared/doctor-personal-info-form/doctor-personal-info-form';
+import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-professional-info-form/doctor-professional-info-form';
 
 interface Specialisation {
   code: string;
@@ -37,14 +35,11 @@ interface Specialisation {
     ReactiveFormsModule,
     RouterLink,
     CardModule,
-    InputTextModule,
-    MultiSelectModule,
-    InputMaskModule,
     ButtonModule,
-    FloatLabelModule,
-    DatePickerModule,
-    SelectModule,
     DividerModule,
+    DoctorPersonalInfoFormComponent,
+    DoctorProfessionalInfoFormComponent,
+    DoctorAddressFormComponent,
   ],
   templateUrl: './add-doctors-page.html',
   styleUrl: './add-doctors-page.scss',
@@ -165,7 +160,6 @@ export class AddDoctorsPage implements OnInit {
       );
       return;
     }
-    console.log(this.doctorForm.value.specialisation);
     this.isSubmitting.set(true);
     const formValue = this.doctorForm.value;
     const addEmployeeRequest: AddDoctorRequest = {
@@ -262,15 +256,23 @@ export class AddDoctorsPage implements OnInit {
     return control;
   }
 
-  protected isFieldInvalid(fieldPath: string): boolean {
+  protected isFieldInvalid = (fieldPath: string): boolean => {
     const control = this.getControl(fieldPath);
     return !!(control?.invalid && control?.touched);
-  }
+  };
+
+  protected getFieldErrorFn = (fieldPath: string): string => {
+    return this.getFieldError(fieldPath);
+  };
 
   protected roleChanged(event: SelectChangeEvent) {
     if (event.value === 2) {
       this.doctorForm.controls['specialisation'].enable();
       this.doctorForm.controls['pwzNumber'].enable();
     }
+  }
+
+  protected get residentialAddressForm(): FormGroup {
+    return this.doctorForm.get('residentialAddress') as FormGroup;
   }
 }
