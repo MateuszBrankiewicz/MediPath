@@ -20,7 +20,7 @@ export const ADMIN_ROUTES: Routes = [
     path: 'institutions',
     component: InstitutionList,
   },
-  { path: 'doctors/add', component: AddDoctorsPage },
+  { path: 'doctors/:id/add', component: AddDoctorsPage },
   { path: 'schedule', component: InstitutionSchedule },
   { path: 'schedule/add-schedule', component: CreateSchedule },
   { path: 'visits', component: InstitutionVisits },

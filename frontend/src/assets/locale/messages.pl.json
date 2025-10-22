@@ -586,7 +586,7 @@
   "admin.addDoctor.specialisations.psychiatry": "Psychiatra",
   "admin.addDoctor.specialisations.general": "Lekarz rodzinny",
 
-  "admin.doctorList.addDoctor": "Dodaj lekarza",
+  "admin.doctorList.addDoctor": "Dodaj pracownika",
   "admin.doctorList.searchPlaceholder": "Szukaj po nazwisku lub numerze PWZ...",
   "admin.doctorList.results": "wyników",
   "admin.doctorList.specializations": "Specjalizacje",
@@ -611,7 +611,7 @@
   "admin.institution.city": "Miasto",
   "admin.institution.number": "Numer",
   "admin.institution.street": "Ulica",
-  "admin.institution.doctors": "Lekarze",
+  "admin.institution.doctors": "Pracownicy",
   "admin.institution.searchAddDoctor": "Wyszukaj i dodaj lekarza",
   "admin.institution.image": "Zdjęcie instytucji",
   "admin.institution.uploadImage": "Wgraj zdjęcie",

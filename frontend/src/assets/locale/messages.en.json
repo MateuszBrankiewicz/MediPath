@@ -608,7 +608,7 @@
   "admin.institution.city": "City",
   "admin.institution.number": "Number",
   "admin.institution.street": "Street",
-  "admin.institution.doctors": "Doctors",
+  "admin.institution.doctors": "Employees",
   "admin.institution.searchAddDoctor": "Search and add doctor",
   "admin.institution.image": "Institution Image",
   "admin.institution.uploadImage": "Upload Image",

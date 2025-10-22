@@ -183,6 +183,24 @@
 
           <div class="form-flex">
             <div class="form-field flex-item-wide">
+              <label for="role" class="field-label">
+                <i class="pi pi-address-book"></i>
+                {{
+                  translationService.translate("admin.addDoctor.role")
+                }}
+              </label>
+              <p-select
+                id="role"
+              [options]="roleOptions"
+              formControlName="roleCode"
+              (onChange)="roleChanged($event)"
+              optionLabel="name"
+              optionValue="roleCode"
+              >
+
+              </p-select>
+            </div>
+            <div class="form-field flex-item-wide">
               <label for="specialisation" class="field-label">
                 <i class="pi pi-briefcase"></i>
                 {{
@@ -373,14 +391,12 @@
           </div>
         </div>
 
-        <!-- Form Actions -->
         <div class="form-actions">
           <p-button
             [label]="translationService.translate('admin.addDoctor.confirm')"
             [loading]="isSubmitting()"
             [disabled]="isSubmitting()"
             type="submit"
-            styleClass="confirm-button"
           />
         </div>
       </div>

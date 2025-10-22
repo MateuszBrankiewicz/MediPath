@@ -11,6 +11,7 @@ import {
 } from '../../models/institution.model';
 import { UpcomingVisitsResponse } from '../../models/visit.model';
 import { AuthenticationService } from '../authentication/authentication';
+import { AddDoctorRequest } from '../../models/add-docotr.model';
 
 @Injectable({
   providedIn: 'root',
@@ -68,7 +69,7 @@ export class InstitutionService {
   ): Observable<DoctorProfile[]> {
     return this.http
       .get<DoctorApiResponse>(`${API_URL}/institution/${institutionId}/doctors`)
-      .pipe(map((res) => res.doctors));
+      .pipe(map((res: DoctorApiResponse): DoctorProfile[] => res.doctors));
   }
 
   public getUpcomingVisitsForInstitution(
@@ -115,5 +116,16 @@ export class InstitutionService {
           console.log('Institution added successfully');
         }),
       );
+  }
+
+  public addEmployee(
+    employee: Partial<AddDoctorRequest>,
+    id: string,
+  ): Observable<unknown> {
+    return this.http.post(
+      `${API_URL}/institution/${id}/employee/register`,
+      employee,
+      { withCredentials: true },
+    );
   }
 }

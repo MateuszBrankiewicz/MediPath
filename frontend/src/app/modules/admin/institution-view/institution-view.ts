@@ -41,6 +41,7 @@ export class InstitutionView implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
+
   protected isLoading = signal<boolean>(false);
   protected institutionId = signal<string>('');
   protected institution = signal<Institution | null>(null);
@@ -131,7 +132,7 @@ export class InstitutionView implements OnInit {
   }
 
   protected onAddDoctor(): void {
-    this.router.navigate(['/admin/doctors', 'add']);
+    this.router.navigate(['/admin/doctors',this.institutionId(), 'add']);
   }
 
   protected onViewDoctor(doctorId: string): void {
