@@ -1,9 +1,23 @@
-<aside class="sidebar" [class.visible]="sidebarVisible()">
+<aside class="sidebar" [class.collapsed]="sidebarCollapsed()">
   <div class="logo-section">
     <div class="logo">
       <img src="assets/main_logo.png" alt="MediPath Logo" class="logo-image" />
-      <span>MediPath</span>
+      @if (!sidebarCollapsed()) {
+        <span>MediPath</span>
+      }
     </div>
+    <button
+      class="collapse-toggle"
+      (click)="toggleCollapse()"
+      [attr.aria-label]="
+        sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'
+      "
+      [title]="sidebarCollapsed() ? 'Rozwiń nawigację' : 'Zwiń nawigację'"
+    >
+      <i
+        [class]="sidebarCollapsed() ? 'pi pi-angle-right' : 'pi pi-angle-left'"
+      ></i>
+    </button>
   </div>
 
   <div class="nav-menu">
@@ -15,10 +29,13 @@
           [routerLink]="item.routerLink"
           routerLinkActive="active-route"
           [routerLinkActiveOptions]="{ exact: true }"
+          [title]="sidebarCollapsed() ? item.label : ''"
         >
           <span [class]="item.icon" class="menu-icon"></span>
-          <span class="menu-label">{{ item.label }}</span>
-          @if (item.badge) {
+          <span class="menu-label" [class.hidden]="sidebarCollapsed()">{{
+            item.label
+          }}</span>
+          @if (item.badge && !sidebarCollapsed()) {
             <span class="menu-badge" [class]="item.badgeStyleClass">
               {{ item.badge }}
             </span>
@@ -34,11 +51,26 @@
       (click)="navigateToProfile()"
       (keyup.enter)="navigateToProfile()"
       tabindex="0"
-      aria-label="Go to profile"
+      [attr.aria-label]="
+        sidebarCollapsed()
+          ? user()?.name + ' ' + user()?.surname
+          : 'Go to profile'
+      "
+      [title]="
+        sidebarCollapsed()
+          ? 'Profil: ' + user()?.name + ' ' + user()?.surname
+          : ''
+      "
     >
-      <div class="user-details">
-        <span class="user-name">{{ user()?.name }} {{ user()?.surname }}</span>
-      </div>
+      @if (!sidebarCollapsed()) {
+        <div class="user-details">
+          <span class="user-name"
+            >{{ user()?.name }} {{ user()?.surname }}</span
+          >
+        </div>
+      } @else {
+        <i class="pi pi-user user-icon-collapsed"></i>
+      }
     </button>
   </div>
 </aside>

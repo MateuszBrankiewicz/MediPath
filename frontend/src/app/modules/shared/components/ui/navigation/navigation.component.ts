@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -29,6 +30,9 @@ import { NavigationService } from './navigation.service';
     ButtonModule,
     RippleModule,
   ],
+  host: {
+    '[class.collapsed]': 'sidebarCollapsed()',
+  },
 })
 export class NavigationComponent {
   private readonly router = inject(Router);
@@ -36,6 +40,7 @@ export class NavigationComponent {
   private readonly authService = inject(AuthenticationService);
 
   readonly sidebarVisible = signal(false);
+  readonly sidebarCollapsed = signal(false);
 
   readonly user = computed(() => this.authService.getUser());
 
@@ -49,8 +54,20 @@ export class NavigationComponent {
     return this.convertToPrimeMenuItems(items);
   });
 
+  constructor() {
+    // Update CSS variable when sidebar state changes
+    effect(() => {
+      const width = this.sidebarCollapsed() ? '80px' : '280px';
+      document.documentElement.style.setProperty('--sidebar-width', width);
+    });
+  }
+
   toggleSidebar(): void {
     this.sidebarVisible.update((visible) => !visible);
+  }
+
+  toggleCollapse(): void {
+    this.sidebarCollapsed.update((collapsed) => !collapsed);
   }
 
   navigateToProfile(): void {

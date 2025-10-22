@@ -100,4 +100,10 @@ export class DoctorService {
       })
       .pipe(map((response) => response.schedules));
   }
+
+  public getDoctorVisits(): Observable<unknown> {
+    return this.http.get(`${API_URL}/doctors/me/visitsbydate/today`, {
+      withCredentials: true,
+    });
+  }
 }

@@ -8,6 +8,9 @@
   border-bottom: 1px solid var(--p-surface-200);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   gap: 3rem;
+  position: relative;
+  z-index: 850;
+
   .search-section {
     flex: 1;
     max-width: 600px;
@@ -124,15 +127,112 @@
     }
   }
 }
-:host ::ng-deep .menu {
-  .p-menu-overlay {
+
+:ng-deep {
+  .p-menu-list {
     border-radius: 12px;
     background: var(--p-surface-50);
     color: var(--p-surface-900);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     border: 1px solid var(--p-surface-200);
     min-width: 200px;
+    z-index: 1100 !important;
   }
+}
+
+:host ::ng-deep .user-menu-popover {
+  width: 280px;
+  max-width: 90vw;
+  z-index: 1100 !important;
+
+  .p-popover-content {
+    padding: 0;
+  }
+}
+
+.user-menu-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.role-select-section {
+  padding: 1rem 1.25rem;
+  background: var(--p-surface-50);
+  border-bottom: 1px solid var(--p-surface-200);
+}
+
+.role-select-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--p-surface-600);
+  margin-bottom: 0.5rem;
+}
+
+.user-menu-divider {
+  height: 1px;
+  background: var(--p-surface-200);
+}
+
+.user-menu-items {
+  padding: 0.5rem 0;
+}
+
+.user-menu-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+  color: var(--p-surface-900);
+
+  &:hover {
+    background: var(--p-surface-100);
+  }
+
+  &--logout {
+    color: var(--p-red-600);
+
+    &:hover {
+      background: var(--p-red-50);
+    }
+
+    .user-menu-item-icon {
+      color: var(--p-red-600);
+    }
+  }
+}
+
+.user-menu-item-icon {
+  font-size: 1.125rem;
+  color: var(--p-surface-600);
+  width: 20px;
+  text-align: center;
+  transition: color 0.2s ease;
+}
+
+.user-menu-item-label {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.user-menu-separator {
+  height: 1px;
+  background: var(--p-surface-200);
+  margin: 0.5rem 0;
+}
+
+:host ::ng-deep .menu {
+  z-index: 1100 !important;
+
   .p-menu-item-label {
     color: var(--p-surface-900);
     padding: 0.1rem;
@@ -161,6 +261,7 @@
 :host ::ng-deep .notifications-popover {
   width: 320px;
   max-width: 90vw;
+  z-index: 1100 !important;
 
   .p-popover-content {
     padding: 0;
@@ -438,7 +539,7 @@
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 1050;
     margin-top: 0.5rem;
 
     .expanded-search-container {

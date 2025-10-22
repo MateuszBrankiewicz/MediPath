@@ -3,43 +3,35 @@
 }
 
 .app-layout {
-  display: grid;
-  grid-template-columns: var(--sidebar-width, 280px) 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    "sidebar topbar"
-    "sidebar content";
+  display: flex;
   height: 100vh;
+  overflow: hidden;
 
   &.no-sidebar {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "topbar"
-      "content";
-
     app-navigation {
       display: none;
     }
   }
 
   app-top-bar-component {
-    grid-area: topbar;
-  }
-
-  app-navigation {
-    grid-area: sidebar;
-    width: var(--sidebar-width);
-    max-width: var(--sidebar-width);
-    min-width: var(--sidebar-width);
-    box-sizing: border-box;
-    overflow: hidden;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 800;
+    width: calc(100% - var(--sidebar-width));
+    transition: left 0.3s ease;
   }
 
   .app-content {
-    grid-area: content;
+    margin-left: var(--sidebar-width);
+    margin-top: 80px;
+    width: calc(100% - var(--sidebar-width));
+    height: calc(100vh - 64px);
     overflow-y: auto;
     background: var(--p-surface-ground);
-    min-width: 0;
+    transition:
+      margin-left 0.3s ease,
+      width 0.3s ease;
 
     &__inner {
       height: 100%;
@@ -53,26 +45,14 @@
 
 @media (max-width: 768px) {
   .app-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      "topbar"
-      "content";
-
-    app-navigation {
-      position: fixed;
-      top: 0;
+    app-top-bar-component {
       left: 0;
-      height: 100vh;
-      width: var(--sidebar-width);
-      max-width: var(--sidebar-width);
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      z-index: 1000;
+      right: 0;
+    }
 
-      &.mobile-visible {
-        transform: translateX(0);
-      }
+    .app-content {
+      margin-left: 0;
+      width: 100%;
     }
   }
 }

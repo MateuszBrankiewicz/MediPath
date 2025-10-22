@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { VisitsService } from '../../../../core/services/visits/visits.service';
 import {
   AppointmentCardComponent,
   AppointmentCardData,
@@ -17,7 +17,7 @@ import {
 })
 export class DoctorVisits implements OnInit {
   translationService = inject(TranslationService);
-  private visitService = inject(VisitsService);
+  private doctorService = inject(DoctorService);
 
   visits: AppointmentCardData[] = [
     {
@@ -75,6 +75,7 @@ export class DoctorVisits implements OnInit {
   searchTerm = '';
 
   ngOnInit() {
+    this.initDoctorVisits();
     this.filteredVisits = [...this.visits];
   }
 
@@ -121,6 +122,9 @@ export class DoctorVisits implements OnInit {
   }
 
   private initDoctorVisits(): void {
-    // Tutaj będzie logika inicjalizacji wizyt lekarza z API
+    this.doctorService.getDoctorVisits().subscribe((visits) => {
+      console.log('Fetched doctor visits:', visits);
+      // Map the fetched visits to AppointmentCardData and assign to this.visits
+    });
   }
 }
