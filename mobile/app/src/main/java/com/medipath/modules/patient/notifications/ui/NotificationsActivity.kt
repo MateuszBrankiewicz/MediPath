@@ -85,7 +85,8 @@ fun NotificationsScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(LocalCustomColors.current.blue900),
+                .background(LocalCustomColors.current.blue900)
+                .padding(top = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {

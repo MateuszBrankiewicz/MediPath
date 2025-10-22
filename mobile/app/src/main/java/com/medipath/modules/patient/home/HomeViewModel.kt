@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.medipath.core.models.Visit
 import com.medipath.core.services.UserService
@@ -12,11 +13,16 @@ import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
 
 class HomeViewModel(
+    private val _isLoading: MutableState<Boolean> = mutableStateOf(true),
+    val isLoading: State<Boolean> = _isLoading,
     private val userService: UserService = RetrofitInstance.userService
 ) : ViewModel() {
 
     private val _firstName = mutableStateOf("")
     val firstName: State<String> = _firstName
+    private val _lastName = mutableStateOf("")
+    val lastName: State<String> = _lastName
+
 
     private val _upcomingVisits = mutableStateOf<List<Visit>>(emptyList())
     val upcomingVisits: State<List<Visit>> = _upcomingVisits
@@ -47,18 +53,23 @@ class HomeViewModel(
 
     fun fetchUserProfile(sessionManager: DataStoreSessionManager) {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
                 val token = sessionManager.getSessionId()
                 if(token.isNullOrEmpty()) {
+                    _isLoading.value = false
                     return@launch
                 }
                 val userResponse = userService.getUserProfile("SESSION=$token")
                 _firstName.value = userResponse.user.name
+                _lastName.value = userResponse.user.surname
                 _userId.value = userResponse.user.id
                 fetchUpcomingVisits(token)
                 fetchActiveCodes(token)
             } catch (e: Exception) {
                 handleAuthError(sessionManager, e)
+            } finally {
+                _isLoading.value = false
             }
         }
     }

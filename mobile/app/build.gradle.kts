@@ -81,4 +81,6 @@ dependencies {
     implementation("io.reactivex.rxjava2:rxjava:2.2.21")
     implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
     implementation("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
+
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.9.3")
 }

@@ -65,7 +65,8 @@ fun NotificationDetailsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp)
+                .padding(WindowInsets.navigationBars.asPaddingValues())
+                .padding( 20.dp)
         ) {
             Text(
                 text = notification.title,

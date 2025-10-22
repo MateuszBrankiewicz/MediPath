@@ -13,7 +13,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = "https://genitourinary-sunday-superplausibly.ngrok-free.dev"
+//    private const val BASE_URL = "http://10.0.2.2:8080/"
     private const val BACKEND_HOST = "10.0.2.2"
 
     private lateinit var dataStoreSessionManager: DataStoreSessionManager

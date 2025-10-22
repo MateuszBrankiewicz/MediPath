@@ -45,7 +45,15 @@ private val CustomLightColorScheme = CustomColors(
     orange300 = Color(0xFFFF8A65),
     green800 = Color(0xFF2E7D32),
     green300 = Color(0xFF66BB6A),
-    red800 = Color(0xFFDE2E2E)
+    red800 = Color(0xFFDE2E2E),
+    tabBackground = Color(0xFFE6EBF2),
+    dashboardIcon = Color(0xFF4FC3F7),
+    visitsIcon = Color(0xFFBA68C8),
+    prescriptionsIcon = Color(0xFFFFB74D),
+    referralsIcon = Color(0xFF81C784),
+    medicalHistoryIcon = Color(0xFF4DB6AC),
+    commentsIcon = Color(0xFFF06292),
+    remindersIcon = Color(0xFF7986CB)
 )
 
 private val CustomDarkColorScheme = CustomColors(
@@ -59,7 +67,15 @@ private val CustomDarkColorScheme = CustomColors(
     orange300 = Color(0xFFFF8A65),
     green800 = Color(0xFF2E7D32),
     green300 = Color(0xFF66BB6A),
-    red800 = Color(0xFFDE2E2E)
+    red800 = Color(0xFFDE2E2E),
+    tabBackground = Color(0xFFE6EBF2),
+    dashboardIcon = Color(0xFF4FC3F7),
+    visitsIcon = Color(0xFFBA68C8),
+    prescriptionsIcon = Color(0xFFFFB74D),
+    referralsIcon = Color(0xFF81C784),
+    medicalHistoryIcon = Color(0xFF4DB6AC),
+    commentsIcon = Color(0xFFF06292),
+    remindersIcon = Color(0xFF7986CB)
 )
 
 @Composable

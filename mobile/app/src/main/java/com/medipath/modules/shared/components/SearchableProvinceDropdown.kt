@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -92,10 +93,11 @@ fun SearchableProvinceDropdown(
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .widthIn(min = 350.dp)
                         .background(
-                            color = MaterialTheme.colorScheme.onBackground,
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(5.dp),
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                 ) {
                     filteredProvinces.take(5).forEach { provinceItem ->

@@ -61,6 +61,7 @@ fun SplashScreen(onGetStartedClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .padding(WindowInsets.navigationBars.asPaddingValues())
             .background(MaterialTheme.colorScheme.background)
     ) {
         Image(

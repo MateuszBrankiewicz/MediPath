@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationCompat
@@ -228,6 +229,7 @@ fun HomeScreen(
     }
 
     val shouldRedirectToLogin by viewModel.shouldRedirectToLogin
+    val isLoading by viewModel.isLoading
 
     if (shouldRedirectToLogin) {
         Box(
@@ -242,13 +244,22 @@ fun HomeScreen(
             context.startActivity(Intent(context, LoginActivity::class.java))
             (context as? ComponentActivity)?.finish()
         }
+    } else if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
     } else {
         val firstName by viewModel.firstName
+        val lastName by viewModel.lastName
         val upcomingVisits by viewModel.upcomingVisits
         val deleteSuccess by viewModel.deleteSuccess
         val deleteError by viewModel.deleteError
         val prescriptionCode by viewModel.prescriptionCode
         val referralCode by viewModel.referralCode
+        var currentTab by remember { mutableStateOf("Dashboard") }
 
         Navigation(
             onNotificationsClick = {
@@ -332,8 +343,8 @@ fun HomeScreen(
 
                                 MenuCard(
                                     icon = Icons.AutoMirrored.Outlined.Comment,
-                                    title = "Opinions",
-                                    onClick = { println("Opinions clicked!") },
+                                    title = "Comments",
+                                    onClick = { println("Comments clicked!") },
                                     backgroundColor = colors.orange800,
                                     iconColor = colors.orange300
                                 )
@@ -417,14 +428,13 @@ fun HomeScreen(
                             }
                         }
                     }
-
-                    item {
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
                 }
             },
             onLogoutClick = onLogoutClick,
-            firstName = firstName
+            firstName = firstName,
+            lastName = lastName,
+            currentTab = currentTab,
+            onTabSelected = { currentTab = it }
         )
 
         if (deleteSuccess) {

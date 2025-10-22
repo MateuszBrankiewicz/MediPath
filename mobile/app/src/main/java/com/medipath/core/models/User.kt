@@ -5,7 +5,7 @@ data class User(
     val name: String,
     val surname: String,
     val govId: String,
-    val birthDate: List<Int>,
+    val birthDate: String,
     val address: Address,
     val phoneNumber: String,
     val passwordHash: String,
@@ -16,7 +16,9 @@ data class User(
     val latestMedicalHistory: List<MedicalHistory>,
     val roleCode: Int,
     val rating: Double,
-    val employers: List<Employer> = emptyList(),
+    val employers: List<Employer>,
     val active: Boolean,
-    val notifications: List<Notification> = emptyList()
+    val notifications: List<Notification>,
+    val pfpImage: String,
+    val numOfRatings: Int
 )
