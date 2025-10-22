@@ -62,7 +62,7 @@ export class VisitsService {
       `${API_URL}/visits/${visitId}/reschedule`,
       {
         patientRemarks: scheduleVisit.patientRemarks,
-        newSchedule: scheduleVisit.scheduleID,
+        newschedule: scheduleVisit.scheduleID,
       },
       { withCredentials: true },
     );
@@ -70,7 +70,7 @@ export class VisitsService {
 
   public getDoctorSchedule(doctorId: string) {
     return this.http.get<ScheduleResponse>(
-      `${API_URL}/schedules/bydoctor/${doctorId}`,
+      `${API_URL}/doctors/${doctorId}/schedules`,
       {
         withCredentials: true,
       },
