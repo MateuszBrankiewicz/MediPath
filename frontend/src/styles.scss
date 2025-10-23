@@ -36,3 +36,150 @@ app-root {
   pointer-events: none;
   z-index: 999;
 }
+
+.medipath-menu {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 100%;
+  box-sizing: border-box;
+
+  .p-menu-list {
+    padding: 0.5rem !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .p-menuitem {
+    margin-bottom: 0.25rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .p-menu-item-link {
+    display: flex !important;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: rgba(255, 255, 255, 0.8) !important;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    position: relative;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: white !important;
+    }
+
+    &.active-route {
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: white !important;
+      font-weight: 600;
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 70%;
+        background: var(--p-primary-100);
+        border-radius: 0 4px 4px 0;
+      }
+    }
+
+    .menu-icon {
+      font-size: 1.25rem !important;
+      flex-shrink: 0;
+      width: 24px;
+      text-align: center;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      color: inherit !important;
+    }
+
+    .menu-label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition:
+        opacity 0.2s ease,
+        width 0.2s ease;
+
+      &.hidden {
+        display: none !important;
+      }
+    }
+
+    .menu-badge {
+      background: var(--p-red-500);
+      color: white;
+      padding: 0.125rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      min-width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+  }
+}
+
+app-navigation.collapsed {
+  .medipath-menu {
+    .p-menu-list {
+      width: 350px;
+      padding: 0.25rem !important;
+    }
+
+    .p-menuitem {
+      width: 10%;
+    }
+
+    .p-menu-item-link {
+      justify-content: center !important;
+      padding: 0.75rem !important;
+      gap: 0 !important;
+      min-height: 48px;
+      width: 20%;
+      margin: 0 !important;
+
+      &.active-route::before {
+        left: 0;
+        width: 3px;
+      }
+
+      .menu-icon {
+        width: auto !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 1.25rem !important;
+      }
+
+      .menu-label {
+        display: none !important;
+        width: 0 !important;
+        opacity: 0 !important;
+      }
+
+      .menu-badge {
+        display: none !important;
+      }
+    }
+  }
+}
+
+.p-component-overlay,
+.p-menu-overlay,
+.p-select-overlay,
+.p-popover {
+  z-index: 1100 !important;
+}

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -7,18 +7,21 @@ import {
 } from '@angular/forms';
 
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { DatePickerModule } from 'primeng/datepicker';
 import { DividerModule } from 'primeng/divider';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { InputMaskModule } from 'primeng/inputmask';
-import { InputTextModule } from 'primeng/inputtext';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { SelectModule } from 'primeng/select';
+import { SelectChangeEvent } from 'primeng/select';
+import { AddDoctorRequest } from '../../../../core/models/add-docotr.model';
+import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { getCorrectDayFormat } from '../../../../utils/dateFormatter';
+import { InstitutionStoreService } from '../../services/institution/institution-store.service';
+import { DoctorAddressFormComponent } from '../shared/doctor-address-form/doctor-address-form';
+import { DoctorPersonalInfoFormComponent } from '../shared/doctor-personal-info-form/doctor-personal-info-form';
+import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-professional-info-form/doctor-professional-info-form';
 
 interface Specialisation {
   code: string;
@@ -32,14 +35,11 @@ interface Specialisation {
     ReactiveFormsModule,
     RouterLink,
     CardModule,
-    InputTextModule,
-    MultiSelectModule,
-    InputMaskModule,
     ButtonModule,
-    FloatLabelModule,
-    DatePickerModule,
-    SelectModule,
     DividerModule,
+    DoctorPersonalInfoFormComponent,
+    DoctorProfessionalInfoFormComponent,
+    DoctorAddressFormComponent,
   ],
   templateUrl: './add-doctors-page.html',
   styleUrl: './add-doctors-page.scss',
@@ -49,9 +49,23 @@ export class AddDoctorsPage implements OnInit {
   private router = inject(Router);
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
-
+  private institutionService = inject(InstitutionService);
+  private institutionStoreService = inject(InstitutionStoreService);
+  private destroyRef = inject(DestroyRef);
+  private activatedRoute = inject(ActivatedRoute);
+  private readonly institutionId = signal('');
   protected doctorForm!: FormGroup;
   protected isSubmitting = signal<boolean>(false);
+
+  protected roleOptions = [
+    {
+      id: 1,
+      name: 'Admin',
+      roleCode: 8,
+    },
+    { id: 2, name: 'Staff', roleCode: 4 },
+    { id: 3, name: 'Doctor', roleCode: 2 },
+  ];
 
   protected specialisations: Specialisation[] = [
     {
@@ -106,6 +120,12 @@ export class AddDoctorsPage implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
+    const id = this.activatedRoute.snapshot.paramMap.get('id');
+    if (id) {
+      this.institutionId.set(id);
+    }
+    this.doctorForm.controls['specialisation'].disable();
+    this.doctorForm.controls['pwzNumber'].disable();
   }
 
   private initializeForm(): void {
@@ -116,8 +136,9 @@ export class AddDoctorsPage implements OnInit {
       birthDate: ['', Validators.required],
       phoneNumber: ['', Validators.required],
       personalId: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
-      specialisation: [[], Validators.required],
-      pwzNumber: ['', [Validators.required, Validators.pattern(/^\d{7}$/)]],
+      specialisation: [[]],
+      pwzNumber: ['', [Validators.pattern(/^\d{7}$/)]],
+      roleCode: [0, Validators.required],
       residentialAddress: this.fb.group({
         province: ['', Validators.required],
         postalCode: [
@@ -139,20 +160,49 @@ export class AddDoctorsPage implements OnInit {
       );
       return;
     }
-
     this.isSubmitting.set(true);
+    const formValue = this.doctorForm.value;
+    const addEmployeeRequest: AddDoctorRequest = {
+      userDetails: {
+        name: formValue.name,
+        surname: formValue.surname,
+        email: formValue.email,
+        birthDate: getCorrectDayFormat(formValue.birthDate),
+        phoneNumber: formValue.phoneNumber,
+        govID: formValue.personalId,
+        province: formValue.residentialAddress.province,
+        city: formValue.residentialAddress.city,
+        postalCode: formValue.residentialAddress.postalCode,
+        street: formValue.residentialAddress.street,
+        number: formValue.residentialAddress.number,
+      },
+      doctorDetails: {
+        licenceNumber: formValue.pwzNumber,
+        specialisations: formValue.specialisation,
+      },
+      roleCode: formValue.roleCode,
+    };
 
-    // Tutaj będzie integracja z API
-    console.log('Doctor data:', this.doctorForm.value);
-
-    // Symulacja zapisu
-    setTimeout(() => {
-      this.isSubmitting.set(false);
-      this.toastService.showSuccess(
-        this.translationService.translate('admin.addDoctor.success'),
-      );
-      this.router.navigate(['/admin/doctors']);
-    }, 1000);
+    this.institutionService
+      .addEmployee(addEmployeeRequest, this.institutionId())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess(
+            this.translationService.translate('admin.addDoctor.success'),
+          );
+          this.router.navigate(['/admin/doctors']);
+        },
+        error: () => {
+          this.isSubmitting.set(false);
+          this.toastService.showError(
+            this.translationService.translate('admin.addDoctor.error'),
+          );
+        },
+        complete: () => {
+          this.isSubmitting.set(false);
+        },
+      });
   }
 
   protected onCancel(): void {
@@ -206,8 +256,23 @@ export class AddDoctorsPage implements OnInit {
     return control;
   }
 
-  protected isFieldInvalid(fieldPath: string): boolean {
+  protected isFieldInvalid = (fieldPath: string): boolean => {
     const control = this.getControl(fieldPath);
     return !!(control?.invalid && control?.touched);
+  };
+
+  protected getFieldErrorFn = (fieldPath: string): string => {
+    return this.getFieldError(fieldPath);
+  };
+
+  protected roleChanged(event: SelectChangeEvent) {
+    if (event.value === 2) {
+      this.doctorForm.controls['specialisation'].enable();
+      this.doctorForm.controls['pwzNumber'].enable();
+    }
+  }
+
+  protected get residentialAddressForm(): FormGroup {
+    return this.doctorForm.get('residentialAddress') as FormGroup;
   }
 }

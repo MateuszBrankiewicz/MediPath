@@ -1,0 +1,32 @@
+@import "../form-mixins";
+
+:host {
+  display: block;
+  @include form-section;
+}
+
+.section-title {
+  @include section-title;
+}
+
+.form-grid-professional {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.form-field {
+  @include form-field;
+  @include input-focus;
+  @include input-invalid;
+}

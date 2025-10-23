@@ -17,12 +17,12 @@ import { ButtonModule } from 'primeng/button';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
-import { Menu, MenuModule } from 'primeng/menu';
 import { Popover, PopoverModule } from 'primeng/popover';
 import { SelectModule } from 'primeng/select';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MenuItemCommandEvent } from 'primeng/api';
 import { AuthenticationService } from '../../../../../core/services/authentication/authentication';
 import {
   getRoleFromCode,
@@ -61,14 +61,13 @@ const ALL_POSSIBLE_ROLES: RoleOption[] = [
     InputGroupModule,
     InputGroupAddonModule,
     ButtonModule,
-    MenuModule,
     SelectModule,
     PopoverModule,
     FormsModule,
   ],
 })
 export class TopBarComponent implements OnInit {
-  private readonly userMenu = viewChild<Menu>('userMenu');
+  private readonly userMenu = viewChild<Popover>('userMenu');
   private readonly notificationsPopover = viewChild<Popover>(
     'notificationsPopover',
   );
@@ -244,6 +243,22 @@ export class TopBarComponent implements OnInit {
     if (menu) {
       menu.toggle(event);
       this.isMenuOpen.update((open) => !open);
+    }
+  }
+
+  protected onMenuItemClick(item: MenuItem): void {
+    const menu = this.userMenu();
+    if (menu) {
+      menu.hide();
+    }
+    this.isMenuOpen.set(false);
+
+    if (item.command) {
+      const event: MenuItemCommandEvent = {
+        originalEvent: new MouseEvent('click'),
+        item: item,
+      };
+      item.command(event);
     }
   }
 

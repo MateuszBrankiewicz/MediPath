@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { UpcomingVisitItem } from '../../../modules/admin/components/admin-dashboard/widgets/upcoming-visits-card';
 import { API_URL } from '../../../utils/constants';
 import { DoctorApiResponse, DoctorProfile } from '../../models/doctor.model';
@@ -11,6 +11,7 @@ import {
 } from '../../models/institution.model';
 import { UpcomingVisitsResponse } from '../../models/visit.model';
 import { AuthenticationService } from '../authentication/authentication';
+import { AddDoctorRequest } from '../../models/add-docotr.model';
 
 @Injectable({
   providedIn: 'root',
@@ -68,7 +69,7 @@ export class InstitutionService {
   ): Observable<DoctorProfile[]> {
     return this.http
       .get<DoctorApiResponse>(`${API_URL}/institution/${institutionId}/doctors`)
-      .pipe(map((res) => res.doctors));
+      .pipe(map((res: DoctorApiResponse): DoctorProfile[] => res.doctors));
   }
 
   public getUpcomingVisitsForInstitution(
@@ -115,5 +116,22 @@ export class InstitutionService {
           console.log('Institution added successfully');
         }),
       );
+  }
+
+  public addEmployee(
+    employee: Partial<AddDoctorRequest>,
+    id: string,
+  ): Observable<unknown> {
+    return this.http.post(
+      `${API_URL}/institution/${id}/employee/register`,
+      employee,
+      { withCredentials: true },
+    );
+  }
+
+  public getVisits(institutionId: string): Observable<unknown> {
+    return this.http.get(
+      `${API_URL}/institutions/${institutionId}/visits/today`,
+    );
   }
 }
