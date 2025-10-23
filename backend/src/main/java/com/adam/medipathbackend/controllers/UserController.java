@@ -4,6 +4,7 @@ import com.adam.medipathbackend.config.Utils;
 import com.adam.medipathbackend.forms.*;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.*;
+import com.adam.medipathbackend.services.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -55,59 +56,34 @@ public class UserController {
     @Autowired
     private JavaMailSender sender;
 
+    @Autowired
+    private UserService userService;
+
     @PostMapping(value = {"/register", "/register/"})
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody RegistrationForm registrationForm) {
-
-        ArrayList<String> missingFields = getMissingFields(registrationForm);
-        if(!missingFields.isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
+        try {
+            Map<String, Object> result = userService.registerUser(registrationForm);
+            return new ResponseEntity<>(result, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
         }
-        if(userRepository.findByEmail(registrationForm.getEmail()).isPresent() || userRepository.findByGovID(registrationForm.getGovID()).isPresent()) {
-            return new ResponseEntity<>(Map.of("message", "this email or person is already registered"), HttpStatus.CONFLICT);
-        }
-
-        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
-        String passwordHash = argon2PasswordEncoder.encode(registrationForm.getPassword());
-        UserSettings userSettings = new UserSettings("PL", true, true, 1);
-
-        userRepository.save(new User(
-                registrationForm.getEmail(),
-                registrationForm.getName(),
-                registrationForm.getSurname(),
-                registrationForm.getGovID(),
-                LocalDate.parse(registrationForm.getBirthDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy")),
-                new Address(registrationForm.getProvince(), registrationForm.getCity(), registrationForm.getStreet(), registrationForm.getNumber(), registrationForm.getPostalCode()),
-                registrationForm.getPhoneNumber(),
-                passwordHash,
-                userSettings
-        ));
-        return new ResponseEntity<>(Map.of("message", "Success"), HttpStatus.CREATED);
     }
 
     @PostMapping(value = {"/login", "/login/"})
     public ResponseEntity<Map<String, Object>> loginUser(HttpSession session, @RequestBody LoginForm loginForm) {
-        ArrayList<String> missingFields = new ArrayList<>();
-
-        if(loginForm.getEmail() == null || loginForm.getEmail().isBlank()) {
-            missingFields.add("email");
+        try {
+            String userId = userService.loginUser(loginForm);
+            session.setAttribute("id", userId);
+            return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.UNAUTHORIZED);
         }
-        if(loginForm.getPassword() == null || loginForm.getPassword().isBlank()) {
-            missingFields.add("password");
-        }
-        if(!missingFields.isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "missing fields in request body", "fields", missingFields), HttpStatus.BAD_REQUEST);
-        }
-
-        Optional<User> user = userRepository.findByEmail(loginForm.getEmail());
-        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
-        if(user.isEmpty() || !argon2PasswordEncoder.matches(loginForm.getPassword(), user.get().getPasswordHash())) {
-            return new ResponseEntity<>(Map.of("message", "invalid email or password"), HttpStatus.UNAUTHORIZED);
-        }
-
-        User u = user.get();
-        session.setAttribute("id", u.getId());
-        return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.OK);
     }
+
     @GetMapping(value = {"/logout", "/logout/"})
     public ResponseEntity<Map<String, Object>> logoutUser(HttpSession session) {
         session.invalidate();
@@ -117,133 +93,62 @@ public class UserController {
     @GetMapping(value = {"/patients/{patientid}", "/patients/{patientid}"})
     public ResponseEntity<Map<String, Object>> getPatient(@PathVariable String patientid, HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
-        if(loggedUserID == null) {
+
+        if (loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        Optional<User> doctorStaffOpt = userRepository.findDoctorOrStaffById(loggedUserID);
-        if(doctorStaffOpt.isEmpty()) {
+
+        try {
+            Map<String, Object> result = userService.getPatient(loggedUserID, patientid);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (IllegalAccessException e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        boolean isAnyPresent = false;
-        Optional<User> patientOpt = userRepository.findById(patientid);
-        User doctor = doctorStaffOpt.get();
-        for(InstitutionDigest digest: doctor.getEmployers()) {
-            isAnyPresent |= !visitRepository.getAllVisitsForPatientInInstitution(patientid, digest.getInstitutionId()).isEmpty();
-        }
-        if(patientOpt.isEmpty() || !isAnyPresent) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        User patient = patientOpt.get();
-        return new ResponseEntity<>(Map.of("name", patient.getName(), "surname", patient.getSurname(),
-                "govId", patient.getGovId(), "birthDate", patient.getBirthDate(),
-                "phoneNumber", patient.getPhoneNumber(), "pfp", patient.getPfpimage(),
-                "medicalHistory", mhRepository.getEntriesForPatient(patientid)), HttpStatus.OK);
     }
 
     @GetMapping(value = {"/profile", "/profile/"})
     public ResponseEntity<Map<String, Object>> getProfile(HttpSession session) {
         String id = (String) session.getAttribute("id");
-        if(id == null) {
+
+        if (id == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        Optional<User> opt = userRepository.findById(id);
-        if(opt.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        try {
+            Map<String, Object> result = userService.getProfile(id);
+            return new ResponseEntity<>(Map.of("user", result), HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        User user = opt.get();
-        HashMap<String, Object> data = new java.util.HashMap<>(Map.of("name", user.getName(), "surname", user.getSurname(),
-                "govId", user.getGovId(), "birthDate", user.getBirthDate().toString(),
-                "address", user.getAddress(), "phoneNumber", user.getPhoneNumber(),
-                "licenceNumber", user.getLicenceNumber(), "specialisations", user.getSpecialisations(),
-                "latestMedicalHistory", user.getLatestMedicalHistory(), "roleCode", user.getRoleCode()));
-                data.putAll(Map.of("notifications", user.getNotifications(), "rating", user.getRating(),
-                        "employers", user.getEmployers(), "numOfRatings", user.getNumOfRatings(),
-                        "pfpImage", user.getPfpimage(), "userSettings", user.getUserSettings()));
-        return new ResponseEntity<>(Map.of("user", data), HttpStatus.OK);
     }
 
     @GetMapping(value = {"/resetpassword", "/resetpassword/"})
     public ResponseEntity<Map<String, Object>> resetPassword(@RequestParam(value = "address", required = false) String address) {
-        if(address == null || address.isBlank()) {
-            return new ResponseEntity<>(Map.of("message", "missing address in request parameters"), HttpStatus.BAD_REQUEST);
+        try {
+            Map<String, Object> result = userService.resetPassword(address);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
         }
-
-        Optional<User> u = userRepository.findByEmail(address);
-        if(u.isPresent()) {
-            PasswordResetEntry passwordResetEntry = null;
-            try {
-
-                MimeMessage message = sender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message);
-                helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
-                helper.setSubject("Password reset request");
-                helper.setTo(address);
-                SecureRandom secureRandom = new SecureRandom();
-                String token = Long.toHexString(secureRandom.nextLong());
-                String content = "<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        "<head>\n" +
-                        "    <meta charset=\"UTF-8\" />\n" +
-                        "    <title>Password Reset</title>\n" +
-                        "</head>\n" +
-                        "<body>\n" +
-                        "    <h2>MediPath</h2>\n" +
-                        "    <p>We have received a password reset request for your MediPath account.<br>To reset your password click the link below:</p>\n" +
-                        "    <a href=\"http://localhost:4200/auth/resetpassword/"+token+"\">http://localhost:4200/auth/resetpassword/"+token+"</a>\n" +
-                        "    <br>\n" +
-                        "    <p>The link will expire within 10 minutes</p>\n" +
-                        "    <p>If you have not sent a password reset request, ignore this email.</p>\n" +
-                        "    <p>-MediPath development team</p>\n" +
-                        "    \n" +
-                        "</body>\n" +
-                        "</html>";
-                passwordResetEntry = preRepository.save(new PasswordResetEntry(address, token));
-
-                helper.setText(content);
-                sender.send(message);
-
-            } catch (MailException | MessagingException | UnsupportedEncodingException e) {
-                if(passwordResetEntry != null) {
-                    preRepository.delete(passwordResetEntry);
-                }
-                return new ResponseEntity<>(Map.of("message", "the mail service threw an error", "error", e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
-            }
-        }
-        return new ResponseEntity<>(Map.of("message", "password reset mail has been sent, if the account exists"), HttpStatus.OK);
-
     }
 
     @GetMapping(value = {"/me/codes/{type}", "/me/codes/", "/me/codes"})
     public ResponseEntity<Map<String, Object>> getMyReferrals(@PathVariable(required = false) String type,  HttpSession session) {
         String loggedUserID = (String) session.getAttribute("id");
-        if(loggedUserID == null) {
+
+        if (loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        if(!(type == null || type.equals("referrals") || type.equals("prescriptions"))) {
-            return new ResponseEntity<>(Map.of("message", "invalid code type"), HttpStatus.BAD_REQUEST);
-        }
-        ArrayList<Map<String, Object>> codes = visitRepository.getCodesForPatient(loggedUserID);
-        if(codes.isEmpty()) {
-            return new ResponseEntity<>(Map.of("codes", new ArrayList<String>()), HttpStatus.OK);
-        }
-        if(type == null) {
-            return new ResponseEntity<>(Map.of("codes", codes), HttpStatus.OK);
-        } else if(type.equals("prescriptions")) {
-            return new ResponseEntity<>(Map.of("codes", codes.stream().filter(code -> {
-                        if(!code.containsKey("codes") || !(code.get("codes") instanceof Map<?, ?> subDoc)) {
-                            return false;
-                        }
-                        return subDoc.containsKey("codeType") && subDoc.get("codeType").equals("PRESCRIPTION");
-                    }
-            )), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(Map.of("codes", codes.stream().filter(code -> {
-                        if(!code.containsKey("codes") || !(code.get("codes") instanceof Map<?, ?> subDoc)) {
-                            return false;
-                        }
-                        return subDoc.containsKey("codeType") && subDoc.get("codeType").equals("REFERRAL");
-                    }
-            )), HttpStatus.OK);
+
+        try {
+            Map<String, Object> result = userService.getMyReferrals(loggedUserID, type);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -520,30 +425,11 @@ public class UserController {
             return new ResponseEntity<>(Map.of("notifications", new ArrayList<>()), HttpStatus.OK);
         }
         User user = userOpt.get();
-        if(filter.isBlank()) {
-            return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
-                    .map(notification -> Map.of("title", notification.getTitle(), "content",
-                            notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
-                            notification.isRead(), "system", notification.isSystem())
-                    ).toList()), HttpStatus.OK);
-        } else if(filter.equals("future")) {
-            return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
-                    .filter(notification -> !notification.getTimestamp().isBefore(LocalDateTime.now()))
-                    .map(notification -> Map.of("title", notification.getTitle(), "content",
-                            notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
-                            notification.isRead(), "system", notification.isSystem())
-                    ).toList()), HttpStatus.OK);
-        } else if(filter.equals("past")) {
-            return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
-                    .filter(notification -> !notification.getTimestamp().isAfter(LocalDateTime.now()))
-                    .map(notification -> Map.of("title", notification.getTitle(), "content",
-                            notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
-                            notification.isRead(), "system", notification.isSystem())
-                    ).toList()), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(Map.of("message", "invalid filter type"), HttpStatus.BAD_REQUEST);
-        }
-
+        return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
+                .map(notification -> Map.of("title", notification.getTitle(), "content",
+                        notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                        notification.isRead(), "system", notification.isSystem())
+        ).toList()), HttpStatus.OK);
     }
 
     @GetMapping(value = {"/me/institutions", "/me/institutions/"})
