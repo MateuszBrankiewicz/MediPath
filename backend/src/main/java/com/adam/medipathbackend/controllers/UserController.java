@@ -520,11 +520,30 @@ public class UserController {
             return new ResponseEntity<>(Map.of("notifications", new ArrayList<>()), HttpStatus.OK);
         }
         User user = userOpt.get();
-        return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
-                .map(notification -> Map.of("title", notification.getTitle(), "content",
-                        notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
-                        notification.isRead(), "system", notification.isSystem())
-        ).toList()), HttpStatus.OK);
+        if(filter.isBlank()) {
+            return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
+                    .map(notification -> Map.of("title", notification.getTitle(), "content",
+                            notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                            notification.isRead(), "system", notification.isSystem())
+                    ).toList()), HttpStatus.OK);
+        } else if(filter.equals("future")) {
+            return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
+                    .filter(notification -> !notification.getTimestamp().isBefore(LocalDateTime.now()))
+                    .map(notification -> Map.of("title", notification.getTitle(), "content",
+                            notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                            notification.isRead(), "system", notification.isSystem())
+                    ).toList()), HttpStatus.OK);
+        } else if(filter.equals("past")) {
+            return new ResponseEntity<>(Map.of("notifications", user.getNotifications().stream()
+                    .filter(notification -> !notification.getTimestamp().isAfter(LocalDateTime.now()))
+                    .map(notification -> Map.of("title", notification.getTitle(), "content",
+                            notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                            notification.isRead(), "system", notification.isSystem())
+                    ).toList()), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(Map.of("message", "invalid filter type"), HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @GetMapping(value = {"/me/institutions", "/me/institutions/"})
