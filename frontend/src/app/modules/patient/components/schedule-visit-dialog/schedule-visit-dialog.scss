@@ -1,128 +1,95 @@
-.reschedule-dialog {
-  padding: 0;
+@import "../../../admin/components/page-mixins";
+@import "../../../admin/components/shared/form-mixins";
+
+.schedule-visit-page {
+  ::ng-deep .p-card {
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .p-card-body {
+      padding: 0;
+    }
+
+    .p-card-content {
+      padding: 0;
+    }
+  }
+}
+
+.form-container {
+  @include form-container;
+}
+
+.form-section {
+  @include form-section;
+}
+
+.section-title {
+  @include section-title;
+
+  i {
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+  }
+}
+
+.form-grid {
+  @include form-grid;
+}
+
+.form-field {
+  @include form-field;
+
+  .info-value {
+    padding: 0.75rem;
+    background: var(--surface-ground);
+    border-radius: 0.5rem;
+    color: var(--text-color);
+    font-size: 0.9375rem;
+    border: 1px solid var(--surface-border);
+
+    @media (max-width: 640px) {
+      font-size: 0.875rem;
+      padding: 0.65rem;
+    }
+  }
+
+  .remarks-textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    border-radius: 0.5rem;
+
+    @media (max-width: 640px) {
+      font-size: 0.875rem;
+    }
+
+    &:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+    }
+  }
+}
+
+.calendar-wrapper {
   display: flex;
-  flex-direction: column;
-  min-height: 500px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--surface-ground);
+  border-radius: 0.75rem;
 
-  .dialog-content {
-    display: flex;
-    gap: 32px;
-    padding: 24px;
-    background: #f8f9fa;
-    flex: 1;
-
-    .left-section {
-      flex: 1;
-      height: 100%;
-      display: flex;
-      app-calendar-schedule {
-        height: 100%;
-      }
-    }
-
-    .right-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-
-      .doctor-info {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
-        h3 {
-          font-size: 14px;
-          color: #7f8c8d;
-          margin: 0 0 8px 0;
-          font-weight: 500;
-        }
-
-        .doctor-name,
-        .institution-name {
-          font-size: 16px;
-          font-weight: 600;
-          color: #2c3e50;
-          margin: 0 0 16px 0;
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-        }
-      }
-
-      .patient-remarks {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        flex: 1;
-
-        h3 {
-          font-size: 14px;
-          color: #7f8c8d;
-          margin: 0 0 12px 0;
-          font-weight: 500;
-        }
-
-        .remarks-textarea {
-          width: 100%;
-          border: 1px solid #e9ecef;
-          border-radius: 8px;
-          padding: 12px;
-          font-size: 14px;
-          color: #5a6c7d;
-          line-height: 1.5;
-          resize: vertical;
-          min-height: 120px;
-          font-family: inherit;
-
-          &:focus {
-            outline: none;
-            border-color: #4a6fa5;
-            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.1);
-          }
-
-          &::placeholder {
-            color: #adb5bd;
-          }
-        }
-      }
-    }
+  @media (max-width: 768px) {
+    padding: 0.75rem;
   }
 
-  .dialog-footer {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    padding: 24px;
-    background: white;
-    border-top: 1px solid #e9ecef;
-      --p-button-padding-x: 3rem;
-    --p-button-padding-y: 1rem;
-
+  app-calendar-schedule {
+    width: 100%;
+    max-width: 800px;
   }
 }
 
-@media (max-width: 768px) {
-  .reschedule-dialog {
-    .dialog-content {
-      flex-direction: column;
-      gap: 16px;
-      padding: 16px;
-    }
-
-    .dialog-footer {
-      flex-direction: column;
-      gap: 12px;
-      padding: 16px;
-
-      :deep(.confirm-btn),
-      :deep(.cancel-btn) {
-        width: 100%;
-      }
-    }
-  }
+.form-actions {
+  @include form-actions;
 }
+
+@include accessibility-features;

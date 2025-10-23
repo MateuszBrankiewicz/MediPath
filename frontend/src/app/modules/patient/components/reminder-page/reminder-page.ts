@@ -229,6 +229,8 @@ export class ReminderPage
         width: '40%',
         overflow: 'hidden',
       },
+      modal: true,
+      closable: true,
       header: 'Add notification',
     });
 
@@ -350,6 +352,8 @@ export class ReminderPage
         width: '40%',
         overflow: 'hidden',
       },
+      closable: true,
+      modal: true,
       header: 'Edit notification',
       data: {
         notification: notification,

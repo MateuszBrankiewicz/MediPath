@@ -125,6 +125,7 @@ export class MedicalHistoryPage implements OnInit {
         record,
       },
       closable: true,
+      modal: true,
     });
 
     if (!ref && ref === null) {
@@ -156,6 +157,7 @@ export class MedicalHistoryPage implements OnInit {
         record: undefined,
       },
       closable: true,
+      modal: true,
     });
 
     if (!ref) {

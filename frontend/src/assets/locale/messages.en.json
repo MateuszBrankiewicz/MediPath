@@ -116,6 +116,11 @@
   "patient.scheduleVisit.doctor": "Doctor:",
   "patient.scheduleVisit.institution": "Institution:",
   "patient.scheduleVisit.patientRemarks": "Patient's remarks:",
+  "patient.scheduleVisit.doctorInformation": "Doctor Information",
+  "patient.scheduleVisit.selectDateTime": "Select Date and Time",
+  "patient.scheduleVisit.remarksPlaceholder": "Enter any additional notes for your doctor...",
+  "patient.scheduleVisit.cancel": "Cancel",
+  "patient.scheduleVisit.confirm": "Confirm",
 
   "patient.visitDetails.dateOfVisit": "Date of visit:",
   "patient.visitDetails.doctorName": "Doctor name:",
@@ -131,7 +136,7 @@
   "patient.reminders.complianceRate": "Compliance Rate",
   "patient.reminders.title": "Reminders",
   "patient.reminders.edit": "Edit",
-  "patient.reminders.delete": "Delete",
+  "patient.reminders.delete": "Cancel",
   "patient.reminders.add": "Add Reminder",
 
 

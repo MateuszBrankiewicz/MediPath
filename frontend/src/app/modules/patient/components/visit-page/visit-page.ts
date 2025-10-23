@@ -274,6 +274,7 @@ export class VisitPage
       header: this.translationService.translate('patient.visits.reviewTitle'),
       width: '70%',
       height: 'auto',
+      modal: true,
     });
 
     if (!this.ref) {

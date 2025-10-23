@@ -72,7 +72,7 @@ export class AddReminderDialog implements OnInit {
   }
 
   onClose() {
-    this.ref.close(this.reminderForm.value);
+    this.ref.close();
   }
 
   onSave() {
@@ -94,9 +94,6 @@ export class AddReminderDialog implements OnInit {
   }
 
   onDelete() {
-    if (this.reminder()?.id) {
-      this.delete.emit(this.reminder()?.id);
-      this.onClose();
-    }
+    this.onClose();
   }
 }
