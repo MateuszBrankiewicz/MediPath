@@ -908,3 +908,15 @@ doctorDetails: {
 - 409 - Account with this mail or govId exists
 - 503 - mail error
 - 201 - success
+
+
+### /user/{id}/medicalhistory/
+#### Method: GET
+
+#### Path variables:
+- id - patient's id
+
+#### Returns:
+- 401
+- 403 - Invalid patient, not a doctor, doctor did not have any visits with patient
+- 200

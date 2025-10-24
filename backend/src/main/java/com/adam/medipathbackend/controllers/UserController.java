@@ -254,6 +254,21 @@ public class UserController {
         return new ResponseEntity<>(Map.of("medicalhistories", userService.getMyMedicalHistories(loggedUserID)), HttpStatus.OK);
     }
 
+    @GetMapping(value = {"/{id}/medicalhistory", "/{id}/medicalhistory/"})
+    public ResponseEntity<Map<String, Object>> getPatientsMedicalHistory(HttpSession session, @PathVariable String id) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            return new ResponseEntity<>(Map.of("medicalhistories", userService.getMedicalHistoriesForPatient(loggedUserID, id)), HttpStatus.OK);
+        } catch(IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
+
 
     @GetMapping(value = {"/me/notifications", "/me/notifications/"})
     public ResponseEntity<Map<String, Object>> getNotifications(HttpSession session) {

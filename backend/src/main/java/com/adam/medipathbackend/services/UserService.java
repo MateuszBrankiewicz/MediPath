@@ -523,8 +523,20 @@ public class UserService {
         }
         return userOpt.get().getUserSettings();
     }
+
     public List<MedicalHistory> getMyMedicalHistories(String loggedUserID) {
         return mhRepository.getEntriesForPatient(loggedUserID);
+    }
+
+    public List<MedicalHistory> getMedicalHistoriesForPatient(String loggedUserID, String patientId) throws IllegalAccessException {
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            throw new IllegalStateException();
+        }
+        AuthorizationService authorizationService = new AuthorizationService();
+        authorizationService.startAuthChain(loggedUserID, null).doctorServedPatient(patientId).check();
+
+        return getMyMedicalHistories(patientId);
     }
 
     public List<?> getMyNotifications(String loggedUserID) {
@@ -539,6 +551,9 @@ public class UserService {
                         notification.isRead(), "system", notification.isSystem())
                 ).toList();
     }
+
+
+
     public List<?> getMyInstitutions(String loggedUserID, String role) {
         Optional<User> userOpt = userRepository.findById(loggedUserID);
         if(userOpt.isEmpty()) {
