@@ -133,6 +133,12 @@ public class DoctorService {
         Optional<User> doctorOpt = userRepository.findDoctorById(loggedUserID);
 
         if(doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
+
+        if(date == null) {
+            ArrayList<Visit> visits = visitRepository.getAllVisitsForDoctor(loggedUserID);
+            return Map.of("visits", visits);
+        }
+
         if(date.equals("today")) {
             date = LocalDate.now().toString();
         }

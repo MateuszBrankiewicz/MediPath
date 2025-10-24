@@ -94,7 +94,26 @@ public class DoctorController {
 
     }
 
-    @GetMapping(value = {"/me/visitsbydate/{date}", "/me/visitsbydate/{date}/"})
+    @GetMapping(value = {"/me/visits/{date}", "/me/visits/{date}/", "/me/visits", "/me/visits/"})
+    public ResponseEntity<Map<String, Object>> getMyVisits(@PathVariable(required = false) String date, HttpSession session) {
+
+        String loggedUserID = (String) session.getAttribute("id");
+        if (loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            Map<String, Object> result = doctorService.getMyVisitsByDate(date, loggedUserID);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
+        }
+
+    }
+
+    @GetMapping(value = {"/me/patients", "/me/patients/"})
     public ResponseEntity<Map<String, Object>> getMyVisitsByDate(@PathVariable String date, HttpSession session) {
 
         String loggedUserID = (String) session.getAttribute("id");
