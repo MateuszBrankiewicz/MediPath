@@ -2,6 +2,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   OnInit,
   signal,
@@ -21,6 +22,9 @@ import { InstitutionService } from '../../../../core/services/institution/instit
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
+import { Select } from 'primeng/select';
+import { SelectInstitution } from '../shared/select-institution/select-institution';
+import { ProgressSpinner } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-doctor-list',
@@ -33,11 +37,13 @@ import { InstitutionStoreService } from '../../services/institution/institution-
     TagModule,
     FormsModule,
     SkeletonModule,
+    SelectInstitution,
+    ProgressSpinner,
   ],
   templateUrl: './doctor-list.html',
   styleUrl: './doctor-list.scss',
 })
-export class DoctorList implements OnInit {
+export class DoctorList {
   private institutionService = inject(InstitutionService);
   private institutionStoreService = inject(InstitutionStoreService);
   private destroyRef = inject(DestroyRef);
@@ -69,16 +75,23 @@ export class DoctorList implements OnInit {
     return this.institutionStoreService.getInstitution().name;
   });
 
-  ngOnInit(): void {
-    this.loadDoctors();
+  constructor() {
+    effect(() => {
+      const selectedInstitution =
+        this.institutionStoreService.selectedInstitution();
+      if (!selectedInstitution) {
+        return;
+      }
+      const institutionId = selectedInstitution.id;
+      this.loadDoctors(institutionId);
+    });
   }
 
-  private loadDoctors(): void {
+  private loadDoctors(doctorId: string): void {
     this.isLoading.set(true);
-    const institutionId = this.institutionStoreService.getInstitution().id;
 
     this.institutionService
-      .getDoctorsForInstitution(institutionId)
+      .getDoctorsForInstitution(doctorId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (doctors) => {

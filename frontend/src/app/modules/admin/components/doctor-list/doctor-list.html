@@ -1,21 +1,19 @@
+
 <div class="doctor-list-page">
-  <!-- Header Section -->
   <div class="page-header">
     <div class="header-content">
       <div class="header-info">
         <h1 class="page-title">
           {{ translationService.translate("navigation.doctors") }}
         </h1>
-        <p class="page-subtitle">
-          {{ institutionName() }}
-        </p>
+       <app-select-institution/>
+
       </div>
       <div class="header-actions">
         <p-button
           [label]="translationService.translate('admin.doctorList.addDoctor')"
           icon="pi pi-plus"
           (onClick)="onAddDoctor()"
-          styleClass="add-button"
         />
       </div>
     </div>

@@ -1,8 +1,21 @@
+
+
 <h1 class="page-title">
   {{ translationService.translate("navigation.schedule") }}
 </h1>
 
+<app-select-institution></app-select-institution>
+@if(isLoading()){
+  <div class="spinner-container">
+    <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
+  </div>
+}@else{
 <div class="schedule-layout">
+  @if (otherLoading()) {
+    <div class="floating-center-spinner">
+      <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
+    </div>
+  }
   <div class="day-schedule">
     <div class="day-header">
       <h2 class="day-title">
@@ -22,7 +35,7 @@
       @for (doctor of doctorsForInstitution(); track doctor.doctorId) {
         <div
           class="appointment-slot available"
-          [class.selected]="selectedDoctorIdFn() === doctor.doctorId"
+          [class.selected]="selectedDoctorId() === doctor.doctorId"
           (click)="selectDoctor(doctor.doctorId)"
         >
           <span class="appointment-patient"
@@ -56,3 +69,4 @@
   (dialogClosed)="closeScheduleModal()"
   (scheduleUpdated)="onScheduleUpdated()"
 ></app-schedule-details-dialog>
+}

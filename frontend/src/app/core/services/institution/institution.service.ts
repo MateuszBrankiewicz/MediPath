@@ -131,7 +131,7 @@ export class InstitutionService {
 
   public getVisits(institutionId: string): Observable<unknown> {
     return this.http.get(
-      `${API_URL}/institutions/${institutionId}/visits/today`,
+      `${API_URL}/institution/${institutionId}/visits/today`,
     );
   }
 }

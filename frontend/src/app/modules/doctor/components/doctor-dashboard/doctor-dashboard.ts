@@ -93,26 +93,25 @@ export class DoctorDashboard implements OnInit {
     };
   }
 
-  readonly currentVisit = signal<AppointmentItem | null>(null);
-
   protected readonly todaysAppointments = signal<AppointmentItem[]>([]);
 
-  protected readonly availableAppointments = signal<AvailableDay[]>([
-    {
-      date: new Date(2024, 5, 10),
-      slots: [
-        { id: '1', time: '09:00', available: true, booked: false },
-        { id: '2', time: '10:30', available: true, booked: false },
-      ],
-    },
-    {
-      date: new Date(2024, 5, 26),
-      slots: [
-        { id: '3', time: '14:00', available: true, booked: false },
-        { id: '4', time: '15:30', available: true, booked: false },
-      ],
-    },
-  ]);
+  readonly currentVisit = computed(() => {
+    const todayVisits = this.todaysAppointments();
+    if (todayVisits.length === 0) {
+      return null;
+    }
+
+    const nowTime = new Date().getTime();
+
+    return todayVisits.reduce((closest, current) => {
+      const closestDiff = Math.abs(new Date(closest.time).getTime() - nowTime);
+      const currentDiff = Math.abs(new Date(current.time).getTime() - nowTime);
+
+      return currentDiff < closestDiff ? current : closest;
+    });
+  });
+
+  protected readonly availableAppointments = signal<AvailableDay[]>([]);
 
   protected readonly dayLabels = signal([
     'doctor.dashboard.mon',
@@ -253,7 +252,11 @@ export class DoctorDashboard implements OnInit {
   }
 
   protected onViewCurrentVisit(): void {
-    this.router.navigate(['/doctor/current-visit', '1']);
+    const currentVisit = this.currentVisit();
+    if (!currentVisit) {
+      return;
+    }
+    this.router.navigate(['/doctor/current-visit', currentVisit.id]);
   }
 
   protected onAppointmentClick(appointment: AppointmentItem): void {
@@ -306,7 +309,6 @@ export class DoctorDashboard implements OnInit {
             type: '',
           }));
         this.todaysAppointments.set(appointments);
-        this.currentVisit.set(appointments.length > 0 ? appointments[0] : null);
       },
       error: (error) => {
         console.error('Error loading appointments:', error);

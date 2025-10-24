@@ -5,6 +5,7 @@ import {
   signal,
 } from '@angular/core';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-current-visit',
@@ -14,28 +15,29 @@ import { TranslationService } from '../../../../core/services/translation/transl
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CurrentVisit {
-  translationService = inject(TranslationService);
+  protected readonly translationService = inject(TranslationService);
 
-  // Basic state
-  patientName = signal<string>('Monika Nowak');
-  prescriptions = signal<string[]>(['1324', '1324', '1324']);
-  referrals = signal<string[]>(['1324', '1324', '1324']);
-  notes = signal<string>('');
+  protected readonly patientName = signal<string>('Monika Nowak');
+  protected readonly prescriptions = signal<string[]>(['1324', '1324', '1324']);
+  protected readonly referrals = signal<string[]>(['1324', '1324', '1324']);
+  protected readonly notes = signal<string>('');
 
-  // Right-side editor panel state
-  editSidebar = signal<'none' | 'prescriptions' | 'referrals'>('none');
-  pinDraft = signal<string>('');
+  protected readonly editSidebar = signal<
+    'none' | 'prescriptions' | 'referrals'
+  >('none');
+  protected readonly pinDraft = signal<string>('');
 
-  // Mock medical history
-  medicalHistory = signal<{ date: string; title: string }[]>([
-    { date: '10-10-2024', title: 'Diagnostic visit' },
-    { date: '10-01-2023', title: 'Hearth Surgeon' },
-    { date: '10-01-2023', title: 'Teeth removal' },
-    { date: '10-10-2024', title: 'Diagnostic visit' },
-    { date: '10-01-2023', title: 'Hearth Surgeon' },
-    { date: '10-01-2023', title: 'Teeth removal' },
-  ]);
-
+  protected readonly medicalHistory = signal<{ date: string; title: string }[]>(
+    [
+      { date: '10-10-2024', title: 'Diagnostic visit' },
+      { date: '10-01-2023', title: 'Hearth Surgeon' },
+      { date: '10-01-2023', title: 'Teeth removal' },
+      { date: '10-10-2024', title: 'Diagnostic visit' },
+      { date: '10-01-2023', title: 'Hearth Surgeon' },
+      { date: '10-01-2023', title: 'Teeth removal' },
+    ],
+  );
+  private activatedRoute = inject(ActivatedRoute);
   // UI actions
   openEditor(type: 'prescriptions' | 'referrals') {
     this.editSidebar.set(type);
