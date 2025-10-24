@@ -25,6 +25,9 @@ public interface VisitRepository extends MongoRepository<Visit, String> {
     @Query("{'patient.userId': ?0, 'doctor.userId': ?1}")
     ArrayList<Visit> getAllVisitsForPatientWithDoctor(String patientID, String doctorId);
 
+    @Query("{doctor.userId': ?0}")
+    ArrayList<Visit> getAllVisitsForDoctor(String doctorId);
+
     @Query("{'patient.userId' : ?0, 'institution.institutionId' : ?1}")
     ArrayList<Visit> getAllVisitsForPatientInInstitution(String patientID, String institutionid);
 
