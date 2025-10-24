@@ -114,7 +114,7 @@ public class DoctorController {
     }
 
     @GetMapping(value = {"/me/patients", "/me/patients/"})
-    public ResponseEntity<Map<String, Object>> getMyVisitsByDate(@PathVariable String date, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> getMyPatients(@PathVariable String date, HttpSession session) {
 
         String loggedUserID = (String) session.getAttribute("id");
         if (loggedUserID == null) {
@@ -122,12 +122,10 @@ public class DoctorController {
         }
 
         try {
-            Map<String, Object> result = doctorService.getMyVisitsByDate(date, loggedUserID);
+            Map<String, Object> result = doctorService.getMyPatients(loggedUserID);
             return new ResponseEntity<>(result, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (IllegalAccessException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
     }

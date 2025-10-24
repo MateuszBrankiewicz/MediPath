@@ -920,3 +920,11 @@ doctorDetails: {
 - 401
 - 403 - Invalid patient, not a doctor, doctor did not have any visits with patient
 - 200
+
+### /doctors/me/patients/
+#### Method: GET
+
+#### Returns:
+- 401
+- 403 - User not a doctor
+- 200 

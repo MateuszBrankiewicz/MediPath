@@ -153,4 +153,18 @@ public class DoctorService {
         ArrayList<Visit> visits = visitRepository.getDoctorVisitsOnDay(loggedUserID, startDate.atStartOfDay(), startDate.plusDays(1).atStartOfDay());
         return Map.of("visits", visits);
     }
+
+    public Map<String, Object> getMyPatients(String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
+
+        if(!Utils.isValidMongoOID(loggedUserID)) throw new IllegalAccessException("Invalid user id");
+        Optional<User> doctorOpt = userRepository.findDoctorById(loggedUserID);
+
+        if(doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
+
+
+        ArrayList<Visit> visits = visitRepository.getAllVisitsForDoctor(loggedUserID);
+
+        return Map.of("patients", visits.stream().map(Visit::getPatient).toList());
+
+    }
 }
