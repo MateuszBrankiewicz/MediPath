@@ -36,7 +36,9 @@ public class CommentService {
         Visit visit = optVisit.get();
         if (!visit.getPatient().getUserId().equals(loggedUserID)) throw new IllegalAccessException("User not authorized to comment on this visit");
 
-        Comment newComment = new Comment(commentForm.getDoctorRating(), commentForm.getInstitutionRating(), commentForm.getComment() == null ? "" : commentForm.getComment(), visit.getDoctor(), visit.getInstitution(), visit.getPatient(), commentForm.getVisitID());
+        Comment newComment = new Comment(commentForm.getDoctorRating(), commentForm.getInstitutionRating(),
+                commentForm.getComment() == null ? "" : commentForm.getComment(),
+                visit.getDoctor(), visit.getInstitution(), visit.getPatient(), commentForm.getVisitID());
 
         Optional<Institution> institutionOpt = institutionRepository.findById(visit.getInstitution().getInstitutionId());
         Optional<User> doctorOpt = userRepository.findById(visit.getDoctor().getUserId());
@@ -58,8 +60,13 @@ public class CommentService {
      
     public void editComment(AddCommentForm commentForm, String commentid, String loggedUserID) throws IllegalArgumentException, IllegalAccessException, IllegalStateException {
 
-        if (Stream.of(1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f).noneMatch(validGrade -> validGrade == commentForm.getDoctorRating())) throw new IllegalArgumentException("Invalid doctor rating");
-        if (Stream.of(1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f).noneMatch(validGrade -> validGrade == commentForm.getInstitutionRating())) throw new IllegalArgumentException("Invalid institution rating");
+        if (Stream.of(1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f)
+                .noneMatch(validGrade -> validGrade == commentForm.getDoctorRating()))
+            throw new IllegalArgumentException("Invalid doctor rating");
+
+        if (Stream.of(1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f)
+                .noneMatch(validGrade -> validGrade == commentForm.getInstitutionRating()))
+            throw new IllegalArgumentException("Invalid institution rating");
 
         Optional<Comment> commentOpt = commentRepository.findById(commentid);
         if (commentOpt.isEmpty()) throw new IllegalAccessException("Comment not found");

@@ -62,13 +62,17 @@ public class UserService {
         if (u.isPresent()) {
             PasswordResetEntry passwordResetEntry = null;
             try {
+
                 MimeMessage message = sender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message);
+
                 helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
                 helper.setSubject("Password reset request");
                 helper.setTo(address);
+
                 SecureRandom secureRandom = new SecureRandom();
                 String token = Long.toHexString(secureRandom.nextLong());
+
                 String content = "<!DOCTYPE html>\n" +
                         "<html>\n" +
                         "<head>\n" +
@@ -114,20 +118,25 @@ public class UserService {
 
         if (type == null) {
             return Map.of("codes", codes);
+
         } else if (type.equals("prescriptions")) {
+
             return Map.of("codes", codes.stream().filter(code -> {
                 if (!code.containsKey("codes") || !(code.get("codes") instanceof Map<?, ?> subDoc)) {
                     return false;
                 }
                 return subDoc.containsKey("codeType") && subDoc.get("codeType").equals("PRESCRIPTION");
             }).toList());
+
         } else {
+
             return Map.of("codes", codes.stream().filter(code -> {
                 if (!code.containsKey("codes") || !(code.get("codes") instanceof Map<?, ?> subDoc)) {
                     return false;
                 }
                 return subDoc.containsKey("codeType") && subDoc.get("codeType").equals("REFERRAL");
             }).toList());
+
         }
     }
 
@@ -157,6 +166,7 @@ public class UserService {
 
         User patient = patientOpt.get();
         Map<String, Object> result = new HashMap<>();
+
         result.put("name", patient.getName());
         result.put("surname", patient.getSurname());
         result.put("govId", patient.getGovId());
@@ -164,6 +174,7 @@ public class UserService {
         result.put("phoneNumber", patient.getPhoneNumber());
         result.put("pfp", patient.getPfpimage());
         result.put("medicalHistory", mhRepository.getEntriesForPatient(patientid));
+
         return result;
     }
 
@@ -180,10 +191,12 @@ public class UserService {
 
         User user = opt.get();
         HashMap<String, Object> data = new HashMap<>();
+
         data.put("name", user.getName());
         data.put("surname", user.getSurname());
         data.put("govId", user.getGovId());
         data.put("birthDate", user.getBirthDate().toString());
+
         data.put("address", user.getAddress());
         data.put("phoneNumber", user.getPhoneNumber());
         data.put("licenceNumber", user.getLicenceNumber());
@@ -191,12 +204,12 @@ public class UserService {
         data.put("latestMedicalHistory", user.getLatestMedicalHistory());
         data.put("roleCode", user.getRoleCode());
 
-        //data.put("notifications", user.getNotifications());
         data.put("rating", user.getRating());
         data.put("employers", user.getEmployers());
         data.put("numOfRatings", user.getNumOfRatings());
         data.put("pfpImage", user.getPfpimage());
         data.put("userSettings", user.getUserSettings());
+
         return data;
     }
 
@@ -210,9 +223,11 @@ public class UserService {
         if(userRepository.findByEmail(registrationForm.getEmail()).isPresent() || userRepository.findByGovID(registrationForm.getGovID()).isPresent()) {
             throw new IllegalStateException("this email or person is already registered");
         }
+
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(registrationForm.getPassword());
         UserSettings userSettings = new UserSettings("PL", true, true, 1);
+
         userRepository.save(new User(
                 registrationForm.getEmail(),
                 registrationForm.getName(),
@@ -244,6 +259,7 @@ public class UserService {
         
         Optional<User> user = userRepository.findByEmail(loginForm.getEmail());
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+
         if(user.isEmpty() || !argon2PasswordEncoder.matches(loginForm.getPassword(), user.get().getPasswordHash())) {
             throw new IllegalAccessException("invalid email or password");
         }
@@ -500,10 +516,12 @@ public class UserService {
 
     }
     public void updateSettings(UserSettings userSettings, String loggedUserID) {
+
         Optional<User> userOpt = userRepository.findById(loggedUserID);
         if(userOpt.isEmpty()) {
             throw new IllegalStateException();
         }
+
         User user = userOpt.get();
         if(userSettings.getLanguage() == null || userSettings.getLanguage().isBlank()) {
             userSettings.setLanguage(user.getUserSettings().getLanguage());
@@ -517,10 +535,12 @@ public class UserService {
     }
 
     public UserSettings getUserSettings(String loggedUserID) {
+
         Optional<User> userOpt = userRepository.findById(loggedUserID);
         if(userOpt.isEmpty()) {
             throw new IllegalStateException();
         }
+
         return userOpt.get().getUserSettings();
     }
 
@@ -533,6 +553,7 @@ public class UserService {
         if(userOpt.isEmpty()) {
             throw new IllegalStateException();
         }
+
         AuthorizationService authorizationService = new AuthorizationService();
         authorizationService.startAuthChain(loggedUserID, null).doctorServedPatient(patientId).check();
 
@@ -540,11 +561,14 @@ public class UserService {
     }
 
     public List<?> getMyNotifications(String loggedUserID) {
+
         Optional<User> userOpt = userRepository.findById(loggedUserID);
         if(userOpt.isEmpty()) {
             return new ArrayList<>();
         }
+
         User user = userOpt.get();
+
         return user.getNotifications().stream()
                 .map(notification -> Map.of("title", notification.getTitle(), "content",
                         notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",

@@ -43,7 +43,12 @@ public class MedicalHistoryService {
             userOpt = userRepository.findById(medicalHistory.getUserId());
 
             if (userOpt.isEmpty()) throw new IllegalAccessException("Patient not found");
-            if (!medicalHistory.getDoctor().getUserId().equals(loggedUserID) || visitRepository.getAllVisitsForPatientWithDoctor(medicalHistory.getUserId(), medicalHistory.getDoctor().getUserId()).isEmpty()) throw new IllegalAccessException("Doctor not authorized or no visit found");
+
+
+            if (!medicalHistory.getDoctor().getUserId().equals(loggedUserID)) throw new IllegalAccessException();
+
+            AuthorizationService authorizationService = new AuthorizationService();
+            authorizationService.startAuthChain(loggedUserID, null).doctorServedPatient(medicalHistory.getUserId());
 
             Optional<User> doctorOpt = userRepository.findById(medicalHistory.getDoctor().getUserId());
             if (doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");

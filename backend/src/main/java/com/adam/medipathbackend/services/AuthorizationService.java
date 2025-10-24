@@ -20,13 +20,13 @@ public class AuthorizationService {
     private String institutionid;
     private String userId;
     private int succeses;
-    private boolean or;
+    private boolean allowAnyMatch;
 
     public AuthorizationService startAuthChain(String userId, String institutionid) {
         this.institutionid = institutionid;
         this.userId = userId;
         this.succeses = 0;
-        this.or = false;
+        this.allowAnyMatch = false;
         if(userId != null && !Utils.isValidMongoOID(userId)) {
             throw new IllegalStateException();
         }
@@ -36,8 +36,8 @@ public class AuthorizationService {
         return this;
     }
 
-    public AuthorizationService either() {
-        this.or = true;
+    public AuthorizationService matchAnyPermission() {
+        this.allowAnyMatch = true;
         return this;
     }
 
@@ -50,7 +50,7 @@ public class AuthorizationService {
 
     public AuthorizationService adminOfInstitution() throws IllegalAccessException {
         if (institutionRepository.findAdminById(userId, institutionid).isEmpty()) {
-            if (or) {
+            if (allowAnyMatch) {
                 throw new IllegalAccessException();
             } else {
                 succeses += 1;
@@ -62,7 +62,7 @@ public class AuthorizationService {
 
     public AuthorizationService employeeOfInstitution() throws IllegalAccessException {
         if (institutionRepository.findStaffById(userId, institutionid).isEmpty()) {
-            if (or) {
+            if (allowAnyMatch) {
                 throw new IllegalAccessException();
             } else {
                 succeses += 1;
@@ -73,7 +73,7 @@ public class AuthorizationService {
 
     public AuthorizationService doctorOfInstitution() throws IllegalAccessException {
         if (institutionRepository.findDoctorById(userId, institutionid).isEmpty()) {
-            if (!or) {
+            if (!allowAnyMatch) {
                 throw new IllegalAccessException();
             } else {
                 succeses += 1;
@@ -85,7 +85,7 @@ public class AuthorizationService {
 
     public AuthorizationService patientInVisit(Visit visit) throws IllegalAccessException {
         if(!visit.getPatient().getUserId().equals(userId)) {
-            if (!or) {
+            if (!allowAnyMatch) {
                 throw new IllegalAccessException();
             } else {
                 succeses += 1;
@@ -96,7 +96,7 @@ public class AuthorizationService {
 
     public AuthorizationService doctorInVisit(Visit visit) throws IllegalAccessException {
         if(!visit.getPatient().getUserId().equals(userId)) {
-            if (!or) {
+            if (!allowAnyMatch) {
                 throw new IllegalAccessException();
             } else {
                 succeses += 1;
@@ -107,7 +107,7 @@ public class AuthorizationService {
 
     public AuthorizationService doctorServedPatient(String patientId) throws IllegalAccessException {
         if(!Utils.isValidMongoOID(patientId) || visitRepository.getAllVisitsForPatientWithDoctor(patientId, userId).isEmpty()) {
-            if (!or) {
+            if (!allowAnyMatch) {
                 throw new IllegalAccessException();
             } else {
                 succeses += 1;

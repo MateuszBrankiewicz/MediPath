@@ -64,16 +64,19 @@ public class DoctorService {
             InstitutionDigest digest = employers.get(i);
             Optional<Institution> institutionOpt = institutionRepository.findById(digest.getInstitutionId());
 
-            if(institutionOpt.isPresent()) {
-                Institution institution = institutionOpt.get();
+            if(institutionOpt.isEmpty()) {
+                continue;
+            }
+            Institution institution = institutionOpt.get();
 
-                if (!institution.getName().equals(digest.getInstitutionName())) {
+            if (!institution.getName().equals(digest.getInstitutionName())) {
                     employers.set(i, new InstitutionDigest(digest.getInstitutionId(), institution.getName()));
                     updated = true;
-                }
-
-                results.add(Map.of("institutionId", institution.getId(), "institutionName", institution.getName(), "image", institution.getImage(), "address", institution.getAddress()));
             }
+
+            results.add(Map.of("institutionId", institution.getId(), "institutionName", institution.getName(),
+                  "image", institution.getImage(), "address", institution.getAddress()));
+
         }
         if(updated) {
 
@@ -89,16 +92,17 @@ public class DoctorService {
         Optional<User> doctorOpt = userRepository.findDoctorById(doctorid);
         if(doctorOpt.isEmpty()) throw new IllegalArgumentException("Doctor not found");
 
-        if(institution != null) {
-
-            User doctor = doctorOpt.get();
-            if(doctor.getEmployers().stream().noneMatch(employer -> employer.getInstitutionId().equals(institution))) throw new IllegalArgumentException("Doctor not employed at institution");
-
-            return Map.of("schedules", scheduleRepository.getUpcomingSchedulesByDoctorInInstitution(doctorid, institution));
-
-        } else {
+        if(institution == null) {
             return Map.of("schedules", scheduleRepository.getUpcomingSchedulesByDoctor(doctorid));
         }
+
+        User doctor = doctorOpt.get();
+        if(doctor.getEmployers().stream().noneMatch(
+              employer -> employer.getInstitutionId().equals(institution)))
+           throw new IllegalArgumentException("Doctor not employed at institution");
+
+        return Map.of("schedules", scheduleRepository.getUpcomingSchedulesByDoctorInInstitution(doctorid, institution));
+
     }
 
     public Map<String, Object> getMySchedules(String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
@@ -116,6 +120,7 @@ public class DoctorService {
         if(!Utils.isValidMongoOID(doctorid)) throw new IllegalAccessException("Invalid doctor id");
 
         Optional<User> doctorOpt = userRepository.findDoctorById(doctorid);
+
         if(doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
         if(doctorUpdateForm.getLicenceNumber() == null) throw new IllegalArgumentException("Missing licence number");
         if(doctorUpdateForm.getSpecialisations() == null) throw new IllegalArgumentException("Missing specialisations");
@@ -150,7 +155,9 @@ public class DoctorService {
             throw new IllegalArgumentException("invalid date");
         }
 
-        ArrayList<Visit> visits = visitRepository.getDoctorVisitsOnDay(loggedUserID, startDate.atStartOfDay(), startDate.plusDays(1).atStartOfDay());
+        ArrayList<Visit> visits = visitRepository.
+                getDoctorVisitsOnDay(loggedUserID, startDate.atStartOfDay(), startDate.plusDays(1).atStartOfDay());
+
         return Map.of("visits", visits);
     }
 
