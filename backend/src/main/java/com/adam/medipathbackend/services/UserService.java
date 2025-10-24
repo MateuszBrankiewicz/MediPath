@@ -2,26 +2,26 @@ package com.adam.medipathbackend.services;
 
 import com.adam.medipathbackend.forms.*;
 import com.adam.medipathbackend.models.*;
-import com.adam.medipathbackend.repository.MedicalHistoryRepository;
-import com.adam.medipathbackend.repository.PasswordResetEntryRepository;
-import com.adam.medipathbackend.repository.UserRepository;
-import com.adam.medipathbackend.repository.VisitRepository;
+import com.adam.medipathbackend.repository.*;
+import jakarta.mail.IllegalWriteException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -37,10 +37,21 @@ public class UserService {
     PasswordResetEntryRepository preRepository;
 
     @Autowired
-    JavaMailSender sender;
+    UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    CommentRepository commentRepository;
+
+
+    @Autowired
+    InstitutionRepository institutionRepository;
+
+    @Autowired
+    ScheduleRepository scheduleRepository;
+
+    @Autowired
+    JavaMailSender sender;
+
 
     public Map<String, Object> resetPassword(String address) {
         if (address == null || address.isBlank()) {
@@ -180,7 +191,7 @@ public class UserService {
         data.put("latestMedicalHistory", user.getLatestMedicalHistory());
         data.put("roleCode", user.getRoleCode());
 
-        data.put("notifications", user.getNotifications());
+        //data.put("notifications", user.getNotifications());
         data.put("rating", user.getRating());
         data.put("employers", user.getEmployers());
         data.put("numOfRatings", user.getNumOfRatings());
@@ -217,13 +228,16 @@ public class UserService {
     }
 
     public String loginUser(LoginForm loginForm) throws IllegalAccessException {
+
         ArrayList<String> missingFields = new ArrayList<>();
         if(loginForm.getEmail() == null || loginForm.getEmail().isBlank()) {
             missingFields.add("email");
         }
+
         if(loginForm.getPassword() == null || loginForm.getPassword().isBlank()) {
             missingFields.add("password");
         }
+
         if(!missingFields.isEmpty()) {
             throw new IllegalArgumentException("missing fields in request body: " + missingFields);
         }
@@ -237,37 +251,48 @@ public class UserService {
     }
 
     private ArrayList<String> getMissingFields(RegistrationForm registrationForm) {
+
         ArrayList<String> missingFields = new ArrayList<>();
         if(registrationForm.getName() == null || registrationForm.getName().isBlank()) {
             missingFields.add("name");
         }
+
         if(registrationForm.getSurname() == null || registrationForm.getSurname().isBlank()) {
             missingFields.add("surname");
         }
+
         if(registrationForm.getEmail() == null || registrationForm.getEmail().isBlank()) {
             missingFields.add("email");
         }
+
         if(registrationForm.getCity() == null || registrationForm.getCity().isBlank()) {
             missingFields.add("city");
         }
+
         if(registrationForm.getProvince() == null || registrationForm.getProvince().isBlank()) {
             missingFields.add("province");
         }
+
         if(registrationForm.getNumber() == null || registrationForm.getNumber().isBlank()) {
             missingFields.add("number");
         }
+
         if(registrationForm.getPostalCode() == null || registrationForm.getPostalCode().isBlank()) {
             missingFields.add("postalCode");
         }
+
         if(registrationForm.getBirthDate() == null || registrationForm.getBirthDate().isBlank()) {
             missingFields.add("birthDate");
         }
+
         if(registrationForm.getGovID() == null || registrationForm.getGovID().isBlank()) {
             missingFields.add("govID");
         }
+
         if(registrationForm.getPhoneNumber() == null || registrationForm.getPhoneNumber().isBlank()) {
             missingFields.add("phoneNumber");
         }
+
         if(registrationForm.getPassword() == null || registrationForm.getPassword().isBlank()) {
             missingFields.add("password");
         }
@@ -275,4 +300,263 @@ public class UserService {
     }
 
 
+    public Map<String, Object> getMyComments(String loggedUserID) {
+        ArrayList<Comment> comments = commentRepository.getCommentsForUser(loggedUserID);
+
+        if(comments.isEmpty()) {
+            return Map.of("comments", new ArrayList<>());
+        }
+
+        return Map.of(
+                "comments", comments.stream().map(
+                                comment -> Map.of(
+                                        "id", comment.getId(),
+                                        "doctor", comment.getDoctorDigest().getDoctorName() + " " + comment.getDoctorDigest().getDoctorSurname(),
+                                        "institution", comment.getInstitution().getInstitutionName(),
+                                        "doctorRating", comment.getDoctorRating(),
+                                        "institutionRating", comment.getInstitutionRating(),
+                                        "content", comment.getContent()))
+                        .toList()
+        );
+    }
+
+    public void postResetPassword(ResetForm resetForm) throws IllegalWriteException {
+        ArrayList<String> missingFields = new ArrayList<>();
+
+        if(resetForm.getToken() == null || resetForm.getToken().isBlank()) {
+            missingFields.add("token");
+        }
+
+        if(resetForm.getPassword() == null || resetForm.getPassword().isBlank()) {
+            missingFields.add("password");
+        }
+
+        if(!missingFields.isEmpty()) {
+            throw new IllegalArgumentException("missing fields in request body" + missingFields.stream().reduce(" ", (total, string) -> total + string + " "));
+        }
+
+        Optional<PasswordResetEntry> p = preRepository.findValidToken(resetForm.getToken());
+        if(p.isEmpty()) {
+            throw new IllegalStateException("token invalid or expired");
+        }
+
+        Optional<User> u = userRepository.findByEmail(p.get().getEmail());
+        if(u.isEmpty()) {
+            throw new IllegalWriteException("invalid user referenced by token");
+        }
+
+        User user = u.get();
+        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+        String passwordHash = argon2PasswordEncoder.encode(resetForm.getPassword());
+
+        user.setPasswordHash(passwordHash);
+        userRepository.save(user);
+    }
+
+    public void resetMyPassword(String loggedUserID, ResetMyPasswordForm form) throws IllegalWriteException, IllegalAccessException {
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+
+        if(userOpt.isEmpty() || !argon2PasswordEncoder.matches(form.getCurrentPassword(), userOpt.get().getPasswordHash())) {
+            throw new IllegalAccessException("invalid password");
+        }
+
+        String passwordHash = argon2PasswordEncoder.encode(form.getNewPassword());
+
+        User user = userOpt.get();
+        user.setPasswordHash(passwordHash);
+        try {
+
+            MimeMessage message = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message);
+
+            helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
+            helper.setSubject("Password reset");
+            helper.setTo(user.getEmail());
+
+            String content = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "    <meta charset=\"UTF-8\" />\n" +
+                    "    <title>Password Reset</title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "    <h2>MediPath</h2>\n" +
+                    "    <p>The password to your account has been successfully reset.</p>\n" +
+                    "    <br>\n" +
+                    "    <p>If you have not reset your password recently, please reset your password via the \"Forgot password\" form on the login screen, as your account may be at risk.</p>\n" +
+                    "    <p>-MediPath development team</p>\n" +
+                    "    \n" +
+                    "</body>\n" +
+                    "</html>";
+
+            helper.setText(content);
+            sender.send(message);
+
+        } catch (MailException | MessagingException | UnsupportedEncodingException e) {
+            throw new IllegalWriteException("the mail service threw an error: " + e.getMessage());
+        }
+
+        userRepository.save(user);
+
+    }
+
+    public List<Visit> getMyVisits(String loggedUserID, String upcoming) {
+
+        if(upcoming.isBlank()) {
+            return visitRepository.getAllVisitsForPatient(loggedUserID);
+        } else {
+            return visitRepository.getUpcomingVisits(loggedUserID);
+        }
+
+    }
+
+    public void updatePanel(String value, String loggedUserID) {
+
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            throw new IllegalStateException();
+        }
+
+        int panel;
+        try {
+            panel = Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("invalid panel ID");
+        }
+
+        if(panel != 1 && panel != 2 && panel != 4 && panel != 8) {
+            throw new IllegalArgumentException("invalid panel ID");
+        }
+
+        User user = userOpt.get();
+        if((user.getRoleCode() & panel) == 0) {
+            throw new IllegalStateException();
+        }
+
+        UserSettings settings = user.getUserSettings();
+        settings.setLastPanel(panel);
+        user.setUserSettings(settings);
+        userRepository.save(user);
+    }
+
+    public void updateMe(UpdateUserForm updateUserForm, String loggedUserID) {
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            throw new IllegalStateException();
+        }
+
+        User user = userOpt.get();
+        boolean anyChanges = false;
+        boolean addressChanged = false;
+
+        Address userAddress = user.getAddress();
+        if(updateUserForm.getCity() != null && !updateUserForm.getCity().isBlank()) {
+            userAddress.setCity(updateUserForm.getCity());
+            addressChanged = true;
+        }
+
+        if(updateUserForm.getStreet() != null && !updateUserForm.getStreet().isBlank()) {
+            userAddress.setStreet(updateUserForm.getStreet());
+            addressChanged = true;
+        }
+
+        if(updateUserForm.getNumber() != null && !updateUserForm.getNumber().isBlank()) {
+            userAddress.setNumber(updateUserForm.getNumber());
+            addressChanged = true;
+        }
+
+        if(updateUserForm.getPostalCode() != null && !updateUserForm.getPostalCode().isBlank()) {
+            userAddress.setPostalCode(updateUserForm.getPostalCode());
+            addressChanged = true;
+        }
+
+        if(updateUserForm.getProvince() != null && !updateUserForm.getProvince().isBlank()) {
+            userAddress.setProvince(updateUserForm.getProvince());
+            addressChanged = true;
+        }
+
+        if(addressChanged) {
+            user.setAddress(userAddress);
+            anyChanges = true;
+        }
+
+        if(updateUserForm.getName() != null && !updateUserForm.getName().isBlank()) {
+            user.setName(updateUserForm.getName());
+            anyChanges = true;
+        }
+
+        if(updateUserForm.getSurname() != null && !updateUserForm.getSurname().isBlank()) {
+            user.setSurname(updateUserForm.getSurname());
+            anyChanges = true;
+        }
+
+        if(updateUserForm.getPhoneNumber() != null && !updateUserForm.getPhoneNumber().isBlank()) {
+            user.setPhoneNumber(updateUserForm.getPhoneNumber());
+            anyChanges = true;
+        }
+
+        if(anyChanges) userRepository.save(user);
+
+    }
+    public void updateSettings(UserSettings userSettings, String loggedUserID) {
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            throw new IllegalStateException();
+        }
+        User user = userOpt.get();
+        if(userSettings.getLanguage() == null || userSettings.getLanguage().isBlank()) {
+            userSettings.setLanguage(user.getUserSettings().getLanguage());
+        }
+
+        if(!user.getUserSettings().equals(userSettings))  {
+            user.setUserSettings(userSettings);
+            userRepository.save(user);
+        }
+
+    }
+
+    public UserSettings getUserSettings(String loggedUserID) {
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            throw new IllegalStateException();
+        }
+        return userOpt.get().getUserSettings();
+    }
+    public List<MedicalHistory> getMyMedicalHistories(String loggedUserID) {
+        return mhRepository.getEntriesForPatient(loggedUserID);
+    }
+
+    public List<?> getMyNotifications(String loggedUserID) {
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ArrayList<>();
+        }
+        User user = userOpt.get();
+        return user.getNotifications().stream()
+                .map(notification -> Map.of("title", notification.getTitle(), "content",
+                        notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                        notification.isRead(), "system", notification.isSystem())
+                ).toList();
+    }
+    public List<?> getMyInstitutions(String loggedUserID, String role) {
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if(userOpt.isEmpty()) {
+            return new ArrayList<>();
+        }
+        User admin = userOpt.get();
+        if(role.equals("admin")) {
+            if(admin.getRoleCode() < 8) {
+                return new ArrayList<>();
+            }
+            return institutionRepository.findInstitutionsWhereAdmin(loggedUserID);
+        } else if(role.equals("staff")) {
+            if(admin.getRoleCode() < 4) {
+                return new ArrayList<>();
+            }
+            return institutionRepository.findInstitutionsWhereStaff(loggedUserID);
+        } else {
+            throw new IllegalArgumentException("invalid role");
+        }
+    }
 }
