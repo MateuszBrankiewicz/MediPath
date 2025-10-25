@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { MedicalHistoryResponse } from '../../../../models/medical-history.model';
+import { MedicalHistoryResponse } from '../../../../../../core/models/medical-history.model';
 import { MedicalHistoryDialog } from './medical-history-dialog';
 
 const baseRecord: MedicalHistoryResponse = {

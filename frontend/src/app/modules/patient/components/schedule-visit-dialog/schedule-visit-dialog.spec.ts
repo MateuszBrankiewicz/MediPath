@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
+import { vi } from 'vitest';
 import { ScheduleVisitDialog } from './schedule-visit-dialog';
 
 describe('ScheduleVisitDialog', () => {
@@ -8,9 +9,12 @@ describe('ScheduleVisitDialog', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ScheduleVisitDialog]
-    })
-    .compileComponents();
+      imports: [ScheduleVisitDialog],
+      providers: [
+        { provide: DynamicDialogRef, useValue: { close: vi.fn() } },
+        { provide: DynamicDialogConfig, useValue: { data: {} } },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ScheduleVisitDialog);
     component = fixture.componentInstance;
