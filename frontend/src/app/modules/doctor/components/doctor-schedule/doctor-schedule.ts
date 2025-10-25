@@ -50,9 +50,7 @@ export class DoctorSchedule
   public selectedDate = signal<Date | null>(new Date());
   protected calendarDays = signal<CalendarDay[]>([]);
   public todayAppointments = signal<Appointment[]>([]);
-  // Przechowujemy wszystkie sloty aby mieć dostęp do ich godzin
   private allScheduleSlots = signal<InputSlot[]>([]);
-  // Filtr widoku: 'all' | 'booked' | 'available'
   public viewFilter = signal<'all' | 'booked' | 'available'>('all');
 
   public readonly filterConfig: FilterButtonConfig<

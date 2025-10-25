@@ -417,7 +417,7 @@ describe('FilteringService', () => {
 
         const result = service.filter(
           testData,
-          { searchTerm: 'john', status: 'active' },
+          { searchTerm: 'john doe', status: 'active' },
           combined,
         );
 

@@ -1,8 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { UpcomingVisitItem } from '../../../modules/admin/components/admin-dashboard/widgets/upcoming-visits-card';
 import { API_URL } from '../../../utils/constants';
+import { AddDoctorRequest } from '../../models/add-docotr.model';
 import { DoctorApiResponse, DoctorProfile } from '../../models/doctor.model';
 import {
   AdminInstitutionResponse,
@@ -11,7 +12,6 @@ import {
 } from '../../models/institution.model';
 import { UpcomingVisitsResponse } from '../../models/visit.model';
 import { AuthenticationService } from '../authentication/authentication';
-import { AddDoctorRequest } from '../../models/add-docotr.model';
 
 @Injectable({
   providedIn: 'root',
@@ -130,8 +130,8 @@ export class InstitutionService {
   }
 
   public getVisits(institutionId: string): Observable<unknown> {
-    return this.http.get(
-      `${API_URL}/institutions/${institutionId}/visits/today`,
-    );
+    return this.http.get(`${API_URL}/institution/${institutionId}/visits`, {
+      withCredentials: true,
+    });
   }
 }

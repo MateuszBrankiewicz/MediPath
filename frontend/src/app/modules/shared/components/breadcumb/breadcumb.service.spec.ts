@@ -1,13 +1,25 @@
 import { TestBed } from '@angular/core/testing';
-
-import { BreadcumbService } from './breadcumb.service';
+import { ActivatedRoute, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
+import { BreadcrumbService } from './breadcumb.service';
 
 describe('BreadcumbService', () => {
-  let service: BreadcumbService;
+  let service: BreadcrumbService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(BreadcumbService);
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { paramMap: { get: () => null } },
+            params: of({}),
+          },
+        },
+      ],
+    });
+    service = TestBed.inject(BreadcrumbService);
   });
 
   it('should be created', () => {

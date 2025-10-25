@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Divider } from 'primeng/divider';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Textarea } from 'primeng/textarea';
 import {
@@ -25,8 +27,10 @@ import { CalendarSchedule } from '../../../shared/components/calendar-schedule/c
   selector: 'app-schedule-visit-dialog',
   imports: [
     ButtonModule,
+    Card,
     CommonModule,
     CalendarSchedule,
+    Divider,
     Textarea,
     FormsModule,
   ],
@@ -107,10 +111,11 @@ export class ScheduleVisitDialog implements OnInit {
 
   ngOnInit(): void {
     if (!this.config.data.visitId) {
+      this.initPlainVisitData();
+
       return;
     }
     this.initVisitInformation();
-
     this.initializeAvailableDays();
   }
 
@@ -142,6 +147,20 @@ export class ScheduleVisitDialog implements OnInit {
       selectedTime: data?.selectedTime ?? '',
       selectedSlotId: data?.selectedSlotId ?? '',
     }));
+  }
+
+  private initPlainVisitData(): void {
+    console.log(this.config.data);
+    this.rescheduleData.set({
+      doctorName: this.config.data?.event.doctor.name || '',
+      doctorId: this.config.data?.event.doctor.id || '',
+      institution:
+        this.config.data?.event.institution.institution.institutionName || '',
+      patientRemarks: this.config.data?.event.patientRemarks || '',
+      selectedDate: this.config.data?.event.day || null,
+      selectedTime: this.config.data?.event.time || null,
+      selectedSlotId: this.config.data?.event.slotId || null,
+    });
   }
 
   protected isFormValid(): boolean {

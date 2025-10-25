@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
 import { SortFieldConfig, SortingService } from './sorting.service';
 
 interface TestItem {
@@ -113,7 +114,7 @@ describe('SortingService', () => {
         service.stringField('name', (item) => item.name),
       ];
 
-      spyOn(console, 'warn');
+      vi.spyOn(console, 'warn');
       const sorted = service.sort(testData, 'unknown', 'asc', config);
 
       expect(console.warn).toHaveBeenCalledWith(

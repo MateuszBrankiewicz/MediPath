@@ -24,7 +24,6 @@ import {
 } from '../../../../../core/models/schedule.model';
 import { InstitutionObject } from '../../../../../core/models/visit.model';
 import { VisitsService } from '../../../../../core/services/visits/visits.service';
-import { BreadcumbComponent } from '../../breadcumb/breadcumb.component';
 import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
 import {
   Hospital,
@@ -44,7 +43,6 @@ import {
     ButtonModule,
     HospitalCardComponent,
     DoctorCardComponent,
-    BreadcumbComponent,
     ProgressSpinnerModule,
   ],
   providers: [DialogService],

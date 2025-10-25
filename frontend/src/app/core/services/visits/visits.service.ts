@@ -11,6 +11,7 @@ import {
   UpcomingVisitsResponse,
   VisitResponse,
 } from '../../models/visit.model';
+import { FinishVisitResponse } from './../../models/visit.model';
 
 @Injectable({
   providedIn: 'root',
@@ -86,5 +87,20 @@ export class VisitsService {
         },
       )
       .pipe(map((response) => response.visits ?? []));
+  }
+
+  public finishVisit(
+    finishVisit: FinishVisitResponse,
+    visitId: string,
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${API_URL}/visits/${visitId}/complete`,
+      {
+        prescriptions: finishVisit.prescriptions,
+        referrals: finishVisit.referrals,
+        note: finishVisit.note,
+      },
+      { withCredentials: true },
+    );
   }
 }

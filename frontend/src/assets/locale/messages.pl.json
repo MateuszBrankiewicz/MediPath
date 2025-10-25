@@ -118,6 +118,11 @@
   "patient.scheduleVisit.doctor": "Lekarz:",
   "patient.scheduleVisit.institution": "Instytucja:",
   "patient.scheduleVisit.patientRemarks": "Uwagi pacjenta:",
+  "patient.scheduleVisit.doctorInformation": "Informacje o lekarzu",
+  "patient.scheduleVisit.selectDateTime": "Wybierz datę i godzinę",
+  "patient.scheduleVisit.remarksPlaceholder": "Wprowadź dodatkowe uwagi dla lekarza...",
+  "patient.scheduleVisit.cancel": "Anuluj",
+  "patient.scheduleVisit.confirm": "Potwierdź",
 
   "patient.visitDetails.dateOfVisit": "Data wizyty:",
   "patient.visitDetails.doctorName": "Imię lekarza:",
@@ -133,7 +138,7 @@
   "patient.reminders.complianceRate": "Wskaźnik przestrzegania",
   "patient.reminders.title": "Przypomnienia",
   "patient.reminders.edit": "Edytuj",
-  "patient.reminders.delete": "Usuń",
+  "patient.reminders.delete": "Anuluj",
   "patient.reminders.add": "Dodaj przypomnienie",
 
   "patient.medicalHistory.title": "Historia medyczna",

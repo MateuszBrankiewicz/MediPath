@@ -1,13 +1,27 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
-import { TranslationService } from '../../../../core/services/translation/translation.service';
-
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
-
-import { AvailableDay, TimeSlot } from '../../../../core/models/schedule.model';
+import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import {
+  AvailableDay,
+  CalendarModel,
+  TimeSlot,
+} from '../../../../core/models/schedule.model';
 import { AuthenticationService } from '../../../../core/services/authentication/authentication';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
+import {
+  generateCalendarDays,
+  isSameDay,
+} from '../../../../utils/createCalendarUtil';
 import {
   AppointmentItem,
   AppointmentsList,
@@ -21,14 +35,6 @@ import {
   WelcomeCardData,
 } from '../../../shared/components/ui/welcome-card/welcome-card';
 
-interface CalendarDay {
-  date: number | null;
-  isToday: boolean;
-  isSelected: boolean;
-  isOtherMonth: boolean;
-  hasAppointments: boolean;
-}
-
 interface LocalTimeSlot extends TimeSlot {
   selected?: boolean;
 }
@@ -41,38 +47,38 @@ interface LocalTimeSlot extends TimeSlot {
     StatsCard,
     WelcomeCard,
     AppointmentsList,
+    ProgressSpinnerModule,
   ],
   templateUrl: './doctor-dashboard.html',
   styleUrl: './doctor-dashboard.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DoctorDashboard implements OnInit {
-  protected translationService = inject(TranslationService);
-  protected router = inject(Router);
-  private visitsService = inject(VisitsService);
-
+  protected readonly translationService = inject(TranslationService);
+  private readonly router = inject(Router);
+  private readonly visitsService = inject(VisitsService);
   private readonly authService = inject(AuthenticationService);
-  protected readonly doctorName = signal('Jan');
+
   protected readonly currentDate = signal(new Date());
   protected readonly patientsToday = signal(14);
   protected readonly currentMonth = signal(new Date());
   protected readonly selectedDate = signal<Date | null>(new Date());
   protected readonly selectedTimeSlot = signal<string | null>(null);
+  protected readonly todaysAppointments = signal<AppointmentItem[]>([]);
+  protected readonly availableAppointments = signal<AvailableDay[]>([]);
 
   protected readonly user = computed(() => this.authService.getUser());
-  get welcomeCardData(): WelcomeCardData {
-    return {
-      userName: this.user()?.name || '',
-      welcomeMessage: this.translationService.translate(
-        'doctor.dashboard.welcomeBack',
-      ),
-      subtitle: this.translationService.translate(
-        'doctor.dashboard.haveNiceDay',
-      ),
-      variant: 'gradient',
-    };
-  }
 
-  get ratingCardData(): StatsCardData {
+  protected readonly welcomeCardData = computed<WelcomeCardData>(() => ({
+    userName: this.user()?.name || '',
+    welcomeMessage: this.translationService.translate(
+      'doctor.dashboard.welcomeBack',
+    ),
+    subtitle: this.translationService.translate('doctor.dashboard.haveNiceDay'),
+    variant: 'gradient',
+  }));
+
+  protected readonly ratingCardData = computed<StatsCardData>(() => {
     const user = this.user();
     const ratingValue = user?.rating != null ? user.rating.toFixed(1) : 'N/A';
     return {
@@ -81,122 +87,65 @@ export class DoctorDashboard implements OnInit {
       subtitle: `/5★ ${this.translationService.translate('doctor.dashboard.satisfiedPatients')}`,
       variant: 'default',
     };
-  }
+  });
 
-  get patientCountCardData(): StatsCardData {
-    return {
-      title: this.translationService.translate(
-        'doctor.dashboard.patientsForToday',
-      ),
-      value: this.patientsToday(),
-      variant: 'gradient',
-    };
-  }
+  protected readonly patientCountCardData = computed<StatsCardData>(() => ({
+    title: this.translationService.translate(
+      'doctor.dashboard.patientsForToday',
+    ),
+    value: this.patientsToday(),
+    variant: 'gradient',
+  }));
 
-  readonly currentVisit = signal<AppointmentItem | null>(null);
+  protected readonly currentVisit = computed(() => {
+    const todayVisits = this.todaysAppointments();
+    if (todayVisits.length === 0) {
+      return null;
+    }
 
-  protected readonly todaysAppointments = signal<AppointmentItem[]>([]);
+    const nowTime = new Date().getTime();
 
-  protected readonly availableAppointments = signal<AvailableDay[]>([
-    {
-      date: new Date(2024, 5, 10),
-      slots: [
-        { id: '1', time: '09:00', available: true, booked: false },
-        { id: '2', time: '10:30', available: true, booked: false },
-      ],
-    },
-    {
-      date: new Date(2024, 5, 26),
-      slots: [
-        { id: '3', time: '14:00', available: true, booked: false },
-        { id: '4', time: '15:30', available: true, booked: false },
-      ],
-    },
+    return todayVisits.reduce((closest, current) => {
+      const closestDiff = Math.abs(new Date(closest.time).getTime() - nowTime);
+      const currentDiff = Math.abs(new Date(current.time).getTime() - nowTime);
+
+      return currentDiff < closestDiff ? current : closest;
+    });
+  });
+
+  protected readonly dayLabels = computed(() => [
+    this.translationService.translate('doctor.dashboard.mon'),
+    this.translationService.translate('doctor.dashboard.tue'),
+    this.translationService.translate('doctor.dashboard.wed'),
+    this.translationService.translate('doctor.dashboard.thu'),
+    this.translationService.translate('doctor.dashboard.fri'),
+    this.translationService.translate('doctor.dashboard.sat'),
+    this.translationService.translate('doctor.dashboard.sun'),
   ]);
 
-  protected readonly dayLabels = signal([
-    'doctor.dashboard.mon',
-    'doctor.dashboard.tue',
-    'doctor.dashboard.wed',
-    'doctor.dashboard.thu',
-    'doctor.dashboard.fri',
-    'doctor.dashboard.sat',
-    'doctor.dashboard.sun',
-  ]);
-
-  get currentMonthDisplay(): string {
+  protected readonly currentMonthDisplay = computed(() => {
     const month = this.currentMonth();
     return month.toLocaleDateString('pl-PL', {
       month: 'long',
       year: 'numeric',
     });
-  }
+  });
 
-  ngOnInit(): void {
-    this.loadAppointments();
-  }
+  protected readonly calendarDays = computed(() =>
+    generateCalendarDays({
+      currentMonth: this.currentMonth(),
+      selectedDate: this.selectedDate(),
+      hasAppointmentsOnDate: (date) => this.hasAppointmentsOnDate(date),
+    }),
+  );
 
-  get calendarDays(): CalendarDay[] {
-    const currentMonth = this.currentMonth();
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const today = new Date();
-    const selectedDate = this.selectedDate();
-
-    const firstDayOfMonth = new Date(year, month, 1);
-    const lastDayOfMonth = new Date(year, month + 1, 0);
-    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
-
-    const days: CalendarDay[] = [];
-
-    const prevMonth = new Date(year, month - 1, 0);
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const date = prevMonth.getDate() - i;
-      days.push({
-        date,
-        isToday: false,
-        isSelected: false,
-        isOtherMonth: true,
-        hasAppointments: false,
-      });
-    }
-
-    for (let date = 1; date <= lastDayOfMonth.getDate(); date++) {
-      const currentDate = new Date(year, month, date);
-      const isToday = currentDate.toDateString() === today.toDateString();
-      const isSelected = selectedDate
-        ? currentDate.toDateString() === selectedDate.toDateString()
-        : isToday;
-      days.push({
-        date,
-        isToday,
-        isSelected,
-        isOtherMonth: false,
-        hasAppointments: this.hasAppointmentsOnDate(currentDate),
-      });
-    }
-
-    const remainingDays = 42 - days.length;
-    for (let date = 1; date <= remainingDays; date++) {
-      days.push({
-        date,
-        isToday: false,
-        isSelected: false,
-        isOtherMonth: true,
-        hasAppointments: false,
-      });
-    }
-
-    return days;
-  }
-
-  get availableTimeSlots(): LocalTimeSlot[] {
+  protected readonly availableTimeSlots = computed<LocalTimeSlot[]>(() => {
     const selected = this.selectedDate();
     if (!selected) return [];
 
     const appointment = this.availableAppointments().find((app) => {
       const appDate = new Date(app.date);
-      return appDate.toDateString() === selected.toDateString();
+      return isSameDay(appDate, selected);
     });
 
     return (
@@ -205,6 +154,28 @@ export class DoctorDashboard implements OnInit {
         selected: slot.time === this.selectedTimeSlot(),
       })) || []
     );
+  });
+
+  protected readonly formattedDate = computed(() => {
+    const today = this.currentDate();
+    return today.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  });
+
+  protected readonly formattedTime = computed(() => {
+    const today = this.currentDate();
+    return today.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  });
+
+  ngOnInit(): void {
+    this.loadAppointments();
   }
 
   protected previousMonth(): void {
@@ -221,16 +192,10 @@ export class DoctorDashboard implements OnInit {
     );
   }
 
-  protected onCalendarDayClick(day: CalendarDay): void {
-    if (day.isOtherMonth || !day.date) return;
+  protected onCalendarDayClick(day: CalendarModel): void {
+    if (!day.isCurrentMonth || !day.date) return;
 
-    const month = this.currentMonth();
-    const selectedDate = new Date(
-      month.getFullYear(),
-      month.getMonth(),
-      day.date,
-    );
-    this.selectedDate.set(selectedDate);
+    this.selectedDate.set(day.date);
     this.loadAppointments();
     this.selectedTimeSlot.set(null);
   }
@@ -245,19 +210,16 @@ export class DoctorDashboard implements OnInit {
     this.selectedDate.set(today);
   }
 
-  private hasAppointmentsOnDate(date: Date): boolean {
-    return this.availableAppointments().some((app) => {
-      const appDate = new Date(app.date);
-      return appDate.toDateString() === date.toDateString();
-    });
-  }
-
   protected onViewCurrentVisit(): void {
-    this.router.navigate(['/doctor/current-visit', '1']);
+    const currentVisit = this.currentVisit();
+    if (!currentVisit) {
+      return;
+    }
+    this.router.navigate(['/doctor/current-visit', currentVisit.id]);
   }
 
   protected onAppointmentClick(appointment: AppointmentItem): void {
-    console.log('Appointment clicked:', appointment);
+    this.router.navigate(['/doctor/current-visit', appointment.id]);
   }
 
   protected onDateTimeSelected(event: {
@@ -268,31 +230,19 @@ export class DoctorDashboard implements OnInit {
     console.log('Date/time selected:', event);
   }
 
-  get formattedDate(): string {
-    const today = this.currentDate();
-    return today.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+  private hasAppointmentsOnDate(date: Date): boolean {
+    return this.availableAppointments().some((app) => {
+      const appDate = new Date(app.date);
+      return isSameDay(appDate, date);
     });
   }
 
-  get formattedTime(): string {
-    const today = this.currentDate();
-    return today.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  }
+  private loadAppointments(): void {
+    const selected = this.selectedDate();
+    if (!selected) return;
 
-  private loadAppointments() {
-    const selected: Date | null = this.selectedDate();
-    const dateString = selected
-      ? `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(
-          selected.getDate(),
-        ).padStart(2, '0')}`
-      : '';
+    const dateString = this.formatDateForApi(selected);
+
     this.visitsService.getDoctorVisitByDate(dateString).subscribe({
       next: (visits) => {
         const appointments: AppointmentItem[] = visits
@@ -304,13 +254,20 @@ export class DoctorDashboard implements OnInit {
                 : visit.time.startTime,
             patientName: `${visit.patient.name} ${visit.patient.surname}`,
             type: '',
+            id: visit.id,
           }));
         this.todaysAppointments.set(appointments);
-        this.currentVisit.set(appointments.length > 0 ? appointments[0] : null);
       },
       error: (error) => {
         console.error('Error loading appointments:', error);
       },
     });
+  }
+
+  private formatDateForApi(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

@@ -1,0 +1,26 @@
+<div class="institution-select">
+  <label for="institution-select">
+    {{ translationService.translate("schedules.institution") }}
+  </label>
+  <p-select
+    id="institution-select"
+    [options]="institutionOptions()"
+    [ngModel]="selectedInstitution()"
+    optionLabel="name"
+    [filter]="true"
+    (onChange)="onInstitutionChange($event.value)"
+  >
+    <ng-template #selectedItem let-item>
+      <div class="institution-selected">
+        <i class="pi pi-building"></i>
+        <span>{{ item.name }}</span>
+      </div>
+    </ng-template>
+    <ng-template #item let-item>
+      <div class="institution-option">
+        <i class="pi pi-building"></i>
+        <span>{{ item.name }}</span>
+      </div>
+    </ng-template>
+  </p-select>
+</div>

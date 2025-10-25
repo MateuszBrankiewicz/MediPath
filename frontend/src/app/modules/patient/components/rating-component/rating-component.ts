@@ -121,6 +121,8 @@ export class RatingComponent
       width: window.innerWidth < 768 ? '100%' : '70%',
       height: 'auto',
       data: comment,
+      modal: true,
+      closable: true,
     });
     if (!ref) {
       return;
@@ -201,6 +203,7 @@ export class RatingComponent
       width: '400px',
       height: 'auto',
       closable: true,
+      modal: true,
       header: this.translationService.translate('comment.delete.title'),
       data: {
         title: this.translationService.translate('comment.delete.title'),

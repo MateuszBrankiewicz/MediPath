@@ -17,6 +17,7 @@ export class PatientCodeDialogService {
       const ref = this.dialogService.open(AcceptActionDialogComponent, {
         header: 'Confirm Action',
         width: '400px',
+        modal: true,
         data: {
           message: `Are you sure you want to use the code ${code.codeNumber}?`,
         },
