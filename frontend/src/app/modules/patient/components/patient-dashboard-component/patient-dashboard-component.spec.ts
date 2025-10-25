@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PatientDashboardComponent } from './patient-dashboard-component';
@@ -8,9 +10,9 @@ describe('PatientDashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PatientDashboardComponent]
-    })
-    .compileComponents();
+      imports: [PatientDashboardComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PatientDashboardComponent);
     component = fixture.componentInstance;

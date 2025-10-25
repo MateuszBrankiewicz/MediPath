@@ -1,13 +1,16 @@
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
 import { TranslationService } from '../translation/translation.service';
 import { DateTimeService } from './date-time.service';
 
 describe('DateTimeService', () => {
   let service: DateTimeService;
-  let translationServiceSpy: jasmine.SpyObj<TranslationService>;
+  let translationServiceSpy: { translate: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
-    const spy = jasmine.createSpyObj('TranslationService', ['translate']);
+    const spy = {
+      translate: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -17,9 +20,9 @@ describe('DateTimeService', () => {
     });
 
     service = TestBed.inject(DateTimeService);
-    translationServiceSpy = TestBed.inject(
-      TranslationService,
-    ) as jasmine.SpyObj<TranslationService>;
+    translationServiceSpy = TestBed.inject(TranslationService) as unknown as {
+      translate: ReturnType<typeof vi.fn>;
+    };
   });
 
   it('should be created', () => {
@@ -28,7 +31,7 @@ describe('DateTimeService', () => {
 
   it('should get day name for Monday', () => {
     const monday = new Date('2025-10-20'); // Monday
-    translationServiceSpy.translate.and.returnValue('Monday');
+    translationServiceSpy.translate.mockReturnValue('Monday');
 
     const result = service.getDayName(monday);
 
@@ -40,7 +43,7 @@ describe('DateTimeService', () => {
 
   it('should get short day name', () => {
     const date = new Date('2025-10-20');
-    translationServiceSpy.translate.and.returnValue('MON');
+    translationServiceSpy.translate.mockReturnValue('MON');
 
     const result = service.getShortDayName(date);
 
@@ -51,7 +54,7 @@ describe('DateTimeService', () => {
   });
 
   it('should get month name by index', () => {
-    translationServiceSpy.translate.and.returnValue('October');
+    translationServiceSpy.translate.mockReturnValue('October');
 
     const result = service.getMonthName(9); // October
 
@@ -74,7 +77,7 @@ describe('DateTimeService', () => {
 
   it('should format month and year', () => {
     const date = new Date('2025-10-19');
-    translationServiceSpy.translate.and.returnValue('Październik');
+    translationServiceSpy.translate.mockReturnValue('Październik');
 
     const result = service.formatMonthYear(date);
 

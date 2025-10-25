@@ -1,5 +1,5 @@
-import { provideRouter, ActivatedRoute } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { BreadcrumbService } from './breadcumb.service';
 

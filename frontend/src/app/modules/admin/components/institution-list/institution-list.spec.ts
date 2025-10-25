@@ -1,5 +1,6 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { InstitutionList } from './institution-list';
 
 describe('InstitutionList', () => {
@@ -8,9 +9,9 @@ describe('InstitutionList', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InstitutionList]
-    })
-    .compileComponents();
+      imports: [InstitutionList],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(InstitutionList);
     component = fixture.componentInstance;

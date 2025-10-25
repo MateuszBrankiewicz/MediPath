@@ -1,5 +1,7 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { vi } from 'vitest';
 import { VisitDetailsDialog } from './visit-details-dialog';
 
@@ -11,6 +13,8 @@ describe('VisitDetailsDialog', () => {
     await TestBed.configureTestingModule({
       imports: [VisitDetailsDialog],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: DynamicDialogRef, useValue: { close: vi.fn() } },
         { provide: DynamicDialogConfig, useValue: { data: {} } },
       ],
