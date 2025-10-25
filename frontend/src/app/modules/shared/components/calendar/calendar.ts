@@ -9,6 +9,7 @@ import {
 import { ButtonModule } from 'primeng/button';
 import { CalendarDay } from '../../../../core/models/schedule.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { generateCalendarDays } from '../../../../utils/createCalendarUtil';
 
 @Component({
   selector: 'app-calendar',
@@ -86,77 +87,30 @@ export class Calendar {
   }
 
   public readonly calendarDays = computed(() => {
-    const currentMonth = this.currentMonth();
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const appointmentsData = this.appointments();
+    const days = generateCalendarDays({
+      currentMonth: this.currentMonth(),
+      selectedDate: this.selectedDate(),
+      hasAppointmentsOnDate: (date) => this.hasAppointmentsOnDate(date),
+    });
 
-    const firstDayOfMonth = new Date(year, month, 1);
-    const lastDayOfMonth = new Date(year, month + 1, 0);
-    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
-
-    const days: CalendarDay[] = [];
-    const today = new Date();
-    const selected = this.selectedDate();
-
-    const prevMonthDate = new Date(year, month - 1, 1);
-    const prevYear = prevMonthDate.getFullYear();
-    const prevMonth = prevMonthDate.getMonth();
-    const lastDayOfPrevMonth = new Date(prevYear, prevMonth + 1, 0);
-
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const dayNumber = lastDayOfPrevMonth.getDate() - i;
-      const date = new Date(prevYear, prevMonth, dayNumber);
-      const dayData = this.findAppointmentDataForDate(date, appointmentsData);
-      days.push({
-        date,
-        dayNumber: dayNumber,
-        isCurrentMonth: false,
-        isToday: this.isSameDay(date, today),
-        isSelected: selected ? this.isSameDay(date, selected) : false,
-        hasAppointments: dayData?.hasAppointments || false,
-        appointments: dayData?.appointments || [],
-        isFromThisInstitution: dayData?.isFromThisInstitution,
-      });
-    }
-
-    for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
-      const date = new Date(year, month, day);
-      const dayData = this.findAppointmentDataForDate(date, appointmentsData);
-      days.push({
-        date,
-        dayNumber: day,
-        isCurrentMonth: true,
-        isToday: this.isSameDay(date, today),
-        isSelected: selected ? this.isSameDay(date, selected) : false,
-        hasAppointments: dayData?.hasAppointments || false,
-        appointments: dayData?.appointments || [],
-        isFromThisInstitution: dayData?.isFromThisInstitution,
-      });
-    }
-
-    const nextMonthDate = new Date(year, month + 1, 1);
-    const nextYear = nextMonthDate.getFullYear();
-    const nextMonth = nextMonthDate.getMonth();
-
-    const remainingDays = 42 - days.length;
-    for (let day = 1; day <= remainingDays; day++) {
-      const date = new Date(nextYear, nextMonth, day);
-      const dayData = this.findAppointmentDataForDate(date, appointmentsData);
-      days.push({
-        date,
-        dayNumber: day,
-        isCurrentMonth: false,
-        isToday: this.isSameDay(date, today),
-        isSelected: selected ? this.isSameDay(date, selected) : false,
-        hasAppointments: dayData?.hasAppointments || false,
-        appointments: dayData?.appointments || [],
-        isFromThisInstitution: dayData?.isFromThisInstitution,
-      });
-    }
-
-    return days;
+    return days.map((day) => {
+      const appointmentData = this.findAppointmentDataForDate(
+        day.date,
+        this.appointments(),
+      );
+      return {
+        ...day,
+        appointments: appointmentData?.appointments || [],
+        isFromThisInstitution: appointmentData?.isFromThisInstitution,
+      };
+    });
   });
+
+  private hasAppointmentsOnDate(date: Date): boolean {
+    return this.appointments().some(
+      (appointment) => appointment.date.toDateString() === date.toDateString(),
+    );
+  }
 
   private findAppointmentDataForDate(
     date: Date,
@@ -164,14 +118,6 @@ export class Calendar {
   ): CalendarDay | undefined {
     return appointmentsData.find(
       (appointment) => appointment.date.toDateString() === date.toDateString(),
-    );
-  }
-
-  private isSameDay(date1: Date, date2: Date): boolean {
-    return (
-      date1.getFullYear() === date2.getFullYear() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate()
     );
   }
 

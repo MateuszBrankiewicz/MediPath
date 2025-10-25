@@ -106,3 +106,18 @@ export interface MapToCalendarDaysOptions {
 export interface DoctorScheduleResponse {
   schedules: InputSlot[];
 }
+
+export interface CalendarModel {
+  date: Date;
+  dayNumber: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isSelected: boolean;
+  hasAppointments: boolean;
+}
+
+export interface CalendarConfig {
+  currentMonth: Date;
+  selectedDate: Date | null;
+  hasAppointmentsOnDate: (date: Date) => boolean;
+}

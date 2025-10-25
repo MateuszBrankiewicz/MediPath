@@ -1,12 +1,12 @@
 <div class="dashboard-container">
   <div class="left-panel">
     <div class="welcome-section">
-      <app-welcome-card [data]="welcomeCardData"></app-welcome-card>
+      <app-welcome-card [data]="welcomeCardData()"></app-welcome-card>
     </div>
 
     <div class="middle-row">
       <div class="stats-card-container">
-        <app-stats-card [data]="ratingCardData"></app-stats-card>
+        <app-stats-card [data]="ratingCardData()"></app-stats-card>
       </div>
 
       <div class="current-visit-container">
@@ -78,7 +78,7 @@
             (onClick)="previousMonth()"
           >
           </p-button>
-          <span class="month-year">{{ currentMonthDisplay }}</span>
+          <span class="month-year">{{ currentMonthDisplay() }}</span>
           <p-button
             icon="pi pi-chevron-right"
             [text]="true"
@@ -102,11 +102,11 @@
 
         <!-- Calendar Days -->
         <div class="calendar-days">
-          @for (day of calendarDays; track $index) {
+          @for (day of calendarDays(); track $index) {
             <div
               class="calendar-day"
-              [class.current-month]="!day.isOtherMonth"
-              [class.other-month]="day.isOtherMonth"
+              [class.current-month]="day.isCurrentMonth"
+              [class.other-month]="!day.isCurrentMonth"
               [class.today]="day.isToday"
               [class.selected]="day.isSelected"
               [class.has-appointments]="day.hasAppointments"
