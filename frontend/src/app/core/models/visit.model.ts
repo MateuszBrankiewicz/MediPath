@@ -95,3 +95,9 @@ export interface InstitutionObject {
   institutionId: string;
   institutionName: string;
 }
+
+export interface FinishVisitResponse {
+  prescriptions: string[];
+  referrals: string[];
+  note: string;
+}

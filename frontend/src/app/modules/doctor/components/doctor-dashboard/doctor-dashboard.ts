@@ -5,6 +5,7 @@ import { TranslationService } from '../../../../core/services/translation/transl
 
 import { Router } from '@angular/router';
 
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AvailableDay, TimeSlot } from '../../../../core/models/schedule.model';
 import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
@@ -41,6 +42,7 @@ interface LocalTimeSlot extends TimeSlot {
     StatsCard,
     WelcomeCard,
     AppointmentsList,
+    ProgressSpinnerModule,
   ],
   templateUrl: './doctor-dashboard.html',
   styleUrl: './doctor-dashboard.scss',
@@ -256,6 +258,7 @@ export class DoctorDashboard implements OnInit {
     if (!currentVisit) {
       return;
     }
+    console.log('Navigating to current visit:', currentVisit);
     this.router.navigate(['/doctor/current-visit', currentVisit.id]);
   }
 
@@ -307,6 +310,7 @@ export class DoctorDashboard implements OnInit {
                 : visit.time.startTime,
             patientName: `${visit.patient.name} ${visit.patient.surname}`,
             type: '',
+            id: visit.id,
           }));
         this.todaysAppointments.set(appointments);
       },
