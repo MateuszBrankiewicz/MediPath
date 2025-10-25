@@ -33,7 +33,6 @@ public class EmployeeManagementService {
     @Autowired
     private PasswordResetEntryRepository preRepository;
 
-    @Transactional
     public void addEmployeesToInstitution(String institutionId, ArrayList<AddEmployeeForm> employees) {
         Institution institution = institutionRepository.findById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
@@ -50,7 +49,7 @@ public class EmployeeManagementService {
         institutionRepository.save(institution);
     }
 
-    @Transactional
+     
     public User registerEmployee(AddComboForm comboForm, String institutionId) {
         validateComboForm(comboForm);
 
@@ -102,7 +101,7 @@ public class EmployeeManagementService {
         }
     }
 
-    @Transactional
+     
     public void updateEmployee(String institutionId, AddEmployeeForm employeeUpdate, String adminId) {
         Institution institution = institutionRepository.findById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
@@ -126,7 +125,7 @@ public class EmployeeManagementService {
         userRepository.save(user);
     }
 
-    @Transactional
+     
     public void removeEmployee(String institutionId, String userId, String adminId) {
         if (userId.equals(adminId)) {
             throw new IllegalStateException("You cannot delete yourself from the employee list");
@@ -188,12 +187,15 @@ public class EmployeeManagementService {
         for (int i = 0; i < employees.size(); i++) {
             StaffDigest current = employees.get(i);
             if (current.getUserId().equals(form.getUserID())) {
+
                 current.setName(user.getName());
                 current.setSurname(user.getSurname());
                 current.setPfpimage(user.getPfpimage());
+
                 current.setRoleCode(form.getRoleCode());
                 current.setSpecialisations(form.getSpecialisations());
                 employees.set(i, current);
+
                 break;
             }
         }
@@ -232,10 +234,12 @@ public class EmployeeManagementService {
                 form.getEmail(),
                 form.getName(),
                 form.getSurname(),
+
                 form.getGovID(),
                 LocalDate.parse(form.getBirthDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                 new Address(form.getProvince(), form.getCity(), form.getStreet(),
                         form.getNumber(), form.getPostalCode()),
+
                 form.getPhoneNumber(),
                 passwordHash,
                 userSettings);
@@ -257,43 +261,55 @@ public class EmployeeManagementService {
             if (registrationForm.getName() == null || registrationForm.getName().isBlank()) {
                 missingFields.add("userDetails.name");
             }
+
             if (registrationForm.getSurname() == null || registrationForm.getSurname().isBlank()) {
                 missingFields.add("userDetails.surname");
             }
+
             if (registrationForm.getEmail() == null || registrationForm.getEmail().isBlank()) {
                 missingFields.add("userDetails.email");
             }
+
             if (registrationForm.getCity() == null || registrationForm.getCity().isBlank()) {
                 missingFields.add("userDetails.city");
             }
+
             if (registrationForm.getProvince() == null || registrationForm.getProvince().isBlank()) {
                 missingFields.add("userDetails.province");
             }
+
             if (registrationForm.getNumber() == null || registrationForm.getNumber().isBlank()) {
                 missingFields.add("userDetails.number");
             }
+
             if (registrationForm.getPostalCode() == null || registrationForm.getPostalCode().isBlank()) {
                 missingFields.add("userDetails.postalCode");
             }
+
             if (registrationForm.getBirthDate() == null || registrationForm.getBirthDate().isBlank()) {
                 missingFields.add("userDetails.birthDate");
             }
+
             if (registrationForm.getGovID() == null || registrationForm.getGovID().isBlank()) {
                 missingFields.add("userDetails.govID");
             }
+
             if (registrationForm.getPhoneNumber() == null || registrationForm.getPhoneNumber().isBlank()) {
                 missingFields.add("userDetails.phoneNumber");
             }
         }
 
         if (Stream.of(2, 6, 14).anyMatch(code -> code == comboForm.getRoleCode())) {
+
             if (comboForm.getDoctorDetails() == null) {
                 missingFields.add("doctorDetails");
             } else {
+
                 DoctorUpdateForm doctorUpdateForm = comboForm.getDoctorDetails();
                 if (doctorUpdateForm.getLicenceNumber() == null) {
                     missingFields.add("doctorDetails.licenceNumber");
                 }
+
                 if (doctorUpdateForm.getSpecialisations() == null || doctorUpdateForm.getSpecialisations().isEmpty()) {
                     missingFields.add("doctorDetails.specialisations");
                 }
