@@ -34,6 +34,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.Logout
@@ -48,6 +50,8 @@ import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.R
 import com.medipath.core.models.NavTab
+import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.patient.home.ui.HomeActivity
 import com.medipath.modules.patient.visits.ui.VisitsActivity
@@ -71,12 +76,15 @@ import com.medipath.modules.patient.prescriptions.ui.PrescriptionsActivity
 import com.medipath.modules.patient.referrals.ui.ReferralsActivity
 import com.medipath.modules.patient.medical_history.ui.MedicalHistoryActivity
 import com.medipath.modules.patient.comments.ui.CommentsActivity
+import com.medipath.modules.patient.notifications.NotificationsViewModel
 import com.medipath.modules.patient.reminders.ui.RemindersActivity
+import com.medipath.modules.shared.components.NavigationRouter.notificationsViewModel
+import com.medipath.modules.shared.profile.ui.EditProfileActivity
 import kotlinx.coroutines.launch
 
 object NavigationRouter {
     private var isNavigating = false
-    
+    val notificationsViewModel = NotificationsViewModel()
     fun navigateToTab(context: Context, tab: String, currentTab: String) {
         if (isNavigating) return
         if (tab == currentTab) return
@@ -127,6 +135,15 @@ fun Navigation(
     var showUserMenu by remember { mutableStateOf(false) }
     var showRoleMenu by remember { mutableStateOf(false) }
     var isNavigating by remember { mutableStateOf(false) }
+    val sessionManager = remember { DataStoreSessionManager(context) }
+    
+    LaunchedEffect(Unit) {
+        notificationsViewModel.fetchNotifications(sessionManager)
+    }
+    val notifications by notificationsViewModel.notifications
+    val unreadNotificationsCount by remember {
+        derivedStateOf { notifications.count { !it.read } }
+    }
 
     val tabs = listOf(
         NavTab("Dashboard", Icons.Outlined.Home, colors.dashboardIcon),
@@ -218,20 +235,11 @@ fun Navigation(
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {  }
+                        .clickable(enabled = !isNavigating) {
+                            context.startActivity(Intent(context, EditProfileActivity::class.java))
+                        }
                         .padding(horizontal = 20.dp, vertical = 18.dp),
                 )
-//                Button(
-//                    onClick = onLogoutClick,
-//                    colors = ButtonDefaults.buttonColors(
-//                        contentColor = MaterialTheme.colorScheme.background
-//                    ),
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(horizontal = 20.dp)
-//                ) {
-//                    Text("LOGOUT")
-//                }
             }
         }
     ) {
@@ -279,11 +287,28 @@ fun Navigation(
                                     .background(color = MaterialTheme.colorScheme.background, shape = CircleShape),
                                 contentAlignment = Alignment.Center
                             ){
-                                Icon(
-                                    Icons.Default.Notifications,
-                                    contentDescription = "Notifications",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
+                                BadgedBox(
+                                    badge = {
+                                        if (unreadNotificationsCount > 0) {
+                                            Badge(
+                                                containerColor = colors.orange800,
+                                                contentColor = Color.White
+                                            ) {
+                                                Text(
+                                                    text = if (unreadNotificationsCount > 99) "99+" else unreadNotificationsCount.toString(),
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Notifications,
+                                        contentDescription = "Notifications",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             }
                         }
                         

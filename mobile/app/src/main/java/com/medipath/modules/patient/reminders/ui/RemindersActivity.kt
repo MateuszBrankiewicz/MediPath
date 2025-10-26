@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -118,6 +119,7 @@ fun RemindersScreen(
     val searchQuery by remindersViewModel.searchQuery
 
     var showFilters by remember { mutableStateOf(false) }
+    var selectedTab by remember { mutableStateOf("Received") }
 
     LaunchedEffect(Unit) {
         profileViewModel.fetchUserProfile(sessionManager)
@@ -163,6 +165,11 @@ fun RemindersScreen(
                         totalReminders = totalReminders,
                         unreadReminders = unreadReminders,
                         todayReminders = todayReminders
+                    )
+
+                    TabSelector(
+                        selectedTab = selectedTab,
+                        onTabSelected = { selectedTab = it }
                     )
 
                     ActionButtonsRow(
@@ -237,6 +244,73 @@ fun RemindersScreen(
 }
 
 @Composable
+fun TabSelector(
+    selectedTab: String,
+    onTabSelected: (String) -> Unit
+) {
+    val colors = LocalCustomColors.current
+    
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 10.dp)
+            .padding(top = 7.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Button(
+            onClick = { onTabSelected("Received") },
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (selectedTab == "Received") colors.blue900 else MaterialTheme.colorScheme.surface,
+                contentColor = if (selectedTab == "Received") MaterialTheme.colorScheme.background else colors.blue900
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = if (selectedTab == "Received") 4.dp else 0.dp
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.Inbox,
+                contentDescription = null,
+                modifier = Modifier.size(15.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "RECEIVED",
+                fontSize = 12.sp,
+                fontWeight = if (selectedTab == "Received") FontWeight.Bold else FontWeight.Normal
+            )
+        }
+
+        Button(
+            onClick = { onTabSelected("Scheduled") },
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (selectedTab == "Scheduled") colors.blue900 else MaterialTheme.colorScheme.surface,
+                contentColor = if (selectedTab == "Scheduled") MaterialTheme.colorScheme.background else colors.blue900
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = if (selectedTab == "Scheduled") 4.dp else 0.dp
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.Schedule,
+                contentDescription = null,
+                modifier = Modifier.size(15.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "SCHEDULED",
+                fontSize = 12.sp,
+                fontWeight = if (selectedTab == "Scheduled") FontWeight.Bold else FontWeight.Normal
+            )
+        }
+    }
+}
+
+@Composable
 fun StatisticsCards(
     totalReminders: Int,
     unreadReminders: Int,
@@ -247,7 +321,8 @@ fun StatisticsCards(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(top = 16.dp)
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Card(
@@ -379,47 +454,6 @@ fun ActionButtonsRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-            OutlinedButton(
-            onClick = onShowFilters,
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(30.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = colors.blue800
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Default.FilterList,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("FILTERS", fontSize = 12.sp)
-        }
-
-            OutlinedButton(
-            onClick = onClearFilters,
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(30.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.error
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Default.Clear,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("CLEAR FILTERS", fontSize = 12.sp)
-        }
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -472,6 +506,47 @@ fun ActionButtonsRow(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text("MARK ALL", fontSize = 11.sp)
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        OutlinedButton(
+            onClick = onShowFilters,
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(30.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = colors.blue800
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.FilterList,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("FILTERS", fontSize = 12.sp)
+        }
+
+        OutlinedButton(
+            onClick = onClearFilters,
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(30.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.error
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.Clear,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("CLEAR FILTERS", fontSize = 12.sp)
         }
     }
 }

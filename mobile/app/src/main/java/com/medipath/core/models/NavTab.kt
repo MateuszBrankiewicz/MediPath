@@ -1,9 +1,10 @@
 package com.medipath.core.models
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 
 data class NavTab(
     val name: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val iconTint: Color
 )

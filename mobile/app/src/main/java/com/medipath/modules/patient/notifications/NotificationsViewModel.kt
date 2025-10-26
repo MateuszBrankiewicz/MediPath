@@ -24,6 +24,9 @@ class NotificationsViewModel(
     private val _error = mutableStateOf("")
     val error: State<String> = _error
 
+    val unreadCount: Int
+        get() = _notifications.value.count { !it.read }
+
     fun fetchNotifications(sessionManager: DataStoreSessionManager) {
         viewModelScope.launch {
             try {
