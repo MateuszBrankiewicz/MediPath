@@ -108,7 +108,7 @@ public class InstitutionController {
 
         try {
 
-                         authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
+            authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
 
             Institution institution = institutionService.getInstitution(institutionid)
                     .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
@@ -169,7 +169,7 @@ public class InstitutionController {
 
         try {
 
-                         authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
+            authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
 
             employeeManagementService.removeEmployee(institutionid, userId, loggedUserID);
             return new ResponseEntity<>(HttpStatus.OK);
@@ -189,7 +189,7 @@ public class InstitutionController {
             String loggedUserID = (String) session.getAttribute("id");
             boolean isEmployee = false;
             try {
-                                 authorizationService.startAuthChain(loggedUserID, id).employeeOfInstitution().check();
+                authorizationService.startAuthChain(loggedUserID, id).employeeOfInstitution().check();
                 isEmployee = true;
             } catch (IllegalAccessException _) {
 
@@ -210,7 +210,7 @@ public class InstitutionController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         try {
-                         authorizationService.startAuthChain(loggedUserID, institutionid).employeeOfInstitution().check();
+            authorizationService.startAuthChain(loggedUserID, institutionid).employeeOfInstitution().check();
         } catch (IllegalAccessException e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -258,7 +258,7 @@ public class InstitutionController {
 
 
         try {
-                         authorizationService.startAuthChain(loggedUserID, institutionid).employeeOfInstitution().check();
+            authorizationService.startAuthChain(loggedUserID, institutionid).employeeOfInstitution().check();
 
             ArrayList<Schedule> schedules = queryService.getSchedules(institutionid, date);
             return new ResponseEntity<>(Map.of("schedules", schedules), HttpStatus.OK);
