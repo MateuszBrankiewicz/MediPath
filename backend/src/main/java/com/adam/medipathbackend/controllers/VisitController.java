@@ -119,7 +119,7 @@ public class VisitController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         try {
-            Visit visit = visitService.getVisitDetails(visitid, loggedUserID);
+            Map<String, Object> visit = visitService.getVisitDetails(visitid, loggedUserID);
             return new ResponseEntity<>(Map.of("visit", visit), HttpStatus.OK);
         } catch(IllegalAccessException ise) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
