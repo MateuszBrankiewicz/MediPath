@@ -928,3 +928,18 @@ doctorDetails: {
 - 401
 - 403 - User not a doctor
 - 200 
+
+
+### /notifications/
+#### Method: DELETE
+
+#### Body:
+- title - title of the notifications to remove
+- reminderTime - time a notification occurs at
+- startDate - first date to start deleting notifications from
+- endDate - last date to delete notification at
+
+#### Returns:
+- 401
+- 400 - missing field or no notification matches criteria
+- 200 - success

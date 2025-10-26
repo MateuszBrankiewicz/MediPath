@@ -8,6 +8,7 @@ import com.adam.medipathbackend.repository.UserRepository;
 import com.adam.medipathbackend.repository.VisitRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
@@ -140,5 +141,44 @@ public class NotificationService {
         if (notificationForm.getTitle() == null || notificationForm.getTitle().isBlank()) missingFields.add("title");
 
         return missingFields;
+    }
+
+    public boolean isTimeBetween(LocalDateTime timeStamp, LocalDateTime lower, LocalDateTime upper) {
+        return !(timeStamp.isBefore(lower) || timeStamp.isAfter(upper));
+    }
+
+    private boolean notificationMatches(Notification notification, AddNotificationForm notificationForm) {
+        return isTimeBetween(notification.getTimestamp(), notificationForm.getStartDate().atStartOfDay(), notificationForm.getEndDate().plusDays(1).atStartOfDay())
+                && notification.getTitle().equals(notificationForm.getTitle())
+                && notification.getTimestamp().toLocalTime().equals(notificationForm.getReminderTime());
+    }
+
+
+    public void removeNotifications(AddNotificationForm notificationForm, String loggedUserID) throws IllegalAccessException {
+        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
+
+        if(notificationForm.getTitle() == null || notificationForm.getTitle().isBlank()) {
+            throw new IllegalArgumentException("missing title");
+        }
+        if(notificationForm.getReminderTime() == null) {
+            throw new IllegalArgumentException("missing reminderTime");
+        }
+        if(notificationForm.getStartDate() == null) {
+            throw new IllegalArgumentException("missing startDate");
+        }
+        if(notificationForm.getEndDate() == null) {
+            throw new IllegalArgumentException("missing endDate");
+        }
+
+
+        User user = userOpt.get();
+        ArrayList<Notification> notifications = user.getNotifications();
+
+        if (!notifications.removeIf(notification -> notificationMatches(notification, notificationForm)))
+            throw new IllegalArgumentException("No notification matches criteria");
+
+        user.setNotifications(notifications);
+        userRepository.save(user);
     }
 }

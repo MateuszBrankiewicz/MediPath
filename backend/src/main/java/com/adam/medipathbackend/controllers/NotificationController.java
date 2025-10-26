@@ -86,4 +86,24 @@ public class NotificationController {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
         }
     }
+
+    @DeleteMapping(value = {"/", ""})
+    public ResponseEntity<Map<String, Object>> removeNotification(@RequestBody AddNotificationForm notificationForm, HttpSession session) {
+
+        String loggedUserID = (String) session.getAttribute("id");
+        if (loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+
+            notificationService.removeNotifications(notificationForm, loggedUserID);
+            return new ResponseEntity<>(Map.of("message", "Notifications removed successfully"), HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
+        }
+    }
 }
