@@ -5,6 +5,9 @@ import com.medipath.core.services.AuthService
 import com.medipath.core.services.UserService
 import com.medipath.core.services.LocationService
 import com.medipath.core.services.SearchService
+import com.medipath.core.services.NotificationsService
+import com.medipath.core.services.VisitsService
+import com.medipath.core.services.CommentsService
 import com.medipath.utils.MyCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -27,6 +30,10 @@ object RetrofitInstance {
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
+    }
+
+    public fun getBaseUrl(): String {
+        return BASE_URL;
     }
 
     private val okHttpClient: OkHttpClient by lazy {
@@ -61,6 +68,18 @@ object RetrofitInstance {
 
     val searchService: SearchService by lazy {
         retrofit.create(SearchService::class.java)
+    }
+
+    val notificationsService: NotificationsService by lazy {
+        retrofit.create(NotificationsService::class.java)
+    }
+
+    val visitsService: VisitsService by lazy {
+        retrofit.create(VisitsService::class.java)
+    }
+
+    val commentsService: CommentsService by lazy {
+        retrofit.create(CommentsService::class.java)
     }
 
     fun getSessionManager(): DataStoreSessionManager {

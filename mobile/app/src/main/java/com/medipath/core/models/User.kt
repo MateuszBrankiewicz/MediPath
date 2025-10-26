@@ -18,7 +18,6 @@ data class User(
     val rating: Double,
     val employers: List<Employer>,
     val active: Boolean,
-    val notifications: List<Notification>,
     val pfpImage: String,
     val numOfRatings: Int
 )

@@ -1,12 +1,9 @@
 package com.medipath.modules.patient.notifications.ui
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,10 +13,12 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,6 +28,7 @@ import com.medipath.core.theme.MediPathTheme
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.modules.patient.notifications.NotificationsViewModel
+import com.medipath.modules.shared.components.NavigationRouter
 import com.medipath.core.models.Notification
 
 class NotificationsActivity : ComponentActivity() {
@@ -47,16 +47,6 @@ class NotificationsActivity : ComponentActivity() {
             }
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-        try {
-            val vm = androidx.lifecycle.ViewModelProvider(this).get(NotificationsViewModel::class.java)
-            vm.fetchNotifications(sessionManager)
-        } catch (e: Exception) {
-            android.util.Log.e("NotificationsActivity", "Error fetching notifications onResume", e)
-        }
-    }
 }
 
 @Composable
@@ -71,15 +61,14 @@ fun NotificationsScreen(
     val error by viewModel.error
     val context = LocalContext.current
 
-    val detailsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == android.app.Activity.RESULT_OK) {
-            viewModel.fetchNotifications(sessionManager)
-        }
+    LaunchedEffect(Unit) {
+        viewModel.fetchNotifications(sessionManager)
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(WindowInsets.navigationBars.asPaddingValues())
             .background(MaterialTheme.colorScheme.secondary)
     ) {
         Row(
@@ -161,39 +150,82 @@ fun NotificationsScreen(
                 }
             }
             else -> {
-                Column {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(modifier = Modifier.fillMaxSize()) {
                         Button(
                             onClick = { viewModel.markAllAsRead(sessionManager) },
-                            shape = RoundedCornerShape(24.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            shape = RoundedCornerShape(30.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colors.blue900
+                            )
                         ) {
+                            Icon(
+                                imageVector = Icons.Default.NotificationsActive,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Mark all as read",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                text = "MARK ALL AS READ",
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.background.copy(alpha = 0.15f))
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp)
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            items(notifications) { notification ->
+                                NotificationItem(notification = notification)
+                                HorizontalDivider(color = MaterialTheme.colorScheme.background.copy(alpha = 0.15f))
+                            }
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.background.copy(alpha = 0.15f))
                     }
 
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter),
+                        shadowElevation = 8.dp,
+                        tonalElevation = 2.dp,
+                        color = colors.blue900
                     ) {
-                        itemsIndexed(notifications) { index, notification ->
-                            NotificationItem(notification = notification) {
-                                val intent = Intent(context, NotificationDetailsActivity::class.java).apply {
-                                    putExtra("notification", notification)
-                                    putExtra("notification_index", index)
-                                }
-                                detailsLauncher.launch(intent)
+                        TextButton(
+                            onClick = { 
+                                NavigationRouter.navigateToTab(context, "Reminders", "Notifications")
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 16.dp),
+                            shape = RoundedCornerShape(0.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "SEE ALL REMINDERS",
+                                    fontSize = 15.sp,
+                                    color = MaterialTheme.colorScheme.background
+                                )
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.background
+                                )
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
                 }
@@ -203,80 +235,79 @@ fun NotificationsScreen(
 }
 
 @Composable
-fun NotificationItem(notification: Notification, onClick: () -> Unit) {
+fun NotificationItem(notification: Notification) {
     val colors = LocalCustomColors.current
-    val timestamp = notification.timestamp
-    val dateTime = "${String.format("%02d", timestamp[2])}.${String.format("%02d", timestamp[1])}.${timestamp[0]} ${String.format("%02d", timestamp[3])}:${String.format("%02d", timestamp[4])}"
+    val backgroundColor = if (!notification.read) MaterialTheme.colorScheme.primary.copy(alpha = 0.05f) else MaterialTheme.colorScheme.background
+    val iconColor = if (notification.system) colors.blue800 else colors.green800
+    
+    val dateTime = try {
+        val parts = notification.timestamp.split("T")
+        val dateParts = parts[0].split("-")
+        val timeParts = parts[1].split(":")
+        "${dateParts[2]}.${dateParts[1]}.${dateParts[0]} ${timeParts[0]}:${timeParts[1]}"
+    } catch (e: Exception) {
+        notification.timestamp
+    }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (notification.read)
-                MaterialTheme.colorScheme.surface
-            else
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = backgroundColor
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Icon(
-                imageVector = if (notification.system)
-                    Icons.Default.NotificationsActive
-                else
-                    Icons.Default.Notifications,
-                contentDescription = null,
-                modifier = Modifier.size(28.dp),
-                tint = if (notification.system) colors.blue800 else colors.orange800
-            )
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        color = iconColor.copy(alpha = 0.1f),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = null,
+                    tint = iconColor,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
 
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = notification.title,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    if (!notification.read) {
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = RoundedCornerShape(5.dp)
-                                )
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = notification.title,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
 
                 Text(
                     text = notification.content,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = 18.sp
                 )
-
-                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = dateTime,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            if (!notification.read) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = CircleShape
+                        )
                 )
             }
         }

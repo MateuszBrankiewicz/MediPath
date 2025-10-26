@@ -24,7 +24,7 @@ data class CustomColors(
     val referralsIcon: Color,
     val medicalHistoryIcon: Color,
     val commentsIcon: Color,
-    val remindersIcon: Color,
+    val remindersIcon: Color
 )
 
 val LocalCustomColors = staticCompositionLocalOf {

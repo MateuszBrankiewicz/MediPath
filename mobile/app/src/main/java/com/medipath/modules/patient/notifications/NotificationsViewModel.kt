@@ -7,12 +7,12 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import android.util.Log
 import com.medipath.core.models.Notification
-import com.medipath.core.services.UserService
+import com.medipath.core.services.NotificationsService
 import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
 
 class NotificationsViewModel(
-    private val userService: UserService = RetrofitInstance.userService
+    private val notificationsService: NotificationsService = RetrofitInstance.notificationsService
 ) : ViewModel() {
 
     private val _notifications = mutableStateOf<List<Notification>>(emptyList())
@@ -33,14 +33,16 @@ class NotificationsViewModel(
                 val token = sessionManager.getSessionId()
                 if (token.isNullOrEmpty()) {
                     _error.value = "No session ID found"
+                    _isLoading.value = false
                     return@launch
                 }
 
-                val profileResponse = userService.getNotificationsFromProfile("SESSION=$token")
-                _notifications.value = profileResponse.user.notifications
+                val notificationsResponse = notificationsService.getUserNotifications("SESSION=$token")
+                _notifications.value = notificationsResponse.notifications
 
             } catch (e: Exception) {
                 _error.value = "Error fetching notifications: ${e.message}"
+                Log.e("NotificationsViewModel", "Error fetching notifications", e)
             } finally {
                 _isLoading.value = false
             }
@@ -54,16 +56,18 @@ class NotificationsViewModel(
     fun markAllAsRead(sessionManager: DataStoreSessionManager) {
         viewModelScope.launch {
             try {
-                val token = sessionManager.getSessionId()
-                if (token.isNullOrEmpty()) return@launch
+                val sessionId = sessionManager.getSessionId()
+                if (sessionId == null) return@launch
 
-                // TODO: Dodaj endpint oznacz wszstkie jako przczytane
-                _notifications.value = _notifications.value.map { it.copy(read = true) }
+                val response = notificationsService.markAllNotificationsAsRead("SESSION=$sessionId")
+                if (response.isSuccessful) {
+                    _notifications.value = _notifications.value.map { it.copy(read = true) }
+                } else {
+                    Log.e("NotificationsViewModel", "Failed to mark all as read: ${response.code()}")
+                }
             } catch (e: Exception) {
-                Log.e("NotificationsViewModel", "Error marking all as read: $e")
+                Log.e("NotificationsViewModel", "Error marking all as read", e)
             }
         }
     }
-
-
 }
