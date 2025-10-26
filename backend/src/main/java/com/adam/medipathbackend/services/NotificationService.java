@@ -143,7 +143,7 @@ public class NotificationService {
         return missingFields;
     }
 
-    public boolean isTimeBetween(LocalDateTime timeStamp, LocalDateTime lower, LocalDateTime upper) {
+    private boolean isTimeBetween(LocalDateTime timeStamp, LocalDateTime lower, LocalDateTime upper) {
         return !(timeStamp.isBefore(lower) || timeStamp.isAfter(upper));
     }
 

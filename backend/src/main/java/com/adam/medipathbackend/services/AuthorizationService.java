@@ -95,7 +95,7 @@ public class AuthorizationService {
     }
 
     public AuthorizationService doctorInVisit(Visit visit) throws IllegalAccessException {
-        if(!visit.getPatient().getUserId().equals(userId)) {
+        if(!visit.getDoctor().getUserId().equals(userId)) {
             if (!allowAnyMatch) {
                 throw new IllegalAccessException();
             }
