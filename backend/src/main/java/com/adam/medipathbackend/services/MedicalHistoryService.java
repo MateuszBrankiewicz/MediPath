@@ -19,6 +19,9 @@ public class MedicalHistoryService {
     @Autowired
     VisitRepository visitRepository;
 
+    @Autowired
+    private AuthorizationService authorizationService;
+
     public void addMedicalHistory(MedicalHistory medicalHistory, String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
 
         ArrayList<String> missingFields = new ArrayList<>();
@@ -47,7 +50,7 @@ public class MedicalHistoryService {
 
             if (!medicalHistory.getDoctor().getUserId().equals(loggedUserID)) throw new IllegalAccessException();
 
-            AuthorizationService authorizationService = new AuthorizationService();
+
             authorizationService.startAuthChain(loggedUserID, null).doctorServedPatient(medicalHistory.getUserId());
 
             Optional<User> doctorOpt = userRepository.findById(medicalHistory.getDoctor().getUserId());

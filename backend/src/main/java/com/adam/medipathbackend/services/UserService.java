@@ -52,6 +52,9 @@ public class UserService {
     @Autowired
     JavaMailSender sender;
 
+    @Autowired
+    private AuthorizationService authorizationService;
+
 
     public Map<String, Object> resetPassword(String address) {
         if (address == null || address.isBlank()) {
@@ -554,7 +557,7 @@ public class UserService {
             throw new IllegalStateException();
         }
 
-        AuthorizationService authorizationService = new AuthorizationService();
+
         authorizationService.startAuthChain(loggedUserID, null).doctorServedPatient(patientId).check();
 
         return getMyMedicalHistories(patientId);

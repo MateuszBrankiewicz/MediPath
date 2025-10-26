@@ -27,6 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class VisitService {
 
+
+    @Autowired
+    private AuthorizationService authorizationService;
+
     public Schedule validateVisitForm(AddVisitForm visit) {
 
         if(visit.getScheduleID() == null || visit.getScheduleID().isBlank()) {
@@ -40,7 +44,7 @@ public class VisitService {
         return schedule.get();
     }
 
-    @Transactional
+    
     public void addVisit(AddVisitForm visit, User foundUser) {
 
         if(visit.getPatientRemarks() == null) {
@@ -84,7 +88,7 @@ public class VisitService {
         visitRepository.save(newVisit);
     }
 
-    @Transactional
+        
     public void cancelVisit(String visitid, String loggedUserID) throws IllegalAccessException {
 
         Optional<Visit> optVisit = visitRepository.findById(visitid);
@@ -92,8 +96,7 @@ public class VisitService {
             throw new IllegalStateException();
         }
         Visit visitToCancel = optVisit.get();
-        AuthorizationService authorizationService = new AuthorizationService();
-
+        
         authorizationService.startAuthChain(loggedUserID, visitToCancel.getInstitution().getInstitutionId()).matchAnyPermission().
                 patientInVisit(visitToCancel).employeeOfInstitution().check();
 
@@ -156,7 +159,7 @@ public class VisitService {
     }
 
 
-    @Transactional
+        
     public Visit rescheduleVisit(String visitid, String newScheduleId, String loggedUserID) throws IllegalAccessException {
 
         if(newScheduleId.isBlank()) {
@@ -169,7 +172,7 @@ public class VisitService {
         }
 
         Visit visitToReschedule = optVisit.get();
-        AuthorizationService authorizationService = new AuthorizationService();
+            
 
         authorizationService.startAuthChain(loggedUserID, visitToReschedule.getInstitution().getInstitutionId()).matchAnyPermission().
                 patientInVisit(visitToReschedule).employeeOfInstitution().check();
@@ -240,7 +243,7 @@ public class VisitService {
     }
 
 
-    @Transactional
+        
     public Visit completeVisit(String visitid, CompleteVisitForm completionForm, String loggedUserID) throws IllegalAccessException {
         Optional<Visit> optVisit = visitRepository.findById(visitid);
         if(optVisit.isEmpty()) {
@@ -248,7 +251,7 @@ public class VisitService {
         }
         Visit visit = optVisit.get();
 
-        AuthorizationService authorizationService = new AuthorizationService();
+            
         authorizationService.startAuthChain(loggedUserID, null).doctorInVisit(visit).check();
 
         if(visit.getStatus().equals("Completed")) {
@@ -274,7 +277,7 @@ public class VisitService {
     }
 
 
-    @Transactional
+        
     public Visit getVisitDetails(String visitid, String loggedUserID) throws IllegalAccessException {
 
         Optional<Visit> optVisit = visitRepository.findById(visitid);
@@ -283,7 +286,7 @@ public class VisitService {
         }
         Visit visit = optVisit.get();
 
-        AuthorizationService authorizationService = new AuthorizationService();
+            
         authorizationService.startAuthChain(loggedUserID, visit.getInstitution().getInstitutionId()).matchAnyPermission()
                 .patientInVisit(visit).doctorOfInstitution().employeeOfInstitution().check();
 
