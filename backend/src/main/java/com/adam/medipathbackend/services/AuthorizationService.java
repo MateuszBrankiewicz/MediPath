@@ -42,7 +42,7 @@ public class AuthorizationService {
     }
 
     public void check() throws IllegalAccessException {
-        if(succeses < 1) {
+        if(allowAnyMatch && succeses < 1) {
             throw new IllegalAccessException();
         }
     }
@@ -50,11 +50,11 @@ public class AuthorizationService {
 
     public AuthorizationService adminOfInstitution() throws IllegalAccessException {
         if (institutionRepository.findAdminById(userId, institutionid).isEmpty()) {
-            if (allowAnyMatch) {
+            if (!allowAnyMatch) {
                 throw new IllegalAccessException();
-            } else {
-                succeses += 1;
             }
+        } else {
+            succeses += 1;
         }
         return this;
 
@@ -62,11 +62,11 @@ public class AuthorizationService {
 
     public AuthorizationService employeeOfInstitution() throws IllegalAccessException {
         if (institutionRepository.findStaffById(userId, institutionid).isEmpty()) {
-            if (allowAnyMatch) {
+            if (!allowAnyMatch) {
                 throw new IllegalAccessException();
-            } else {
-                succeses += 1;
             }
+        } else {
+            succeses += 1;
         }
         return this;
     }
@@ -75,10 +75,10 @@ public class AuthorizationService {
         if (institutionRepository.findDoctorById(userId, institutionid).isEmpty()) {
             if (!allowAnyMatch) {
                 throw new IllegalAccessException();
-            } else {
-                succeses += 1;
             }
 
+        } else {
+            succeses += 1;
         }
         return this;
     }
@@ -87,20 +87,20 @@ public class AuthorizationService {
         if(!visit.getPatient().getUserId().equals(userId)) {
             if (!allowAnyMatch) {
                 throw new IllegalAccessException();
-            } else {
-                succeses += 1;
             }
+        } else {
+            succeses += 1;
         }
         return this;
     }
 
     public AuthorizationService doctorInVisit(Visit visit) throws IllegalAccessException {
-        if(!visit.getPatient().getUserId().equals(userId)) {
+        if(!visit.getDoctor().getUserId().equals(userId)) {
             if (!allowAnyMatch) {
                 throw new IllegalAccessException();
-            } else {
-                succeses += 1;
             }
+        } else {
+            succeses += 1;
         }
         return this;
     }
@@ -109,9 +109,9 @@ public class AuthorizationService {
         if(!Utils.isValidMongoOID(patientId) || visitRepository.getAllVisitsForPatientWithDoctor(patientId, userId).isEmpty()) {
             if (!allowAnyMatch) {
                 throw new IllegalAccessException();
-            } else {
-                succeses += 1;
             }
+        } else {
+            succeses += 1;
         }
         return this;
     }

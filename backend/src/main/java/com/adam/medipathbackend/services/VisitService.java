@@ -20,12 +20,18 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VisitService {
+
+
+    @Autowired
+    private AuthorizationService authorizationService;
 
     public Schedule validateVisitForm(AddVisitForm visit) {
 
@@ -40,7 +46,7 @@ public class VisitService {
         return schedule.get();
     }
 
-    @Transactional
+    
     public void addVisit(AddVisitForm visit, User foundUser) {
 
         if(visit.getPatientRemarks() == null) {
@@ -84,7 +90,7 @@ public class VisitService {
         visitRepository.save(newVisit);
     }
 
-    @Transactional
+        
     public void cancelVisit(String visitid, String loggedUserID) throws IllegalAccessException {
 
         Optional<Visit> optVisit = visitRepository.findById(visitid);
@@ -92,8 +98,7 @@ public class VisitService {
             throw new IllegalStateException();
         }
         Visit visitToCancel = optVisit.get();
-        AuthorizationService authorizationService = new AuthorizationService();
-
+        
         authorizationService.startAuthChain(loggedUserID, visitToCancel.getInstitution().getInstitutionId()).matchAnyPermission().
                 patientInVisit(visitToCancel).employeeOfInstitution().check();
 
@@ -156,7 +161,7 @@ public class VisitService {
     }
 
 
-    @Transactional
+        
     public Visit rescheduleVisit(String visitid, String newScheduleId, String loggedUserID) throws IllegalAccessException {
 
         if(newScheduleId.isBlank()) {
@@ -169,7 +174,7 @@ public class VisitService {
         }
 
         Visit visitToReschedule = optVisit.get();
-        AuthorizationService authorizationService = new AuthorizationService();
+            
 
         authorizationService.startAuthChain(loggedUserID, visitToReschedule.getInstitution().getInstitutionId()).matchAnyPermission().
                 patientInVisit(visitToReschedule).employeeOfInstitution().check();
@@ -240,7 +245,7 @@ public class VisitService {
     }
 
 
-    @Transactional
+        
     public Visit completeVisit(String visitid, CompleteVisitForm completionForm, String loggedUserID) throws IllegalAccessException {
         Optional<Visit> optVisit = visitRepository.findById(visitid);
         if(optVisit.isEmpty()) {
@@ -248,7 +253,7 @@ public class VisitService {
         }
         Visit visit = optVisit.get();
 
-        AuthorizationService authorizationService = new AuthorizationService();
+            
         authorizationService.startAuthChain(loggedUserID, null).doctorInVisit(visit).check();
 
         if(visit.getStatus().equals("Completed")) {
@@ -274,8 +279,8 @@ public class VisitService {
     }
 
 
-    @Transactional
-    public Visit getVisitDetails(String visitid, String loggedUserID) throws IllegalAccessException {
+        
+    public Map<String, Object> getVisitDetails(String visitid, String loggedUserID) throws IllegalAccessException, IllegalComponentStateException {
 
         Optional<Visit> optVisit = visitRepository.findById(visitid);
         if(optVisit.isEmpty()) {
@@ -283,11 +288,33 @@ public class VisitService {
         }
         Visit visit = optVisit.get();
 
-        AuthorizationService authorizationService = new AuthorizationService();
+            
         authorizationService.startAuthChain(loggedUserID, visit.getInstitution().getInstitutionId()).matchAnyPermission()
                 .patientInVisit(visit).doctorOfInstitution().employeeOfInstitution().check();
 
-        return visit;
+        String patientId = visit.getPatient().getUserId();
+        String doctorId = visit.getDoctor().getUserId();
+
+        Optional<User> doctorOpt = userRepository.findDoctorById(doctorId);
+        Optional<User> patientOpt = userRepository.findById(patientId);
+
+        if(doctorOpt.isEmpty()) {
+            throw new IllegalComponentStateException("doctor id corrupted");
+        }
+        if(patientOpt.isEmpty()) {
+            throw new IllegalComponentStateException("patient id corrupted");
+        }
+        String patientPhoto = patientOpt.get().getPfpimage();
+        String doctorPhoto = doctorOpt.get().getPfpimage();
+
+        Map<String, Object> visitWithPfp = new HashMap<>(Map.of("patient", visit.getPatient(), "patientPfp", patientPhoto,
+                "doctor", visit.getDoctor(), "doctorPfp", doctorPhoto,
+                "time", visit.getTime(), "institution", visit.getInstitution(),
+                "patientRemarks", visit.getPatientRemarks(), "id", visit.getId(),
+                "status", visit.getStatus(), "note", visit.getNote()));
+        visitWithPfp.put("codes", visit.getCodes());
+
+        return visitWithPfp;
     }
 
 
