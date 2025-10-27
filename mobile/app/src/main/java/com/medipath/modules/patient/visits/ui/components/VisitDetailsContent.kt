@@ -24,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.core.theme.LocalCustomColors
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun VisitDetailsContent(
@@ -32,6 +34,26 @@ fun VisitDetailsContent(
 ) {
     val colors = LocalCustomColors.current
     val scrollState = rememberScrollState()
+
+    val startDateTime = try {
+        val parsedDateTime = LocalDateTime.parse(
+            visitDetails.time.startTime,
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME
+        )
+        parsedDateTime.format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm"))
+    } catch (e: Exception) {
+        visitDetails.time.startTime
+    }
+
+    val endDateTime = try {
+        val parsedDateTime = LocalDateTime.parse(
+            visitDetails.time.endTime,
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME
+        )
+        parsedDateTime.format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm"))
+    } catch (e: Exception) {
+        visitDetails.time.endTime
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -93,8 +115,8 @@ fun VisitDetailsContent(
             }
 
             InfoCard(title = "Visit Time") {
-                InfoRow("Start", visitDetails.time.startTime)
-                InfoRow("End", visitDetails.time.endTime)
+                InfoRow("Start", startDateTime)
+                InfoRow("End", endDateTime)
             }
 
             InfoCard(title = "Institution") {

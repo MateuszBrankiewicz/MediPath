@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.core.models.Visit
 import com.medipath.core.theme.LocalCustomColors
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun VisitItem(
@@ -38,8 +40,17 @@ fun VisitItem(
     onReschedule: ((String) -> Unit)? = null
 ) {
     val colors = LocalCustomColors.current
-    val startTime = visit.time.startTime
-    val dateTime = startTime
+
+    val dateTime = try {
+        val parsedDateTime = LocalDateTime.parse(
+            visit.time.startTime,
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME
+        )
+        parsedDateTime.format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm"))
+    } catch (e: Exception) {
+        visit.time.startTime
+    }
+
     val status = visit.status.lowercase()
 
     var showCancelDialog by remember { mutableStateOf(false) }
