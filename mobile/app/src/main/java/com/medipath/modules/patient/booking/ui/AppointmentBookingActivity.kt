@@ -66,6 +66,7 @@ fun AppointmentBookingScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .padding(WindowInsets.navigationBars.asPaddingValues())
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {

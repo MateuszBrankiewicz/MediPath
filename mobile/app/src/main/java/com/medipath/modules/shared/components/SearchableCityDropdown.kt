@@ -93,10 +93,11 @@ fun SearchableCityDropdown(
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .widthIn(min = 350.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.onBackground,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(5.dp),
+                        color = MaterialTheme.colorScheme.onBackground
                     )
             ) {
                 filteredCities.take(5).forEach { cityItem ->

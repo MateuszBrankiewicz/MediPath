@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationCompat
@@ -51,12 +52,14 @@ import com.medipath.modules.patient.codes.ui.CodesActivity
 import com.medipath.modules.shared.components.InfoCard
 import com.medipath.modules.shared.components.MenuCard
 import com.medipath.modules.shared.components.Navigation
+import com.medipath.modules.shared.components.NavigationRouter
 import com.medipath.modules.shared.components.SearchBar
 import com.medipath.modules.shared.components.VisitItem
 import com.medipath.modules.patient.notifications.ui.NotificationsActivity
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.patient.home.HomeViewModel
-import com.medipath.modules.patient.notifications.ui.NotificationDetailsActivity
+import com.medipath.modules.shared.profile.ui.EditProfileActivity
+import com.medipath.modules.shared.settings.ui.SettingsActivity
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -87,16 +90,18 @@ class HomeActivity : ComponentActivity() {
             try {
                 val sessionManager = DataStoreSessionManager(this@HomeActivity)
                 val token = sessionManager.getSessionId()
+                Log.d("HomeActivity", "Loaded session token: ${token}")
                 notificationsService = UserNotificationsService(token)
 
                 val notificationSubscription = notificationsService.notifications
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { notification ->
-                            showNotification(notification.title, notification.content, notification.timestamp)
+                Log.d("HomeActivity", "Received notification: ${notification.title}")
+                showNotification(notification.title, notification.content, notification.timestamp)
                     }
                 activityDisposable.add(notificationSubscription)
-                notificationsService.connect("http://10.0.2.2:8080/ws")
+                notificationsService.connect(RetrofitInstance.getBaseUrl())
             } catch (e: Exception) {
                 Toast.makeText(this@HomeActivity, "Error initializing notifications service", Toast.LENGTH_LONG).show()
             }
@@ -167,11 +172,7 @@ class HomeActivity : ComponentActivity() {
             }
         }
         
-        val intent = Intent(this, NotificationDetailsActivity::class.java).apply {
-            putExtra("title", title)
-            putExtra("content", content)
-            putExtra("notification_ts", timestamp)
-        }
+        val intent = Intent(this, NotificationsActivity::class.java)
 
         val requestCode = (title + (timestamp ?: "")).hashCode()
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
@@ -228,6 +229,7 @@ fun HomeScreen(
     }
 
     val shouldRedirectToLogin by viewModel.shouldRedirectToLogin
+    val isLoading by viewModel.isLoading
 
     if (shouldRedirectToLogin) {
         Box(
@@ -242,17 +244,35 @@ fun HomeScreen(
             context.startActivity(Intent(context, LoginActivity::class.java))
             (context as? ComponentActivity)?.finish()
         }
+    } else if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
     } else {
         val firstName by viewModel.firstName
+        val lastName by viewModel.lastName
         val upcomingVisits by viewModel.upcomingVisits
         val deleteSuccess by viewModel.deleteSuccess
         val deleteError by viewModel.deleteError
         val prescriptionCode by viewModel.prescriptionCode
         val referralCode by viewModel.referralCode
-
+        var currentTab by remember { mutableStateOf("Dashboard") }
+        Log.d("HomeActivity", "Current tab: ${viewModel.referralCode}")
         Navigation(
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
+            },
+            onEditProfileClick = {
+                context.startActivity(Intent(context, EditProfileActivity::class.java))
+            },
+            onSettingsClick = {
+                context.startActivity(Intent(context, SettingsActivity::class.java))
+            },
+            onSelectRoleClick = {
+                Toast.makeText(context, "Select Role", Toast.LENGTH_SHORT).show()
             },
             content = { innerPadding ->
                 val colors = LocalCustomColors.current
@@ -289,6 +309,7 @@ fun HomeScreen(
                                 onClick = {
                                     val intent = Intent(context, CodesActivity::class.java)
                                     intent.putExtra("code_type", "PRESCRIPTION")
+                                    Log.d("HomeActivity", "User ID for intent: ${viewModel.getCurrentUserId()}")
                                     intent.putExtra("user_id", viewModel.getCurrentUserId())
                                     context.startActivity(intent)
                                 }
@@ -317,23 +338,29 @@ fun HomeScreen(
                                 MenuCard(
                                     icon = Icons.AutoMirrored.Outlined.List,
                                     title = "Visits",
-                                    onClick = { println("Visits clicked!") },
+                                    onClick = { 
+                                        NavigationRouter.navigateToTab(context, "Visits", "Dashboard")
+                                    },
                                     backgroundColor = colors.purple800,
                                     iconColor = colors.purple300
                                 )
 
                                 MenuCard(
                                     icon = Icons.Outlined.MedicalInformation,
-                                    title = "Medical History",
-                                    onClick = { println("History clicked!") },
+                                    title = "Medical history",
+                                    onClick = { 
+                                        NavigationRouter.navigateToTab(context, "Medical history", "Dashboard")
+                                    },
                                     backgroundColor = colors.blue800,
                                     iconColor = colors.blue300
                                 )
 
                                 MenuCard(
                                     icon = Icons.AutoMirrored.Outlined.Comment,
-                                    title = "Opinions",
-                                    onClick = { println("Opinions clicked!") },
+                                    title = "Comments",
+                                    onClick = { 
+                                        NavigationRouter.navigateToTab(context, "Comments", "Dashboard")
+                                    },
                                     backgroundColor = colors.orange800,
                                     iconColor = colors.orange300
                                 )
@@ -341,7 +368,9 @@ fun HomeScreen(
                                 MenuCard(
                                     icon = Icons.Outlined.Notifications,
                                     title = "Reminders",
-                                    onClick = { println("Reminders clicked!") },
+                                    onClick = { 
+                                        NavigationRouter.navigateToTab(context, "Reminders", "Dashboard")
+                                    },
                                     backgroundColor = colors.green800,
                                     iconColor = colors.green300
                                 )
@@ -411,20 +440,26 @@ fun HomeScreen(
                                     visit = visit,
                                     onCancelVisit = { visitId ->
                                         viewModel.cancelVisit(visitId, sessionManager)
+                                    },
+                                    onViewDetails = { visitId ->
+                                        val intent = Intent(context, com.medipath.modules.patient.visits.ui.VisitDetailsActivity::class.java)
+                                        intent.putExtra("VISIT_ID", visitId)
+                                        context.startActivity(intent)
+                                    },
+                                    onReschedule = { visitId ->
+                                        Toast.makeText(context, "Reschedule visit: $visitId", Toast.LENGTH_SHORT).show()
                                     }
                                 )
                                 HorizontalDivider()
                             }
                         }
                     }
-
-                    item {
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
                 }
             },
             onLogoutClick = onLogoutClick,
-            firstName = firstName
+            firstName = firstName,
+            lastName = lastName,
+            currentTab = currentTab
         )
 
         if (deleteSuccess) {

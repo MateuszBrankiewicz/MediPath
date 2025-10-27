@@ -8,15 +8,22 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.medipath.core.models.Visit
 import com.medipath.core.services.UserService
+import com.medipath.core.services.VisitsService
 import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
 
 class HomeViewModel(
-    private val userService: UserService = RetrofitInstance.userService
+    private val userService: UserService = RetrofitInstance.userService,
+    private val visitsService: VisitsService = RetrofitInstance.visitsService
 ) : ViewModel() {
 
+    private val _isLoading = mutableStateOf(true)
+    val isLoading: State<Boolean> = _isLoading
     private val _firstName = mutableStateOf("")
     val firstName: State<String> = _firstName
+    private val _lastName = mutableStateOf("")
+    val lastName: State<String> = _lastName
+
 
     private val _upcomingVisits = mutableStateOf<List<Visit>>(emptyList())
     val upcomingVisits: State<List<Visit>> = _upcomingVisits
@@ -47,25 +54,30 @@ class HomeViewModel(
 
     fun fetchUserProfile(sessionManager: DataStoreSessionManager) {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
                 val token = sessionManager.getSessionId()
                 if(token.isNullOrEmpty()) {
+                    _isLoading.value = false
                     return@launch
                 }
                 val userResponse = userService.getUserProfile("SESSION=$token")
                 _firstName.value = userResponse.user.name
+                _lastName.value = userResponse.user.surname
                 _userId.value = userResponse.user.id
                 fetchUpcomingVisits(token)
                 fetchActiveCodes(token)
             } catch (e: Exception) {
                 handleAuthError(sessionManager, e)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
     private suspend fun fetchUpcomingVisits(token: String) {
         try {
-            val visitsResponse = userService.getUpcomingVisits("true", "SESSION=$token")
+            val visitsResponse = visitsService.getUpcomingVisits("true", "SESSION=$token")
             _upcomingVisits.value = visitsResponse.visits
         } catch (e: retrofit2.HttpException) {
             Log.e("HomeViewModel", "HTTP Error ${e.code()}: ${e.message()}")
@@ -77,7 +89,6 @@ class HomeViewModel(
     private suspend fun fetchActiveCodes(token: String) {
         try {
             val codesResponse = userService.getAllUserCodes("SESSION=$token")
-
             if (codesResponse.isSuccessful) {
                 val codes = codesResponse.body()?.codes ?: emptyList()
                 val prescriptions = codes.filter { it.codes.codeType == "PRESCRIPTION" }
@@ -108,7 +119,7 @@ class HomeViewModel(
                     _deleteError.value = "Brak sesji użytkownika"
                     return@launch
                 }
-                val response = userService.cancelVisit(visitId, "SESSION=$token")
+                val response = visitsService.cancelVisit(visitId, "SESSION=$token")
 
                 if (response.isSuccessful) {
                     _deleteSuccess.value = true

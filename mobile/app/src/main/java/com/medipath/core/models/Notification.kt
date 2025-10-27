@@ -5,7 +5,7 @@ import java.io.Serializable
 data class Notification(
     val title: String,
     val content: String,
-    val timestamp: List<Int>,
+    val timestamp: String,
     val system: Boolean,
     val read: Boolean
 ) : Serializable

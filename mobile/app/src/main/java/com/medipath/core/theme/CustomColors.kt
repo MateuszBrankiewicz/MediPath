@@ -16,7 +16,15 @@ data class CustomColors(
     val orange300: Color,
     val green800: Color,
     val green300: Color,
-    val red800: Color
+    val red800: Color,
+    val tabBackground: Color,
+    val dashboardIcon: Color,
+    val visitsIcon: Color,
+    val prescriptionsIcon: Color,
+    val referralsIcon: Color,
+    val medicalHistoryIcon: Color,
+    val commentsIcon: Color,
+    val remindersIcon: Color
 )
 
 val LocalCustomColors = staticCompositionLocalOf {
@@ -31,6 +39,14 @@ val LocalCustomColors = staticCompositionLocalOf {
         orange300 = Color.Unspecified,
         green800 = Color.Unspecified,
         green300 = Color.Unspecified,
-        red800 = Color.Unspecified
+        red800 = Color.Unspecified,
+        tabBackground = Color.Unspecified,
+        dashboardIcon = Color.Unspecified,
+        visitsIcon = Color.Unspecified,
+        prescriptionsIcon = Color.Unspecified,
+        referralsIcon = Color.Unspecified,
+        medicalHistoryIcon = Color.Unspecified,
+        commentsIcon = Color.Unspecified,
+        remindersIcon = Color.Unspecified
     )
 }

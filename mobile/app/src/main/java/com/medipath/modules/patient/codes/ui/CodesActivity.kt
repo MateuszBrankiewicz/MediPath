@@ -39,6 +39,7 @@ class CodesActivity : ComponentActivity() {
             MediPathTheme {
                 val viewModel: CodesViewModel = viewModel()
                 val codes by viewModel.codes
+                val isLoading by viewModel.isLoading
                 val clipboardManager = LocalClipboardManager.current
                 var copiedCode by remember { mutableStateOf("") }
 
@@ -66,12 +67,14 @@ class CodesActivity : ComponentActivity() {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(WindowInsets.navigationBars.asPaddingValues())
                         .background(MaterialTheme.colorScheme.secondary)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(LocalCustomColors.current.blue900),
+                            .background(LocalCustomColors.current.blue900)
+                            .padding(top = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = { finish() }) {
@@ -90,7 +93,14 @@ class CodesActivity : ComponentActivity() {
                         )
                     }
 
-                    if (filteredCodes.isEmpty()) {
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else if (filteredCodes.isEmpty()) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()

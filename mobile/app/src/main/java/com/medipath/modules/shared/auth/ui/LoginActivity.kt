@@ -35,6 +35,8 @@ import com.medipath.modules.patient.home.ui.HomeActivity
 import com.medipath.modules.shared.auth.LoginViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import android.util.Log
 
 
 class LoginActivity : ComponentActivity() {
@@ -63,13 +65,23 @@ class LoginActivity : ComponentActivity() {
                 )
                 if (shouldNavigate && sessionId.isNotEmpty()) {
                     LaunchedEffect(sessionId) {
-                        lifecycleScope.launch {
-                            sessionManager.saveSessionId(sessionId)
+                        // Save session id on a background dispatcher and only navigate after it's saved
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                Log.d("LoginActivity", "Saving session id (masked): ${sessionId.take(8)}...")
+                                sessionManager.saveSessionId(sessionId)
+                                Log.d("LoginActivity", "Session id saved")
+                            } catch (e: Exception) {
+                                Log.e("LoginActivity", "Error saving session id: $e")
+                            }
+
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_LONG).show()
+                                val intent = Intent(this@LoginActivity, HomeActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                            }
                         }
-                        Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_LONG).show()
-                        val intent = Intent(this@LoginActivity, HomeActivity::class.java)
-                        startActivity(intent)
-                        finish()
                     }
                 }
             }
@@ -130,7 +142,7 @@ fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSig
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 30.dp),
+            modifier = Modifier.fillMaxSize().padding(WindowInsets.navigationBars.asPaddingValues()).background(MaterialTheme.colorScheme.background).padding(horizontal = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
