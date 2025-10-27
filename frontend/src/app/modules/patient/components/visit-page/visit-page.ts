@@ -13,8 +13,9 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuModule } from 'primeng/menu';
-import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { PaginatorModule } from 'primeng/paginator';
 import { PopoverModule } from 'primeng/popover';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { AddComentRequest } from '../../../../core/models/review.model';
 import {
@@ -23,14 +24,22 @@ import {
   VisitStatus,
 } from '../../../../core/models/visit.model';
 import { CommentService } from '../../../../core/services/comment/comment.service';
+import {
+  FilterFieldConfig,
+  FilteringService,
+} from '../../../../core/services/filtering/filtering.service';
+import {
+  SortFieldConfig,
+  SortingService,
+} from '../../../../core/services/sorting/sorting.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
+import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
 import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
 import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-visit-page',
@@ -50,7 +59,10 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
   styleUrl: './visit-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VisitPage implements OnInit {
+export class VisitPage
+  extends PaginatedComponentBase<VisitPageModel>
+  implements OnInit
+{
   protected readonly showVisitDetailsDialog = signal(false);
   protected readonly selectedVisitId = signal<string | null>(null);
   private commentService = inject(CommentService);
@@ -60,12 +72,30 @@ export class VisitPage implements OnInit {
   private destroyRef = inject(DestroyRef);
   private ref: DynamicDialogRef | null = null;
   private toastService = inject(ToastService);
+  private sortingService = inject(SortingService);
+  private filteringService = inject(FilteringService);
 
   protected readonly isVisitLoading = signal(false);
   protected readonly isLoading = signal(false);
 
-  protected readonly first = signal(0);
-  protected readonly rows = signal(10);
+  private readonly visitFilterConfig: FilterFieldConfig<VisitPageModel> =
+    this.filteringService.combineConfigs(
+      this.filteringService.searchConfig<VisitPageModel>(
+        (v) => v.doctorName,
+        (v) => v.institution,
+        (v) => String(v.status),
+      ),
+      this.filteringService.statusConfig<VisitPageModel>((v) => v.status),
+      this.filteringService.dateRangeConfig<VisitPageModel>((v) => v.date),
+    );
+
+  private readonly visitSortConfig: SortFieldConfig<VisitPageModel>[] = [
+    this.sortingService.dateField('date', (v) => v.date),
+    this.sortingService.stringField('doctorName', (v) => v.doctorName),
+    this.sortingService.stringField('institution', (v) => v.institution),
+    this.sortingService.stringField('status', (v) => String(v.status)),
+  ];
+
   protected readonly filters = signal<{
     searchTerm: string;
     status: string;
@@ -82,13 +112,8 @@ export class VisitPage implements OnInit {
     sortOrder: 'desc',
   });
 
-  protected onPageChange(event: PaginatorState): void {
-    this.first.set(event.first ?? 0);
-    this.rows.set(event.rows ?? 10);
-  }
-
-  protected readonly totalRecords = computed(
-    () => this.filteredVisits().length,
+  protected override readonly totalRecords = computed(
+    () => this.sortedVisits().length,
   );
 
   protected readonly visits = signal<VisitPageModel[]>([]);
@@ -126,68 +151,34 @@ export class VisitPage implements OnInit {
 
   protected readonly filteredVisits = computed(() => {
     const filters = this.filters();
-    const search = filters.searchTerm?.toLowerCase().trim() ?? '';
-    const statusFilterRaw = (filters.status ?? 'all').toLowerCase();
-    const statusFilter =
-      statusFilterRaw === 'cancelled' ? 'canceled' : statusFilterRaw;
-    const from = filters.dateFrom ? new Date(filters.dateFrom) : null;
-    const to = filters.dateTo ? new Date(filters.dateTo) : null;
-
-    return this.visits().filter((value) => {
-      if (
-        statusFilter !== 'all' &&
-        value.status !== (statusFilter as VisitStatus)
-      ) {
-        return false;
-      }
-      if (from && value.date < from) return false;
-      if (to && value.date > to) return false;
-      if (search) {
-        const hay = `${value.doctorName} ${value.institution} ${value.status}`
-          .toLowerCase()
-          .trim();
-        if (!hay.includes(search)) return false;
-      }
-      return true;
-    });
+    return this.filteringService.filter(
+      this.visits(),
+      {
+        searchTerm: filters.searchTerm,
+        status: filters.status,
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
+      },
+      this.visitFilterConfig,
+    );
   });
 
   protected readonly sortedVisits = computed(() => {
-    const list = this.filteredVisits().slice();
     const { sortField, sortOrder } = this.filters();
-    const dir = sortOrder === 'asc' ? 1 : -1;
-    list.sort((firstValue, secondValue) => {
-      let aValue: number | string = 0;
-      let bValue: number | string = 0;
-      switch (sortField) {
-        case 'doctorName':
-          aValue = firstValue.doctorName?.toLowerCase() ?? '';
-          bValue = secondValue.doctorName?.toLowerCase() ?? '';
-          break;
-        case 'institution':
-          aValue = firstValue.institution?.toLowerCase() ?? '';
-          bValue = secondValue.institution?.toLowerCase() ?? '';
-          break;
-        case 'status':
-          aValue = String(firstValue.status).toLowerCase();
-          bValue = String(secondValue.status).toLowerCase();
-          break;
-        case 'date':
-        default:
-          aValue = firstValue.date?.getTime?.() ?? 0;
-          bValue = secondValue.date?.getTime?.() ?? 0;
-      }
-      if (aValue < bValue) return -1 * dir;
-      if (aValue > bValue) return 1 * dir;
-      return 0;
-    });
-    return list;
+    return this.sortingService.sort(
+      this.filteredVisits(),
+      sortField,
+      sortOrder,
+      this.visitSortConfig,
+    );
   });
 
+  protected override get sourceData() {
+    return this.sortedVisits();
+  }
+
   protected readonly paginatedVisits = computed(() => {
-    const start = this.first();
-    const end = start + this.rows();
-    return this.sortedVisits().slice(start, end);
+    return this.paginatedData();
   });
 
   protected onFiltersChange(ev: {
@@ -283,6 +274,7 @@ export class VisitPage implements OnInit {
       header: this.translationService.translate('patient.visits.reviewTitle'),
       width: '70%',
       height: 'auto',
+      modal: true,
     });
 
     if (!this.ref) {

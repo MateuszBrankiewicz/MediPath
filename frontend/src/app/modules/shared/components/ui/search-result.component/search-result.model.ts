@@ -34,6 +34,7 @@ export interface AddressWithInstitution {
 
 export interface BookAppointment {
   doctor: Doctor;
+  institution: AddressWithInstitution;
   day: string;
   time: string;
   slotId?: string;

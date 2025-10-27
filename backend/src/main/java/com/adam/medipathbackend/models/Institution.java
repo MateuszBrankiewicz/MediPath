@@ -32,13 +32,16 @@ public class Institution {
 
     private int numOfRatings;
 
-    public Institution(String name, boolean isPublic, Address address, String image) {
+    private String description;
+
+    public Institution(String name, boolean isPublic, Address address, String image, ArrayList<String> types, String description) {
         this.name = name;
         this.isPublic = isPublic;
         this.address = address;
         this.rating = 0;
         this.image = image;
-        this.types = new ArrayList<>();
+        this.types = types;
+        this.description = description;
         this.employees = new ArrayList<>();
         this.numOfRatings = 0;
     }
@@ -134,4 +137,11 @@ public class Institution {
     }
 
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

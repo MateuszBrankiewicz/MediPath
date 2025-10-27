@@ -1,0 +1,75 @@
+<div class="edit-doctor-page">
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a routerLink="/admin/doctors" class="breadcrumb-link">
+        {{
+          translationService.translate("admin.editDoctor.breadcrumb.doctors")
+        }}
+      </a>
+      <i class="pi pi-angle-right breadcrumb-separator"></i>
+      <span class="breadcrumb-current">
+        {{ translationService.translate("admin.editDoctor.breadcrumb.edit") }}
+      </span>
+    </div>
+  </div>
+
+  <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()" class="doctor-form">
+    <p-card>
+      <div class="form-container">
+        <app-doctor-personal-info-form
+          [formGroup]="doctorForm"
+          [translationKey]="'admin.editDoctor'"
+          [isFieldInvalid]="isFieldInvalid"
+          [getFieldError]="getFieldErrorFn"
+        />
+
+        <p-divider />
+
+        <app-doctor-professional-info-form
+          [formGroup]="doctorForm"
+          [translationKey]="'admin.editDoctor'"
+          [specialisations]="specialisations"
+          [isFieldInvalid]="isFieldInvalid"
+          [getFieldError]="getFieldErrorFn"
+        />
+
+        <p-divider />
+
+        <app-doctor-address-form
+          [formGroup]="residentialAddressForm"
+          [translationKey]="'admin.editDoctor'"
+          [formGroupName]="'residentialAddress'"
+          [isFieldInvalid]="isFieldInvalid"
+          [getFieldError]="getFieldErrorFn"
+        />
+
+        <p-divider />
+
+        <app-doctor-institutions-list
+          [institutions]="doctorInstitutions()"
+          [availableInstitutions]="availableInstitutions()"
+          [translationKey]="'admin.editDoctor'"
+          (institutionAdded)="onAddInstitution($event)"
+          (institutionRemoved)="onRemoveInstitution($event)"
+        />
+
+        <div class="form-actions">
+          <p-button
+            [label]="translationService.translate('admin.editDoctor.cancel')"
+            severity="secondary"
+            (onClick)="onCancel()"
+            type="button"
+          />
+          <p-button
+            [label]="
+              translationService.translate('admin.editDoctor.saveChanges')
+            "
+            [loading]="isSubmitting()"
+            [disabled]="isSubmitting()"
+            type="submit"
+          />
+        </div>
+      </div>
+    </p-card>
+  </form>
+</div>

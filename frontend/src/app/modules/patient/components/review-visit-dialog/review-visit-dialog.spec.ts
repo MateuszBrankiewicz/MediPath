@@ -1,5 +1,8 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { vi } from 'vitest';
 import { ReviewVisitDialog } from './review-visit-dialog';
 
 describe('ReviewVisitDialog', () => {
@@ -8,9 +11,14 @@ describe('ReviewVisitDialog', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReviewVisitDialog]
-    })
-    .compileComponents();
+      imports: [ReviewVisitDialog],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: DynamicDialogRef, useValue: { close: vi.fn() } },
+        { provide: DynamicDialogConfig, useValue: { data: {} } },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ReviewVisitDialog);
     component = fixture.componentInstance;

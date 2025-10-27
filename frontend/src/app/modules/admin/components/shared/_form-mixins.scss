@@ -1,0 +1,129 @@
+// Mixiny dla wspólnych styli formularzy
+
+@mixin form-section {
+  margin-bottom: 2.5rem;
+
+  &:last-of-type {
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    margin-bottom: 2rem;
+  }
+}
+
+@mixin section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--surface-border);
+
+  @media (max-width: 640px) {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+  }
+}
+
+@mixin form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@mixin form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .field-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    @media (max-width: 640px) {
+      font-size: 0.8125rem;
+    }
+
+    i {
+      color: var(--text-color-secondary);
+      font-size: 0.875rem;
+    }
+  }
+
+  .error-message {
+    color: var(--p-red-500);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+
+    @media (max-width: 640px) {
+      font-size: 0.75rem;
+    }
+
+    i {
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+  }
+}
+
+@mixin form-flex {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .flex-item-wide {
+    flex: 2;
+  }
+
+  .flex-item-narrow {
+    flex: 1;
+  }
+}
+
+@mixin input-focus {
+  input:focus-visible,
+  .p-inputtext:focus-visible,
+  button:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+@mixin input-invalid {
+  input.invalid,
+  ::ng-deep .p-inputtext.invalid,
+  ::ng-deep .p-inputmask.invalid,
+  ::ng-deep .p-datepicker.invalid,
+  ::ng-deep .p-multiselect.invalid {
+    border-color: var(--p-red-500);
+  }
+}

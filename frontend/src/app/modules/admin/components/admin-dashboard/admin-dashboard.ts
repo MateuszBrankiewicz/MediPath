@@ -3,8 +3,8 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
-  OnInit,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -35,13 +35,15 @@ import {
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss',
 })
-export class AdminDashboard implements OnInit {
+export class AdminDashboard {
   protected translationService = inject(TranslationService);
   private institutionStoreService = inject(InstitutionStoreService);
   private commentsService = inject(CommentService);
   private institutionService = inject(InstitutionService);
   private destroyRef = inject(DestroyRef);
-  protected readonly institutions = signal<InstitutionOption[]>([]);
+  protected readonly institutions = computed(() =>
+    this.institutionStoreService.institutionOptions(),
+  );
   protected readonly isInstitutionLoading = signal<boolean>(false);
   protected readonly isCommentsLoading = signal<boolean>(false);
   protected readonly isUpcomingVisitsLoading = signal<boolean>(false);
@@ -50,14 +52,22 @@ export class AdminDashboard implements OnInit {
   protected readonly upcomingVisits = signal<UpcomingVisitItem[]>([]);
   protected readonly isLoading = computed(() => {
     return (
-      this.isInstitutionLoading() ||
+      this.institutionStoreService.isInstitutionLoading() ||
       this.isCommentsLoading() ||
       this.isUpcomingVisitsLoading()
     );
   });
 
-  ngOnInit(): void {
-    this.loadInstitutions();
+  constructor() {
+    effect(() => {
+      const institutions = this.institutionStoreService.selectedInstitution();
+
+      if (!institutions) {
+        this.onInstitutionChanged(this.institutions()[0] || null);
+        return;
+      }
+      this.onInstitutionChanged(institutions);
+    });
   }
 
   protected onInstitutionChanged(
@@ -79,12 +89,9 @@ export class AdminDashboard implements OnInit {
     console.log('Cancel visit clicked', _visit);
   }
 
-  selectedInstitution = computed(() => {
-    const institutionsList = this.institutions();
-    const currentInstitution = this.institutionStoreService.getInstitution();
-    if (!institutionsList || !currentInstitution) return null;
-    return institutionsList.find((i) => i.id === currentInstitution.id);
-  });
+  selectedInstitution = computed(() =>
+    this.institutionStoreService.selectedInstitution(),
+  );
 
   private loadCommentsForInstitution(institutionId: string): void {
     this.isCommentsLoading.set(true);
@@ -110,11 +117,8 @@ export class AdminDashboard implements OnInit {
           id: inst.id,
           name: inst.name,
         }));
-        this.institutions.set(formattedInstitutions);
         this.institutionStoreService.setInstitution(formattedInstitutions[0]);
-        this.institutionStoreService.setAvailableInstitutions(
-          formattedInstitutions,
-        );
+
         this.loadUpcomingVisits();
         this.loadCommentsForInstitution(formattedInstitutions[0].id);
         this.isInstitutionLoading.set(false);

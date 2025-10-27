@@ -40,8 +40,8 @@ export class DoctorCardComponent implements OnInit {
 
   ngOnInit(): void {
     this.selectedAddressIndex.set(this.doctor().currentAddressIndex || 0);
-    console.log(this.doctor());
   }
+
   getStarsArray(): boolean[] {
     const stars = [];
     for (let i = 0; i < 5; i++) {
@@ -54,6 +54,7 @@ export class DoctorCardComponent implements OnInit {
     if (timeSlot.available && !timeSlot.booked) {
       this.bookAppointment.emit({
         doctor: this.doctor(),
+        institution: this.doctor().addresses[this.selectedAddressIndex()],
         day: day.date,
         time: timeSlot.time,
         slotId: timeSlot.id,

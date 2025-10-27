@@ -93,7 +93,6 @@
       />
       <p-popover
         #notificationsPopover
-        appendTo="body"
         styleClass="notifications-popover"
         [dismissable]="true"
       >
@@ -157,7 +156,19 @@
     }
 
     <div class="user-info" (click)="toggleUserMenu($event)">
-      <div class="user-menu-header"></div>
+      <div class="user-avatar">
+        @if (user()?.pfpImage) {
+          <img
+            [src]="user()!.pfpImage"
+            [alt]="user()!.name"
+            class="avatar-image"
+          />
+        } @else {
+          <div class="avatar-placeholder">
+            <i class="pi pi-user"></i>
+          </div>
+        }
+      </div>
       <span class="user-name">{{ user()?.name }} {{ user()?.surname }}</span>
       <i
         [class]="
@@ -168,9 +179,10 @@
       ></i>
     </div>
 
-    <p-menu #userMenu [model]="menuItems()" [popup]="true" class="menu">
-      <ng-template #start>
-        <div class="role-select-container">
+    <p-popover #userMenu styleClass="user-menu-popover" [dismissable]="true">
+      <div class="user-menu-container">
+        <div class="role-select-section">
+          <span class="role-select-label">Switch Role</span>
           <p-select
             [options]="roleOptions()"
             [ngModel]="selectedRole()"
@@ -178,10 +190,35 @@
             optionLabel="label"
             optionValue="value"
             placeholder="Select role"
-            class="role-select"
+            styleClass="role-select-dropdown"
+            [style]="{ width: '100%' }"
           />
         </div>
-      </ng-template>
-    </p-menu>
+
+        <div class="user-menu-divider"></div>
+
+        <div class="user-menu-items">
+          @for (item of menuItems(); track $index) {
+            @if (item.separator) {
+              <div class="user-menu-separator"></div>
+            } @else {
+              <button
+                type="button"
+                class="user-menu-item"
+                [class.user-menu-item--logout]="
+                  item.styleClass === 'logout-item'
+                "
+                (click)="onMenuItemClick(item)"
+              >
+                @if (item.icon) {
+                  <i [class]="item.icon + ' user-menu-item-icon'"></i>
+                }
+                <span class="user-menu-item-label">{{ item.label }}</span>
+              </button>
+            }
+          }
+        </div>
+      </div>
+    </p-popover>
   </div>
 </header>

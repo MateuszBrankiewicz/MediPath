@@ -1,6 +1,9 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { vi } from 'vitest';
 import { UserNotification } from '../../../../core/services/notifications/user-notifications.model';
 import { UserNotificationsService } from '../../../../core/services/notifications/user-notifications.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
@@ -18,36 +21,36 @@ describe('ReminderPage', () => {
     await TestBed.configureTestingModule({
       imports: [ReminderPage],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: UserNotificationsService,
           useValue: {
             notifications,
             unreadCount: unread,
-            markAsRead: jasmine
-              .createSpy('markAsRead')
-              .and.returnValue(of(void 0)),
-            markAllAsRead: jasmine
-              .createSpy('markAllAsRead')
-              .and.returnValue(of(void 0)),
-            refresh: jasmine
-              .createSpy('refresh')
-              .and.returnValue(of([] as UserNotification[])),
+            markAsRead: vi.fn().mockReturnValue(of(void 0)),
+            markAllAsRead: vi.fn().mockReturnValue(of(void 0)),
+            refresh: vi.fn().mockReturnValue(of([] as UserNotification[])),
             lastError: signal<unknown>(null),
             isConnecting: signal(false),
             isConnected: signal(true),
+            notifications$: of([]),
+            getAllNotifications: vi.fn(),
+            notificationsArray$: of([]),
           },
         },
         {
           provide: ToastService,
           useValue: {
-            showError: jasmine.createSpy('showError'),
-            showSuccess: jasmine.createSpy('showSuccess'),
+            showError: vi.fn(),
+            showSuccess: vi.fn(),
           },
         },
         {
           provide: TranslationService,
           useValue: {
             translate: () => '',
+            language: vi.fn().mockReturnValue('en'),
           },
         },
       ],

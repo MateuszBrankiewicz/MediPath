@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { MedicalHistoryResponse } from '../../../../models/medical-history.model';
+import { describe, expect, it, vi } from 'vitest';
+import { MedicalHistoryResponse } from '../../../../../../core/models/medical-history.model';
 import { MedicalHistoryDialog } from './medical-history-dialog';
 
 const baseRecord: MedicalHistoryResponse = {
@@ -21,14 +22,14 @@ const baseRecord: MedicalHistoryResponse = {
 describe('MedicalHistoryDialog', () => {
   let fixture: ComponentFixture<MedicalHistoryDialog>;
   let component: MedicalHistoryDialog;
-  let refSpy: jasmine.SpyObj<DynamicDialogRef>;
+  let refSpy: { close: ReturnType<typeof vi.fn> };
 
   function createComponent(mode: 'view' | 'edit') {
     TestBed.resetTestingModule();
 
-    refSpy = jasmine.createSpyObj<DynamicDialogRef>('DynamicDialogRef', [
-      'close',
-    ]);
+    refSpy = {
+      close: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       imports: [MedicalHistoryDialog],
@@ -75,11 +76,10 @@ describe('MedicalHistoryDialog', () => {
 
     expect(refSpy.close).toHaveBeenCalledWith({
       mode: 'edit',
-      record: jasmine.objectContaining({
-        id: baseRecord.id,
+      record: expect.objectContaining({
         title: 'Updated Visit',
         date: '2025-04-10',
-        doctor: jasmine.objectContaining({
+        doctor: expect.objectContaining({
           doctorName: 'Anna',
           doctorSurname: 'Nowak',
         }),

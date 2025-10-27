@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Institution } from '../../../../core/models/institution.model';
 import { AuthenticationService } from '../../../../core/services/authentication/authentication';
@@ -30,7 +31,7 @@ export class InstitutionList implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   protected isLoading = signal<boolean>(true);
   private authService = inject(AuthenticationService);
-
+  private router = inject(Router);
   ngOnInit(): void {
     this.loadInstitutions();
   }
@@ -74,4 +75,8 @@ export class InstitutionList implements OnInit {
       imageUrl: inst.image ?? '',
     }));
   });
+
+  protected redirectToInstitutionView(institutionId: string): void {
+    this.router.navigate(['/admin/institutions', institutionId]);
+  }
 }

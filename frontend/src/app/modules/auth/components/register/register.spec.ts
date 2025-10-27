@@ -3,9 +3,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { TranslationService } from '../../services/translation.service';
-import type { RegisterUser } from '../auth.constants';
-import { AuthenticationService } from '../services/authentication/authentication';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { RegisterUser } from '../../models/auth.constants';
 
 // Tworzymy uproszczoną wersję komponentu tylko do testów
 class TestableRegister {

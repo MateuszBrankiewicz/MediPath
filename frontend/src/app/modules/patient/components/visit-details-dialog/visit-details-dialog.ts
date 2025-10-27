@@ -1,45 +1,65 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { map } from 'rxjs';
 import { Visit } from '../../../../core/models/visit.model';
+import { AddressFormatPipe } from '../../../../core/pipes/address-format-pipe';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
 
 @Component({
   selector: 'app-visit-details-dialog',
-  standalone: true,
-  imports: [ButtonModule, CommonModule],
+  imports: [ButtonModule, CommonModule, DatePipe, AddressFormatPipe],
   templateUrl: './visit-details-dialog.html',
   styleUrl: './visit-details-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VisitDetailsDialog {
+export class VisitDetailsDialog implements OnInit {
   private ref = inject(DynamicDialogRef);
   private config = inject(DynamicDialogConfig);
   protected translationService = inject(TranslationService);
-
+  private visitService = inject(VisitsService);
   public readonly visitId = this.config.data?.visitId;
 
-  public readonly visit = signal<Visit>({
-    id: this.visitId || 1,
-    doctorName: 'Jadwiga Chymyl',
-    doctorPhoto: 'assets/imageDoctor.png',
-    specialisation: 'Cardiologist',
-    institution: 'Szpital kliniczny',
-    institutionPhoto: 'assets/footer-landing.png',
-    address: 'Jana Pawła II 2/34, 23-500 Lublin',
-    date: new Date('2025-03-20T10:00:00'),
-    status: 'Scheduled',
-    notes:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Sed tristique, turpis ut tincidunt pretium, purus ex faucibus odio, ut varius elit lorem a justo. Phasellus in urna vitae mauris pharetra sollicitudin. Integer auctor, turpis vel dignissim pharetra, arcu ligula tincidunt eros, eget scelerisque velit nulla nec nunc.',
-    prescriptionPin: '0000',
-    referralPin: '0000',
-  });
+  ngOnInit(): void {
+    // Initialization logic here
+    this.loadVisitDetails(this.visitId);
+  }
+
+  public readonly visit = signal<Visit | null>(null);
+
+  private loadVisitDetails(visitId: string): void {
+    this.visitService
+      .getVisitDetails(visitId)
+      .pipe(
+        map((visit) => {
+          return {
+            id: visit.visit.id,
+            doctorName: `${visit.visit.doctor.doctorName} ${visit.visit.doctor.doctorSurname}`,
+            doctorPhoto: 'visit.visit.doctor.photoUrl',
+            specialisation: visit.visit.doctor.specialisations[0],
+            institution: visit.visit.institution.institutionName,
+            institutionPhoto: '',
+            address: 'visit.visit.institution',
+            date: new Date(visit.visit.time.startTime),
+            status: visit.visit.status,
+            notes: visit.visit.note,
+            prescriptionPin: 'visit.visit.codes.prescription',
+            referralPin: 'visit.visit.codes.referral',
+          };
+        }),
+      )
+      .subscribe((visit) => {
+        this.visit.set(visit);
+      });
+  }
 
   public reviewVisit(): void {
     this.ref.close('REVIEW');

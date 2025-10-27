@@ -828,11 +828,11 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 400 - Bad role name
 - 200 - Success or empty
 
-### /doctors/me/visitsbydate/{date}
+### /doctors/me/visits/{date}
 #### Method: GET
 
 #### Path variables
-- date - date to retrieve the visits from. Accepted values are either 'today' or a date in the dd-mm-yyyy format
+- date - date to retrieve the visits from. Accepted values are either 'today' or a date in the dd-mm-yyyy format. If omitted, retrieves all visits
 
 #### Returns:
 - 401 - User is not logged in
@@ -871,4 +871,75 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 401 - user is not logged in
 - 403 - user is not admin or staff of institution or institution does not exist
 - 400 - invalid date
+- 200 - success
+
+
+### /institution/{id}/employee/register
+#### Method: POST
+
+#### Path Variables:
+- id - institution id
+
+#### Body:
+```
+"userDetails": {
+    name: String,
+    surname: String,
+    email: Email
+    govID: String
+    birthDate: DD-MM-YYYY
+    province: String
+    city: String
+    postalCode: XX-XXX
+    phoneNumber: String,
+    street: String
+    number:  String
+},
+roleCode: int,
+doctorDetails: {
+    licenceNumber: String
+    specialisations: [String]
+}
+```
+#### Returns:
+- 401 - User not logged in
+- 403 - Institution does not exist, user is not admin of institution
+- 400 - missing fields
+- 409 - Account with this mail or govId exists
+- 503 - mail error
+- 201 - success
+
+
+### /user/{id}/medicalhistory/
+#### Method: GET
+
+#### Path variables:
+- id - patient's id
+
+#### Returns:
+- 401
+- 403 - Invalid patient, not a doctor, doctor did not have any visits with patient
+- 200
+
+### /doctors/me/patients/
+#### Method: GET
+
+#### Returns:
+- 401
+- 403 - User not a doctor
+- 200 
+
+
+### /notifications/
+#### Method: DELETE
+
+#### Body:
+- title - title of the notifications to remove
+- reminderTime - time a notification occurs at
+- startDate - first date to start deleting notifications from
+- endDate - last date to delete notification at
+
+#### Returns:
+- 401
+- 400 - missing field or no notification matches criteria
 - 200 - success

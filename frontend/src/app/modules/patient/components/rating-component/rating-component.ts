@@ -11,7 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Paginator, PaginatorState } from 'primeng/paginator';
+import { Paginator } from 'primeng/paginator';
 import { PanelModule } from 'primeng/panel';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RatingModule } from 'primeng/rating';
@@ -22,6 +22,7 @@ import { CommentWithRating } from '../../../../core/models/review.model';
 import { CommentService } from '../../../../core/services/comment/comment.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
 import { AcceptActionDialogComponent } from '../../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
@@ -43,15 +44,16 @@ import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
   providers: [DialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RatingComponent implements OnInit {
+export class RatingComponent
+  extends PaginatedComponentBase<CommentWithRating>
+  implements OnInit
+{
   protected translationService = inject(TranslationService);
   protected readonly comments = signal<CommentWithRating[]>([]);
   private commentService = inject(CommentService);
   private dialogService = inject(DialogService);
   private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
-  protected readonly first = signal(0);
-  protected readonly rows = signal(10);
   private readonly filters = signal<FilterParams>({
     searchTerm: '',
     status: '',
@@ -106,22 +108,21 @@ export class RatingComponent implements OnInit {
     return filtered;
   });
 
-  protected readonly paginatedComments = computed(() => {
-    const start = this.first();
-    const end = start + this.rows();
-    return this.filteredComments()?.slice(start, end);
-  });
-
-  protected onPageChange(event: PaginatorState): void {
-    this.first.set(event.first ?? 0);
-    this.rows.set(event.rows ?? 10);
+  protected override get sourceData() {
+    return this.filteredComments();
   }
+
+  protected readonly paginatedComments = computed(() => {
+    return this.paginatedData();
+  });
 
   protected viewRatings(comment: CommentWithRating): void {
     const ref = this.dialogService.open(ReviewVisitDialog, {
       width: window.innerWidth < 768 ? '100%' : '70%',
       height: 'auto',
       data: comment,
+      modal: true,
+      closable: true,
     });
     if (!ref) {
       return;
@@ -202,6 +203,7 @@ export class RatingComponent implements OnInit {
       width: '400px',
       height: 'auto',
       closable: true,
+      modal: true,
       header: this.translationService.translate('comment.delete.title'),
       data: {
         title: this.translationService.translate('comment.delete.title'),

@@ -1,0 +1,69 @@
+
+.institution-select {
+  margin-bottom: 2rem;
+  margin-left: 2rem;
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  ::ng-deep .p-select {
+    width: 100%;
+    max-width: 400px;
+
+    .p-select-label {
+      padding: 0.875rem 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 2px solid var(--surface-border);
+      background: var(--surface-card);
+      transition: all 0.2s ease;
+    }
+
+    &:hover .p-select-label {
+      border-color: var(--primary-color);
+    }
+
+    &.p-focus .p-select-label {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 4px rgba(var(--primary-color-rgb), 0.1);
+    }
+  }
+
+  .institution-selected,
+  .institution-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    i {
+      color: var(--primary-color);
+      font-size: 1.1rem;
+    }
+
+    span {
+      font-weight: 500;
+      color: var(--text-color);
+    }
+  }
+
+  ::ng-deep .p-select-overlay {
+    .p-select-option {
+      padding: 0.875rem 1rem;
+
+      &:hover {
+        background: var(--primary-50);
+      }
+
+      &.p-select-option-selected {
+        background: var(--primary-100);
+        color: var(--primary-color);
+      }
+    }
+  }
+}

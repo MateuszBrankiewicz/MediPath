@@ -1,7 +1,31 @@
 :host {
   display: block;
+  position: fixed;
+  left: 0;
+  top: 0;
   height: 100vh;
-  width: 100%;
+  width: var(--sidebar-width);
+  transition: width 0.3s ease;
+  z-index: 900;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &.collapsed {
+    width: 80px;
+  }
+
+  @media (max-width: 768px) {
+    width: 320px;
+    transform: translateX(-100%);
+    transition:
+      transform 0.3s ease,
+      width 0.3s ease;
+    z-index: 1000;
+
+    &.mobile-visible {
+      transform: translateX(0);
+    }
+  }
 }
 
 .sr-only {
@@ -39,43 +63,122 @@
 }
 
 .sidebar {
-  left: 0;
-  top: 0;
-  height: 100vh;
-
+  height: 100%;
+  width: 100%;
   background: var(--p-primary-950);
   color: white;
   display: flex;
   flex-direction: column;
-  z-index: 999;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-
-  @media (max-width: 768px) {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-
-    &.visible {
-      transform: translateX(0);
-    }
-  }
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .logo-section {
-  padding: 2rem 1.5rem;
+  padding: 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 72px;
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: white;
+  flex: 1;
+  min-width: 0;
+
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+:host.collapsed {
+  .logo {
+    justify-content: center;
+    padding: 0;
+
+    span {
+      display: none;
+    }
+  }
+
+  .logo-image {
+    margin: 0;
+  }
+
+  .logo-section {
+    flex-direction: column;
+    padding: 1rem 0.5rem;
+    gap: 0.75rem;
+  }
+
+  .user-info {
+    justify-content: center;
+    padding: 0.75rem;
+  }
+
+  .collapse-toggle {
+    margin: 0;
+    align-self: center;
+  }
+  .p-menu-item-link {
+    justify-content: center !important;
+    padding: 0.75rem !important;
+    gap: 0 !important;
+    min-height: 48px;
+    &:hover {
+      background: none !important;
+    }
+  }
+}
+
+.logo-image {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  transition: margin 0.3s ease;
+}
+
+.collapse-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  &:focus {
+    outline: 2px solid var(--p-primary-100);
+    outline-offset: 2px;
+  }
 
   i {
-    font-size: 2rem;
-    color: var(--p-primary-100);
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
   }
 }
 
@@ -83,6 +186,35 @@
   flex: 1;
   padding: 1rem 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+
+  /* Custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+:host.collapsed .nav-menu {
+  padding: 0.5rem 0;
+  width: 80px;
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
 }
 
 .user-profile {
@@ -101,7 +233,7 @@
   cursor: pointer;
   padding: 0.75rem;
   border-radius: 8px;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
   text-align: left;
 
   &:hover {
@@ -114,11 +246,17 @@
   }
 }
 
+.user-icon-collapsed {
+  font-size: 1.5rem;
+  color: var(--p-primary-100);
+}
+
 .user-details {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   flex: 1;
+  transition: opacity 0.2s ease;
 }
 
 .user-name {
@@ -144,13 +282,12 @@
 }
 
 @media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    max-width: 320px;
+  .collapse-toggle {
+    display: none !important;
   }
 
-  .mobile-header {
-    padding-top: calc(1rem + env(safe-area-inset-top));
+  .logo-section {
+    padding: 1rem;
   }
 }
 

@@ -1,0 +1,195 @@
+<div class="institution-view-page">
+  @if (isLoading()) {
+    <div class="floating-center-spinner">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+  } @else if (institution()) {
+    <div class="page-header">
+      <div class="breadcrumb">
+        <a routerLink="/admin/institutions" class="breadcrumb-link">
+          {{
+            translationService.translate("admin.institution.breadcrumb.list")
+          }}
+        </a>
+        <i class="pi pi-angle-right breadcrumb-separator"></i>
+        <span class="breadcrumb-current">
+          {{ institution()!.name }}
+        </span>
+      </div>
+
+      <div class="header-actions">
+        <p-button
+          [label]="translationService.translate('admin.institution.edit')"
+          icon="pi pi-pencil"
+          (onClick)="onEditInstitution()"
+        />
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <app-info-card
+        [imageUrl]="institution()!.image"
+        [imageAlt]="institution()!.name"
+      >
+        <app-detail-section
+          [title]="
+            translationService.translate('admin.institution.view.basicInfo')
+          "
+          icon="pi-building"
+        >
+          <app-detail-item
+            [label]="translationService.translate('admin.institution.name')"
+            icon="pi-tag"
+          >
+            {{ institution()!.name }}
+          </app-detail-item>
+
+          <app-detail-item
+            [label]="
+              translationService.translate('admin.institution.view.rating')
+            "
+            icon="pi-star-fill"
+          >
+            <p-tag
+              [value]="institution()!.rating.toFixed(1)"
+              [severity]="getRatingColor(institution()!.rating)"
+              icon="pi pi-star-fill"
+            />
+          </app-detail-item>
+
+          <app-detail-item
+            [label]="
+              translationService.translate('admin.institution.view.visibility')
+            "
+            icon="pi-eye"
+          >
+            <p-tag
+              [value]="
+                institution()!.isPublic
+                  ? translationService.translate(
+                      'admin.institution.view.public'
+                    )
+                  : translationService.translate(
+                      'admin.institution.view.private'
+                    )
+              "
+              [severity]="institution()!.isPublic ? 'success' : 'warn'"
+            />
+          </app-detail-item>
+        </app-detail-section>
+
+        <app-detail-section
+          [title]="
+            translationService.translate('admin.institution.specialisation')
+          "
+          icon="pi-briefcase"
+        >
+          @if (institution()!.specialisation.length > 0) {
+            <div class="specialisations-list">
+              @for (spec of institution()!.specialisation; track spec) {
+                <p-chip
+                  [label]="getTypeName(spec)"
+                  styleClass="specialisation-chip"
+                />
+              }
+            </div>
+          } @else {
+            <p class="no-data">
+              {{
+                translationService.translate(
+                  "admin.institution.view.noSpecialisations"
+                )
+              }}
+            </p>
+          }
+        </app-detail-section>
+
+        <app-detail-section
+          [title]="translationService.translate('admin.institution.address')"
+          icon="pi-map-marker"
+          [showDivider]="false"
+        >
+          <div class="address-display">
+            <div class="address-line">
+              <i class="pi pi-building"></i>
+              <span>
+                @if (institution()!.address.street) {
+                  {{ institution()!.address.street }}
+                  {{ institution()!.address.number }},
+                } @else {
+                  {{ institution()!.address.number }},
+                }
+              </span>
+            </div>
+            <div class="address-line">
+              <i class="pi pi-inbox"></i>
+              <span>
+                {{ institution()!.address.postalCode }}
+                {{ institution()!.address.city }}
+              </span>
+            </div>
+            <div class="address-line">
+              <i class="pi pi-map"></i>
+              <span>{{ institution()!.address.province }}</span>
+            </div>
+          </div>
+        </app-detail-section>
+      </app-info-card>
+
+      <div class="doctors-section">
+        <div class="section-header">
+          <h2 class="section-heading">
+            <i class="pi pi-users"></i>
+            {{ translationService.translate("admin.institution.doctors") }}
+            <span class="count-badge">{{ employees().length }}</span>
+          </h2>
+          <p-button
+            [label]="translationService.translate('admin.doctorList.addDoctor')"
+            icon="pi pi-plus"
+            (onClick)="onAddDoctor()"
+            styleClass="add-doctor-button"
+          />
+        </div>
+
+        @if (employees().length > 0) {
+          <div class="doctors-grid">
+            @for (employee of employees(); track employee.userId) {
+              <app-employee-card
+                [employee]="employee"
+                [viewLabel]="
+                  translationService.translate('admin.doctorList.viewDetails')
+                "
+                [editLabel]="
+                  translationService.translate('admin.doctorList.edit')
+                "
+                (view)="onViewDoctor($event)"
+                (edit)="onEditDoctor($event)"
+              />
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <i class="pi pi-users empty-icon"></i>
+            <h3 class="empty-title">
+              {{ translationService.translate("admin.doctorList.noDoctors") }}
+            </h3>
+            <p class="empty-message">
+              {{
+                translationService.translate(
+                  "admin.doctorList.noDoctorsMessage"
+                )
+              }}
+            </p>
+            <p-button
+              [label]="
+                translationService.translate('admin.doctorList.addFirstDoctor')
+              "
+              icon="pi pi-plus"
+              (onClick)="onAddDoctor()"
+            />
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

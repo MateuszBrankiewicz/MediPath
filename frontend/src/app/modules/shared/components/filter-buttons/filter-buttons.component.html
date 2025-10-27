@@ -1,0 +1,13 @@
+<div class="filter-buttons">
+  @for (filter of filters(); track filter.value) {
+    <button
+      class="filter-btn"
+      [class.active]="isActive()(filter.value)"
+      (click)="onFilterClick(filter.value)"
+      type="button"
+    >
+      <i class="pi" [class]="filter.icon"></i>
+      <span>{{ filter.labelKey }}</span>
+    </button>
+  }
+</div>

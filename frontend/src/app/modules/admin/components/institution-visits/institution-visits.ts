@@ -1,9 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import {
   AppointmentCardComponent,
   AppointmentCardData,
 } from '../../../shared/components/appointment-card/appointment-card.component';
+import { InstitutionService } from '../../../../core/services/institution/institution.service';
+import { InstitutionStoreService } from '../../services/institution/institution-store.service';
 
 @Component({
   selector: 'app-institution-visits',
@@ -11,8 +13,10 @@ import {
   templateUrl: './institution-visits.html',
   styleUrl: './institution-visits.scss',
 })
-export class InstitutionVisits {
+export class InstitutionVisits implements OnInit {
   protected readonly translationService = inject(TranslationService);
+  private readonly institutionService = inject(InstitutionService);
+  private readonly institutionStore = inject(InstitutionStoreService);
   protected readonly visits = signal<AppointmentCardData[]>([
     {
       id: '1',
@@ -47,4 +51,14 @@ export class InstitutionVisits {
       status: 'scheduled',
     },
   ]);
+  ngOnInit(): void {
+    this.loadVisits();
+  }
+  private loadVisits(): void {
+    this.institutionService
+      .getVisits(this.institutionStore.getInstitution().id)
+      .subscribe((res) => {
+        console.log(res);
+      });
+  }
 }

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
 import {
   ScheduleResponse,
@@ -9,7 +9,9 @@ import {
 import {
   SingleVisitResponse,
   UpcomingVisitsResponse,
+  VisitResponse,
 } from '../../models/visit.model';
+import { FinishVisitResponse } from './../../models/visit.model';
 
 @Injectable({
   providedIn: 'root',
@@ -61,7 +63,7 @@ export class VisitsService {
       `${API_URL}/visits/${visitId}/reschedule`,
       {
         patientRemarks: scheduleVisit.patientRemarks,
-        newSchedule: scheduleVisit.scheduleID,
+        newschedule: scheduleVisit.scheduleID,
       },
       { withCredentials: true },
     );
@@ -69,10 +71,36 @@ export class VisitsService {
 
   public getDoctorSchedule(doctorId: string) {
     return this.http.get<ScheduleResponse>(
-      `${API_URL}/schedules/bydoctor/${doctorId}`,
+      `${API_URL}/doctors/${doctorId}/schedules`,
       {
         withCredentials: true,
       },
+    );
+  }
+
+  public getDoctorVisitByDate(date: string): Observable<VisitResponse[]> {
+    return this.http
+      .get<UpcomingVisitsResponse>(
+        `${API_URL}/doctors/me/visitsbydate/${date}`,
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(map((response) => response.visits ?? []));
+  }
+
+  public finishVisit(
+    finishVisit: FinishVisitResponse,
+    visitId: string,
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${API_URL}/visits/${visitId}/complete`,
+      {
+        prescriptions: finishVisit.prescriptions,
+        referrals: finishVisit.referrals,
+        note: finishVisit.note,
+      },
+      { withCredentials: true },
     );
   }
 }

@@ -6,6 +6,7 @@ import {
   DoctorDetailsApiResponse,
   DoctorPageModel,
 } from '../../models/doctor.model';
+import { DoctorScheduleResponse, InputSlot } from '../../models/schedule.model';
 
 @Injectable({
   providedIn: 'root',
@@ -19,8 +20,7 @@ export class DoctorService {
       .pipe(
         map((response) => {
           const mapped = this.mapDoctorDetailsResponse(response);
-          console.log('Mapped doctor details:', mapped);
-          return this.mapDoctorDetailsResponse(response);
+          return mapped;
         }),
       );
   }
@@ -88,8 +88,22 @@ export class DoctorService {
       },
       institutions: response.doctor.employers,
       specialisation: response.doctor.specialisations,
-      schedule: [], // Schedule will be fetched separately
-      comments: [], // Comments will be fetched separately
+      schedule: [],
+      comments: [],
     };
+  }
+
+  public getDoctorsSchedule(): Observable<InputSlot[]> {
+    return this.http
+      .get<DoctorScheduleResponse>(`${API_URL}/doctors/me/schedules`, {
+        withCredentials: true,
+      })
+      .pipe(map((response) => response.schedules));
+  }
+
+  public getDoctorVisits(): Observable<unknown> {
+    return this.http.get(`${API_URL}/doctors/me/visitsbydate/today`, {
+      withCredentials: true,
+    });
   }
 }

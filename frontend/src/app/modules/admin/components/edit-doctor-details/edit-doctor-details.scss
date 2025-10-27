@@ -1,0 +1,28 @@
+@import "../page-mixins";
+@import "../shared/form-mixins";
+
+.edit-doctor-page {
+  @include page-container;
+}
+
+.page-header {
+  @include page-header;
+}
+
+.breadcrumb {
+  @include breadcrumb;
+}
+
+.doctor-form {
+  @include form-card;
+}
+
+.form-container {
+  @include form-container;
+}
+
+.form-actions {
+  @include form-actions;
+}
+
+@include accessibility-features;

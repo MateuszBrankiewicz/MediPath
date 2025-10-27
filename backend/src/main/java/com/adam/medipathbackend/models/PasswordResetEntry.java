@@ -14,9 +14,10 @@ public class PasswordResetEntry {
     private String id;
 
     private final String email;
+
     private final String token;
     private final LocalDateTime dateIssued;
-    private final LocalDateTime dateExpiry;
+    private LocalDateTime dateExpiry;
 
     private boolean gotUsed;
 
@@ -26,6 +27,14 @@ public class PasswordResetEntry {
         this.dateIssued = LocalDateTime.now();
         this.dateExpiry = dateIssued.plusMinutes(10);
         this.gotUsed = false;
+    }
+
+    public void setDateExpiry(LocalDateTime dateExpiry) {
+        this.dateExpiry = dateExpiry;
+    }
+
+    public String getToken() {
+        return token;
     }
 
     public void setGotUsed(boolean gotUsed) {

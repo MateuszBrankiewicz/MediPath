@@ -1,62 +1,97 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
-  OnInit,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { DoctorWithSchedule } from '../../../../core/models/doctor.model';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SelectModule } from 'primeng/select';
+import { DoctorSchedule } from '../../../../core/models/doctor.model';
 import { CalendarDay } from '../../../../core/models/schedule.model';
+import { DateTimeService } from '../../../../core/services/date-time/date-time.service';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { mapSchedulesToCalendarDays } from '../../../../utils/calendarMapper';
 import { Calendar } from '../../../shared/components/calendar/calendar';
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
-import { InstitutionOption } from '../admin-dashboard/widgets/institution-select-card';
+import { SelectInstitution } from '../shared/select-institution/select-institution';
 import { ScheduleDetailsDialog } from './components/schedule-details-dialog/schedule-details-dialog';
 import { ScheduleManagementService } from './services/schedule-management.service';
 
 @Component({
   selector: 'app-institution-schedule',
-  imports: [Calendar, ButtonModule, ScheduleDetailsDialog],
+  imports: [
+    Calendar,
+    ButtonModule,
+    ScheduleDetailsDialog,
+    SelectModule,
+    FormsModule,
+    SelectInstitution,
+    ProgressSpinnerModule,
+  ],
   templateUrl: './institution-schedule.html',
   styleUrl: './institution-schedule.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InstitutionSchedule implements OnInit {
+export class InstitutionSchedule {
   protected translationService = inject(TranslationService);
   protected scheduleManagementService = inject(ScheduleManagementService);
+  protected dateTimeService = inject(DateTimeService);
+
+  protected otherLoading = signal<boolean>(false);
 
   public currentMonth = signal<Date>(new Date());
   public readonly currentDayNumber = new Date().getDate();
-  public readonly currentDayName = this.getDayName(new Date());
+  public readonly currentDayName = this.dateTimeService.getDayName(new Date());
   private router = inject(Router);
   private institutionStoreService = inject(InstitutionStoreService);
   private destroyRef = inject(DestroyRef);
   private institutionService = inject(InstitutionService);
 
   protected selectedDoctorId = signal<string | null>(null);
-  protected readonly institutionOptions = signal<InstitutionOption[]>([]);
-  protected selectedInstitution = signal<string | null>(null);
-  protected doctorsForInstitution = signal<DoctorWithSchedule[]>([]);
+
+  protected doctorsForInstitution = signal<
+    {
+      doctorId: string;
+      doctorName: string;
+      doctorSurname: string;
+      schedules: DoctorSchedule[];
+    }[]
+  >([]);
+
+  protected isLoading = signal<boolean>(false);
+
+  protected selectedInstitution = computed(() => {
+    return this.institutionStoreService.selectedInstitution()?.id;
+  });
+
+  constructor() {
+    effect(() => {
+      const institutionId =
+        this.institutionStoreService.selectedInstitution()?.id;
+      if (!institutionId) {
+        return;
+      }
+      this.loadDoctorsForInstitution(institutionId);
+    });
+
+    effect(() => {
+      const doctors = this.doctorsForInstitution();
+      if (doctors.length > 0 && !this.selectedDoctorId()) {
+        this.selectedDoctorId.set(doctors[0].doctorId);
+      }
+    });
+  }
 
   protected showScheduleModal = signal<boolean>(false);
   protected selectedDate = signal<Date | null>(null);
-
-  ngOnInit(): void {
-    this.institutionOptions.set(
-      this.institutionStoreService.getAvailableInstitutions(),
-    );
-    this.selectedInstitution.set(
-      this.institutionStoreService.getInstitution().id,
-    );
-    this.loadDoctorsForInstitution(
-      this.institutionStoreService.getInstitution().id,
-    );
-  }
 
   protected mapSelectedDoctorScheduleToCalendarDays = computed<CalendarDay[]>(
     () => {
@@ -85,25 +120,7 @@ export class InstitutionSchedule implements OnInit {
   );
 
   public readonly currentMonthYear = computed(() => {
-    const current = this.currentMonth();
-    const monthKeys = [
-      'months.january',
-      'months.february',
-      'months.march',
-      'months.april',
-      'months.may',
-      'months.june',
-      'months.july',
-      'months.august',
-      'months.september',
-      'months.october',
-      'months.november',
-      'months.december',
-    ];
-    const monthName = this.translationService.translate(
-      monthKeys[current.getMonth()],
-    );
-    return `${monthName} ${current.getFullYear()}`;
+    return this.dateTimeService.formatMonthYear(this.currentMonth());
   });
 
   protected readonly selectedDoctorName = computed(() => {
@@ -115,24 +132,13 @@ export class InstitutionSchedule implements OnInit {
     return doctor ? `${doctor.doctorName} ${doctor.doctorSurname}` : '';
   });
 
-  private getDayName(date: Date): string {
-    const dayKeys = [
-      'weekdays.sunday',
-      'weekdays.monday',
-      'weekdays.tuesday',
-      'weekdays.wednesday',
-      'weekdays.thursday',
-      'weekdays.friday',
-      'weekdays.saturday',
-    ];
-    return this.translationService.translate(dayKeys[date.getDay()]);
-  }
-
   protected saveSchedule(): void {
     this.router.navigate(['/admin/schedule/add-schedule']);
   }
 
   private loadDoctorsForInstitution(institutionId: string): void {
+    this.isLoading.set(true);
+    this.otherLoading.set(true);
     this.institutionService
       .getDoctorsForInstitution(institutionId)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -144,36 +150,11 @@ export class InstitutionSchedule implements OnInit {
           schedules: doctor.doctorSchedules,
         }));
         this.doctorsForInstitution.set(doctorsWithSchedule);
-        this.selectedDoctorId.set(
-          doctorsWithSchedule.length > 0
-            ? doctorsWithSchedule[0].doctorId
-            : null,
-        );
+        this.isLoading.set(false);
+        this.otherLoading.set(false);
       });
   }
 
-  protected selectDoctor(doctorId: string): void {
-    this.selectedDoctorId.set(doctorId);
-  }
-
-  protected selectedDoctorIdFn(): string | null {
-    return this.selectedDoctorId();
-  }
-
-  protected onInstitutionChange(value: string | null): void {
-    this.selectedInstitution.set(value);
-    if (value) {
-      const institutions =
-        this.institutionStoreService.getAvailableInstitutions();
-      const selectedInstitution = institutions.find(
-        (inst) => inst.id === value,
-      );
-      if (selectedInstitution) {
-        this.institutionStoreService.setInstitution(selectedInstitution);
-      }
-      this.loadDoctorsForInstitution(value);
-    }
-  }
   protected onDaySelected(date: Date): void {
     this.scheduleManagementService.setDoctorsForInstitution(
       this.doctorsForInstitution(),
@@ -220,5 +201,9 @@ export class InstitutionSchedule implements OnInit {
           }
         });
     }
+  }
+
+  protected selectDoctor(doctorId: string): void {
+    this.selectedDoctorId.set(doctorId);
   }
 }

@@ -1,67 +1,96 @@
-<div class="reschedule-dialog">
-  <div class="dialog-content">
-    <div class="left-section">
-      <app-calendar-schedule
-        (dateTimeSelected)="onDateTimeSelected($event)"
-        [availableAppointments]="availableDays()"
-        [initialSelectedDate]="rescheduleData()?.selectedDate || null"
-        [initialSelectedTime]="rescheduleData()?.selectedTime || null"
-      >
-      </app-calendar-schedule>
-    </div>
-
-    <div class="right-section">
-      <div class="doctor-info">
-        <h3>
-          {{ translationService.translate("patient.scheduleVisit.doctor") }}
-        </h3>
-        <p class="doctor-name">{{ rescheduleData()?.doctorName }}</p>
-
-        <h3>
+<div class="schedule-visit-page">
+  <p-card>
+    <div class="form-container">
+      <!-- Doctor Information Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="pi pi-user-md"></i>
           {{
-            translationService.translate("patient.scheduleVisit.institution")
+            translationService.translate(
+              "patient.scheduleVisit.doctorInformation"
+            )
           }}
         </h3>
-        <p class="institution-name">{{ rescheduleData()?.institution }}</p>
+        <div class="form-grid">
+          <div class="form-field">
+            <span class="field-label">{{
+              translationService.translate("patient.scheduleVisit.doctor")
+            }}</span>
+            <div class="info-value">{{ rescheduleData()?.doctorName }}</div>
+          </div>
+          <div class="form-field">
+            <span class="field-label">{{
+              translationService.translate("patient.scheduleVisit.institution")
+            }}</span>
+            <div class="info-value">{{ rescheduleData()?.institution }}</div>
+          </div>
+        </div>
       </div>
 
-      <div class="patient-remarks">
-        <h3>
+      <p-divider />
+
+      <!-- Schedule Selection Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="pi pi-calendar"></i>
+          {{
+            translationService.translate("patient.scheduleVisit.selectDateTime")
+          }}
+        </h3>
+        <div class="calendar-wrapper">
+          <app-calendar-schedule
+            (dateTimeSelected)="onDateTimeSelected($event)"
+            [availableAppointments]="availableDays()"
+            [initialSelectedDate]="rescheduleData()?.selectedDate || null"
+            [initialSelectedTime]="rescheduleData()?.selectedTime || null"
+          >
+          </app-calendar-schedule>
+        </div>
+      </div>
+
+      <p-divider />
+
+      <!-- Patient Remarks Section -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="pi pi-comment"></i>
           {{
             translationService.translate("patient.scheduleVisit.patientRemarks")
           }}
         </h3>
-        <textarea
-          pTextarea
-          class="remarks-textarea"
-          placeholder="Enter any additional notes you would like to share with your doctor before your visit."
-          rows="6"
-          [ngModel]="rescheduleData()?.patientRemarks"
-          (ngModelChange)="onRemarksChange($event)"
-        >
-        </textarea>
+        <div class="form-field full-width">
+          <textarea
+            pTextarea
+            class="remarks-textarea"
+            [placeholder]="
+              translationService.translate(
+                'patient.scheduleVisit.remarksPlaceholder'
+              )
+            "
+            rows="6"
+            [ngModel]="rescheduleData()?.patientRemarks"
+            (ngModelChange)="onRemarksChange($event)"
+          >
+          </textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <p-button
+          [label]="translationService.translate('patient.scheduleVisit.cancel')"
+          severity="secondary"
+          (onClick)="cancelReschedule()"
+          type="button"
+        />
+        <p-button
+          [label]="
+            translationService.translate('patient.scheduleVisit.confirm')
+          "
+          [disabled]="!isFormValid()"
+          (onClick)="confirmReschedule()"
+          type="button"
+        />
       </div>
     </div>
-  </div>
-
-  <div class="dialog-footer">
-    <p-button
-      label="CONFIRM"
-      styleClass="confirm-btn"
-      [rounded]="true"
-      [raised]="true"
-      [disabled]="!isFormValid()"
-      (onClick)="confirmReschedule()"
-    >
-    </p-button>
-    <p-button
-      label="CANCEL"
-      styleClass="cancel-btn"
-      severity="danger"
-      [rounded]="true"
-      [raised]="true"
-      (onClick)="cancelReschedule()"
-    >
-    </p-button>
-  </div>
+  </p-card>
 </div>
