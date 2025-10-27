@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.medipath.core.models.Visit
 import com.medipath.core.services.UserService
@@ -14,12 +13,12 @@ import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
 
 class HomeViewModel(
-    private val _isLoading: MutableState<Boolean> = mutableStateOf(true),
-    val isLoading: State<Boolean> = _isLoading,
     private val userService: UserService = RetrofitInstance.userService,
     private val visitsService: VisitsService = RetrofitInstance.visitsService
 ) : ViewModel() {
 
+    private val _isLoading = mutableStateOf(true)
+    val isLoading: State<Boolean> = _isLoading
     private val _firstName = mutableStateOf("")
     val firstName: State<String> = _firstName
     private val _lastName = mutableStateOf("")

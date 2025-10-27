@@ -358,7 +358,7 @@ fun Navigation(
                                                 )
                                                 Spacer(modifier = Modifier.weight(1f))
                                                 Icon(
-                                                    if (showRoleMenu) Icons.Outlined.ArrowDropDown else Icons.Outlined.ArrowDropDown,
+                                                    if (showRoleMenu) Icons.Outlined.ArrowDropUp else Icons.Outlined.ArrowDropDown,
                                                     contentDescription = "Expand",
                                                     tint = MaterialTheme.colorScheme.onSurface
                                                 )
