@@ -154,6 +154,10 @@
   "patient.reviewVisit.submitReview": "Submit Review",
   "patient.reviewVisit.updateReview": "Update Review",
 
+  "patient.reviewDialog.loading": "Loading comment...",
+  "patient.reviewDialog.loadError": "Failed to load comment",
+  "patient.reviewDialog.commentNotFound": "Comment not found",
+
   "patient.addReminder.title": "Title: *",
   "patient.addReminder.titleShort": "Title",
   "patient.addReminder.reminderTime": "Reminder Time:",
@@ -231,6 +235,9 @@
 
   "shared.forms.noResultsFound": "No results found",
   "shared.forms.loading": "Loading...",
+  "shared.error": "Error",
+  "shared.notFound": "Not Found",
+  "shared.loading": "Loading...",
 
   "shared.navigation.mediPath": "MediPath",
   "shared.navigation.menu": "Menu",

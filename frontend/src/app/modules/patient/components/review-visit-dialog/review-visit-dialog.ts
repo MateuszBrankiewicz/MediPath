@@ -3,13 +3,17 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SelectModule } from 'primeng/select';
+import { catchError, of } from 'rxjs';
 import { StarRatingOption } from '../../../../core/models/review.model';
+import { CommentService } from '../../../../core/services/comment/comment.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 @Component({
@@ -19,25 +23,30 @@ import { TranslationService } from '../../../../core/services/translation/transl
   styleUrl: './review-visit-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReviewVisitDialog {
+export class ReviewVisitDialog implements OnInit {
   private ref = inject(DynamicDialogRef<ReviewVisitDialogResult | undefined>);
   private config = inject(DynamicDialogConfig<ReviewVisitDialogData>);
+  private commentService = inject(CommentService);
+  private messageService = inject(MessageService);
   protected translationService = inject(TranslationService);
 
   private readonly dialogData = this.config.data ?? {};
-  private readonly existingComment = this.extractExistingComment();
+  private readonly existingComment = signal<ExistingComment | null>(
+    this.extractExistingComment(),
+  );
+  protected readonly isLoading = signal<boolean>(false);
 
   private readonly commentsSignal = signal<string>(
-    this.existingComment?.comment ?? '',
+    this.existingComment()?.comment ?? '',
   );
   private readonly doctorRatingSignal = signal<number | null>(
-    this.existingComment?.doctorRating ?? null,
+    this.existingComment()?.doctorRating ?? null,
   );
   private readonly institutionRatingSignal = signal<number | null>(
-    this.existingComment?.institutionRating ?? null,
+    this.existingComment()?.institutionRating ?? null,
   );
 
-  protected readonly isEditing = computed(() => !!this.existingComment?.id);
+  protected readonly isEditing = computed(() => !!this.existingComment()?.id);
 
   get commentsModel() {
     return this.commentsSignal();
@@ -72,20 +81,75 @@ export class ReviewVisitDialog {
   ];
 
   protected readonly doctorName = computed(
-    () => this.dialogData.doctorName || this.existingComment?.doctorName || '',
+    () =>
+      this.dialogData.doctorName || this.existingComment()?.doctorName || '',
   );
 
   protected readonly institutionName = computed(
     () =>
       this.dialogData.institutionName ||
-      this.existingComment?.institutionName ||
+      this.existingComment()?.institutionName ||
       '',
   );
+
+  ngOnInit(): void {
+    if (this.dialogData.id) {
+      this.loadCommentById(this.dialogData.id);
+    }
+  }
+
+  private loadCommentById(commentId: string): void {
+    this.isLoading.set(true);
+    this.commentService
+      .getUsersComments()
+      .pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: this.translationService.translate('shared.error'),
+            detail: this.translationService.translate(
+              'patient.reviewDialog.loadError',
+            ),
+          });
+          this.isLoading.set(false);
+          return of({ comments: [] });
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          const comment = response.comments.find((c) => c.id === commentId);
+          if (comment) {
+            const existingComment: ExistingComment = {
+              id: comment.id,
+              comment: comment.content,
+              doctorRating: comment.doctorRating,
+              institutionRating: comment.institutionRating,
+              doctorName: comment.doctor,
+              institutionName: comment.institution,
+            };
+            this.existingComment.set(existingComment);
+            this.commentsSignal.set(comment.content);
+            this.doctorRatingSignal.set(comment.doctorRating);
+            this.institutionRatingSignal.set(comment.institutionRating);
+            console.log('Loaded comment:', comment);
+          } else {
+            this.messageService.add({
+              severity: 'warn',
+              summary: this.translationService.translate('shared.notFound'),
+              detail: this.translationService.translate(
+                'patient.reviewDialog.commentNotFound',
+              ),
+            });
+          }
+          this.isLoading.set(false);
+        },
+      });
+  }
 
   public onSubmit() {
     const reviewData: ReviewVisitDialogResult = {
       visitId: this.dialogData.visitId,
-      commentId: this.existingComment?.id,
+      commentId: this.existingComment()?.id,
       comments: this.commentsSignal().trim(),
       doctorRating: this.doctorRatingSignal(),
       institutionRating: this.institutionRatingSignal(),
@@ -102,6 +166,16 @@ export class ReviewVisitDialog {
     const data = this.dialogData;
     if (!data) {
       return null;
+    }
+
+    // Jeśli mamy tylko id bez danych, zwróć tylko id - dane zostaną załadowane później
+    if (data.id && !data.comment && !data.content) {
+      return {
+        id: data.id,
+        comment: '',
+        doctorRating: null,
+        institutionRating: null,
+      };
     }
 
     const commentText = this.resolveCommentText(data);

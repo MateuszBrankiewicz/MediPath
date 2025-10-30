@@ -29,7 +29,7 @@ import { VisitsService } from '../../../../core/services/visits/visits.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VisitDetailsDialog implements OnInit {
-  private ref = inject(DynamicDialogRef);
+  private ref = inject(DynamicDialogRef<VisitDetailsDialogResult>);
   private config = inject(DynamicDialogConfig);
   protected translationService = inject(TranslationService);
   private visitService = inject(VisitsService);
@@ -54,8 +54,8 @@ export class VisitDetailsDialog implements OnInit {
             doctorPhoto: visit.visit.doctorPfp,
             specialisation: visit.visit.doctor.specialisations[0],
             institution: visit.visit.institution.institutionName,
-            institutionPhoto: '',
-            address: 'visit.visit.institution',
+            institutionPhoto: visit.visit.institutionPfp,
+            address: visit.visit.institutionAddress || '',
             date: new Date(visit.visit.time.startTime),
             status: visit.visit.status,
             notes: visit.visit.note,
@@ -63,18 +63,25 @@ export class VisitDetailsDialog implements OnInit {
               'prescription',
               visit.visit.codes,
             ),
-            referralPin: this.getCodePins('refferal', visit.visit.codes),
+            referralPin: this.getCodePins('referral', visit.visit.codes),
+            commentId: visit.visit.commentId,
           };
         }),
       )
       .subscribe((visit) => {
         this.visit.set(visit);
+        console.log(visit);
         this.isLoading.set(false);
       });
   }
 
   public reviewVisit(): void {
-    this.ref.close('REVIEW');
+    this.ref.close({
+      action: 'REVIEW',
+      commentId: this.visit()?.commentId,
+      doctorName: this.visit()?.doctorName,
+      institutionName: this.visit()?.institution,
+    });
   }
 
   public closeDialog(): void {
@@ -82,7 +89,7 @@ export class VisitDetailsDialog implements OnInit {
   }
 
   public getCodePins(
-    codeType: 'prescription' | 'refferal',
+    codeType: 'prescription' | 'referral',
     codes: VisitCode[],
   ): string {
     return codes
@@ -90,4 +97,11 @@ export class VisitDetailsDialog implements OnInit {
       .map((code) => code.code)
       .join(',');
   }
+}
+
+export interface VisitDetailsDialogResult {
+  action: 'REVIEW';
+  commentId?: string;
+  doctorName?: string;
+  institutionName?: string;
 }

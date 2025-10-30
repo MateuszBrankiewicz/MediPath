@@ -120,7 +120,7 @@
       >
       </p-button>
       <p-button
-        label="REVIEW VISIT"
+        [label]="visit()?.commentId ? 'EDIT REVIEW' : 'ADD REVIEW'"
         [rounded]="true"
         [raised]="true"
         (onClick)="reviewVisit()"

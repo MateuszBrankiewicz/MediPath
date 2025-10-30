@@ -11,7 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuModule } from 'primeng/menu';
 import { PaginatorModule } from 'primeng/paginator';
 import { PopoverModule } from 'primeng/popover';
@@ -37,9 +37,7 @@ import { TranslationService } from '../../../../core/services/translation/transl
 import { VisitsService } from '../../../../core/services/visits/visits.service';
 import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
-import { ReviewVisitDialog } from '../review-visit-dialog/review-visit-dialog';
-import { ScheduleVisitDialog } from '../schedule-visit-dialog/schedule-visit-dialog';
-import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog';
+import { VisitDialogService } from '../../services/visit-dialog.service';
 
 @Component({
   selector: 'app-visit-page',
@@ -54,7 +52,6 @@ import { VisitDetailsDialog } from '../visit-details-dialog/visit-details-dialog
     FilterComponent,
     ProgressSpinnerModule,
   ],
-  providers: [DialogService],
   templateUrl: './visit-page.html',
   styleUrl: './visit-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,7 +64,7 @@ export class VisitPage
   protected readonly selectedVisitId = signal<string | null>(null);
   private commentService = inject(CommentService);
   private visitService = inject(VisitsService);
-  private dialogService = inject(DialogService);
+  private visitDialogService = inject(VisitDialogService);
   protected translationService = inject(TranslationService);
   private destroyRef = inject(DestroyRef);
   private ref: DynamicDialogRef | null = null;
@@ -196,16 +193,8 @@ export class VisitPage
   protected openVisitDialog(id: string): void {
     this.selectedVisitId.set(id);
 
-    this.ref = this.dialogService.open(VisitDetailsDialog, {
-      data: { visitId: id },
-      header: this.translationService.translate(
-        'patient.visits.visitDetailsTitle',
-      ),
-      width: '80%',
-      height: '67%',
-      closable: true,
-      modal: true,
-      styleClass: 'visit-dialog',
+    this.ref = this.visitDialogService.openVisitDetailsDialog({
+      visitId: id,
     });
 
     if (!this.ref) {
@@ -213,23 +202,20 @@ export class VisitPage
     }
 
     this.ref.onClose.subscribe((result) => {
-      if (result === 'REVIEW') {
-        this.openReviewDialog(id);
+      if (result?.action === 'REVIEW') {
+        this.openReviewDialog(
+          id,
+          result.commentId,
+          result.doctorName,
+          result.institutionName,
+        );
       }
     });
   }
 
   protected openRescheduleDialog(visitId: string): void {
-    this.ref = this.dialogService.open(ScheduleVisitDialog, {
-      data: { visitId: visitId },
-      header: this.translationService.translate(
-        'patient.visits.rescheduleTitle',
-      ),
-      width: '70%',
-      height: 'auto',
-      closable: true,
-      modal: true,
-      styleClass: 'reschedule-dialog',
+    this.ref = this.visitDialogService.openRescheduleDialog({
+      visitId: visitId,
     });
 
     if (!this.ref) {
@@ -269,13 +255,20 @@ export class VisitPage
     });
   }
 
-  private openReviewDialog(id: string): void {
-    this.ref = this.dialogService.open(ReviewVisitDialog, {
-      data: { visitId: id },
-      header: this.translationService.translate('patient.visits.reviewTitle'),
-      width: '70%',
-      height: 'auto',
-      modal: true,
+  private openReviewDialog(
+    id: string,
+    commentId?: string,
+    doctorName?: string,
+    institutionName?: string,
+  ): void {
+    // Znajdź wizytę, aby przekazać dane lekarza i placówki (jeśli nie zostały przekazane)
+    const visit = this.visits().find((v) => v.id === id);
+
+    this.ref = this.visitDialogService.openReviewDialog({
+      visitId: id,
+      commentId: commentId,
+      doctorName: doctorName ?? visit?.doctorName,
+      institutionName: institutionName ?? visit?.institution,
     });
 
     if (!this.ref) {
@@ -283,28 +276,61 @@ export class VisitPage
     }
 
     this.ref.onClose.subscribe((comment) => {
-      const newComment: AddComentRequest = {
-        comment: comment.comments,
-        visitID: comment.visitId,
-        doctorRating: comment.doctorRating,
-        institutionRating: comment.institutionRating,
-      };
-      this.commentService
-        .addComment(newComment)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: () => {
-            this.toastService.showSuccess(
-              this.translationService.translate('comment.add.succes'),
-            );
-          },
-          error: (err) => {
-            console.log(err);
-            this.toastService.showError(
-              this.translationService.translate('comment.add.error'),
-            );
-          },
-        });
+      if (!comment) {
+        return;
+      }
+
+      if (comment.isEditing && comment.commentId) {
+        // Edycja istniejącego komentarza
+        const editedComment = {
+          id: comment.commentId,
+          comment: comment.comments,
+          doctorRating: comment.doctorRating,
+          institutionRating: comment.institutionRating,
+        };
+        this.commentService
+          .editComment(editedComment)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.toastService.showSuccess(
+                this.translationService.translate('comment.edit.success'),
+              );
+              this.initVisitList();
+            },
+            error: (err) => {
+              console.log(err);
+              this.toastService.showError(
+                this.translationService.translate('comments.edit.failed'),
+              );
+            },
+          });
+      } else {
+        // Dodanie nowego komentarza
+        const newComment: AddComentRequest = {
+          comment: comment.comments,
+          visitID: comment.visitId,
+          doctorRating: comment.doctorRating,
+          institutionRating: comment.institutionRating,
+        };
+        this.commentService
+          .addComment(newComment)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.toastService.showSuccess(
+                this.translationService.translate('comment.add.success'),
+              );
+              this.initVisitList();
+            },
+            error: (err) => {
+              console.log(err);
+              this.toastService.showError(
+                this.translationService.translate('comment.add.error'),
+              );
+            },
+          });
+      }
     });
   }
 

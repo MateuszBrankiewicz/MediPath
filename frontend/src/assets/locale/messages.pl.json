@@ -155,6 +155,10 @@
   "patient.reviewVisit.submitReview": "Zapisz opinię",
   "patient.reviewVisit.updateReview": "Zaktualizuj opinię",
 
+  "patient.reviewDialog.loading": "Ładowanie komentarza...",
+  "patient.reviewDialog.loadError": "Nie udało się załadować komentarza",
+  "patient.reviewDialog.commentNotFound": "Nie znaleziono komentarza",
+
   "patient.addReminder.title": "Tytuł: *",
   "patient.addReminder.titleShort": "Tytuł",
   "patient.addReminder.reminderTime": "Czas przypomnienia:",
@@ -231,6 +235,9 @@
 
   "shared.forms.noResultsFound": "Nie znaleziono wyników",
   "shared.forms.loading": "Ładowanie...",
+  "shared.error": "Błąd",
+  "shared.notFound": "Nie znaleziono",
+  "shared.loading": "Ładowanie...",
 
   "shared.navigation.mediPath": "MediPath",
   "shared.navigation.menu": "Menu",
