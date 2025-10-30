@@ -42,6 +42,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     })
     ArrayList<User> getUserNotificationsNow(LocalDateTime lower, LocalDateTime upper);
 
-//    @Query("{}")
-//    @Update("{'$pull': {'notifications': }}}")
+    @Query("{}")
+    @Update("{'$pull': {'notifications': {'timestamp': { $lt: ?0 }}}}")
+    void deleteOldNotifications(LocalDateTime date);
 }

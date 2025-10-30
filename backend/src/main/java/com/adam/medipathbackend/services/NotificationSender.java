@@ -36,7 +36,7 @@ public class NotificationSender {
 
     @Scheduled(cron = "0 0 1 * * ?")
     public void deleteOldNotifications() {
-
+        userRepository.deleteOldNotifications(LocalDateTime.now().minusMonths(1));
     }
 
 }
