@@ -24,26 +24,19 @@ public class NotificationSender {
     @Scheduled(fixedRate = 5*60000)
     public void pushNotifications() {
 
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.getUserNotificationsNow(LocalDateTime.now().minusMinutes(2).minusSeconds(30),
+                LocalDateTime.now().plusMinutes(2).plusSeconds(30));
         for(User user: users) {
-            boolean gotModified = false;
             for(Notification notification: user.getNotifications()) {
+                notificationService.sendNotificationToUser(user.getId(), notification);
 
-                if(notification.getTimestamp().isAfter(LocalDateTime.now().minusMinutes(2).minusSeconds(30)) && notification.getTimestamp().isBefore(LocalDateTime.now().plusMinutes(2).plusSeconds(30))) {
-                    notificationService.sendNotificationToUser(user.getId(), notification);
-                }
-
-                if(notification.getTimestamp().isBefore(LocalDateTime.now().minusMonths(1))) {
-                    user.removeNotification(notification);
-                    gotModified = true;
-                }
-
-            }
-
-            if(gotModified) {
-                userRepository.save(user);
             }
         }
+    }
+
+    @Scheduled(cron = "0 0 1 * * ?")
+    public void deleteOldNotifications() {
+        userRepository.deleteOldNotifications(LocalDateTime.now().minusMonths(1));
     }
 
 }

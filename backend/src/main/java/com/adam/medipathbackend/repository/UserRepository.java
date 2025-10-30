@@ -1,10 +1,13 @@
 package com.adam.medipathbackend.repository;
 
+import com.adam.medipathbackend.models.Notification;
 import com.adam.medipathbackend.models.User;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.Update;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -32,4 +35,14 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     @Query("{_id:{ $oid: \"?0\" }, roleCode: { $in: [8, 9, 10, 11, 12, 13, 14, 15] } }")
     Optional<User> findAdminById(String id);
+
+    @Aggregation({
+            "{ '$unwind': '$notifications' }",
+            "{ '$match': { 'notifications.timestamp': { $gte: ?0, $lt: ?1 } } }"
+    })
+    ArrayList<User> getUserNotificationsNow(LocalDateTime lower, LocalDateTime upper);
+
+    @Query("{}")
+    @Update("{'$pull': {'notifications': {'timestamp': { $lt: ?0 }}}}")
+    void deleteOldNotifications(LocalDateTime date);
 }

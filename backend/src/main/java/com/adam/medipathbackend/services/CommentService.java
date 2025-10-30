@@ -36,6 +36,9 @@ public class CommentService {
         Visit visit = optVisit.get();
         if (!visit.getPatient().getUserId().equals(loggedUserID)) throw new IllegalAccessException("User not authorized to comment on this visit");
 
+        if(visit.getCommentId() != null)
+            throw new IllegalArgumentException("Visit already has a comment");
+
         Comment newComment = new Comment(commentForm.getDoctorRating(), commentForm.getInstitutionRating(),
                 commentForm.getComment() == null ? "" : commentForm.getComment(),
                 visit.getDoctor(), visit.getInstitution(), visit.getPatient(), commentForm.getVisitID());
@@ -52,9 +55,13 @@ public class CommentService {
         doctor.addRating(commentForm.getDoctorRating());
         institution.addRating(commentForm.getInstitutionRating());
 
+
+
         institutionRepository.save(institution);
         userRepository.save(doctor);
-        commentRepository.save(newComment);
+        Comment savedComment = commentRepository.save(newComment);
+        visit.setCommentId(savedComment.getId());
+        visitRepository.save(visit);
     }
 
      
@@ -106,18 +113,23 @@ public class CommentService {
 
         Optional<Institution> institutionOpt = institutionRepository.findById(comment.getInstitution().getInstitutionId());
         Optional<User> doctorOpt = userRepository.findById(comment.getDoctorDigest().getUserId());
+        Optional<Visit> visitOpt = visitRepository.findById(comment.getVisitId());
 
         if (institutionOpt.isEmpty()) throw new IllegalArgumentException("Institution not found");
         if (doctorOpt.isEmpty()) throw new IllegalArgumentException("Doctor not found");
+        if (visitOpt.isEmpty()) throw new IllegalArgumentException("Visit not found");
 
         User doctor = doctorOpt.get();
         Institution institution = institutionOpt.get();
+        Visit visit = visitOpt.get();
 
         doctor.subtractRating(comment.getDoctorRating());
         institution.subtractRating(comment.getInstitutionRating());
+        visit.setCommentId(null);
 
         institutionRepository.save(institution);
         userRepository.save(doctor);
+        visitRepository.save(visit);
         commentRepository.delete(comment);
     }
 
