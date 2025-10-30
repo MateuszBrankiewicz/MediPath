@@ -4,13 +4,13 @@
   flex-direction: column;
   justify-content: space-evenly;
   min-height: 500px;
-
+  overflow-y: hidden;
 
   .visit-info {
-     background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
     .date-section {
       text-align: right;
@@ -50,14 +50,15 @@
       }
     }
 
-    .doctor-card, .institution-card {
-
+    .doctor-card,
+    .institution-card {
       display: flex;
       gap: 16px;
       align-items: flex-start;
     }
 
-    .doctor-photo, .institution-photo {
+    .doctor-photo,
+    .institution-photo {
       width: 70px;
       height: 70px;
       border-radius: 8px;
@@ -65,24 +66,28 @@
       flex-shrink: 0;
     }
 
-    .doctor-info, .institution-info {
+    .doctor-info,
+    .institution-info {
       flex: 1;
 
-      .doctor-label, .institution-label {
+      .doctor-label,
+      .institution-label {
         font-size: 13px;
         color: #7f8c8d;
         margin-bottom: 4px;
         font-weight: 500;
       }
 
-      .doctor-name, .institution-name {
+      .doctor-name,
+      .institution-name {
         font-size: 16px;
         font-weight: 600;
         color: #2c3e50;
         margin-bottom: 12px;
       }
 
-      .doctor-specialisation, .institution-address {
+      .doctor-specialisation,
+      .institution-address {
         font-size: 14px;
         color: #5a6c7d;
         line-height: 1.4;
@@ -90,7 +95,6 @@
     }
 
     .pins-section {
-
       .pin-item {
         display: flex;
         justify-content: space-between;
@@ -116,8 +120,6 @@
     }
 
     .notes-section {
-
-
       .notes-label {
         font-weight: 600;
         color: #2c3e50;
@@ -142,8 +144,6 @@
     border-top: 1px solid #e9ecef;
     --p-button-padding-x: 3rem;
     --p-button-padding-y: 1rem;
-
-
   }
 }
 

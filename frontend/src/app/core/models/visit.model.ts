@@ -74,6 +74,7 @@ export interface VisitResponse {
   status: 'Upcoming' | 'Cancelled' | 'Completed';
   note: string;
   codes: VisitCode[];
+  doctorPfp?: string;
 }
 
 export interface VisitCode {

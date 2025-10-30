@@ -64,36 +64,14 @@ export class AuthenticationService {
   public login(email: string, password: string) {
     return this.http
       .post(
-        API_URL + '/users/login',
+        `${API_URL}/users/login`,
         { email, password },
         { withCredentials: true },
       )
       .pipe(
         switchMap(() => this.getUserRoleFromApi()),
         tap((response: ApiUserResponse) => {
-          const lastPanel = getRoleFromCode(
-            response.user.userSettings.lastPanel as number,
-          );
-          const normalizedSettings = this.normalizeUserSettings(
-            response.user.userSettings,
-          );
-          const notifications = this.normalizeNotifications(
-            response.user.notifications ?? [],
-          );
-          const userInfo: UserBasicInfo = {
-            id: response.user.id,
-            name: response.user.name,
-            surname: response.user.surname,
-            roleCode: response.user.roleCode,
-            notifications,
-            email: response.user.email,
-            pfpImage: response.user.pfpImage,
-            userSettings: {
-              ...normalizedSettings,
-              lastPanel,
-            },
-          };
-          this.user.set(userInfo);
+          this.setUserFromApiResponse(response);
         }),
         catchError((error) => {
           this.user.set(null);
@@ -171,29 +149,7 @@ export class AuthenticationService {
   public checkAuthStatus() {
     return this.getUserRoleFromApi().pipe(
       tap((response: ApiUserResponse) => {
-        const lastPanel = getRoleFromCode(
-          response.user.userSettings.lastPanel as number,
-        );
-        const normalizedSettings = this.normalizeUserSettings(
-          response.user.userSettings,
-        );
-        const notifications = this.normalizeNotifications(
-          response.user.notifications ?? [],
-        );
-        const userInfo: UserBasicInfo = {
-          id: response.user.id,
-          name: response.user.name,
-          surname: response.user.surname,
-          roleCode: response.user.roleCode,
-          notifications,
-          email: response.user.email,
-          pfpImage: response.user.pfpImage,
-          userSettings: {
-            ...normalizedSettings,
-            lastPanel,
-          },
-        };
-        this.user.set(userInfo);
+        this.setUserFromApiResponse(response, true);
       }),
       catchError(() => {
         this.user.set(null);
@@ -310,30 +266,6 @@ export class AuthenticationService {
     return trimmed.length > 0 ? trimmed : null;
   }
 
-  private normalizeUserSettings(settings: UserSettings): UserSettings {
-    return {
-      ...settings,
-      userNotifications:
-        typeof settings.userNotifications === 'boolean'
-          ? settings.userNotifications
-          : false,
-    };
-  }
-
-  private normalizeNotifications(
-    apiNotifications: ApiNotification[],
-  ): Notification[] {
-    if (!Array.isArray(apiNotifications)) {
-      return [];
-    }
-
-    return apiNotifications
-      .map((notification) => this.mapNotification(notification))
-      .filter(
-        (notification): notification is Notification => notification !== null,
-      );
-  }
-
   private mapNotification(
     notification: ApiNotification | null | undefined,
   ): Notification | null {
@@ -427,5 +359,51 @@ export class AuthenticationService {
 
   private padNumber(value: number): string {
     return value.toString().padStart(2, '0');
+  }
+
+  private setUserFromApiResponse(response: ApiUserResponse, includeId = false) {
+    const userInfo: UserBasicInfo = {
+      ...(includeId && { id: response.user.id }),
+      name: response.user.name,
+      surname: response.user.surname,
+      roleCode: response.user.roleCode,
+      notifications: this.normalizeNotifications(
+        response.user.notifications ?? [],
+      ),
+      pfpImage: response.user.pfpImage,
+      userSettings: {
+        ...this.normalizeUserSettings(response.user.userSettings),
+        lastPanel: getRoleFromCode(
+          response.user.userSettings.lastPanel as number,
+        ),
+      },
+      ...(includeId && { email: response.user.email }),
+    };
+
+    this.user.set(userInfo);
+  }
+
+  private normalizeUserSettings(settings: UserSettings): UserSettings {
+    return {
+      ...settings,
+      userNotifications:
+        typeof settings.userNotifications === 'boolean'
+          ? settings.userNotifications
+          : false,
+    };
+  }
+
+  private normalizeNotifications(
+    apiNotifications: ApiNotification[],
+  ): Notification[] {
+    if (!Array.isArray(apiNotifications)) {
+      return [];
+    }
+
+    return apiNotifications
+      .map((notification) => this.mapNotification(notification))
+      .filter(
+        (notification): notification is Notification => notification !== null,
+      );
   }
 }

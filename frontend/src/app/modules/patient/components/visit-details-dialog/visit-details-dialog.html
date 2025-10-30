@@ -1,4 +1,10 @@
-@if (visit()) {
+@if (isLoading()) {
+  <div class="spinner-container">
+    <p-progress-spinner
+      [style]="{ width: '50%', height: '50%' }"
+    ></p-progress-spinner>
+  </div>
+} @else {
   <div class="visit-details">
     <div class="visit-info">
       <div class="date-section">

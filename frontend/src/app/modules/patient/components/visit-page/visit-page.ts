@@ -202,6 +202,7 @@ export class VisitPage
         'patient.visits.visitDetailsTitle',
       ),
       width: '80%',
+      height: '67%',
       closable: true,
       modal: true,
       styleClass: 'visit-dialog',

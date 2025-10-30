@@ -8,15 +8,22 @@ import {
 } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { map } from 'rxjs';
-import { Visit } from '../../../../core/models/visit.model';
+import { Visit, VisitCode } from '../../../../core/models/visit.model';
 import { AddressFormatPipe } from '../../../../core/pipes/address-format-pipe';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
 
 @Component({
   selector: 'app-visit-details-dialog',
-  imports: [ButtonModule, CommonModule, DatePipe, AddressFormatPipe],
+  imports: [
+    ButtonModule,
+    CommonModule,
+    ProgressSpinnerModule,
+    DatePipe,
+    AddressFormatPipe,
+  ],
   templateUrl: './visit-details-dialog.html',
   styleUrl: './visit-details-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,9 +34,10 @@ export class VisitDetailsDialog implements OnInit {
   protected translationService = inject(TranslationService);
   private visitService = inject(VisitsService);
   public readonly visitId = this.config.data?.visitId;
+  protected isLoading = signal(false);
 
   ngOnInit(): void {
-    // Initialization logic here
+    this.isLoading.set(true);
     this.loadVisitDetails(this.visitId);
   }
 
@@ -43,7 +51,7 @@ export class VisitDetailsDialog implements OnInit {
           return {
             id: visit.visit.id,
             doctorName: `${visit.visit.doctor.doctorName} ${visit.visit.doctor.doctorSurname}`,
-            doctorPhoto: 'visit.visit.doctor.photoUrl',
+            doctorPhoto: visit.visit.doctorPfp,
             specialisation: visit.visit.doctor.specialisations[0],
             institution: visit.visit.institution.institutionName,
             institutionPhoto: '',
@@ -51,13 +59,17 @@ export class VisitDetailsDialog implements OnInit {
             date: new Date(visit.visit.time.startTime),
             status: visit.visit.status,
             notes: visit.visit.note,
-            prescriptionPin: 'visit.visit.codes.prescription',
-            referralPin: 'visit.visit.codes.referral',
+            prescriptionPin: this.getCodePins(
+              'prescription',
+              visit.visit.codes,
+            ),
+            referralPin: this.getCodePins('refferal', visit.visit.codes),
           };
         }),
       )
       .subscribe((visit) => {
         this.visit.set(visit);
+        this.isLoading.set(false);
       });
   }
 
@@ -67,5 +79,15 @@ export class VisitDetailsDialog implements OnInit {
 
   public closeDialog(): void {
     this.ref.close();
+  }
+
+  public getCodePins(
+    codeType: 'prescription' | 'refferal',
+    codes: VisitCode[],
+  ): string {
+    return codes
+      .filter((code) => code.codeType.toLowerCase() === codeType)
+      .map((code) => code.code)
+      .join(',');
   }
 }

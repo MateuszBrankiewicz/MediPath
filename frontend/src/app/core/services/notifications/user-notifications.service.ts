@@ -39,7 +39,7 @@ export class UserNotificationsService implements OnDestroy {
           const parsedMessage = JSON.parse(message.body) as NotificationMessage;
           this.notificationSubject.next(parsedMessage);
         } catch {
-          // Handle parsing error
+          throw new Error('Error parsing notification message');
         }
       });
     };
