@@ -28,6 +28,8 @@ public class Visit {
 
     private String patientRemarks;
 
+    private String commentId;
+
     public Visit(PatientDigest patient, DoctorDigest doctor, VisitTime time, InstitutionDigest institution, String patientRemarks) {
         this.status = "Upcoming";
         this.note = "";
@@ -36,8 +38,8 @@ public class Visit {
         this.doctor = doctor;
         this.time = time;
         this.institution = institution;
-        this.patientRemarks = "";
         this.patientRemarks = patientRemarks;
+        this.commentId = null;
     }
 
     public String getId() { return id; }
@@ -104,6 +106,14 @@ public class Visit {
 
     public void setPatientRemarks(String patientRemarks) {
         this.patientRemarks = patientRemarks;
+    }
+
+    public String getCommentId() {
+        return commentId;
+    }
+
+    public void setCommentId(String commentId) {
+        this.commentId = commentId;
     }
 }
 
