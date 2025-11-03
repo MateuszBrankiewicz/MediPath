@@ -114,15 +114,12 @@ export class UserNotificationsService implements OnDestroy {
   public deleteNotification(
     notification: NotificationMessage,
   ): Observable<unknown> {
-    return this.http.post(
-      `${API_URL}/notifications/delete`,
-      {
+    return this.http.delete(`${API_URL}/notifications`, {
+      body: {
         timestamp: notification.timestamp,
         title: notification.title,
       },
-      {
-        withCredentials: true,
-      },
-    );
+      withCredentials: true,
+    });
   }
 }
