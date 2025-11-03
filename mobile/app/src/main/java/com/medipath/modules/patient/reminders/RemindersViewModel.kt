@@ -29,7 +29,6 @@ class RemindersViewModel : ViewModel() {
     private val _error = mutableStateOf<String?>(null)
     val error: State<String?> = _error
 
-    // Filter states
     private val _statusFilter = mutableStateOf("All")
     val statusFilter: State<String> = _statusFilter
 
@@ -45,7 +44,6 @@ class RemindersViewModel : ViewModel() {
     private val _searchQuery = mutableStateOf("")
     val searchQuery: State<String> = _searchQuery
 
-    // Statistics
     private val _totalReminders = mutableStateOf(0)
     val totalReminders: State<Int> = _totalReminders
 
@@ -127,12 +125,35 @@ class RemindersViewModel : ViewModel() {
         }
     }
 
-    fun deleteReminder(notification: Notification) {
-        _reminders.value = _reminders.value.filter {
-            !(it.timestamp == notification.timestamp && it.title == notification.title)
+    fun deleteReminder(notification: Notification, sessionManager: DataStoreSessionManager) {
+        viewModelScope.launch {
+            try {
+                val sessionId = sessionManager.getSessionId()
+                val parsed = LocalDateTime.parse(notification.timestamp, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
+                val request = com.medipath.core.models.DeleteNotificationsRequest(
+                    title = notification.title,
+                    reminderTime = parsed.toLocalTime().toString(),
+                    startDate = parsed.toLocalDate().toString(),
+                    endDate = parsed.toLocalDate().toString()
+                )
+
+                val response = notificationsService.deleteNotifications(request, "SESSION=$sessionId")
+
+                if (response.isSuccessful) {
+                    fetchReminders(sessionManager)
+                } else {
+                    when (response.code()) {
+                        401 -> _error.value = "Unauthorized"
+                        400 -> _error.value = "Bad request: missing field or no notification matches criteria"
+                        else -> _error.value = "Failed to delete reminder: ${response.code()}"
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("RemindersViewModel", "Error deleting reminder", e)
+                _error.value = "Failed to delete reminder: ${e.message}"
+            }
         }
-        updateStatistics()
-        applyFilters()
     }
 
     fun updateStatusFilter(status: String) {

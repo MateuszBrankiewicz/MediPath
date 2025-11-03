@@ -24,7 +24,8 @@ data class CustomColors(
     val referralsIcon: Color,
     val medicalHistoryIcon: Color,
     val commentsIcon: Color,
-    val remindersIcon: Color
+    val remindersIcon: Color,
+    val error: Color
 )
 
 val LocalCustomColors = staticCompositionLocalOf {
@@ -47,6 +48,7 @@ val LocalCustomColors = staticCompositionLocalOf {
         referralsIcon = Color.Unspecified,
         medicalHistoryIcon = Color.Unspecified,
         commentsIcon = Color.Unspecified,
-        remindersIcon = Color.Unspecified
+        remindersIcon = Color.Unspecified,
+        error = Color.Unspecified
     )
 }

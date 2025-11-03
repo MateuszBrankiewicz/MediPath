@@ -307,11 +307,7 @@ fun HomeScreen(
                                 label = "Code:",
                                 code = prescriptionCode.ifEmpty { "No active prescriptions" },
                                 onClick = {
-                                    val intent = Intent(context, CodesActivity::class.java)
-                                    intent.putExtra("code_type", "PRESCRIPTION")
-                                    Log.d("HomeActivity", "User ID for intent: ${viewModel.getCurrentUserId()}")
-                                    intent.putExtra("user_id", viewModel.getCurrentUserId())
-                                    context.startActivity(intent)
+                                    NavigationRouter.navigateToTab(context, "Prescriptions", "Dashboard")
                                 }
                             )
 
@@ -322,10 +318,7 @@ fun HomeScreen(
                                 label = "Code:",
                                 code = referralCode.ifEmpty { "No active referrals" },
                                 onClick = {
-                                    val intent = Intent(context, CodesActivity::class.java)
-                                    intent.putExtra("code_type", "REFERRAL")
-                                    intent.putExtra("user_id", viewModel.getCurrentUserId())
-                                    context.startActivity(intent)
+                                    NavigationRouter.navigateToTab(context, "Referrals", "Dashboard")
                                 }
                             )
 

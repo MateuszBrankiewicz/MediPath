@@ -70,10 +70,9 @@ import com.medipath.R
 import com.medipath.core.models.NavTab
 import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.modules.patient.codes.ui.CodesActivity
 import com.medipath.modules.patient.home.ui.HomeActivity
 import com.medipath.modules.patient.visits.ui.VisitsActivity
-import com.medipath.modules.patient.prescriptions.ui.PrescriptionsActivity
-import com.medipath.modules.patient.referrals.ui.ReferralsActivity
 import com.medipath.modules.patient.medical_history.ui.MedicalHistoryActivity
 import com.medipath.modules.patient.comments.ui.CommentsActivity
 import com.medipath.modules.patient.notifications.NotificationsViewModel
@@ -92,8 +91,8 @@ object NavigationRouter {
         val activityClass = when (tab) {
             "Dashboard" -> HomeActivity::class.java
             "Visits" -> VisitsActivity::class.java
-            "Prescriptions" -> PrescriptionsActivity::class.java
-            "Referrals" -> ReferralsActivity::class.java
+            "Prescriptions" -> CodesActivity::class.java
+            "Referrals" -> CodesActivity::class.java
             "Medical history" -> MedicalHistoryActivity::class.java
             "Comments" -> CommentsActivity::class.java
             "Reminders" -> RemindersActivity::class.java
@@ -103,6 +102,12 @@ object NavigationRouter {
         isNavigating = true
         try {
             val intent = Intent(context, activityClass)
+            
+            when (tab) {
+                "Prescriptions" -> intent.putExtra("code_type", "PRESCRIPTION")
+                "Referrals" -> intent.putExtra("code_type", "REFERRAL")
+            }
+            
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             context.startActivity(intent)
             (context as? ComponentActivity)?.overridePendingTransition(0, 0)

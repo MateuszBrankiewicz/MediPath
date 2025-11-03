@@ -1,4 +1,4 @@
-package com.medipath.modules.patient.reminders.ui.components
+package com.medipath.modules.shared.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,20 +24,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+data class FilterConfig(
+    val statusOptions: List<String>,
+    val sortByOptions: List<String>,
+    val sortOrderOptions: List<String> = listOf("Ascending", "Descending"),
+    val showSortOrder: Boolean = true
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FiltersSection(
+fun GenericFiltersSection(
     statusFilter: String,
     dateFromFilter: String,
     dateToFilter: String,
     sortBy: String,
+    sortOrder: String = "Ascending",
     onStatusFilterChange: (String) -> Unit,
     onDateFromChange: (String) -> Unit,
     onDateToChange: (String) -> Unit,
-    onSortByChange: (String) -> Unit
+    onSortByChange: (String) -> Unit,
+    onSortOrderChange: (String) -> Unit = {},
+    filterConfig: FilterConfig,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         colors = CardDefaults.cardColors(
@@ -47,8 +58,8 @@ fun FiltersSection(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             Text(
                 text = "Filters",
@@ -79,7 +90,7 @@ fun FiltersSection(
                     expanded = statusExpanded,
                     onDismissRequest = { statusExpanded = false }
                 ) {
-                    listOf("All", "Read", "Unread").forEach { option ->
+                    filterConfig.statusOptions.forEach { option ->
                         DropdownMenuItem(
                             text = { Text(option) },
                             onClick = {
@@ -133,7 +144,7 @@ fun FiltersSection(
                     expanded = sortExpanded,
                     onDismissRequest = { sortExpanded = false }
                 ) {
-                    listOf("Date (Newest first)", "Date (Oldest first)", "Title (A-Z)", "Title (Z-A)").forEach { option ->
+                    filterConfig.sortByOptions.forEach { option ->
                         DropdownMenuItem(
                             text = { Text(option) },
                             onClick = {
@@ -141,6 +152,42 @@ fun FiltersSection(
                                 sortExpanded = false
                             }
                         )
+                    }
+                }
+            }
+
+            if (filterConfig.showSortOrder) {
+                var orderExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(
+                    expanded = orderExpanded,
+                    onExpandedChange = { orderExpanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = sortOrder,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Order", fontSize = 12.sp) },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = orderExpanded)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    ExposedDropdownMenu(
+                        expanded = orderExpanded,
+                        onDismissRequest = { orderExpanded = false }
+                    ) {
+                        filterConfig.sortOrderOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    onSortOrderChange(option)
+                                    orderExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }

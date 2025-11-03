@@ -8,6 +8,7 @@ import com.medipath.core.services.SearchService
 import com.medipath.core.services.NotificationsService
 import com.medipath.core.services.VisitsService
 import com.medipath.core.services.CommentsService
+import com.medipath.core.services.CodesService
 import com.medipath.utils.MyCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -80,6 +81,10 @@ object RetrofitInstance {
 
     val commentsService: CommentsService by lazy {
         retrofit.create(CommentsService::class.java)
+    }
+
+    val codesService: CodesService by lazy {
+        retrofit.create(CodesService::class.java)
     }
 
     fun getSessionManager(): DataStoreSessionManager {

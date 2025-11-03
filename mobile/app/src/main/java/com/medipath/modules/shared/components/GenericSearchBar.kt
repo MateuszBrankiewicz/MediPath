@@ -1,4 +1,4 @@
-package com.medipath.modules.patient.reminders.ui.components
+package com.medipath.modules.shared.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,17 +19,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun SearchBar(
+fun GenericSearchBar(
     searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
+    onSearchQueryChange: (String) -> Unit,
+    placeholder: String = "Search...",
+    modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
         value = searchQuery,
         onValueChange = onSearchQueryChange,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = { Text("Search", fontSize = 14.sp) },
+            .padding(horizontal = 16.dp),
+        placeholder = { Text(placeholder, fontSize = 14.sp) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,

@@ -55,10 +55,6 @@
             android:exported="false" />
         <activity android:name=".modules.patient.medical_history.ui.MedicalHistoryActivity"
             android:exported="false" />
-        <activity android:name=".modules.patient.prescriptions.ui.PrescriptionsActivity"
-            android:exported="false" />
-        <activity android:name=".modules.patient.referrals.ui.ReferralsActivity"
-            android:exported="false" />
         <activity android:name=".modules.patient.reminders.ui.RemindersActivity"
             android:exported="false" />
         <activity android:name=".modules.patient.reminders.ui.AddReminderActivity"
