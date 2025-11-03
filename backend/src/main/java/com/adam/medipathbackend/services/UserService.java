@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
@@ -563,7 +564,7 @@ public class UserService {
         return getMyMedicalHistories(patientId);
     }
 
-    public List<?> getMyNotifications(String loggedUserID) {
+    public List<?> getMyNotifications(String loggedUserID, String filter) {
 
         Optional<User> userOpt = userRepository.findById(loggedUserID);
         if(userOpt.isEmpty()) {
@@ -572,11 +573,30 @@ public class UserService {
 
         User user = userOpt.get();
 
-        return user.getNotifications().stream()
-                .map(notification -> Map.of("title", notification.getTitle(), "content",
-                        notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
-                        notification.isRead(), "system", notification.isSystem())
-                ).toList();
+        if(filter == null) {
+            return user.getNotifications().stream()
+                    .map(notification -> Map.of("title", notification.getTitle(), "content",
+                            notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                            notification.isRead(), "system", notification.isSystem())
+                    ).toList();
+        } else if(filter.equals("received")) {
+            return user.getNotifications().stream()
+                    .filter(notification -> notification.getTimestamp().isBefore(LocalDateTime.now()))
+                    .map(notification -> Map.of("title", notification.getTitle(), "content",
+                            notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                            notification.isRead(), "system", notification.isSystem())
+                    ).toList();
+        } else if(filter.equals("upcoming")) {
+            return user.getNotifications().stream()
+                    .filter(notification -> notification.getTimestamp().isAfter(LocalDateTime.now()))
+                    .map(notification -> Map.of("title", notification.getTitle(), "content",
+                            notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
+                            notification.isRead(), "system", notification.isSystem())
+                    ).toList();
+        } else {
+            throw new IllegalArgumentException("invalid filter");
+        }
+
     }
 
 
