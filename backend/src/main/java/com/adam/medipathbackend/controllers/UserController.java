@@ -1,33 +1,19 @@
 package com.adam.medipathbackend.controllers;
 
-import com.adam.medipathbackend.config.Utils;
 import com.adam.medipathbackend.forms.*;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.*;
 import com.adam.medipathbackend.services.UserService;
 import jakarta.mail.IllegalWriteException;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
-import java.security.SecureRandom;
-import java.io.UnsupportedEncodingException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -271,13 +257,18 @@ public class UserController {
 
 
     @GetMapping(value = {"/me/notifications", "/me/notifications/"})
-    public ResponseEntity<Map<String, Object>> getNotifications(HttpSession session) {
+    public ResponseEntity<Map<String, Object>> getNotifications(HttpSession session, @RequestParam(value = "filter", required = false) String filter) {
         String loggedUserID = (String) session.getAttribute("id");
         if(loggedUserID == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(Map.of("notifications",
-                userService.getMyNotifications(loggedUserID)), HttpStatus.OK);
+        try {
+            return new ResponseEntity<>(Map.of("notifications",
+                    userService.getMyNotifications(loggedUserID, filter)), HttpStatus.OK);
+        } catch(IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @GetMapping(value = {"/me/institutions", "/me/institutions/"})
