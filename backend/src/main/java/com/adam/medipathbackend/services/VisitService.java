@@ -2,13 +2,7 @@ package com.adam.medipathbackend.services;
 
 import com.adam.medipathbackend.forms.AddVisitForm;
 import com.adam.medipathbackend.forms.CompleteVisitForm;
-import com.adam.medipathbackend.models.Code;
-import com.adam.medipathbackend.models.Notification;
-import com.adam.medipathbackend.models.PatientDigest;
-import com.adam.medipathbackend.models.Schedule;
-import com.adam.medipathbackend.models.User;
-import com.adam.medipathbackend.models.Visit;
-import com.adam.medipathbackend.models.VisitTime;
+import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
@@ -23,8 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VisitService {
@@ -162,7 +154,7 @@ public class VisitService {
 
 
         
-    public Visit rescheduleVisit(String visitid, String newScheduleId, String loggedUserID) throws IllegalAccessException {
+    public void rescheduleVisit(String visitid, String newScheduleId, String loggedUserID) throws IllegalAccessException {
 
         if(newScheduleId.isBlank()) {
             throw new IllegalArgumentException("newschedule parameter missing");
@@ -241,12 +233,12 @@ public class VisitService {
         scheduleRepository.save(newSchedule);
 
         userRepository.save(patient);
-        return visitRepository.save(visitToReschedule);
+        visitRepository.save(visitToReschedule);
     }
 
 
         
-    public Visit completeVisit(String visitid, CompleteVisitForm completionForm, String loggedUserID) throws IllegalAccessException {
+    public void completeVisit(String visitid, CompleteVisitForm completionForm, String loggedUserID) throws IllegalAccessException {
         Optional<Visit> optVisit = visitRepository.findById(visitid);
         if(optVisit.isEmpty()) {
             throw new IllegalAccessException();
@@ -275,7 +267,7 @@ public class VisitService {
 
         visit.setCodes(codes);
         visit.setNote(completionForm.getNote());
-        return visitRepository.save(visit);
+        visitRepository.save(visit);
     }
 
 
@@ -292,27 +284,31 @@ public class VisitService {
         authorizationService.startAuthChain(loggedUserID, visit.getInstitution().getInstitutionId()).matchAnyPermission()
                 .patientInVisit(visit).doctorOfInstitution().employeeOfInstitution().check();
 
-        String patientId = visit.getPatient().getUserId();
+        String institutionId = visit.getInstitution().getInstitutionId();
         String doctorId = visit.getDoctor().getUserId();
 
         Optional<User> doctorOpt = userRepository.findDoctorById(doctorId);
-        Optional<User> patientOpt = userRepository.findById(patientId);
+        Optional<Institution> institutionOpt = institutionRepository.findById(institutionId);
 
         if(doctorOpt.isEmpty()) {
             throw new IllegalComponentStateException("doctor id corrupted");
         }
-        if(patientOpt.isEmpty()) {
+        if(institutionOpt.isEmpty()) {
             throw new IllegalComponentStateException("patient id corrupted");
         }
-        String patientPhoto = patientOpt.get().getPfpimage();
+        Institution institution = institutionOpt.get();
+        String institutionPhoto = institution.getImage();
+        String address = institution.getAddress().toString();
         String doctorPhoto = doctorOpt.get().getPfpimage();
 
-        Map<String, Object> visitWithPfp = new HashMap<>(Map.of("patient", visit.getPatient(), "patientPfp", patientPhoto,
-                "doctor", visit.getDoctor(), "doctorPfp", doctorPhoto,
-                "time", visit.getTime(), "institution", visit.getInstitution(),
+        Map<String, Object> visitWithPfp = new HashMap<>(Map.of("patient", visit.getPatient(),
+                "institutionPfp", institutionPhoto, "doctor", visit.getDoctor(),
+                "doctorPfp", doctorPhoto, "time", visit.getTime(), "institution", visit.getInstitution(),
                 "patientRemarks", visit.getPatientRemarks(), "id", visit.getId(),
                 "status", visit.getStatus(), "note", visit.getNote()));
         visitWithPfp.put("codes", visit.getCodes());
+        visitWithPfp.put("institutionAddress", address);
+        visitWithPfp.put("commentId", visit.getCommentId());
 
         return visitWithPfp;
     }
