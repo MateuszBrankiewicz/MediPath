@@ -193,7 +193,6 @@ export class DoctorSchedule
   }
   private loadDoctorSchedule(): void {
     this.doctorService.getDoctorsSchedule().subscribe((schedule) => {
-      // Zapisujemy oryginalne sloty
       this.allScheduleSlots.set(schedule);
 
       const calendarDays = mapSchedulesToCalendarDays(

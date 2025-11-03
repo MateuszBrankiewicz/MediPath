@@ -119,14 +119,14 @@ export class ScheduleVisitDialog implements OnInit {
     this.initializeAvailableDays();
   }
 
-  protected readonly rescheduleData = signal<RescheduleData | null>(null);
+  protected readonly scheduleData = signal<RescheduleData | null>(null);
 
   protected onDateTimeSelected(selection: {
     date: Date;
     time: string;
     slotId?: string;
   }): void {
-    this.rescheduleData.update((data) => ({
+    this.scheduleData.update((data) => ({
       doctorName: data?.doctorName ?? '',
       doctorId: data?.doctorId ?? '',
       institution: data?.institution ?? '',
@@ -138,7 +138,7 @@ export class ScheduleVisitDialog implements OnInit {
   }
 
   protected onRemarksChange(remarks: string | null): void {
-    this.rescheduleData.update((data) => ({
+    this.scheduleData.update((data) => ({
       doctorName: data?.doctorName ?? '',
       doctorId: data?.doctorId ?? '',
       institution: data?.institution ?? '',
@@ -150,8 +150,7 @@ export class ScheduleVisitDialog implements OnInit {
   }
 
   private initPlainVisitData(): void {
-    console.log(this.config.data);
-    this.rescheduleData.set({
+    this.scheduleData.set({
       doctorName: this.config.data?.event.doctor.name || '',
       doctorId: this.config.data?.event.doctor.id || '',
       institution:
@@ -164,26 +163,26 @@ export class ScheduleVisitDialog implements OnInit {
   }
 
   protected isFormValid(): boolean {
-    const data = this.rescheduleData();
+    const data = this.scheduleData();
     return !!(data && data.selectedDate && data.selectedTime);
   }
 
-  protected confirmReschedule(): void {
+  protected confirmSchedule(): void {
     if (!this.isFormValid()) {
       return;
     }
 
-    const rescheduleData = this.rescheduleData();
-    if (!rescheduleData) {
+    const scheduleData = this.scheduleData();
+    if (!scheduleData) {
       return;
     }
 
     const result = {
       visitId: this.visitId,
-      newDate: rescheduleData.selectedDate,
-      newTime: rescheduleData.selectedTime,
-      slotId: rescheduleData.selectedSlotId,
-      remarks: rescheduleData.patientRemarks,
+      newDate: scheduleData.selectedDate,
+      newTime: scheduleData.selectedTime,
+      slotId: scheduleData.selectedSlotId,
+      remarks: scheduleData.patientRemarks,
     };
 
     this.ref.close(result);
@@ -199,7 +198,7 @@ export class ScheduleVisitDialog implements OnInit {
       .subscribe((visit) => {
         const startTime = new Date(visit.visit.time.startTime);
 
-        this.rescheduleData.set({
+        this.scheduleData.set({
           doctorName: `${visit.visit.doctor.doctorName} ${visit.visit.doctor.doctorSurname}`,
           doctorId: visit.visit.doctor.userId,
           institution: visit.visit.institution.institutionName,
@@ -225,7 +224,7 @@ export class ScheduleVisitDialog implements OnInit {
         schedules = schedules.filter((schedule) => {
           return (
             schedule.institution.institutionName ===
-            this.rescheduleData()?.institution
+            this.scheduleData()?.institution
           );
         });
         schedules.forEach((schedule) => {

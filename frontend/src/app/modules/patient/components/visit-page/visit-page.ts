@@ -38,6 +38,7 @@ import { VisitsService } from '../../../../core/services/visits/visits.service';
 import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { VisitDialogService } from '../../services/visit-dialog.service';
+import { ReviewVisitDialogResult } from '../review-visit-dialog/review-visit-dialog';
 
 @Component({
   selector: 'app-visit-page',
@@ -261,9 +262,7 @@ export class VisitPage
     doctorName?: string,
     institutionName?: string,
   ): void {
-    // Znajdź wizytę, aby przekazać dane lekarza i placówki (jeśli nie zostały przekazane)
     const visit = this.visits().find((v) => v.id === id);
-
     this.ref = this.visitDialogService.openReviewDialog({
       visitId: id,
       commentId: commentId,
@@ -276,62 +275,80 @@ export class VisitPage
     }
 
     this.ref.onClose.subscribe((comment) => {
-      if (!comment) {
-        return;
-      }
-
-      if (comment.isEditing && comment.commentId) {
-        // Edycja istniejącego komentarza
-        const editedComment = {
-          id: comment.commentId,
-          comment: comment.comments,
-          doctorRating: comment.doctorRating,
-          institutionRating: comment.institutionRating,
-        };
-        this.commentService
-          .editComment(editedComment)
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe({
-            next: () => {
-              this.toastService.showSuccess(
-                this.translationService.translate('comment.edit.success'),
-              );
-              this.initVisitList();
-            },
-            error: (err) => {
-              console.log(err);
-              this.toastService.showError(
-                this.translationService.translate('comments.edit.failed'),
-              );
-            },
-          });
-      } else {
-        // Dodanie nowego komentarza
-        const newComment: AddComentRequest = {
-          comment: comment.comments,
-          visitID: comment.visitId,
-          doctorRating: comment.doctorRating,
-          institutionRating: comment.institutionRating,
-        };
-        this.commentService
-          .addComment(newComment)
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe({
-            next: () => {
-              this.toastService.showSuccess(
-                this.translationService.translate('comment.add.success'),
-              );
-              this.initVisitList();
-            },
-            error: (err) => {
-              console.log(err);
-              this.toastService.showError(
-                this.translationService.translate('comment.add.error'),
-              );
-            },
-          });
-      }
+      this.handleReviewDialogResult(comment);
     });
+  }
+
+  private handleReviewDialogResult(
+    comment: ReviewVisitDialogResult | undefined,
+  ): void {
+    if (!comment) {
+      return;
+    }
+
+    if (comment.isEditing && comment.commentId) {
+      this.handleEditComment(comment);
+    } else {
+      this.handleAddComment(comment);
+    }
+  }
+
+  private handleEditComment(comment: ReviewVisitDialogResult): void {
+    const editedComment = {
+      id: comment.commentId!,
+      comment: comment.comments,
+      doctorRating: comment.doctorRating ?? 0,
+      institutionRating: comment.institutionRating ?? 0,
+    };
+
+    this.commentService
+      .editComment(editedComment)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.showSuccessMessage('comment.edit.success');
+          this.initVisitList();
+        },
+        error: (err) => {
+          console.log(err);
+          this.showErrorMessage('comments.edit.failed');
+        },
+      });
+  }
+
+  private handleAddComment(comment: ReviewVisitDialogResult): void {
+    const newComment: AddComentRequest = {
+      comment: comment.comments,
+      visitID: comment.visitId!,
+      doctorRating: String(comment.doctorRating ?? 0),
+      institutionRating: String(comment.institutionRating ?? 0),
+    };
+
+    this.commentService
+      .addComment(newComment)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.showSuccessMessage('comment.add.success');
+          this.initVisitList();
+        },
+        error: (err) => {
+          console.log(err);
+          this.showErrorMessage('comment.add.error');
+        },
+      });
+  }
+
+  private showSuccessMessage(translationKey: string): void {
+    this.toastService.showSuccess(
+      this.translationService.translate(translationKey),
+    );
+  }
+
+  private showErrorMessage(translationKey: string): void {
+    this.toastService.showError(
+      this.translationService.translate(translationKey),
+    );
   }
 
   private parseVisitStatus(status: string): VisitStatus {
