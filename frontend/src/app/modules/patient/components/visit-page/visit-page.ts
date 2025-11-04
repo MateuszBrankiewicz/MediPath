@@ -300,7 +300,6 @@ export class VisitPage
       doctorRating: comment.doctorRating ?? 0,
       institutionRating: comment.institutionRating ?? 0,
     };
-
     this.commentService
       .editComment(editedComment)
       .pipe(takeUntilDestroyed(this.destroyRef))
