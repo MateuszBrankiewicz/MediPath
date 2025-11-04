@@ -730,7 +730,25 @@
   "admin.editDoctor.institutionRemoved": "Institution removed successfully",
 
   "common.cancel": "Cancel",
-  "common.add": "Add"
+  "common.add": "Add",
+
+  "patient.profile.birthDate": "Date of birth",
+  "patient.profile.years": "years",
+  "patient.profile.govId": "Government ID",
+  "patient.profile.phone": "Phone",
+  "patient.profile.medicalHistory": "Medical History",
+  "patient.profile.appointments": "Appointments",
+  "patient.profile.noMedicalHistory": "No medical history records",
+  "patient.profile.noAppointments": "No appointments",
+  "patient.profile.noDoctor": "No information",
+  "patient.profile.loadError": "Failed to load patient profile",
+  "patient.profile.upcomingVisits": "Upcoming Visits",
+  "patient.profile.completedVisits": "Completed Visits",
+  "patient.profile.cancelledVisits": "Cancelled Visits",
+  "patient.profile.codes": "Codes",
+
+  "doctor.patientProfile.loadError": "Failed to load patient profile",
+  "doctor.patientProfile.visitsLoadError": "Failed to load patient visits"
 }
 
 

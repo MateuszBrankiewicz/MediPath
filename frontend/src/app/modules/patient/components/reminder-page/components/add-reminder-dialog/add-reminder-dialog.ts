@@ -80,16 +80,15 @@ export class AddReminderDialog implements OnInit {
       this.reminderForm.markAllAsTouched();
       return;
     }
-
     if (this.reminderForm.valid) {
       const formValue = this.reminderForm.value;
       const reminderData: MedicationReminder = {
         ...formValue,
         id: this.reminder()?.id,
       };
-
+      console.log(reminderData);
       this.save.emit(reminderData);
-      this.onClose();
+      this.ref.close(reminderData);
     }
   }
 

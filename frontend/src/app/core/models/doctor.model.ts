@@ -1,5 +1,6 @@
 import { DaySchedule } from '../../modules/shared/components/ui/search-result.component/search-result.model';
 import { InstitutionShortInfo } from './institution.model';
+import { VisitStatus } from './visit.model';
 
 export interface DoctorPageModel {
   name: string;
@@ -77,4 +78,35 @@ export interface DoctorWithSchedule {
   doctorName: string;
   doctorSurname: string;
   schedules: DoctorSchedule[];
+}
+
+export interface PatientForDoctor {
+  id: string;
+  name: string;
+  surname: string;
+  lastVisit: {
+    endTime: string;
+    startTime: string;
+    status: VisitStatus;
+    id: string;
+  };
+}
+
+export interface DoctorPatientsApiResponse {
+  patients: PatientForDoctor[];
+}
+
+export interface VisitsForPatientProfile {
+  id: string;
+  note: string;
+  institution: string;
+  codes: { codeType: string; code: string; active: boolean }[];
+  patientRemarks: string;
+  startTime: number[];
+  endTime: number[];
+  status: 'Upcoming' | 'Completed' | 'Cancelled';
+}
+
+export interface DoctorPatientsVisitApiResponse {
+  visits: VisitsForPatientProfile[];
 }

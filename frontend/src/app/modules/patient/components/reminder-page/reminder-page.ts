@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -123,18 +124,8 @@ export class ReminderPage
     });
   });
 
-  private readonly receivedNotifications = computed(() => {
-    return this.notifications().filter((notification) => {
-      if (!notification.timestamp) return false;
-      return new Date(notification.timestamp) <= new Date();
-    });
-  });
-
-  private readonly baseList = computed(() =>
-    this.showPlanned()
-      ? this.upcomingNotifications()
-      : this.receivedNotifications(),
-  );
+  private readonly receivedNotifications = computed(() => this.notifications());
+  private readonly baseList = computed(() => this.receivedNotifications());
 
   private readonly filteredAndSorted = computed(() => {
     const list = this.baseList();
@@ -170,10 +161,7 @@ export class ReminderPage
   });
 
   ngOnInit(): void {
-    this.notificationsService.notifications$.subscribe((message) => {
-      console.log(message);
-    });
-    this.initNotifcations();
+    this.getNotifications('received');
   }
 
   protected onFiltersChange(params: FilterParams) {
@@ -241,7 +229,7 @@ export class ReminderPage
           .addNotification(res)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
-            next: (response) => {
+            next: () => {
               this.isMarkingAll.set(false);
               this.toastService.showSuccess(
                 this.translationService.translate(
@@ -249,7 +237,6 @@ export class ReminderPage
                 ),
               );
               this.initNotifcations();
-              console.log(response);
             },
             error: (err) => {
               this.isMarkingAll.set(false);
@@ -304,7 +291,17 @@ export class ReminderPage
               'notifications.toast.markOneSuccess',
             ),
           );
-          this.initNotifcations();
+          this.notifications.set(
+            this.notifications().map((notif) => {
+              if (
+                notif.title === notification.title &&
+                notif.timestamp === notification.timestamp
+              ) {
+                notif.read = true;
+              }
+              return notif;
+            }),
+          );
           this.isMarkingAll.set(false);
         },
         error: (err) => {
@@ -367,7 +364,7 @@ export class ReminderPage
           .addNotification(res)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
-            next: (response) => {
+            next: () => {
               this.isMarkingAll.set(false);
               this.toastService.showSuccess(
                 this.translationService.translate(
@@ -375,7 +372,6 @@ export class ReminderPage
                 ),
               );
               this.initNotifcations();
-              console.log(response);
             },
             error: () => {
               this.isMarkingAll.set(false);
@@ -388,5 +384,30 @@ export class ReminderPage
           });
       }
     });
+  }
+
+  private getNotifications(param: string) {
+    this.isRefreshing.set(true);
+    this.notificationsService
+      .getNotifications(param)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res: any) => {
+        const notificationsArray: NotificationMessage[] = Array.isArray(res)
+          ? res
+          : Array.isArray(res?.notifications)
+            ? res.notifications
+            : [];
+        this.notifications.set(notificationsArray);
+        this.isRefreshing.set(false);
+      });
+  }
+
+  protected changePlanned() {
+    this.showPlanned.set(!this.showPlanned());
+    if (this.showPlanned()) {
+      this.getNotifications('upcoming');
+    } else {
+      this.getNotifications('received');
+    }
   }
 }

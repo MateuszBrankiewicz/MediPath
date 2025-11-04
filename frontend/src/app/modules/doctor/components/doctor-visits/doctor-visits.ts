@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { VisitResponse } from '../../../../core/models/visit.model';
 import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import {
@@ -18,57 +20,8 @@ import {
 export class DoctorVisits implements OnInit {
   translationService = inject(TranslationService);
   private doctorService = inject(DoctorService);
-
-  visits: AppointmentCardData[] = [
-    {
-      id: '1',
-      patientName: 'Anna Nowak',
-      institutionName: 'Szpital Nr 4, Lublin',
-      visitDate: '20-03-2025',
-      visitTime: '14:30',
-      status: 'scheduled',
-    },
-    {
-      id: '2',
-      patientName: 'Jan Kowalski',
-      institutionName: 'Szpital Nr 4, Lublin',
-      visitDate: '13-03-2025',
-      visitTime: '10:00',
-      status: 'canceled',
-    },
-    {
-      id: '3',
-      patientName: 'Janina Kowalska',
-      institutionName: 'Gabinet Stomatologiczny Kowalska, Lublin',
-      visitDate: '20-02-2025',
-      visitTime: '16:00',
-      status: 'completed',
-    },
-    {
-      id: '4',
-      patientName: 'Janina Kowalska',
-      institutionName: 'Gabinet Stomatologiczny Kowalska, Lublin',
-      visitDate: '20-01-2025',
-      visitTime: '09:30',
-      status: 'scheduled',
-    },
-    {
-      id: '5',
-      patientName: 'Janina Kowalska',
-      institutionName: 'Gabinet Stomatologiczny Kowalska, Lublin',
-      visitDate: '15-12-2024',
-      visitTime: '11:15',
-      status: 'completed',
-    },
-    {
-      id: '6',
-      patientName: 'Jan Kowalski',
-      institutionName: 'Szpital Nr 4, Lublin',
-      visitDate: '18-11-2024',
-      visitTime: '15:45',
-      status: 'scheduled',
-    },
-  ];
+  private router = inject(Router);
+  visits: AppointmentCardData[] = [];
 
   filteredVisits: AppointmentCardData[] = [];
   selectedStatus = '';
@@ -109,8 +62,7 @@ export class DoctorVisits implements OnInit {
   }
 
   viewPatientDetails(visitId: string) {
-    console.log('Viewing patient details for visit:', visitId);
-    // Implement navigation to patient details
+    this.router.navigate(['/doctor/patient-profile', visitId]);
   }
 
   cancelVisit(visitId: string) {
@@ -122,9 +74,53 @@ export class DoctorVisits implements OnInit {
   }
 
   private initDoctorVisits(): void {
-    this.doctorService.getDoctorVisits().subscribe((visits) => {
-      console.log('Fetched doctor visits:', visits);
-      // Map the fetched visits to AppointmentCardData and assign to this.visits
-    });
+    this.doctorService
+      .getDoctorVisits()
+      .subscribe((visits: VisitResponse[]) => {
+        console.log('Fetched doctor visits:', visits);
+        this.visits = (Array.isArray(visits) ? visits : []).map((visit) => ({
+          id: visit.id,
+          patientName: visit.patient
+            ? `${visit.patient.name} ${visit.patient.surname}`
+            : '',
+          institutionName: visit.institution?.institutionName || '',
+          visitDate: visit.time?.startTime
+            ? this.formatDate(visit.time.startTime)
+            : '',
+          visitTime: visit.time?.startTime
+            ? this.formatTime(visit.time.startTime)
+            : '',
+          status:
+            visit.status === 'Upcoming'
+              ? 'scheduled'
+              : visit.status === 'Completed'
+                ? 'completed'
+                : 'canceled',
+          patientId: visit.patient?.userId,
+        }));
+        this.filteredVisits = [...this.visits];
+      });
+  }
+
+  private formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d
+      ? d.toLocaleDateString('pl-PL', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
+      : '';
+  }
+
+  private formatTime(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d
+      ? d.toLocaleTimeString('pl-PL', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+      : '';
   }
 }

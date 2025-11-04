@@ -47,7 +47,7 @@
       <p-togglebutton
         class="notifications-page__toolbar-button toggle-button"
         [ngModel]="showPlanned()"
-        (ngModelChange)="showPlanned.set($event); first.set(0)"
+        (ngModelChange)="changePlanned()"
         onLabel="Zaplanowane"
         offLabel="Otrzymane"
         [onIcon]="'pi pi-calendar-plus'"

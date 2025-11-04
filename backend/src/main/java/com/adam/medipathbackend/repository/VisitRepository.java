@@ -25,7 +25,7 @@ public interface VisitRepository extends MongoRepository<Visit, String> {
     @Query("{'patient.userId': ?0, 'doctor.userId': ?1}")
     ArrayList<Visit> getAllVisitsForPatientWithDoctor(String patientID, String doctorId);
 
-    @Query("{doctor.userId': ?0}")
+    @Query(value = "{ 'doctor.userId': ?0 }", fields = "{ '_id': 1, 'status': 1, 'note': 1, 'codes': 1, 'patient': 1, 'doctor': 1, 'time': 1, 'institution': 1, 'patientRemarks': 1, 'commentId': 1 }")
     ArrayList<Visit> getAllVisitsForDoctor(String doctorId);
 
     @Query("{'patient.userId' : ?0, 'institution.institutionId' : ?1}")
@@ -42,4 +42,7 @@ public interface VisitRepository extends MongoRepository<Visit, String> {
 
     @Query("{'institution.institutionId' : ?0}}")
     ArrayList<Visit> getAllVisitsInInstitution(String institutionId);
+
+    @Query("{ 'doctor.userId': ?0, 'patient.userId': ?1 }")
+    ArrayList<Visit> findVisitsByDoctorAndPatient(String doctorId, String patientId);
 }

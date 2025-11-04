@@ -27,7 +27,6 @@
       box-shadow 0.2s ease;
 
     &:hover {
-      transform: translateY(-4px);
       box-shadow: 0 12px 32px rgba(38, 51, 77, 0.12);
     }
   }
@@ -99,7 +98,6 @@
       border 0.2s ease;
 
     &:hover {
-      transform: translateY(-2px);
       box-shadow: 0 14px 28px rgba(31, 41, 55, 0.12);
     }
 

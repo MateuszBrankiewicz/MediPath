@@ -106,3 +106,7 @@ export interface FinishVisitResponse {
   referrals: string[];
   note: string;
 }
+
+export interface VisitApiResponseArray {
+  visits: VisitResponse[];
+}

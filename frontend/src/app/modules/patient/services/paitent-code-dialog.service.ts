@@ -35,4 +35,31 @@ export class PatientCodeDialogService {
       });
     });
   }
+
+  public deleteCode(code: {
+    codeNumber: number;
+    codeType: string;
+  }): Observable<boolean> {
+    return new Observable<boolean>((observer) => {
+      const ref = this.dialogService.open(AcceptActionDialogComponent, {
+        header: 'Confirm Deletion',
+        width: '400px',
+        modal: true,
+        data: {
+          message: `Are you sure you want to delete the code ${code.codeNumber}?`,
+        },
+      });
+
+      if (!ref) {
+        observer.next(false);
+        observer.complete();
+        return;
+      }
+
+      ref.onClose.subscribe((confirmed: boolean) => {
+        observer.next(!!confirmed);
+        observer.complete();
+      });
+    });
+  }
 }

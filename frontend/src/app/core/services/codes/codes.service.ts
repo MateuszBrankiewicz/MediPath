@@ -46,4 +46,11 @@ export class CodesService {
         catchError(() => of(false)),
       );
   }
+
+  public deleteCode(code: { code: number; codeType: string }) {
+    return this.http.delete(`${API_URL}/visits/code`, {
+      body: code,
+      withCredentials: true,
+    });
+  }
 }

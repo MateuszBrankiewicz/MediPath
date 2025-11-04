@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-
+import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 @Service
 public class DoctorService {
     @Autowired
@@ -161,17 +162,99 @@ public class DoctorService {
         return Map.of("visits", visits);
     }
 
-    public Map<String, Object> getMyPatients(String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
+   public Map<String, Object> getMyPatients(String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
 
-        if(!Utils.isValidMongoOID(loggedUserID)) throw new IllegalAccessException("Invalid user id");
-        Optional<User> doctorOpt = userRepository.findDoctorById(loggedUserID);
+    if(!Utils.isValidMongoOID(loggedUserID)) throw new IllegalAccessException("Invalid user id");
+    Optional<User> doctorOpt = userRepository.findDoctorById(loggedUserID);
 
-        if(doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
+    if(doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
+
+    ArrayList<Visit> visits = visitRepository.getAllVisitsForDoctor(loggedUserID);
+    
+    Map<String, List<Visit>> visitsByPatient = visits.stream()
+        .filter(visit -> "Completed".equals(visit.getStatus()))
+        .collect(Collectors.groupingBy(visit -> visit.getPatient().getUserId()));
+    
+    List<Map<String, Object>> patients = visitsByPatient.entrySet().stream()
+        .map(entry -> {
+            String patientId = entry.getKey();
+            List<Visit> patientVisits = entry.getValue();
+            
+            PatientDigest patientDigest = patientVisits.get(0).getPatient();
+            
+            Visit lastVisit = patientVisits.stream()
+                .max(Comparator.comparing(v -> v.getTime().getStartTime()))
+                .orElse(null);
+            
+            return Map.of(
+                "id", patientDigest.getUserId(),
+                "name", patientDigest.getName(),
+                "surname", patientDigest.getSurname(),
+                "lastVisit", lastVisit != null ? Map.of(
+                    "id", lastVisit.getId(),
+                    "startTime", lastVisit.getTime().getStartTime(),
+                    "endTime", lastVisit.getTime().getEndTime(),
+                    "status", lastVisit.getStatus()
+                ) : null
+            );
+        })
+        .sorted((p1, p2) -> {
+            Map<String, Object> visit1 = (Map<String, Object>) p1.get("lastVisit");
+            Map<String, Object> visit2 = (Map<String, Object>) p2.get("lastVisit");
+            
+            if (visit1 == null && visit2 == null) return 0;
+            if (visit1 == null) return 1;
+            if (visit2 == null) return -1;
+            
+            LocalDateTime time1 = (LocalDateTime) visit1.get("startTime");
+            LocalDateTime time2 = (LocalDateTime) visit2.get("startTime");
+            
+            return time2.compareTo(time1); 
+        })
+        .toList();
+
+    return Map.of("patients", patients);
+}
 
 
-        ArrayList<Visit> visits = visitRepository.getAllVisitsForDoctor(loggedUserID);
+public Map<String, Object> getPatientVisits(String loggedUserID, String patientId) 
+        throws IllegalArgumentException, IllegalAccessException {
 
-        return Map.of("patients", visits.stream().map(Visit::getPatient).toList());
+    if(!Utils.isValidMongoOID(loggedUserID)) throw new IllegalAccessException("Invalid doctor id");
+    if(!Utils.isValidMongoOID(patientId)) throw new IllegalArgumentException("Invalid patient id");
+    
+    Optional<User> doctorOpt = userRepository.findDoctorById(loggedUserID);
+    if(doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
 
+    List<Visit> visits = visitRepository.findVisitsByDoctorAndPatient(loggedUserID, patientId)
+        .stream()
+        .sorted(Comparator.comparing((Visit v) -> v.getTime().getStartTime()).reversed())
+        .toList();
+
+    if(visits.isEmpty()) {
+        throw new IllegalArgumentException("No visits found for this patient");
     }
+
+    List<Map<String, Object>> visitsList = visits.stream()
+        .map(visit -> {
+            Map<String, Object> visitMap = new HashMap<>();
+            visitMap.put("id", visit.getId());
+            visitMap.put("startTime", visit.getTime().getStartTime());
+            visitMap.put("endTime", visit.getTime().getEndTime());
+            visitMap.put("status", visit.getStatus());
+            visitMap.put("note", visit.getNote() != null ? visit.getNote() : "");
+            visitMap.put("institution", visit.getInstitution().getInstitutionName());
+            visitMap.put("patientRemarks", visit.getPatientRemarks() != null ? visit.getPatientRemarks() : "");
+            if(visit.getCodes() != null) {
+                visitMap.put("codes", visit.getCodes());
+            }
+            return visitMap;
+        })
+        .toList();
+
+    return Map.of(
+        "visits", visitsList,
+        "totalVisits", visitsList.size()
+    );
+}
 }

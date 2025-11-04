@@ -733,5 +733,23 @@
   "admin.editDoctor.institutionRemoved": "Instytucja usunięta pomyślnie",
 
   "common.cancel": "Anuluj",
-  "common.add": "Dodaj"
+  "common.add": "Dodaj",
+
+  "patient.profile.birthDate": "Data urodzenia",
+  "patient.profile.years": "lat",
+  "patient.profile.govId": "PESEL",
+  "patient.profile.phone": "Telefon",
+  "patient.profile.medicalHistory": "Historia medyczna",
+  "patient.profile.appointments": "Wizyty",
+  "patient.profile.noMedicalHistory": "Brak zapisów w historii medycznej",
+  "patient.profile.noAppointments": "Brak wizyt",
+  "patient.profile.noDoctor": "Brak informacji",
+  "patient.profile.loadError": "Nie udało się załadować profilu pacjenta",
+  "patient.profile.upcomingVisits": "Nadchodzące wizyty",
+  "patient.profile.completedVisits": "Zakończone wizyty",
+  "patient.profile.cancelledVisits": "Anulowane wizyty",
+  "patient.profile.codes": "Kody",
+
+  "doctor.patientProfile.loadError": "Nie udało się załadować profilu pacjenta",
+  "doctor.patientProfile.visitsLoadError": "Nie udało się załadować wizyt pacjenta"
 }
