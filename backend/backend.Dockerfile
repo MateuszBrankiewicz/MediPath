@@ -1,6 +1,6 @@
-FROM openjdk:25-slim-bookworm
+FROM amazoncorretto:25-alpine
 COPY backend/ /usr/src/backend
 WORKDIR /usr/src/backend
-RUN apt update -y && apt install maven -y
+RUN apk update && apk add maven
 RUN ./mvnw package -Dmaven.test.skip=true
 CMD ["java", "-jar", "target/medipathbackend-0.0.1.jar"]

@@ -750,8 +750,12 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 ### /users/me/notifications
 #### Method: GET
 
+#### Parameters
+- filter - optional. Acccepted values are "received" and "upcoming"
+
 #### Returns:
 - 401 - user not logged in
+- 400 - invalid filter
 - 200 - success
 
 
