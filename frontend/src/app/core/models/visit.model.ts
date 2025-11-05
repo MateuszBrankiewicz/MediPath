@@ -25,6 +25,7 @@ export interface Visit {
   notes?: string;
   prescriptionPin?: string;
   referralPin?: string;
+  commentId?: string | null;
 }
 
 export interface RescheduleData {
@@ -74,6 +75,10 @@ export interface VisitResponse {
   status: 'Upcoming' | 'Cancelled' | 'Completed';
   note: string;
   codes: VisitCode[];
+  doctorPfp?: string;
+  institutionPfp?: string;
+  institutionAddress?: string;
+  commentId: string | null;
 }
 
 export interface VisitCode {
@@ -100,4 +105,8 @@ export interface FinishVisitResponse {
   prescriptions: string[];
   referrals: string[];
   note: string;
+}
+
+export interface VisitApiResponseArray {
+  visits: VisitResponse[];
 }

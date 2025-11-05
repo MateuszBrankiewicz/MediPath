@@ -4,6 +4,7 @@
 }
 
 .dialog-shell {
+  position: relative;
   background: #f7f8fc;
   border-radius: 24px;
   box-shadow:
@@ -71,6 +72,47 @@
     font-size: 1.05rem;
     color: #1f2d55;
     font-weight: 600;
+  }
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(247, 248, 252, 0.95);
+  border-radius: 24px;
+  backdrop-filter: blur(4px);
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(32, 66, 140, 0.15);
+    border-top-color: #20428c;
+    border-radius: 50%;
+    animation: loading-spin 0.8s linear infinite;
+  }
+
+  &__text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #23325f;
+    letter-spacing: 0.02em;
+  }
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

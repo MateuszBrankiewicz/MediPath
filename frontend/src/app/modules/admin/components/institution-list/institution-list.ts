@@ -37,7 +37,6 @@ export class InstitutionList implements OnInit {
   }
 
   protected roleCode = computed(() => {
-    console.log(this.authService.getLastPanel());
     return this.authService.getLastPanel();
   });
 

@@ -15,6 +15,7 @@ export interface AppointmentCardData {
   visitDate: string;
   visitTime: string;
   status: 'scheduled' | 'completed' | 'canceled';
+  patientId?: string;
 }
 
 @Component({
@@ -30,7 +31,7 @@ export class AppointmentCardComponent {
   public showCancelButton = input<boolean>(true);
   public actionButtonText = input<string>('Szczegóły pacjenta');
   public cancelButtonText = input<string>('Anuluj');
-
+  public showVisitDetails = input<boolean>(false);
   public patientDetailsClick = output<string>();
   public cancelVisitClick = output<string>();
 
@@ -70,7 +71,13 @@ export class AppointmentCardComponent {
   });
 
   onPatientDetailsClick() {
-    this.patientDetailsClick.emit(this.appointment().id);
+    if (this.showVisitDetails()) {
+      this.patientDetailsClick.emit(this.appointment().id);
+      return;
+    }
+    if (this.appointment().patientId) {
+      this.patientDetailsClick.emit(this.appointment().patientId!);
+    }
   }
 
   onCancelVisitClick() {

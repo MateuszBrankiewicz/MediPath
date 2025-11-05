@@ -201,11 +201,9 @@ export class MedicalHistoryPage implements OnInit {
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         map((response): MedicalRecord[] => {
-          console.log(response);
           const medicalhistories = Array.isArray(response.medicalhistories)
             ? response.medicalhistories
             : [];
-          console.log(medicalhistories);
           return medicalhistories.map((record) => ({
             id: record.id,
             title: record.title,
@@ -219,7 +217,6 @@ export class MedicalHistoryPage implements OnInit {
         }),
       )
       .subscribe((records) => {
-        console.log(records);
         this.medicalRecords.set(records);
         this.isLoading.set(false);
         this.isSending.set(false);

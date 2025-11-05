@@ -5,6 +5,7 @@ import { DoctorDashboard } from './components/doctor-dashboard/doctor-dashboard'
 import { DoctorPatientsPage } from './components/doctor-patients-page/doctor-patients-page';
 import { DoctorSchedule } from './components/doctor-schedule/doctor-schedule';
 import { DoctorVisits } from './components/doctor-visits/doctor-visits';
+import { PatientProfile } from './components/patient-profile/patient-profile';
 
 export const AUTH_ROUTES: Routes = [
   { path: '', component: DoctorDashboard },
@@ -13,4 +14,5 @@ export const AUTH_ROUTES: Routes = [
   { path: 'patients', component: DoctorPatientsPage },
   { path: 'current-visit/:id', component: CurrentVisit },
   { path: 'reminders', component: ReminderPage },
+  { path: 'patient-profile/:id', component: PatientProfile },
 ];

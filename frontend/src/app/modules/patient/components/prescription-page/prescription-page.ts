@@ -183,6 +183,42 @@ export class PrescriptionPage
       });
   }
 
+  protected deleteCode(referral: Refferal): void {
+    this.manageDialogCodeService
+      .deleteCode({
+        codeNumber: referral.prescriptionPin,
+        codeType: 'prescription',
+      })
+      .subscribe((success) => {
+        if (success) {
+          this.isLoading.set(true);
+          this.codeService
+            .deleteCode({
+              code: referral.prescriptionPin,
+              codeType: referral.codeType ?? '',
+            })
+            .pipe(
+              catchError((err) => {
+                this.isLoading.set(false);
+                throw err;
+              }),
+            )
+            .subscribe(() => {
+              this.prescriptions.set(
+                this.prescriptions().filter(
+                  (prescription) =>
+                    prescription.prescriptionPin !== referral.prescriptionPin,
+                ),
+              );
+              this.isLoading.set(false);
+              this.toastService.showSuccess(
+                'Prescription deleted successfully.',
+              );
+            });
+        }
+      });
+  }
+
   protected onFiltersChange(filterValue: FilterParams): void {
     this.filters.set(filterValue);
   }

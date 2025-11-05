@@ -91,7 +91,6 @@
       </div>
 
       <div class="calendar-grid">
-        <!-- Day Labels Header -->
         <div class="calendar-header-days">
           @for (dayLabel of dayLabels(); track dayLabel) {
             <div class="day-label">
@@ -100,7 +99,6 @@
           }
         </div>
 
-        <!-- Calendar Days -->
         <div class="calendar-days">
           @for (day of calendarDays(); track $index) {
             <div
@@ -112,7 +110,7 @@
               [class.has-appointments]="day.hasAppointments"
               (click)="onCalendarDayClick(day)"
             >
-              {{ day.date || "" }}
+              {{ day.dayNumber }}
             </div>
           }
         </div>

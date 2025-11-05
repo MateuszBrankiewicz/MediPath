@@ -1,0 +1,278 @@
+<div class="patient-profile-container">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <p-progressSpinner />
+    </div>
+  } @else if (patientData()) {
+    <div class="profile-header">
+      <p-card>
+        <div class="header-content">
+          <div class="avatar-section">
+            @if (patientData()?.pfp) {
+              <img
+                [src]="patientData()!.pfp"
+                [alt]="fullName()"
+                class="profile-avatar"
+              />
+            } @else {
+              <p-avatar
+                [label]="patientData()!.name.charAt(0)"
+                size="xlarge"
+                shape="circle"
+                styleClass="custom-avatar"
+              />
+            }
+          </div>
+
+          <div class="info-section">
+            <h1 class="patient-name">{{ fullName() }}</h1>
+            <div class="patient-details">
+              <div class="detail-item">
+                <i class="pi pi-calendar"></i>
+                <span class="label"
+                  >{{
+                    translationService.translate("patient.profile.birthDate")
+                  }}:</span
+                >
+                <span class="value"
+                  >{{ birthDateFormatted() }} ({{ age() }}
+                  {{
+                    translationService.translate("patient.profile.years")
+                  }})</span
+                >
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-id-card"></i>
+                <span class="label"
+                  >{{
+                    translationService.translate("patient.profile.govId")
+                  }}:</span
+                >
+                <span class="value">{{ patientData()!.govId }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="pi pi-phone"></i>
+                <span class="label"
+                  >{{
+                    translationService.translate("patient.profile.phone")
+                  }}:</span
+                >
+                <span class="value">{{ patientData()!.phoneNumber }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="profile-content">
+      <p-tabs value="0">
+        <p-tablist>
+          <p-tab value="0">{{
+            translationService.translate("patient.profile.medicalHistory")
+          }}</p-tab>
+          <p-tab value="1">{{
+            translationService.translate("patient.profile.appointments")
+          }}</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="0">
+            <div class="medical-history">
+              @if (sortedMedicalHistory().length === 0) {
+                <div class="empty-state">
+                  <i class="pi pi-inbox"></i>
+                  <p>
+                    {{
+                      translationService.translate(
+                        "patient.profile.noMedicalHistory"
+                      )
+                    }}
+                  </p>
+                </div>
+              } @else {
+                <div class="history-list">
+                  @for (
+                    record of sortedMedicalHistory();
+                    track record.date + record.title
+                  ) {
+                    <p-card styleClass="history-card">
+                      <div class="history-header">
+                        <h3 class="history-title">{{ record.title }}</h3>
+                        <p-tag
+                          [value]="
+                            record.date
+                              ? (record.date | date: 'dd.MM.yyyy') || undefined
+                              : undefined
+                          "
+                          severity="info"
+                        />
+                      </div>
+                      <p-divider />
+                      <div class="history-body">
+                        <div class="history-note">
+                          <i class="pi pi-file-edit"></i>
+                          <p>{{ record.note }}</p>
+                        </div>
+                        <div class="history-doctor">
+                          <i class="pi pi-user-md"></i>
+                          <span>{{ getDoctorName(record) }}</span>
+                        </div>
+                      </div>
+                    </p-card>
+                  }
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <p-tabpanel value="1">
+            <div class="appointments-content">
+              @if (sortedVisits().length === 0) {
+                <div class="empty-state">
+                  <i class="pi pi-calendar"></i>
+                  <p>
+                    {{
+                      translationService.translate(
+                        "patient.profile.noAppointments"
+                      )
+                    }}
+                  </p>
+                </div>
+              } @else {
+                <div class="visits-list">
+                  @if (upcomingVisits().length > 0) {
+                    <div class="visits-section">
+                      <h3 class="section-title">
+                        {{
+                          translationService.translate(
+                            "patient.profile.upcomingVisits"
+                          )
+                        }}
+                      </h3>
+                      @for (visit of upcomingVisits(); track visit.id) {
+                        <p-card styleClass="visit-card">
+                          <div class="visit-header">
+                            <div class="visit-info">
+                              <h4 class="visit-institution">
+                                {{ visit.institution }}
+                              </h4>
+                              <span class="visit-date">{{
+                                formatVisitDate(visit.startTime)
+                              }}</span>
+                            </div>
+                            <p-tag
+                              [value]="getVisitStatusLabel(visit.status)"
+                              [severity]="getVisitStatusSeverity(visit.status)"
+                            />
+                          </div>
+                          @if (visit.patientRemarks) {
+                            <p-divider />
+                            <div class="visit-remarks">
+                              <i class="pi pi-comment"></i>
+                              <span>{{ visit.patientRemarks }}</span>
+                            </div>
+                          }
+                        </p-card>
+                      }
+                    </div>
+                  }
+                  @if (completedVisits().length > 0) {
+                    <div class="visits-section">
+                      <h3 class="section-title">
+                        {{
+                          translationService.translate(
+                            "patient.profile.completedVisits"
+                          )
+                        }}
+                      </h3>
+                      @for (visit of completedVisits(); track visit.id) {
+                        <p-card styleClass="visit-card">
+                          <div class="visit-header">
+                            <div class="visit-info">
+                              <h4 class="visit-institution">
+                                {{ visit.institution }}
+                              </h4>
+                              <span class="visit-date">{{
+                                formatVisitDate(visit.startTime)
+                              }}</span>
+                            </div>
+                            <p-tag
+                              [value]="getVisitStatusLabel(visit.status)"
+                              [severity]="getVisitStatusSeverity(visit.status)"
+                            />
+                          </div>
+                          @if (visit.note) {
+                            <p-divider />
+                            <div class="visit-note">
+                              <i class="pi pi-file-edit"></i>
+                              <p>{{ visit.note }}</p>
+                            </div>
+                          }
+                          @if (visit.codes.length > 0) {
+                            <div class="visit-codes">
+                              <span class="codes-label"
+                                >{{
+                                  translationService.translate(
+                                    "patient.profile.codes"
+                                  )
+                                }}:</span
+                              >
+                              <div class="codes-list">
+                                @for (code of visit.codes; track code.code) {
+                                  <p-tag
+                                    [value]="code.codeType + ': ' + code.code"
+                                    [severity]="
+                                      code.active ? 'success' : 'secondary'
+                                    "
+                                  />
+                                }
+                              </div>
+                            </div>
+                          }
+                        </p-card>
+                      }
+                    </div>
+                  }
+                  @if (cancelledVisits().length > 0) {
+                    <div class="visits-section">
+                      <h3 class="section-title">
+                        {{
+                          translationService.translate(
+                            "patient.profile.cancelledVisits"
+                          )
+                        }}
+                      </h3>
+                      @for (visit of cancelledVisits(); track visit.id) {
+                        <p-card styleClass="visit-card cancelled">
+                          <div class="visit-header">
+                            <div class="visit-info">
+                              <h4 class="visit-institution">
+                                {{ visit.institution }}
+                              </h4>
+                              <span class="visit-date">{{
+                                formatVisitDate(visit.startTime)
+                              }}</span>
+                            </div>
+                            <p-tag
+                              [value]="getVisitStatusLabel(visit.status)"
+                              [severity]="getVisitStatusSeverity(visit.status)"
+                            />
+                          </div>
+                        </p-card>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </div>
+  } @else {
+    <div class="error-state">
+      <i class="pi pi-exclamation-circle"></i>
+      <p>{{ translationService.translate("patient.profile.loadError") }}</p>
+    </div>
+  }
+</div>

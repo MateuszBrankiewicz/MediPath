@@ -81,7 +81,6 @@ export class Calendar {
       } else {
         this.selectedDate.set(day.date);
         this.daySelected.emit(day.date);
-        console.log(this.selectedDate());
       }
     }
   }

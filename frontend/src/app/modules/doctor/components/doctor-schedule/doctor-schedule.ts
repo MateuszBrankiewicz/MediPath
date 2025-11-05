@@ -193,7 +193,6 @@ export class DoctorSchedule
   }
   private loadDoctorSchedule(): void {
     this.doctorService.getDoctorsSchedule().subscribe((schedule) => {
-      // Zapisujemy oryginalne sloty
       this.allScheduleSlots.set(schedule);
 
       const calendarDays = mapSchedulesToCalendarDays(
@@ -205,7 +204,6 @@ export class DoctorSchedule
         true,
       ) as CalendarDay[];
       this.calendarDays.set(calendarDays);
-      console.log(calendarDays);
     });
   }
 
@@ -218,10 +216,8 @@ export class DoctorSchedule
         ).padStart(2, '0')}`
       : '';
 
-    // Pobieramy wszystkie sloty na wybrany dzień
     const allSlots = this.getAllSlotsForDate(date);
 
-    // Pobieramy faktyczne wizyty
     this.visitsService.getDoctorVisitByDate(dateString).subscribe({
       next: (visits) => {
         const mapStatus = (s: string): Appointment['status'] => {
@@ -334,7 +330,6 @@ export class DoctorSchedule
     );
 
     if (!selectedDay?.appointments) return 0;
-    console.log('wywoluje');
     return selectedDay.appointments.filter(
       (apt) => apt.type !== 'available-same' && apt.type !== 'available-other',
     ).length;

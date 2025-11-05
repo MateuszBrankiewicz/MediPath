@@ -1,120 +1,123 @@
-@if(isPrescriptionLoading()){
-<div class="spinner-container">
+@if (isPrescriptionLoading()) {
+  <div class="spinner-container">
     <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
   </div>
-}
-@else{
-  @if(isLoading()){
+} @else {
+  @if (isLoading()) {
     <div class="floating-center-spinner">
       <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
     </div>
   }
-<h2>{{ translationService.translate("patient.prescriptions.title") }}</h2>
-<app-filter-component
-  (filtersChange)="onFiltersChange($event)"
-  [statusOptionsInput]="statusOptions"
-  [defaults]="{
-    searchTerm: '',
-    status: 'all',
-    dateFrom: null,
-    dateTo: null,
-    sortField: 'date',
-    sortOrder: 'desc',
-  }"
-  [autoApply]="true"
-></app-filter-component>
-<div class="prescriptions-list">
-  @for (prescription of paginatedPrescriptions(); track prescription.id) {
-    <p-card class="prescription-card">
-      <div class="prescription-content">
-        <div class="prescription-icon">
-          <i class="pi pi-file-pdf"></i>
-        </div>
-        <div class="prescription-info">
-          <h3 class="prescription-title">
-            {{
-              translationService.translate(
-                "patient.prescriptions.prescriptionTitle"
-              )
-            }}
-          </h3>
-          <div class="prescription-meta">
-            <div class="meta-item">
-              <i class="pi pi-key"></i>
-              <span
-                >{{
-                  translationService.translate("patient.prescriptions.pin")
-                }}
-                {{ prescription.prescriptionPin }}</span
-              >
-            </div>
-            <div class="meta-item">
-              <i class="pi pi-user"></i>
-              <span>{{ prescription.doctorName }}</span>
-            </div>
-            <div class="meta-item">
-              <i class="pi pi-calendar"></i>
-              <span>{{ prescription.date | date: "dd.MM.yyyy HH:mm" }}</span>
-            </div>
-            <div class="meta-item">
-              <i class="pi pi-clock"></i>
-              <span
-                >{{
-                  translationService.translate(
-                    "patient.prescriptions.validUntil"
-                  )
-                }}
-                {{
-                  getValidityDate(prescription.date) | date: "dd.MM.yyyy"
-                }}</span
-              >
+  <h2>{{ translationService.translate("patient.prescriptions.title") }}</h2>
+  <app-filter-component
+    (filtersChange)="onFiltersChange($event)"
+    [statusOptionsInput]="statusOptions"
+    [defaults]="{
+      searchTerm: '',
+      status: 'all',
+      dateFrom: null,
+      dateTo: null,
+      sortField: 'date',
+      sortOrder: 'desc',
+    }"
+    [autoApply]="true"
+  ></app-filter-component>
+  <div class="prescriptions-list">
+    @for (prescription of paginatedPrescriptions(); track prescription.id) {
+      <p-card class="prescription-card">
+        <div class="prescription-content">
+          <div class="prescription-icon">
+            <i class="pi pi-file-pdf"></i>
+          </div>
+          <div class="prescription-info">
+            <h3 class="prescription-title">
+              {{
+                translationService.translate(
+                  "patient.prescriptions.prescriptionTitle"
+                )
+              }}
+            </h3>
+            <div class="prescription-meta">
+              <div class="meta-item">
+                <i class="pi pi-key"></i>
+                <span
+                  >{{
+                    translationService.translate("patient.prescriptions.pin")
+                  }}
+                  {{ prescription.prescriptionPin }}</span
+                >
+              </div>
+              <div class="meta-item">
+                <i class="pi pi-user"></i>
+                <span>{{ prescription.doctorName }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="pi pi-calendar"></i>
+                <span>{{ prescription.date | date: "dd.MM.yyyy HH:mm" }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="pi pi-clock"></i>
+                <span
+                  >{{
+                    translationService.translate(
+                      "patient.prescriptions.validUntil"
+                    )
+                  }}
+                  {{
+                    getValidityDate(prescription.date) | date: "dd.MM.yyyy"
+                  }}</span
+                >
+              </div>
             </div>
           </div>
-        </div>
-        <div class="prescription-actions">
-          <p-button
-            class="copy-pin-button"
-            icon="pi pi-copy"
-            [text]="true"
-            (click)="copyToClipboard(prescription.prescriptionPin)"
-            [title]="translationService.translate('patient.common.copyPin')"
-          >
-          </p-button>
-          @if (prescription.status === "UNUSED") {
+          <div class="prescription-actions">
             <p-button
-              severity="success"
-              icon="pi pi-check"
+              class="copy-pin-button"
+              icon="pi pi-copy"
+              [text]="true"
+              (click)="copyToClipboard(prescription.prescriptionPin)"
+              [title]="translationService.translate('patient.common.copyPin')"
+            >
+            </p-button>
+            @if (prescription.status === "UNUSED") {
+              <p-button
+                severity="success"
+                icon="pi pi-check"
+                [rounded]="true"
+                [label]="
+                  translationService.translate(
+                    'patient.prescriptions.markAsUsed'
+                  )
+                "
+                (onClick)="markAsUsed(prescription)"
+                size="small"
+              />
+            } @else {
+              <span class="status-chip used">{{
+                translationService.translate("patient.prescriptions.used")
+              }}</span>
+            }
+            <p-button
+              severity="danger"
+              icon="pi pi-trash"
               [rounded]="true"
               [label]="
-                translationService.translate('patient.prescriptions.markAsUsed')
+                translationService.translate('patient.prescriptions.delete')
               "
               size="small"
+              (onClick)="deleteCode(prescription)"
             />
-          } @else {
-            <span class="status-chip used">{{
-              translationService.translate("patient.prescriptions.used")
-            }}</span>
-          }
-          <p-button
-            severity="danger"
-            icon="pi pi-trash"
-            [rounded]="true"
-            [label]="
-              translationService.translate('patient.prescriptions.delete')
-            "
-            size="small"
-          />
+          </div>
         </div>
-      </div>
-    </p-card>
-  }
-  <p-paginator
-    (onPageChange)="onPageChange($event)"
-    [first]="first()"
-    [rows]="rows()"
-    [totalRecords]="totalRecords()"
-    [rowsPerPageOptions]="[10, 20, 30]"
-    style="margin-bottom: 10px"
-  />
-</div>
+      </p-card>
+    }
+    <p-paginator
+      (onPageChange)="onPageChange($event)"
+      [first]="first()"
+      [rows]="rows()"
+      [totalRecords]="totalRecords()"
+      [rowsPerPageOptions]="[10, 20, 30]"
+      style="margin-bottom: 10px"
+    />
+  </div>
 }

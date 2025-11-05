@@ -155,6 +155,10 @@
   "patient.reviewVisit.submitReview": "Zapisz opinię",
   "patient.reviewVisit.updateReview": "Zaktualizuj opinię",
 
+  "patient.reviewDialog.loading": "Ładowanie komentarza...",
+  "patient.reviewDialog.loadError": "Nie udało się załadować komentarza",
+  "patient.reviewDialog.commentNotFound": "Nie znaleziono komentarza",
+
   "patient.addReminder.title": "Tytuł: *",
   "patient.addReminder.titleShort": "Tytuł",
   "patient.addReminder.reminderTime": "Czas przypomnienia:",
@@ -231,6 +235,9 @@
 
   "shared.forms.noResultsFound": "Nie znaleziono wyników",
   "shared.forms.loading": "Ładowanie...",
+  "shared.error": "Błąd",
+  "shared.notFound": "Nie znaleziono",
+  "shared.loading": "Ładowanie...",
 
   "shared.navigation.mediPath": "MediPath",
   "shared.navigation.menu": "Menu",
@@ -726,5 +733,23 @@
   "admin.editDoctor.institutionRemoved": "Instytucja usunięta pomyślnie",
 
   "common.cancel": "Anuluj",
-  "common.add": "Dodaj"
+  "common.add": "Dodaj",
+
+  "patient.profile.birthDate": "Data urodzenia",
+  "patient.profile.years": "lat",
+  "patient.profile.govId": "PESEL",
+  "patient.profile.phone": "Telefon",
+  "patient.profile.medicalHistory": "Historia medyczna",
+  "patient.profile.appointments": "Wizyty",
+  "patient.profile.noMedicalHistory": "Brak zapisów w historii medycznej",
+  "patient.profile.noAppointments": "Brak wizyt",
+  "patient.profile.noDoctor": "Brak informacji",
+  "patient.profile.loadError": "Nie udało się załadować profilu pacjenta",
+  "patient.profile.upcomingVisits": "Nadchodzące wizyty",
+  "patient.profile.completedVisits": "Zakończone wizyty",
+  "patient.profile.cancelledVisits": "Anulowane wizyty",
+  "patient.profile.codes": "Kody",
+
+  "doctor.patientProfile.loadError": "Nie udało się załadować profilu pacjenta",
+  "doctor.patientProfile.visitsLoadError": "Nie udało się załadować wizyt pacjenta"
 }

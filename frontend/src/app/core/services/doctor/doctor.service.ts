@@ -5,8 +5,13 @@ import { API_URL } from '../../../utils/constants';
 import {
   DoctorDetailsApiResponse,
   DoctorPageModel,
+  DoctorPatientsApiResponse,
+  DoctorPatientsVisitApiResponse,
+  PatientForDoctor,
+  VisitsForPatientProfile,
 } from '../../models/doctor.model';
 import { DoctorScheduleResponse, InputSlot } from '../../models/schedule.model';
+import { VisitApiResponseArray, VisitResponse } from '../../models/visit.model';
 
 @Injectable({
   providedIn: 'root',
@@ -76,7 +81,6 @@ export class DoctorService {
   private mapDoctorDetailsResponse(
     response: DoctorDetailsApiResponse,
   ): DoctorPageModel {
-    console.log('Mapping doctor details response:', response);
     return {
       name: response.doctor.name,
       surname: response.doctor.surname,
@@ -101,9 +105,38 @@ export class DoctorService {
       .pipe(map((response) => response.schedules));
   }
 
-  public getDoctorVisits(): Observable<unknown> {
-    return this.http.get(`${API_URL}/doctors/me/visitsbydate/today`, {
+  public getDoctorVisits(): Observable<VisitResponse[]> {
+    return this.http
+      .get<VisitApiResponseArray>(`${API_URL}/doctors/me/visits`, {
+        withCredentials: true,
+      })
+      .pipe(map((response) => response.visits));
+  }
+
+  public getDoctorPatients(): Observable<PatientForDoctor[]> {
+    return this.http
+      .get<DoctorPatientsApiResponse>(`${API_URL}/doctors/me/patients`, {
+        withCredentials: true,
+      })
+      .pipe(map((response) => response.patients));
+  }
+
+  public getPatientProfile(patientId: string): Observable<unknown> {
+    return this.http.get(`${API_URL}/users/patients/${patientId}`, {
       withCredentials: true,
     });
+  }
+
+  public getPatientVisits(
+    patientId: string,
+  ): Observable<VisitsForPatientProfile[]> {
+    return this.http
+      .get<DoctorPatientsVisitApiResponse>(
+        `${API_URL}/doctors/me/patients/${patientId}/visits`,
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(map((response) => response.visits));
   }
 }

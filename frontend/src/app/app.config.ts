@@ -13,6 +13,7 @@ import {
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { DialogService } from 'primeng/dynamicdialog';
 import { routes } from './app.routes';
 import { spinnerInterceptor } from './core/interceptors/spinner.interceptor';
 import { MyPreset } from './themes/primeng-preset';
@@ -33,5 +34,6 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     MessageService,
+    DialogService,
   ],
 };

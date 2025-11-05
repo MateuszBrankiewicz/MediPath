@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MessageService } from 'primeng/api';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { vi } from 'vitest';
 import { ReviewVisitDialog } from './review-visit-dialog';
@@ -15,6 +16,7 @@ describe('ReviewVisitDialog', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        MessageService,
         { provide: DynamicDialogRef, useValue: { close: vi.fn() } },
         { provide: DynamicDialogConfig, useValue: { data: {} } },
       ],

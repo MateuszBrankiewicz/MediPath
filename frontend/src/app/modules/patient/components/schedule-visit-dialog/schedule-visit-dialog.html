@@ -16,13 +16,13 @@
             <span class="field-label">{{
               translationService.translate("patient.scheduleVisit.doctor")
             }}</span>
-            <div class="info-value">{{ rescheduleData()?.doctorName }}</div>
+            <div class="info-value">{{ scheduleData()?.doctorName }}</div>
           </div>
           <div class="form-field">
             <span class="field-label">{{
               translationService.translate("patient.scheduleVisit.institution")
             }}</span>
-            <div class="info-value">{{ rescheduleData()?.institution }}</div>
+            <div class="info-value">{{ scheduleData()?.institution }}</div>
           </div>
         </div>
       </div>
@@ -41,8 +41,8 @@
           <app-calendar-schedule
             (dateTimeSelected)="onDateTimeSelected($event)"
             [availableAppointments]="availableDays()"
-            [initialSelectedDate]="rescheduleData()?.selectedDate || null"
-            [initialSelectedTime]="rescheduleData()?.selectedTime || null"
+            [initialSelectedDate]="scheduleData()?.selectedDate || null"
+            [initialSelectedTime]="scheduleData()?.selectedTime || null"
           >
           </app-calendar-schedule>
         </div>
@@ -68,7 +68,7 @@
               )
             "
             rows="6"
-            [ngModel]="rescheduleData()?.patientRemarks"
+            [ngModel]="scheduleData()?.patientRemarks"
             (ngModelChange)="onRemarksChange($event)"
           >
           </textarea>
@@ -87,7 +87,7 @@
             translationService.translate('patient.scheduleVisit.confirm')
           "
           [disabled]="!isFormValid()"
-          (onClick)="confirmReschedule()"
+          (onClick)="confirmSchedule()"
           type="button"
         />
       </div>

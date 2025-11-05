@@ -221,7 +221,7 @@ export class TopBarComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.notificationService.notifications$.subscribe((message) => {
+    this.notificationService.notifications$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((message) => {
       const title = message?.title || 'Nowa notyfikacja';
       const content = message?.content || '';
       this.toastService.showInfo(title, content);

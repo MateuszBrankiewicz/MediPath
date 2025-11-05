@@ -34,7 +34,6 @@ export function mapSchedulesToCalendarDays(
 
     if (isToDoctorSchedule) {
       if (schedule.booked) {
-        console.log(schedule);
         type = 'available-same';
       } else {
         type = 'unavailable';

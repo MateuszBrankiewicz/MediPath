@@ -35,11 +35,10 @@ export class UserNotificationsService implements OnDestroy {
     this.client.onConnect = () => {
       this.client.subscribe('/user/notifications', (message: IMessage) => {
         try {
-          console.log(message.body);
           const parsedMessage = JSON.parse(message.body) as NotificationMessage;
           this.notificationSubject.next(parsedMessage);
         } catch {
-          // Handle parsing error
+          throw new Error('Error parsing notification message');
         }
       });
     };
@@ -114,12 +113,22 @@ export class UserNotificationsService implements OnDestroy {
   public deleteNotification(
     notification: NotificationMessage,
   ): Observable<unknown> {
-    return this.http.post(
-      `${API_URL}/notifications/delete`,
-      {
-        timestamp: notification.timestamp,
+    const dateString = notification.timestamp?.split('T')[0] || '';
+    const time = notification.timestamp?.split('T')[1] || '';
+    return this.http.delete(`${API_URL}/notifications`, {
+      body: {
+        reminderTime: time,
         title: notification.title,
+        startDate: dateString,
+        endDate: dateString,
       },
+      withCredentials: true,
+    });
+  }
+
+  public getNotifications(param: string): Observable<NotificationMessage[]> {
+    return this.http.get<NotificationMessage[]>(
+      `${API_URL}/users/me/notifications?filter=${param}`,
       {
         withCredentials: true,
       },

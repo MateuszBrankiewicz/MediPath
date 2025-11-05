@@ -173,4 +173,38 @@ export class RefferalsPage
         }
       });
   }
+
+  protected deleteCode(referral: Refferal): void {
+    this.manageDialogCodeService
+      .deleteCode({
+        codeNumber: referral.prescriptionPin,
+        codeType: 'referral',
+      })
+      .subscribe((success) => {
+        if (success) {
+          this.isLoading.set(true);
+          this.codeService
+            .deleteCode({
+              code: referral.prescriptionPin,
+              codeType: referral.codeType ?? '',
+            })
+            .pipe(
+              catchError((err) => {
+                this.isLoading.set(false);
+                throw err;
+              }),
+            )
+            .subscribe(() => {
+              this.referrals.set(
+                this.referrals().filter(
+                  (prescription) =>
+                    prescription.prescriptionPin !== referral.prescriptionPin,
+                ),
+              );
+              this.isLoading.set(false);
+              this.toastService.showSuccess('Refferal deleted successfully.');
+            });
+        }
+      });
+  }
 }

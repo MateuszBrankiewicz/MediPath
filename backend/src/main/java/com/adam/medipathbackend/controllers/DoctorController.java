@@ -114,7 +114,7 @@ public class DoctorController {
     }
 
     @GetMapping(value = {"/me/patients", "/me/patients/"})
-    public ResponseEntity<Map<String, Object>> getMyPatients(@PathVariable String date, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> getMyPatients(@PathVariable(required = false) String date, HttpSession session) {
 
         String loggedUserID = (String) session.getAttribute("id");
         if (loggedUserID == null) {
@@ -130,4 +130,22 @@ public class DoctorController {
 
     }
 
+    @GetMapping(value = {"/me/patients/{patientId}/visits", "/me/patients/{patientId}/visits/"})
+    public ResponseEntity<Map<String, Object>> getPatientVisits(@PathVariable String patientId, HttpSession session) {
+
+    String loggedUserID = (String) session.getAttribute("id");
+    if (loggedUserID == null) {
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    try {
+        Map<String, Object> result = doctorService.getPatientVisits(loggedUserID, patientId);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    } catch (IllegalArgumentException e) {
+        return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+    } catch (IllegalAccessException e) {
+        return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
+    }
+
+}
 }

@@ -69,7 +69,6 @@ export class Login {
     if (this.loginFormGroup.valid) {
       const { email, password } = this.loginFormGroup.value;
       if (!email || !password) {
-        console.error('Email and password are required');
         return;
       }
 

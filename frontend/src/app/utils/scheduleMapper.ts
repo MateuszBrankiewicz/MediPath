@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   AvailableDay,
   InputSlot,
@@ -25,15 +26,14 @@ export function groupSchedulesByDate(
   return Array.from(grouped.entries()).map(([dateKey, slots]) => {
     const date = new Date(dateKey);
     const dayNames = [
-      'Niedziela',
-      'Poniedziałek',
-      'Wtorek',
-      'Środa',
-      'Czwartek',
-      'Piątek',
-      'Sobota',
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
     ];
-
     return {
       date: dateKey,
       dayName: dayNames[date.getDay()],

@@ -14,12 +14,12 @@ export enum UserRolesNumbers {
 }
 
 export interface UserBasicInfo {
-  id: string;
+  id?: string;
   name: string;
   surname: string;
   roleCode: number | UserRoles;
   notifications: Notification[];
-  email: string;
+  email?: string;
   userSettings: UserSettings;
   pfpImage?: string;
   rating?: number;

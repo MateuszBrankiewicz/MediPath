@@ -1,4 +1,15 @@
 <div class="dialog-shell">
+  @if (isLoading()) {
+    <div class="loading-overlay">
+      <div class="loading-overlay__content">
+        <div class="loading-overlay__spinner"></div>
+        <p class="loading-overlay__text">
+          {{ translationService.translate("shared.loading") }}
+        </p>
+      </div>
+    </div>
+  }
+
   <form class="dialog-body" (ngSubmit)="onSubmit()">
     <section class="dialog-intro">
       <div class="dialog-intro__titles">
@@ -112,6 +123,7 @@
             ? translationService.translate('patient.reviewVisit.updateReview')
             : translationService.translate('patient.reviewVisit.submitReview')
         "
+        [disabled]="isLoading()"
         class="dialog-actions__submit"
       ></p-button>
     </footer>
