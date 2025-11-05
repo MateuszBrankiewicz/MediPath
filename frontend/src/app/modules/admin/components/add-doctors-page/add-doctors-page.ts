@@ -14,7 +14,9 @@ import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
 import { SelectChangeEvent } from 'primeng/select';
 import { AddDoctorRequest } from '../../../../core/models/add-docotr.model';
+import { Specialisation } from '../../../../core/models/specialisation.model';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
+import { SpecialisationService } from '../../../../core/services/specialisation/specialisation.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { getCorrectDayFormat } from '../../../../utils/dateFormatter';
@@ -22,11 +24,6 @@ import { InstitutionStoreService } from '../../services/institution/institution-
 import { DoctorAddressFormComponent } from '../shared/doctor-address-form/doctor-address-form';
 import { DoctorPersonalInfoFormComponent } from '../shared/doctor-personal-info-form/doctor-personal-info-form';
 import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-professional-info-form/doctor-professional-info-form';
-
-interface Specialisation {
-  code: string;
-  name: string;
-}
 
 @Component({
   selector: 'app-add-doctors-page',
@@ -56,7 +53,7 @@ export class AddDoctorsPage implements OnInit {
   private readonly institutionId = signal('');
   protected doctorForm!: FormGroup;
   protected isSubmitting = signal<boolean>(false);
-
+  private specialisationService = inject(SpecialisationService);
   protected roleOptions = [
     {
       id: 1,
@@ -67,58 +64,10 @@ export class AddDoctorsPage implements OnInit {
     { id: 3, name: 'Doctor', roleCode: 2 },
   ];
 
-  protected specialisations: Specialisation[] = [
-    {
-      code: 'cardiology',
-      name: this.translationService.translate(
-        'admin.addDoctor.specialisations.cardiology',
-      ),
-    },
-    {
-      code: 'cardio_surgery',
-      name: this.translationService.translate(
-        'admin.addDoctor.specialisations.cardio_surgery',
-      ),
-    },
-    {
-      code: 'dermatology',
-      name: this.translationService.translate(
-        'admin.addDoctor.specialisations.dermatology',
-      ),
-    },
-    {
-      code: 'neurology',
-      name: this.translationService.translate(
-        'admin.addDoctor.specialisations.neurology',
-      ),
-    },
-    {
-      code: 'orthopedics',
-      name: this.translationService.translate(
-        'admin.addDoctor.specialisations.orthopedics',
-      ),
-    },
-    {
-      code: 'pediatrics',
-      name: this.translationService.translate(
-        'admin.addDoctor.specialisations.pediatrics',
-      ),
-    },
-    {
-      code: 'psychiatry',
-      name: this.translationService.translate(
-        'admin.addDoctor.specialisations.psychiatry',
-      ),
-    },
-    {
-      code: 'general',
-      name: this.translationService.translate(
-        'admin.addDoctor.specialisations.general',
-      ),
-    },
-  ];
+  protected specialisations = signal<Specialisation[]>([]);
 
   ngOnInit(): void {
+    this.loadAvailableSpecialisations();
     this.initializeForm();
     const id = this.activatedRoute.snapshot.paramMap.get('id');
     if (id) {
@@ -274,5 +223,22 @@ export class AddDoctorsPage implements OnInit {
 
   protected get residentialAddressForm(): FormGroup {
     return this.doctorForm.get('residentialAddress') as FormGroup;
+  }
+  private loadAvailableSpecialisations(): void {
+    this.specialisationService
+      .getSpecialisations(false)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (specialisations) => {
+          this.specialisations.set(specialisations);
+        },
+        error: () => {
+          this.toastService.showError(
+            this.translationService.translate(
+              'admin.addDoctor.error.loadSpecialisations',
+            ),
+          );
+        },
+      });
   }
 }

@@ -13,16 +13,16 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { map } from 'rxjs';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { InputForAuth } from '../../../shared/components/forms/input-for-auth/input-for-auth';
 import {
   SelectOption,
   SelectWithSearch,
 } from '../../../shared/components/forms/input-for-auth/select-with-search/select-with-search';
+import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
 import { ModalDialogComponent } from '../../../shared/components/ui/modal-dialog/modal-dialog';
 import { RegisterUser } from '../../models/auth.constants';
-import { ImageForAuth } from '../../../shared/components/ui/image-for-auth/image-for-auth';
-import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 
 @Component({
   selector: 'app-register',
@@ -105,6 +105,7 @@ export class Register {
     password: new FormControl('', [
       Validators.required,
       Validators.minLength(8),
+      Validators.maxLength(32),
     ]),
     confirmPassword: new FormControl(''),
     termsChecked: new FormControl(false, [Validators.requiredTrue]),

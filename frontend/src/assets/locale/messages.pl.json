@@ -735,6 +735,17 @@
   "common.cancel": "Anuluj",
   "common.add": "Dodaj",
 
+  "admin.changeDoctor.loading": "Ładowanie lekarzy...",
+  "admin.changeDoctor.description": "Wybierz nowego lekarza dla tej wizyty z listy dostępnych lekarzy w placówce.",
+  "admin.changeDoctor.currentDoctor": "Aktualnie przypisany lekarz",
+  "admin.changeDoctor.selectDoctor": "Wybierz lekarza",
+  "admin.changeDoctor.selectDoctorPlaceholder": "Wyszukaj lekarza...",
+  "admin.changeDoctor.loadDoctorsError": "Nie udało się załadować listy lekarzy",
+  "admin.changeDoctor.noDoctorsAvailable": "Brak dostępnych lekarzy w tej placówce",
+  "admin.changeDoctor.changeDoctorError": "Nie udało się zmienić lekarza",
+  "admin.changeDoctor.changeDoctorSuccess": "Lekarz został pomyślnie zmieniony",
+  "admin.changeDoctor.confirm": "Zmień lekarza",
+
   "patient.profile.birthDate": "Data urodzenia",
   "patient.profile.years": "lat",
   "patient.profile.govId": "PESEL",
@@ -751,5 +762,7 @@
   "patient.profile.codes": "Kody",
 
   "doctor.patientProfile.loadError": "Nie udało się załadować profilu pacjenta",
-  "doctor.patientProfile.visitsLoadError": "Nie udało się załadować wizyt pacjenta"
+  "doctor.patientProfile.visitsLoadError": "Nie udało się załadować wizyt pacjenta",
+    "patient.doctor.conflict": "Pacjent oraz lekarz nie mogą być tą samą osobą"
+
 }

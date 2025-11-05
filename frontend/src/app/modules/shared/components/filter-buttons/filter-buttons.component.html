@@ -7,7 +7,7 @@
       type="button"
     >
       <i class="pi" [class]="filter.icon"></i>
-      <span>{{ filter.labelKey }}</span>
+      <span>{{ translationService.translate(filter.labelKey) }} </span>
     </button>
   }
 </div>

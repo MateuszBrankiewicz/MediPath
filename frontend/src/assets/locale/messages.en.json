@@ -732,6 +732,17 @@
   "common.cancel": "Cancel",
   "common.add": "Add",
 
+  "admin.changeDoctor.loading": "Loading doctors...",
+  "admin.changeDoctor.description": "Select a new doctor for this visit from the list of available doctors in the institution.",
+  "admin.changeDoctor.currentDoctor": "Currently assigned doctor",
+  "admin.changeDoctor.selectDoctor": "Select doctor",
+  "admin.changeDoctor.selectDoctorPlaceholder": "Search for doctor...",
+  "admin.changeDoctor.loadDoctorsError": "Failed to load doctors list",
+  "admin.changeDoctor.noDoctorsAvailable": "No available doctors in this institution",
+  "admin.changeDoctor.changeDoctorError": "Failed to change doctor",
+  "admin.changeDoctor.changeDoctorSuccess": "Doctor changed successfully",
+  "admin.changeDoctor.confirm": "Change doctor",
+
   "patient.profile.birthDate": "Date of birth",
   "patient.profile.years": "years",
   "patient.profile.govId": "Government ID",
@@ -748,7 +759,8 @@
   "patient.profile.codes": "Codes",
 
   "doctor.patientProfile.loadError": "Failed to load patient profile",
-  "doctor.patientProfile.visitsLoadError": "Failed to load patient visits"
+  "doctor.patientProfile.visitsLoadError": "Failed to load patient visits",
+  "patient.doctor.conflict": "Patient and doctor cannot be the same person"
 }
 
 

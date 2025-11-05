@@ -53,6 +53,8 @@ public class VisitController {
             return new ResponseEntity<>(Map.of("message", "Success"), HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch(IllegalStateException ise) {
+            return new ResponseEntity<>(Map.of("message", ise.getMessage()), HttpStatus.CONFLICT);
         }
 
     }
@@ -159,4 +161,31 @@ public class VisitController {
         }
     }
 
+    @PutMapping(value = {"/{visitId}/changeDoctor", "/{visitId}/changeDoctor/"})
+    public ResponseEntity<Map<String,Object>> updateDoctorInVisit(
+            @PathVariable String visitId,
+            @RequestBody Map<String, String> request,
+            HttpSession session) {
+
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String newDoctorId = request.get("doctorId");
+        if(newDoctorId == null || newDoctorId.isBlank()) {
+            return new ResponseEntity<>(Map.of("message", "doctorId is required"),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            visitService.updateDoctorInVisit(visitId, newDoctorId, loggedUserID);
+            return new ResponseEntity<>(Map.of("message", "Doctor updated"), HttpStatus.OK);
+        } catch(IllegalAccessException iae) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch(IllegalArgumentException iae) {
+            return new ResponseEntity<>(Map.of("message", iae.getMessage()),
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
 }

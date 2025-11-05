@@ -85,7 +85,12 @@
                 <div class="history-text">
                   {{ item.date }} - {{ item.title }}
                 </div>
-                <button class="icon-btn" type="button" aria-label="details">
+                <button
+                  class="icon-btn"
+                  type="button"
+                  aria-label="details"
+                  (click)="viewHistoryDetails(item)"
+                >
                   <i class="pi pi-search"></i>
                 </button>
               </div>

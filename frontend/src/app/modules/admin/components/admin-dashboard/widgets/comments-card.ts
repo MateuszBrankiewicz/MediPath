@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { CardModule } from 'primeng/card';
 
 export interface CommentItem {
@@ -17,7 +17,7 @@ export interface CommentItem {
         <h3 class="comments-title">{{ title() }}</h3>
       </div>
       <div class="comments-list">
-        @for (comment of comments(); track comment.id) {
+        @for (comment of lastThreeComments(); track comment.id) {
           <div class="comment-item">
             <i class="pi pi-user"></i>
             <span class="comment-content">{{ comment.content }}</span>
@@ -63,4 +63,5 @@ export interface CommentItem {
 export class CommentsCard {
   readonly title = input<string>('Comments');
   readonly comments = input<CommentItem[]>([]);
+  readonly lastThreeComments = computed(() => this.comments().slice(-3));
 }

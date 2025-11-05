@@ -67,12 +67,20 @@
       [suggestions]="filteredInstitutions()"
       (completeMethod)="searchInstitution($event)"
       field="institutionName"
+      optionLabel="institutionName"
+      appendTo="body"
       [placeholder]="
         translationService.translate(translationKey() + '.searchPlaceholder')
       "
       [dropdown]="true"
       id="institution-search"
-    />
+    >
+      <ng-template let-institution pTemplate="item">
+        <div class="institution-option">
+          <span>{{ institution.institutionName }}</span>
+        </div>
+      </ng-template>
+    </p-autocomplete>
   </div>
 
   <ng-template #footer>

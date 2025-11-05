@@ -17,6 +17,7 @@ import { TranslationService } from '../../../../../core/services/translation/tra
 import { groupSchedulesByDate } from '../../../../../utils/scheduleMapper';
 import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
 
+import { HttpErrorResponse } from '@angular/common/http';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {
   ScheduleByInstitutionResponse,
@@ -129,12 +130,12 @@ export class SearchResultComponent implements OnInit {
               );
               this.requestSearchResult();
             },
-            error: () => {
-              this.toastService.showError(
-                this.translationService.translate(
-                  'patient.appointment.bookError',
-                ),
-              );
+            error: (error: HttpErrorResponse) => {
+              if (error.status === 409) {
+                this.toastService.showError('patient.doctor.conflict');
+                return;
+              }
+              this.toastService.showError('patient.appointment.bookError');
             },
           });
       }

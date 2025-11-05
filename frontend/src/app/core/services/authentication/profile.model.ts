@@ -84,6 +84,7 @@ export interface UserProfileFormValue {
   city: string;
   number: string;
   street: string;
+  rating?: number | null;
 }
 
 export interface UpdateUserProfileRequest {

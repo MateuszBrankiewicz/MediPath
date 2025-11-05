@@ -26,7 +26,7 @@
         <app-doctor-professional-info-form
           [formGroup]="doctorForm"
           [translationKey]="'admin.addDoctor'"
-          [specialisations]="specialisations"
+          [specialisations]="specialisations()"
           [roleOptions]="roleOptions"
           [showRoleSelect]="true"
           [isFieldInvalid]="isFieldInvalid"

@@ -80,6 +80,7 @@ export class DoctorDashboard implements OnInit {
 
   protected readonly ratingCardData = computed<StatsCardData>(() => {
     const user = this.user();
+    console.log(user);
     const ratingValue = user?.rating != null ? user.rating.toFixed(1) : 'N/A';
     return {
       title: this.translationService.translate('doctor.dashboard.myRating'),
@@ -220,14 +221,6 @@ export class DoctorDashboard implements OnInit {
 
   protected onAppointmentClick(appointment: AppointmentItem): void {
     this.router.navigate(['/doctor/current-visit', appointment.id]);
-  }
-
-  protected onDateTimeSelected(event: {
-    date: Date;
-    time: string;
-    slotId?: string;
-  }): void {
-    console.log('Date/time selected:', event);
   }
 
   private hasAppointmentsOnDate(date: Date): boolean {

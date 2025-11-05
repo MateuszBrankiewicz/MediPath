@@ -28,7 +28,7 @@
         <app-doctor-professional-info-form
           [formGroup]="doctorForm"
           [translationKey]="'admin.editDoctor'"
-          [specialisations]="specialisations"
+          [specialisations]="specialisations()"
           [isFieldInvalid]="isFieldInvalid"
           [getFieldError]="getFieldErrorFn"
         />

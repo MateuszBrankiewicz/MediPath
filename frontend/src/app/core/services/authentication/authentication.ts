@@ -241,6 +241,7 @@ export class AuthenticationService {
       city: address.city ?? '',
       number: address.number ?? '',
       street: address.street ?? '',
+      rating: user.rating ?? null,
     };
   }
 
@@ -370,6 +371,7 @@ export class AuthenticationService {
       notifications: this.normalizeNotifications(
         response.user.notifications ?? [],
       ),
+      rating: response.user.rating ?? undefined,
       pfpImage: response.user.pfpImage,
       userSettings: {
         ...this.normalizeUserSettings(response.user.userSettings),

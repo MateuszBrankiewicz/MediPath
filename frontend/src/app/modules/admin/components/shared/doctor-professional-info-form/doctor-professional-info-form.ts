@@ -4,12 +4,8 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectChangeEvent, SelectModule } from 'primeng/select';
+import { Specialisation } from '../../../../../core/models/specialisation.model';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
-
-interface Specialisation {
-  code: string;
-  name: string;
-}
 
 interface RoleOption {
   id: number;
@@ -65,7 +61,7 @@ interface RoleOption {
             formControlName="specialisation"
             [options]="specialisations()"
             optionLabel="name"
-            optionValue="code"
+            optionValue="name"
             [placeholder]="
               translationService.translate(
                 translationKey() + '.placeholders.specialisation'

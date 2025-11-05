@@ -12,6 +12,7 @@ import {
 } from '../../models/institution.model';
 import { UpcomingVisitsResponse } from '../../models/visit.model';
 import { AuthenticationService } from '../authentication/authentication';
+import { UserRoles } from '../authentication/authentication.model';
 
 @Injectable({
   providedIn: 'root',
@@ -53,9 +54,15 @@ export class InstitutionService {
       );
   }
 
-  public getInstitutionsForAdmin(): Observable<Institution[]> {
-    const httpParam = new HttpParams().set('role', 'staff');
-
+  public getInstitutionsForAdmin(
+    role: UserRoles | null,
+  ): Observable<Institution[]> {
+    let httpParam;
+    if (role === 'admin') {
+      httpParam = new HttpParams().set('role', 'admin');
+    } else {
+      httpParam = new HttpParams().set('role', 'staff');
+    }
     return this.http
       .get<AdminInstitutionResponse>(`${API_URL}/users/me/institutions`, {
         params: httpParam,
@@ -97,25 +104,37 @@ export class InstitutionService {
   }
 
   public addInstitution(institution: Partial<Institution>): Observable<void> {
-    return this.http
-      .post<void>(
-        `${API_URL}/institution/add`,
-        {
-          name: institution.name,
-          types: institution.specialisation,
-          address: institution.address,
-          image: institution.image,
-          isPublic: institution.isPublic,
-        },
-        {
-          withCredentials: true,
-        },
-      )
-      .pipe(
-        map(() => {
-          console.log('Institution added successfully');
-        }),
-      );
+    return this.http.post<void>(
+      `${API_URL}/institution/add`,
+      {
+        name: institution.name,
+        types: institution.specialisation,
+        address: institution.address,
+        image: institution.image,
+        isPublic: institution.isPublic,
+      },
+      {
+        withCredentials: true,
+      },
+    );
+  }
+  public editInstitution(
+    institutionId: string,
+    institution: Partial<Institution>,
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${API_URL}/institution/${institutionId}/`,
+      {
+        name: institution.name,
+        types: institution.specialisation,
+        address: institution.address,
+        image: institution.image,
+        isPublic: institution.isPublic,
+      },
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   public addEmployee(
