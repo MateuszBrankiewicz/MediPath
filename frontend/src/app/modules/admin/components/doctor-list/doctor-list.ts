@@ -4,7 +4,6 @@ import {
   DestroyRef,
   effect,
   inject,
-  OnInit,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -15,6 +14,7 @@ import { CardModule } from 'primeng/card';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { DoctorProfile } from '../../../../core/models/doctor.model';
@@ -22,9 +22,7 @@ import { InstitutionService } from '../../../../core/services/institution/instit
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
-import { Select } from 'primeng/select';
 import { SelectInstitution } from '../shared/select-institution/select-institution';
-import { ProgressSpinner } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-doctor-list',
@@ -95,7 +93,6 @@ export class DoctorList {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (doctors) => {
-          console.log(doctors);
           this.doctors.set(doctors);
           this.isLoading.set(false);
         },
@@ -113,12 +110,10 @@ export class DoctorList {
   }
 
   protected onViewDoctor(doctorId: string): void {
-    // Nawigacja do szczegółów lekarza
     this.router.navigate(['/admin/doctors', doctorId]);
   }
 
   protected onEditDoctor(doctorId: string): void {
-    // Nawigacja do edycji lekarza
     this.router.navigate(['/admin/doctors', doctorId, 'edit']);
   }
 

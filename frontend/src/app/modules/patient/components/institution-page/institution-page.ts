@@ -132,7 +132,6 @@ export class InstitutionPage implements OnInit {
 
   protected getDataForInstitutionCard = computed<Hospital>(() => {
     const inst = this.institution();
-    console.log(inst?.image);
     return {
       id: inst?.id ?? '',
       name: inst?.name ?? '',
@@ -156,6 +155,5 @@ export class InstitutionPage implements OnInit {
 
   protected onDoctorCardClick(doctorId: string): void {
     this.router.navigate(['/patient/doctor', doctorId]);
-    console.log('Doctor card clicked:', doctorId);
   }
 }

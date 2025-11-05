@@ -86,7 +86,6 @@ export class AddReminderDialog implements OnInit {
         ...formValue,
         id: this.reminder()?.id,
       };
-      console.log(reminderData);
       this.save.emit(reminderData);
       this.ref.close(reminderData);
     }

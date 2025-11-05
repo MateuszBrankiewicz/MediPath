@@ -118,6 +118,7 @@ export class ReviewVisitDialog implements OnInit {
       .subscribe({
         next: (response) => {
           const comment = response.comments.find((c) => c.id === commentId);
+
           if (comment) {
             const existingComment: ExistingComment = {
               id: comment.id,
@@ -127,11 +128,11 @@ export class ReviewVisitDialog implements OnInit {
               doctorName: comment.doctor,
               institutionName: comment.institution,
             };
+
             this.existingComment.set(existingComment);
             this.commentsSignal.set(comment.content);
             this.doctorRatingSignal.set(comment.doctorRating);
             this.institutionRatingSignal.set(comment.institutionRating);
-            console.log('Loaded comment:', comment);
           } else {
             this.messageService.add({
               severity: 'warn',
@@ -141,6 +142,7 @@ export class ReviewVisitDialog implements OnInit {
               ),
             });
           }
+
           this.isLoading.set(false);
         },
       });

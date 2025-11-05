@@ -42,7 +42,6 @@ export class HospitalCardComponent {
 
   protected readonly imageUrl = computed<SafeUrl | null>(() => {
     const rawImageUrl = this.hospital().imageUrl;
-    console.log(this.canEdit());
     if (rawImageUrl) {
       return this.sanitizer.bypassSecurityTrustResourceUrl(rawImageUrl);
     }

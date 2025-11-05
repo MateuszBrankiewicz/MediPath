@@ -143,10 +143,6 @@ export class VisitPage
     }
   }
 
-  protected editVisit() {
-    console.log('edit');
-  }
-
   protected readonly filteredVisits = computed(() => {
     const filters = this.filters();
     return this.filteringService.filter(
@@ -235,8 +231,7 @@ export class VisitPage
           )
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
-            next: (result) => {
-              console.log(result);
+            next: () => {
               this.toastService.showSuccess(
                 this.translationService.translate(
                   'patient.appointment.bookSuccess',

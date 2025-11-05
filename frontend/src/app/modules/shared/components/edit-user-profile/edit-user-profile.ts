@@ -130,7 +130,6 @@ export class EditUserProfile implements OnInit {
   }
 
   public onChangePassword() {
-    // Navigate to change password component or open dialog
     console.log('Change password clicked');
   }
 

@@ -81,7 +81,6 @@ export class DoctorService {
   private mapDoctorDetailsResponse(
     response: DoctorDetailsApiResponse,
   ): DoctorPageModel {
-    console.log('Mapping doctor details response:', response);
     return {
       name: response.doctor.name,
       surname: response.doctor.surname,

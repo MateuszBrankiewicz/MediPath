@@ -34,7 +34,6 @@ export class VisitsService {
       })
       .pipe(
         map((response) => {
-          console.log(response);
           return response.visits ?? [];
         }),
       );

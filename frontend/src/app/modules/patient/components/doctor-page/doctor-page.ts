@@ -22,18 +22,18 @@ import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { groupSchedulesByDate } from '../../../../utils/scheduleMapper';
 
 import { DoctorPageModel } from '../../../../core/models/doctor.model';
+import { InstitutionShortInfo } from '../../../../core/models/institution.model';
 import {
   AvailableDay,
   ScheduleByInstitutionResponse,
   ScheduleItem,
 } from '../../../../core/models/schedule.model';
 import { CommentService } from '../../../../core/services/comment/comment.service';
-import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
-import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
-import { InstitutionShortInfo } from '../../../../core/models/institution.model';
-import { VisitsService } from '../../../../core/services/visits/visits.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
+import { CalendarSchedule } from '../../../shared/components/calendar-schedule/calendar-schedule';
+import { PatientCommentComponent } from '../patient-comment-component/patient-comment-component';
 
 @Component({
   imports: [
@@ -151,8 +151,6 @@ export class DoctorPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((comments) => {
         const currentDoctor = this.doctorInfo();
-        console.log(currentDoctor);
-        console.log(comments);
         this.doctorInfo.set({
           ...currentDoctor,
           comments: comments,
@@ -193,7 +191,6 @@ export class DoctorPage implements OnInit {
       startTime: schedule.startHour,
       isBooked: schedule.isBooked,
     }));
-    console.log('Mapped schedules:', mappedSchedules);
     return groupSchedulesByDate(mappedSchedules);
   }
 

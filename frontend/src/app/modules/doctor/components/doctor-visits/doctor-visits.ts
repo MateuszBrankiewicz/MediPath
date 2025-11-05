@@ -77,7 +77,6 @@ export class DoctorVisits implements OnInit {
     this.doctorService
       .getDoctorVisits()
       .subscribe((visits: VisitResponse[]) => {
-        console.log('Fetched doctor visits:', visits);
         this.visits = (Array.isArray(visits) ? visits : []).map((visit) => ({
           id: visit.id,
           patientName: visit.patient

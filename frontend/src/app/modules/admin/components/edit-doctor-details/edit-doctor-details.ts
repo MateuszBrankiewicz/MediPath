@@ -7,6 +7,7 @@ import {
 } from '@angular/forms';
 
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -22,7 +23,6 @@ import { DoctorAddressFormComponent } from '../shared/doctor-address-form/doctor
 import { DoctorInstitutionsListComponent } from '../shared/doctor-institutions-list/doctor-institutions-list';
 import { DoctorPersonalInfoFormComponent } from '../shared/doctor-personal-info-form/doctor-personal-info-form';
 import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-professional-info-form/doctor-professional-info-form';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 interface Specialisation {
   code: string;

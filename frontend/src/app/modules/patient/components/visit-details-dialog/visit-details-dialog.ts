@@ -70,7 +70,6 @@ export class VisitDetailsDialog implements OnInit {
       )
       .subscribe((visit) => {
         this.visit.set(visit);
-        console.log(visit);
         this.isLoading.set(false);
       });
   }
