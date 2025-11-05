@@ -3,6 +3,7 @@ import { Component, inject, input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { InputMaskModule } from 'primeng/inputmask';
 import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
 
 @Component({
@@ -12,6 +13,7 @@ import { TranslationService } from '../../../../../core/services/translation/tra
     ReactiveFormsModule,
     InputTextModule,
     InputMaskModule,
+    SelectModule,
   ],
   styleUrl: './doctor-address-form.scss',
   template: `
@@ -28,15 +30,10 @@ import { TranslationService } from '../../../../../core/services/translation/tra
             <i class="pi pi-map"></i>
             {{ translationService.translate(translationKey() + '.province') }}
           </label>
-          <input
-            pInputText
+          <p-select
             id="province"
             formControlName="province"
-            [placeholder]="
-              translationService.translate(
-                translationKey() + '.placeholders.province'
-              )
-            "
+            [options]="provinces()"
             [class.invalid]="isFieldInvalid()(formGroupName() + '.province')"
           />
           @if (isFieldInvalid()(formGroupName() + '.province')) {
@@ -76,15 +73,10 @@ import { TranslationService } from '../../../../../core/services/translation/tra
             <i class="pi pi-building"></i>
             {{ translationService.translate(translationKey() + '.city') }}
           </label>
-          <input
-            pInputText
+          <p-select
             id="city"
+            [options]="cities()"
             formControlName="city"
-            [placeholder]="
-              translationService.translate(
-                translationKey() + '.placeholders.city'
-              )
-            "
             [class.invalid]="isFieldInvalid()(formGroupName() + '.city')"
           />
           @if (isFieldInvalid()(formGroupName() + '.city')) {
@@ -152,6 +144,7 @@ export class DoctorAddressFormComponent {
   formGroupName = input<string>('residentialAddress');
   isFieldInvalid = input.required<(fieldPath: string) => boolean>();
   getFieldError = input.required<(fieldPath: string) => string>();
-
+  public cities = input<string[]>([]);
+  public provinces = input<string[]>([]);
   protected translationService = inject(TranslationService);
 }

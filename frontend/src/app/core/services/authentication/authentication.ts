@@ -57,6 +57,10 @@ export class AuthenticationService {
     return this.http.get<SelectOption[]>(API_URL + `/cities/${searchTerm}`);
   }
 
+  public getCityWithoutSearch() {
+    return this.http.get<{ name: string }[]>(API_URL + '/cities');
+  }
+
   public getProvinces() {
     return this.http.get<string[]>(API_URL + '/provinces');
   }

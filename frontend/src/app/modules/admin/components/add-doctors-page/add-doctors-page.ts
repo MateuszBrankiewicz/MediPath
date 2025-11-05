@@ -15,12 +15,12 @@ import { DividerModule } from 'primeng/divider';
 import { SelectChangeEvent } from 'primeng/select';
 import { AddDoctorRequest } from '../../../../core/models/add-docotr.model';
 import { Specialisation } from '../../../../core/models/specialisation.model';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { SpecialisationService } from '../../../../core/services/specialisation/specialisation.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { getCorrectDayFormat } from '../../../../utils/dateFormatter';
-import { InstitutionStoreService } from '../../services/institution/institution-store.service';
 import { DoctorAddressFormComponent } from '../shared/doctor-address-form/doctor-address-form';
 import { DoctorPersonalInfoFormComponent } from '../shared/doctor-personal-info-form/doctor-personal-info-form';
 import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-professional-info-form/doctor-professional-info-form';
@@ -47,13 +47,15 @@ export class AddDoctorsPage implements OnInit {
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
   private institutionService = inject(InstitutionService);
-  private institutionStoreService = inject(InstitutionStoreService);
+  private authentication = inject(AuthenticationService);
   private destroyRef = inject(DestroyRef);
   private activatedRoute = inject(ActivatedRoute);
   private readonly institutionId = signal('');
   protected doctorForm!: FormGroup;
   protected isSubmitting = signal<boolean>(false);
   private specialisationService = inject(SpecialisationService);
+  protected cities = signal<string[]>([]);
+  protected provinces = signal<string[]>([]);
   protected roleOptions = [
     {
       id: 1,
@@ -67,6 +69,8 @@ export class AddDoctorsPage implements OnInit {
   protected specialisations = signal<Specialisation[]>([]);
 
   ngOnInit(): void {
+    this.loadCities();
+    this.loadProvinces();
     this.loadAvailableSpecialisations();
     this.initializeForm();
     const id = this.activatedRoute.snapshot.paramMap.get('id');
@@ -236,6 +240,36 @@ export class AddDoctorsPage implements OnInit {
           this.toastService.showError(
             this.translationService.translate(
               'admin.addDoctor.error.loadSpecialisations',
+            ),
+          );
+        },
+      });
+  }
+  private loadCities() {
+    this.authentication
+      .getCityWithoutSearch()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (cities) => {
+          this.cities.set(cities.map((city) => city.name));
+        },
+        error: () => {
+          this.toastService.showError('Failed to load cities');
+        },
+      });
+  }
+  private loadProvinces() {
+    this.authentication
+      .getProvinces()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (provinces) => {
+          this.provinces.set(provinces);
+        },
+        error: () => {
+          this.toastService.showError(
+            this.translationService.translate(
+              'admin.addDoctor.error.loadProvinces',
             ),
           );
         },
