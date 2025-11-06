@@ -65,7 +65,8 @@ public class CommentService {
     }
 
      
-    public void editComment(AddCommentForm commentForm, String commentid, String loggedUserID) throws IllegalArgumentException, IllegalAccessException, IllegalStateException {
+    public void editComment(AddCommentForm commentForm, String commentid, String loggedUserID)
+            throws IllegalArgumentException, IllegalAccessException, IllegalStateException {
 
         if (Stream.of(1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f)
                 .noneMatch(validGrade -> validGrade == commentForm.getDoctorRating()))
@@ -79,13 +80,19 @@ public class CommentService {
         if (commentOpt.isEmpty()) throw new IllegalAccessException("Comment not found");
 
         Comment comment = commentOpt.get();
-        if (!comment.getAuthor().getUserId().equals(loggedUserID)) throw new IllegalAccessException("User not authorized to edit this comment");
+        if (!comment.getAuthor().getUserId().equals(loggedUserID))
+            throw new IllegalAccessException("User not authorized to edit this comment");
 
-        Optional<Institution> institutionOpt = institutionRepository.findById(comment.getInstitution().getInstitutionId());
-        Optional<User> doctorOpt = userRepository.findById(comment.getDoctorDigest().getUserId());
+        Optional<Institution> institutionOpt =
+                institutionRepository.findById(comment.getInstitution().getInstitutionId());
+        Optional<User> doctorOpt =
+                userRepository.findById(comment.getDoctorDigest().getUserId());
 
-        if (institutionOpt.isEmpty()) throw new IllegalArgumentException("Institution not found");
-        if (doctorOpt.isEmpty()) throw new IllegalArgumentException("Doctor not found");
+        if (institutionOpt.isEmpty())
+            throw new IllegalArgumentException("Institution not found");
+
+        if (doctorOpt.isEmpty())
+            throw new IllegalArgumentException("Doctor not found");
 
         User doctor = doctorOpt.get();
         Institution institution = institutionOpt.get();
@@ -103,17 +110,24 @@ public class CommentService {
     }
 
      
-    public void deleteComment(String commentid, String loggedUserID) throws IllegalArgumentException, IllegalAccessException, IllegalStateException {
+    public void deleteComment(String commentid, String loggedUserID)
+            throws IllegalArgumentException, IllegalAccessException, IllegalStateException {
 
         Optional<Comment> commentOpt = commentRepository.findById(commentid);
         if (commentOpt.isEmpty()) throw new IllegalAccessException("Comment not found");
 
         Comment comment = commentOpt.get();
-        if (!comment.getAuthor().getUserId().equals(loggedUserID)) throw new IllegalAccessException("User not authorized to delete this comment");
+        if (!comment.getAuthor().getUserId().equals(loggedUserID))
+            throw new IllegalAccessException("User not authorized to delete this comment");
 
-        Optional<Institution> institutionOpt = institutionRepository.findById(comment.getInstitution().getInstitutionId());
-        Optional<User> doctorOpt = userRepository.findById(comment.getDoctorDigest().getUserId());
-        Optional<Visit> visitOpt = visitRepository.findById(comment.getVisitId());
+        Optional<Institution> institutionOpt =
+                institutionRepository.findById(comment.getInstitution().getInstitutionId());
+
+        Optional<User> doctorOpt =
+                userRepository.findById(comment.getDoctorDigest().getUserId());
+
+        Optional<Visit> visitOpt =
+                visitRepository.findById(comment.getVisitId());
 
         if (institutionOpt.isEmpty()) throw new IllegalArgumentException("Institution not found");
         if (doctorOpt.isEmpty()) throw new IllegalArgumentException("Doctor not found");
@@ -134,7 +148,8 @@ public class CommentService {
     }
 
      
-    public Map<String, Object> getComment(String id, String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
+    public Map<String, Object> getComment(String id, String loggedUserID)
+            throws IllegalArgumentException, IllegalAccessException {
 
         Optional<Comment> optComment = commentRepository.findById(id);
         if (optComment.isEmpty()) throw new IllegalArgumentException("Invalid comment id");

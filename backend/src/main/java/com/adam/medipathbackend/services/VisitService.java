@@ -7,12 +7,12 @@ import com.adam.medipathbackend.repository.InstitutionRepository;
 import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
 import com.adam.medipathbackend.repository.VisitRepository;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
-// ...existing code...
 import org.springframework.stereotype.Service;
-// ...existing code...
-
+import com.adam.medipathbackend.config.Constants;
 import java.awt.*;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +24,9 @@ public class VisitService {
 
     @Autowired
     private AuthorizationService authorizationService;
+
+    @Autowired
+    private EmailService emailService;
 
     public Schedule validateVisitForm(AddVisitForm visit) {
 
@@ -47,9 +50,14 @@ public class VisitService {
 
         Schedule foundSchedule = validateVisitForm(visit);
 
-        PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(), foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
-        VisitTime time = new VisitTime(foundSchedule.getId(), foundSchedule.getStartHour(), foundSchedule.getEndHour());
-        Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(), time,foundSchedule.getInstitution(), visit.getPatientRemarks());
+        PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(),
+                foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
+
+        VisitTime time = new VisitTime(foundSchedule.getId(),
+                foundSchedule.getStartHour(), foundSchedule.getEndHour());
+
+        Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(),
+                time,foundSchedule.getInstitution(), visit.getPatientRemarks());
 
         foundSchedule.setBooked(true);
 
@@ -60,20 +68,23 @@ public class VisitService {
             String content, title;
 
             if(foundUser.getUserSettings().getLanguage().equals("PL")) {
-                content = String.format("Przypominamy o wizycie w ośrodku %s dnia %s o godzinie %s",
+                content = String.format(Constants.VISIT_REMINDER_FORMAT_PL,
                         foundSchedule.getInstitution().getInstitutionName(),
                         foundSchedule.getStartHour().toLocalDate(),
                         foundSchedule.getStartHour().toLocalTime());
-                title = "Przypomnienie o wizycie";
+                title = Constants.VISIT_REMINDER_TITLE_PL;
             } else {
-                content = String.format("We would like to remind you of your upcoming visit in %s on the day %s at %s",
+                content = String.format(Constants.VISIT_REMINDER_FORMAT_EN,
                         foundSchedule.getInstitution().getInstitutionName(),
                         foundSchedule.getStartHour().toLocalDate(),
                         foundSchedule.getStartHour().toLocalTime());
-                title = "Visit reminder";
+                title = Constants.VISIT_REMINDER_TITLE_EN;
             }
 
-            Notification notification = new Notification(title,  content, foundSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
+            Notification notification = new Notification(title, content,
+                    foundSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0),
+                    true, false);
+
             foundUser.addNotification(notification);
             userRepository.save(foundUser);
         }
@@ -149,6 +160,11 @@ public class VisitService {
         scheduleRepository.save(oldSchedule);
         visitRepository.save(visitToCancel);
 
+        try {
+            emailService.sendVisitCancelMail(patient, visitToCancel);
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            throw new IllegalStateException("the mail service threw an error: " + e.getMessage());
+        }
 
     }
 
@@ -234,6 +250,12 @@ public class VisitService {
 
         userRepository.save(patient);
         visitRepository.save(visitToReschedule);
+
+        try {
+            emailService.sendVisitRescheduleMail(patient, oldSchedule, newSchedule);
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            throw new IllegalStateException("the mail service threw an error: " + e.getMessage());
+        }
     }
 
 

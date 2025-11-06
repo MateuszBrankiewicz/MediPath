@@ -35,8 +35,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private static class CustomHandshakeHandler extends DefaultHandshakeHandler {
         @Override
-        protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
+        protected Principal determineUser(ServerHttpRequest request,
+                                          WebSocketHandler wsHandler,
+                                          Map<String, Object> attributes) {
             if (request instanceof ServletServerHttpRequest servletRequest) {
+
                 HttpSession session = servletRequest.getServletRequest().getSession();
                 String userId = (String) session.getAttribute("id");
 
