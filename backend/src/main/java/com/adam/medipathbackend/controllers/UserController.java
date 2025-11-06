@@ -55,8 +55,10 @@ public class UserController {
 
     @GetMapping(value = {"/logout", "/logout/"})
     public ResponseEntity<Map<String, Object>> logoutUser(HttpSession session) {
+
         session.invalidate();
         return new ResponseEntity<>(HttpStatus.OK);
+
     }
 
     @GetMapping(value = {"/patients/{patientid}", "/patients/{patientid}"})
@@ -68,7 +70,9 @@ public class UserController {
         }
 
         try {
+
             Map<String, Object> result = userService.getPatient(loggedUserID, patientid);
+
             return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (IllegalAccessException e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);

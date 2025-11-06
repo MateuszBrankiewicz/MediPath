@@ -51,10 +51,12 @@ public class UserService {
     ScheduleRepository scheduleRepository;
 
     @Autowired
-    JavaMailSender sender;
+    EmailService emailService;
 
     @Autowired
     private AuthorizationService authorizationService;
+
+    private Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
 
 
     public Map<String, Object> resetPassword(String address) {
@@ -62,42 +64,16 @@ public class UserService {
             throw new IllegalArgumentException("missing address in request parameters");
         }
 
-        Optional<User> u = userRepository.findByEmail(address);
-        if (u.isPresent()) {
+        Optional<User> userOpt = userRepository.findByEmail(address);
+        if (userOpt.isPresent()) {
             PasswordResetEntry passwordResetEntry = null;
             try {
-
-                MimeMessage message = sender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message);
-
-                helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
-                helper.setSubject("Password reset request");
-                helper.setTo(address);
 
                 SecureRandom secureRandom = new SecureRandom();
                 String token = Long.toHexString(secureRandom.nextLong());
 
-                String content = "<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        "<head>\n" +
-                        "    <meta charset=\"UTF-8\" />\n" +
-                        "    <title>Password Reset</title>\n" +
-                        "</head>\n" +
-                        "<body>\n" +
-                        "    <h2>MediPath</h2>\n" +
-                        "    <p>We have received a password reset request for your MediPath account.<br>To reset your password click the link below:</p>\n" +
-                        "    <a href=\"http://localhost:4200/auth/resetpassword/" + token + "\">http://localhost:4200/auth/resetpassword/" + token + "</a>\n" +
-                        "    <br>\n" +
-                        "    <p>The link will expire within 10 minutes</p>\n" +
-                        "    <p>If you have not sent a password reset request, ignore this email.</p>\n" +
-                        "    <p>-MediPath development team</p>\n" +
-                        "    \n" +
-                        "</body>\n" +
-                        "</html>";
-                passwordResetEntry = preRepository.save(new PasswordResetEntry(address, token));
-
-                helper.setText(content);
-                sender.send(message);
+                passwordResetEntry = preRepository.save(new PasswordResetEntry(address, token));;
+                emailService.sendResetMail(userOpt.get(), token);
 
             } catch (MailException | MessagingException | UnsupportedEncodingException e) {
                 if (passwordResetEntry != null) {
@@ -224,21 +200,27 @@ public class UserService {
             throw new IllegalArgumentException("missing fields in request body: " + missingFields);
         }
 
-        if(userRepository.findByEmail(registrationForm.getEmail()).isPresent() || userRepository.findByGovID(registrationForm.getGovID()).isPresent()) {
+        if(userRepository.findByEmail(registrationForm.getEmail()).isPresent()
+                || userRepository.findByGovID(registrationForm.getGovID()).isPresent()) {
             throw new IllegalStateException("this email or person is already registered");
         }
 
-        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(registrationForm.getPassword());
-        UserSettings userSettings = new UserSettings("PL", true, true, 1);
+        UserSettings userSettings = new UserSettings("PL",
+                true, true, 1);
 
         userRepository.save(new User(
                 registrationForm.getEmail(),
                 registrationForm.getName(),
                 registrationForm.getSurname(),
                 registrationForm.getGovID(),
-                LocalDate.parse(registrationForm.getBirthDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy")),
-                new Address(registrationForm.getProvince(), registrationForm.getCity(), registrationForm.getStreet(), registrationForm.getNumber(), registrationForm.getPostalCode()),
+                LocalDate.parse(registrationForm.getBirthDate(),
+                        DateTimeFormatter.ofPattern("dd-MM-yyyy")),
+                new Address(registrationForm.getProvince(),
+                        registrationForm.getCity(),
+                        registrationForm.getStreet(),
+                        registrationForm.getNumber(),
+                        registrationForm.getPostalCode()),
                 registrationForm.getPhoneNumber(),
                 passwordHash,
                 userSettings
@@ -262,7 +244,6 @@ public class UserService {
         }
         
         Optional<User> user = userRepository.findByEmail(loginForm.getEmail());
-        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
 
         if(user.isEmpty() || !argon2PasswordEncoder.matches(loginForm.getPassword(), user.get().getPasswordHash())) {
             throw new IllegalAccessException("invalid email or password");
@@ -366,7 +347,6 @@ public class UserService {
         }
 
         User user = u.get();
-        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
         String passwordHash = argon2PasswordEncoder.encode(resetForm.getPassword());
 
         user.setPasswordHash(passwordHash);
@@ -375,7 +355,6 @@ public class UserService {
 
     public void resetMyPassword(String loggedUserID, ResetMyPasswordForm form) throws IllegalWriteException, IllegalAccessException {
         Optional<User> userOpt = userRepository.findById(loggedUserID);
-        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
 
         if(userOpt.isEmpty() || !argon2PasswordEncoder.matches(form.getCurrentPassword(), userOpt.get().getPasswordHash())) {
             throw new IllegalAccessException("invalid password");
@@ -387,31 +366,7 @@ public class UserService {
         user.setPasswordHash(passwordHash);
         try {
 
-            MimeMessage message = sender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message);
-
-            helper.setFrom(new InternetAddress("service@medipath.com", "MediPath"));
-            helper.setSubject("Password reset");
-            helper.setTo(user.getEmail());
-
-            String content = "<!DOCTYPE html>\n" +
-                    "<html>\n" +
-                    "<head>\n" +
-                    "    <meta charset=\"UTF-8\" />\n" +
-                    "    <title>Password Reset</title>\n" +
-                    "</head>\n" +
-                    "<body>\n" +
-                    "    <h2>MediPath</h2>\n" +
-                    "    <p>The password to your account has been successfully reset.</p>\n" +
-                    "    <br>\n" +
-                    "    <p>If you have not reset your password recently, please reset your password via the \"Forgot password\" form on the login screen, as your account may be at risk.</p>\n" +
-                    "    <p>-MediPath development team</p>\n" +
-                    "    \n" +
-                    "</body>\n" +
-                    "</html>";
-
-            helper.setText(content);
-            sender.send(message);
+            emailService.sendResetConfirmationMail(user);
 
         } catch (MailException | MessagingException | UnsupportedEncodingException e) {
             throw new IllegalWriteException("the mail service threw an error: " + e.getMessage());
@@ -574,26 +529,33 @@ public class UserService {
         User user = userOpt.get();
 
         if(filter == null) {
+
             return user.getNotifications().stream()
                     .map(notification -> Map.of("title", notification.getTitle(), "content",
                             notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
                             notification.isRead(), "system", notification.isSystem())
                     ).toList();
+
         } else if(filter.equals("received")) {
+
             return user.getNotifications().stream()
                     .filter(notification -> notification.getTimestamp().isBefore(LocalDateTime.now()))
                     .map(notification -> Map.of("title", notification.getTitle(), "content",
                             notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
                             notification.isRead(), "system", notification.isSystem())
                     ).toList();
+
         } else if(filter.equals("upcoming")) {
+
             return user.getNotifications().stream()
                     .filter(notification -> notification.getTimestamp().isAfter(LocalDateTime.now()))
                     .map(notification -> Map.of("title", notification.getTitle(), "content",
                             notification.getContent(), "timestamp", notification.getTimestamp().toString(), "read",
                             notification.isRead(), "system", notification.isSystem())
                     ).toList();
+
         } else {
+
             throw new IllegalArgumentException("invalid filter");
         }
 
@@ -606,17 +568,21 @@ public class UserService {
         if(userOpt.isEmpty()) {
             return new ArrayList<>();
         }
+
         User admin = userOpt.get();
         if(role.equals("admin")) {
+
             if(admin.getRoleCode() < 8) {
                 return new ArrayList<>();
             }
             return institutionRepository.findInstitutionsWhereAdmin(loggedUserID);
+
         } else if(role.equals("staff")) {
             if(admin.getRoleCode() < 4) {
                 return new ArrayList<>();
             }
             return institutionRepository.findInstitutionsWhereStaff(loggedUserID);
+
         } else {
             throw new IllegalArgumentException("invalid role");
         }

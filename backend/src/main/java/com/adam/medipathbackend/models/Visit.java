@@ -115,5 +115,8 @@ public class Visit {
     public void setCommentId(String commentId) {
         this.commentId = commentId;
     }
+
+    public void setCommentId(Object o) {
+    }
 }
 
