@@ -14,6 +14,18 @@ import { UpcomingVisitsResponse } from '../../models/visit.model';
 import { AuthenticationService } from '../authentication/authentication';
 import { UserRoles } from '../authentication/authentication.model';
 
+export interface UpdateEmployeeRequest {
+  userID: string;
+  roleCode: number;
+  specialisations?: string[];
+}
+
+export interface AddEmployeesRequest {
+  userID: string;
+  rolecode: number;
+  specialisations?: string[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -26,7 +38,6 @@ export class InstitutionService {
       .pipe(
         map((value: InstitutionResponse): Institution => {
           const inst = value.institution;
-          console.log(inst);
           return {
             address: {
               province: inst.address.province,
@@ -152,5 +163,37 @@ export class InstitutionService {
     return this.http.get(`${API_URL}/institution/${institutionId}/visits`, {
       withCredentials: true,
     });
+  }
+
+  public updateEmployee(
+    institutionId: string,
+    employeeData: UpdateEmployeeRequest,
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${API_URL}/institution/${institutionId}/employee/`,
+      employeeData,
+      { withCredentials: true },
+    );
+  }
+
+  public deleteEmployee(
+    institutionId: string,
+    userId: string,
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${API_URL}/institution/${institutionId}/employee/${userId}`,
+      { withCredentials: true },
+    );
+  }
+
+  public addEmployees(
+    institutionId: string,
+    employees: AddEmployeesRequest[],
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${API_URL}/institution/${institutionId}/employees/`,
+      employees,
+      { withCredentials: true },
+    );
   }
 }

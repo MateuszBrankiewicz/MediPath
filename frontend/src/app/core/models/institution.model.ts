@@ -50,6 +50,7 @@ export interface Institution {
 export interface InstitutionShortInfo {
   institutionId: string;
   institutionName: string;
+  roleCode?: number; // 2=Doctor, 4=Staff, 8=Admin
 }
 
 export interface AdminInstitutionResponse {

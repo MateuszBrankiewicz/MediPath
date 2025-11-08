@@ -48,7 +48,7 @@ public class ScheduleService {
     public void addManySchedules(AddScheduleForm schedule, String loggedUserID) throws IllegalArgumentException, IllegalAccessException, IllegalStateException {
 
         ArrayList<String> missingFields = getMissingFields(schedule);
-
+        
         if (schedule.getInterval() == null) missingFields.add("interval");
         if (!missingFields.isEmpty()) throw new IllegalArgumentException("Missing fields: " + missingFields);
 

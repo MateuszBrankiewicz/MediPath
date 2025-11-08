@@ -1,12 +1,14 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { API_URL } from '../../../utils/constants';
 import {
   DoctorDetailsApiResponse,
   DoctorPageModel,
   DoctorPatientsApiResponse,
   DoctorPatientsVisitApiResponse,
+  FullDoctorInfo,
+  FullDoctorInfoApiResponse,
   PatientForDoctor,
   VisitsForPatientProfile,
 } from '../../models/doctor.model';
@@ -68,14 +70,10 @@ export class DoctorService {
     doctorId: string,
   ) {
     const params = new HttpParams().set('institution', institutionId);
-    return this.http
-      .get(`${API_URL}/doctors/${doctorId}/schedules`, {
-        params,
-        withCredentials: true,
-      })
-      .pipe(
-        tap((response) => console.log('Doctor schedule response:', response)),
-      );
+    return this.http.get(`${API_URL}/doctors/${doctorId}/schedules`, {
+      params,
+      withCredentials: true,
+    });
   }
 
   private mapDoctorDetailsResponse(
@@ -138,5 +136,16 @@ export class DoctorService {
         },
       )
       .pipe(map((response) => response.visits));
+  }
+
+  public getDoctorFullInfo(doctorId: string): Observable<FullDoctorInfo> {
+    return this.http
+      .get<FullDoctorInfoApiResponse>(
+        `${API_URL}/doctors/${doctorId}/fullInfo`,
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(map((response) => response.doctor));
   }
 }

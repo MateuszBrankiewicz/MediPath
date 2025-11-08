@@ -80,7 +80,6 @@ export class DoctorDashboard implements OnInit {
 
   protected readonly ratingCardData = computed<StatsCardData>(() => {
     const user = this.user();
-    console.log(user);
     const ratingValue = user?.rating != null ? user.rating.toFixed(1) : 'N/A';
     return {
       title: this.translationService.translate('doctor.dashboard.myRating'),

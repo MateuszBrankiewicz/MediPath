@@ -12,6 +12,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 import { MedicalHistoryResponse } from '../../../../core/models/medical-history.model';
 import { VisitCode } from '../../../../core/models/visit.model';
 import { MedicalHistoryService } from '../../../../core/services/medical-history/medical-history.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
 import { MedicalHistoryDialog } from '../../../patient/components/medical-history-page/components/medical-history-dialog/medical-history-dialog';
@@ -50,7 +51,7 @@ export class CurrentVisit implements OnInit {
   protected readonly visitStatus = signal<string>('');
   protected readonly visitDate = signal<Date | null>(null);
   protected readonly pinDraft = signal<string>('');
-
+  private toastService = inject(ToastService);
   protected readonly isEditable = computed(() => {
     const status = this.visitStatus();
     const visitDate = this.visitDate();
@@ -146,10 +147,15 @@ export class CurrentVisit implements OnInit {
       )
       .subscribe({
         next: () => {
-          console.log('Visit finished successfully');
+          this.toastService.showSuccess(
+            this.translationService.translate('doctor.visit.finishSuccess'),
+          );
+          this.visitStatus.set('Completed');
         },
-        error: (error) => {
-          console.error('Error finishing visit:', error);
+        error: () => {
+          this.toastService.showError(
+            this.translationService.translate('doctor.visit.finishError'),
+          );
         },
       });
   }

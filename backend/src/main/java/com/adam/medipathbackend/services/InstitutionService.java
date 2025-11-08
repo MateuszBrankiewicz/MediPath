@@ -19,7 +19,6 @@ public class InstitutionService {
     @Autowired
     private UserRepository userRepository;
 
-    @Transactional
     public Institution createInstitution(Institution institution, User admin) {
         validateInstitution(institution);
         checkForDuplicates(institution);
@@ -42,7 +41,6 @@ public class InstitutionService {
         return savedInstitution;
     }
 
-    @Transactional
     public Institution updateInstitution(String institutionId, Institution newInstitution) {
         Institution existing = institutionRepository.findById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));

@@ -12,18 +12,21 @@
         [rounded]="true"
         severity="secondary"
         label="Dla instytucji"
+        (onClick)="setTab(LandingPageSelectedTab.FOR_INSTITUTIONS)"
       ></p-button>
       <p-button
         [rounded]="true"
         size="large"
         severity="secondary"
         label="Dla lekarzy"
+        (onClick)="setTab(LandingPageSelectedTab.FOR_DOCTORS)"
       ></p-button>
       <p-button
         [rounded]="true"
         size="large"
         severity="secondary"
         label="Dla pacjentow"
+        (onClick)="setTab(LandingPageSelectedTab.FOR_PATIENTS)"
       ></p-button>
 
       <a routerLink="/auth/login">
@@ -49,6 +52,33 @@
     </div>
   </ng-template>
 </p-menubar>
+
+@if (selectedTab() === LandingPageSelectedTab.FOR_PATIENTS) {
+  <div class="search-section">
+    <div class="search-container">
+      <p-inputGroup>
+        <p-inputGroupAddon>
+          <i class="pi pi-search"></i>
+        </p-inputGroupAddon>
+        <input
+          type="text"
+          pInputText
+          [(ngModel)]="query"
+          [placeholder]="getSearchPlaceholder()"
+          (keyup.enter)="search()"
+        />
+        <p-button icon="pi pi-filter" (onClick)="searchMenu.toggle($event)" />
+      </p-inputGroup>
+      <p-menu
+        #searchMenu
+        [model]="searchMenuItems()"
+        [popup]="true"
+        appendTo="body"
+      />
+    </div>
+  </div>
+}
+
 <p-card [style]="{ width: '80%', overflow: 'hidden' }">
   <ng-template #header>
     <div class="header">

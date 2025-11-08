@@ -37,6 +37,23 @@
   display: flex;
   flex-direction: column;
 }
+
+.search-section {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+  width: 100%;
+
+  .search-container {
+    width: 80%;
+    max-width: 800px;
+
+    p-inputGroup {
+      width: 100%;
+    }
+  }
+}
+
 p-card {
   margin-top: 3rem;
   align-self: center;

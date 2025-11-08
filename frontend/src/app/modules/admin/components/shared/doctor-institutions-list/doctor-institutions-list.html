@@ -29,18 +29,34 @@
           <div class="institution-item">
             <div class="institution-info">
               <i class="pi pi-building"></i>
-              <span class="institution-name">
-                {{ institution.institutionName }}
-              </span>
+              <div class="institution-details">
+                <span class="institution-name">
+                  {{ institution.institutionName }}
+                </span>
+                <p-tag
+                  [value]="getRoleName(institution.roleCode)"
+                  [severity]="getRoleSeverity(institution.roleCode)"
+                />
+              </div>
             </div>
-            <p-button
-              icon="pi pi-trash"
-              severity="danger"
-              [text]="true"
-              [rounded]="true"
-              size="small"
-              (onClick)="removeInstitution(institution.institutionId)"
-            />
+            <div class="institution-actions">
+              <p-button
+                icon="pi pi-pencil"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                (onClick)="showEditDialog(institution)"
+              />
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                (onClick)="removeInstitution(institution.institutionId)"
+              />
+            </div>
           </div>
         }
       </div>
@@ -57,30 +73,49 @@
   [style]="{ width: '450px' }"
 >
   <div class="dialog-content">
-    <label for="institution-search" class="field-label">
-      {{
-        translationService.translate(translationKey() + ".searchInstitution")
-      }}
-    </label>
-    <p-autocomplete
-      [(ngModel)]="selectedInstitution"
-      [suggestions]="filteredInstitutions()"
-      (completeMethod)="searchInstitution($event)"
-      field="institutionName"
-      optionLabel="institutionName"
-      appendTo="body"
-      [placeholder]="
-        translationService.translate(translationKey() + '.searchPlaceholder')
-      "
-      [dropdown]="true"
-      id="institution-search"
-    >
-      <ng-template let-institution pTemplate="item">
-        <div class="institution-option">
-          <span>{{ institution.institutionName }}</span>
-        </div>
-      </ng-template>
-    </p-autocomplete>
+    <div class="field-group">
+      <label for="institution-search" class="field-label">
+        {{
+          translationService.translate(translationKey() + ".searchInstitution")
+        }}
+      </label>
+      <p-autocomplete
+        [(ngModel)]="selectedInstitution"
+        [suggestions]="filteredInstitutions()"
+        (completeMethod)="searchInstitution($event)"
+        field="institutionName"
+        optionLabel="institutionName"
+        appendTo="body"
+        [placeholder]="
+          translationService.translate(translationKey() + '.searchPlaceholder')
+        "
+        [dropdown]="true"
+        id="institution-search"
+      >
+        <ng-template let-institution pTemplate="item">
+          <div class="institution-option">
+            <span>{{ institution.institutionName }}</span>
+          </div>
+        </ng-template>
+      </p-autocomplete>
+    </div>
+
+    <div class="field-group">
+      <label for="role-select" class="field-label">
+        {{ translationService.translate(translationKey() + ".role") }}
+      </label>
+      <p-select
+        [(ngModel)]="selectedRole"
+        [options]="roleOptions"
+        optionLabel="name"
+        [placeholder]="
+          translationService.translate(translationKey() + '.selectRole')
+        "
+        id="role-select"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      />
+    </div>
   </div>
 
   <ng-template #footer>
@@ -93,7 +128,56 @@
       <p-button
         [label]="translationService.translate('common.add')"
         (onClick)="confirmAddInstitution()"
-        [disabled]="!selectedInstitution"
+        [disabled]="!selectedInstitution || !selectedRole()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="displayEditDialog"
+  [header]="translationService.translate(translationKey() + '.editRoleDialog')"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+>
+  <div class="dialog-content">
+    <div class="field-group">
+      <p class="field-label">
+        {{ translationService.translate(translationKey() + ".institution") }}
+      </p>
+      <p class="institution-display">
+        {{ editingInstitution?.institutionName }}
+      </p>
+    </div>
+
+    <div class="field-group">
+      <label for="edit-role-select" class="field-label">
+        {{ translationService.translate(translationKey() + ".role") }}
+      </label>
+      <p-select
+        [(ngModel)]="editRole"
+        [options]="roleOptions"
+        optionLabel="name"
+        [placeholder]="
+          translationService.translate(translationKey() + '.selectRole')
+        "
+        id="edit-role-select"
+        [style]="{ width: '100%' }"
+      />
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <div class="dialog-footer">
+      <p-button
+        [label]="translationService.translate('common.cancel')"
+        severity="secondary"
+        (onClick)="hideEditDialog()"
+      />
+      <p-button
+        [label]="translationService.translate('common.save')"
+        (onClick)="confirmEditRole()"
+        [disabled]="!editRole()"
       />
     </div>
   </ng-template>

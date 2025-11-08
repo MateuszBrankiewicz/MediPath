@@ -47,7 +47,6 @@ export class InstitutionList implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (institutions) => {
-          console.log(institutions);
           this.institutions.set(institutions);
 
           this.isLoading.set(false);

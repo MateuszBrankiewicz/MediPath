@@ -92,6 +92,19 @@
     font-size: 1.1rem;
   }
 
+  .institution-details {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+
   .institution-name {
     font-weight: 600;
     color: var(--text-color);
@@ -110,6 +123,17 @@
     @media (max-width: 640px) {
       font-size: 0.75rem;
     }
+  }
+}
+
+.institution-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    justify-content: flex-end;
   }
 }
 
@@ -152,12 +176,27 @@
     min-width: unset;
   }
 
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   .field-label {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-color);
-    margin-bottom: 0.5rem;
     display: block;
+  }
+
+  .institution-display {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-color);
+    padding: 0.75rem;
+    background-color: var(--surface-100);
+    border-radius: var(--border-radius);
+    margin: 0;
   }
 
   ::ng-deep .p-autocomplete {

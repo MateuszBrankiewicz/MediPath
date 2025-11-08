@@ -17,7 +17,6 @@ public class CodeService {
     @Autowired
     private VisitRepository visitRepository;
 
-    @Transactional
     public boolean updateCode(Code code, String loggedUserID) {
 
         if(code.getCode() == null || code.getCode().isBlank()) {
@@ -48,7 +47,6 @@ public class CodeService {
     }
 
 
-    @Transactional
     public boolean deleteCode(Code code, String loggedUserID) {
 
         ArrayList<String> missingfields = new ArrayList<>();

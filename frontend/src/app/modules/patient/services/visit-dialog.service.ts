@@ -8,6 +8,7 @@ import {
   VisitDetailsDialog,
   VisitDetailsDialogResult,
 } from '../components/visit-details-dialog/visit-details-dialog';
+import { AcceptActionDialogComponent } from '../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 
 export interface OpenReviewDialogOptions {
   visitId: string;
@@ -56,15 +57,15 @@ export class VisitDialogService {
   public openReviewDialog(options: OpenReviewDialogOptions): DynamicDialogRef {
     const dialogData = options.commentId
       ? {
-          id: options.commentId,
-          doctorName: options.doctorName,
-          institutionName: options.institutionName,
-        }
+        id: options.commentId,
+        doctorName: options.doctorName,
+        institutionName: options.institutionName,
+      }
       : {
-          visitId: options.visitId,
-          doctorName: options.doctorName,
-          institutionName: options.institutionName,
-        };
+        visitId: options.visitId,
+        doctorName: options.doctorName,
+        institutionName: options.institutionName,
+      };
 
     return this.dialogService.open(ReviewVisitDialog, {
       data: dialogData,
@@ -103,5 +104,15 @@ export class VisitDialogService {
   ): Observable<VisitDetailsDialogResult | undefined> {
     const ref = this.openVisitDetailsDialog({ visitId });
     return ref.onClose;
+  }
+
+  public openAcceptActionDialog(): Observable<boolean> {
+    const ref = this.dialogService.open(AcceptActionDialogComponent, {
+      width: '50%',
+      data: {
+        message: "Are you sure want to cancel visit?"
+      }
+    })
+    return ref.onClose
   }
 }
