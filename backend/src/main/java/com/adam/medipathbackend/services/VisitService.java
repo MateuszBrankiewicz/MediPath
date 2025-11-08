@@ -43,24 +43,18 @@ public class VisitService {
 
     
     public void addVisit(AddVisitForm visit, User foundUser) {
-
         if(visit.getPatientRemarks() == null) {
             visit.setPatientRemarks("");
         }
-
         Schedule foundSchedule = validateVisitForm(visit);
-
         PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(),
                 foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
-
         VisitTime time = new VisitTime(foundSchedule.getId(),
                 foundSchedule.getStartHour(), foundSchedule.getEndHour());
-
         Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(),
                 time,foundSchedule.getInstitution(), visit.getPatientRemarks());
 
         foundSchedule.setBooked(true);
-
         ArrayList<Code> codes = new ArrayList<>();
         newVisit.setCodes(codes);
 
@@ -88,7 +82,6 @@ public class VisitService {
             foundUser.addNotification(notification);
             userRepository.save(foundUser);
         }
-
         scheduleRepository.save(foundSchedule);
         visitRepository.save(newVisit);
     }
