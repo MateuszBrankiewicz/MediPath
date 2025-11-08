@@ -41,7 +41,8 @@ public class UserController {
     }
 
     @PostMapping(value = {"/login", "/login/"})
-    public ResponseEntity<Map<String, Object>> loginUser(HttpSession session, @RequestBody LoginForm loginForm) {
+    public ResponseEntity<Map<String, Object>> loginUser(HttpSession session, 
+                                                        @RequestBody LoginForm loginForm) {
         try {
             String userId = userService.loginUser(loginForm);
             session.setAttribute("id", userId);
@@ -59,6 +60,23 @@ public class UserController {
         session.invalidate();
         return new ResponseEntity<>(HttpStatus.OK);
 
+    }
+
+    @GetMapping(value = "/find/{govid}")
+    public ResponseEntity<Map<String, Object>> findByGovID(@PathVariable String govid, HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+
+        if (loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            return new ResponseEntity<>(userService.findEmployeeByGovId(govid, loggedUserID), HttpStatus.OK);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping(value = {"/patients/{patientid}", "/patients/{patientid}"})
