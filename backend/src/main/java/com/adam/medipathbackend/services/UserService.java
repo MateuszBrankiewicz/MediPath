@@ -319,7 +319,8 @@ public class UserService {
                                         "institution", comment.getInstitution().getInstitutionName(),
                                         "doctorRating", comment.getDoctorRating(),
                                         "institutionRating", comment.getInstitutionRating(),
-                                        "content", comment.getContent()))
+                                        "content", comment.getContent(),
+                                        "createdAt", comment.getCreatedAtString()))
                         .toList()
         );
     }
