@@ -99,7 +99,7 @@ public class InstitutionQueryService {
 
         Map<String, Object> outputFields = new HashMap<>();
         List<String> fieldsList = (fields == null)
-                ? List.of("id", "name", "types", "isPublic", "address", "employees", "rating", "image", "description")
+                ? List.of("id", "name", "types", "isPublic", "address", "employees", "rating", "image", "description", "numofratings")
                 : List.of(fields);
 
         if (fieldsList.contains("id")) {
@@ -145,6 +145,10 @@ public class InstitutionQueryService {
 
         if (fieldsList.contains("description")) {
             outputFields.put("description", institution.getDescription());
+        }
+
+        if (fieldsList.contains("numofratings")) {
+            outputFields.put("numofratings", institution.getNumOfRatings());
         }
 
         return outputFields;
