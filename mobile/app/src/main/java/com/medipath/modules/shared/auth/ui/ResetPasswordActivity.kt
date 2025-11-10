@@ -23,13 +23,14 @@ import android.content.Intent
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.shared.components.AuthTextField
 import androidx.compose.runtime.getValue
-import com.medipath.utils.ValidationUtils
+import com.medipath.core.utils.ValidationUtils
 import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
 import com.medipath.modules.shared.auth.ResetPasswordViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 class ResetPasswordActivity : ComponentActivity() {
@@ -59,27 +60,20 @@ class ResetPasswordActivity : ComponentActivity() {
 
 @Composable
 fun ResetPasswordScreen(
-    viewModel: ResetPasswordViewModel = remember { ResetPasswordViewModel() },
+    viewModel: ResetPasswordViewModel = viewModel(),
     onSignUpClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
     onResetSuccess: () -> Unit = {}
 ) {
-
     val resetError by viewModel.resetError
     val resetSuccess by viewModel.resetSuccess
+    val email by viewModel.email
+    val emailError by viewModel.emailError
+    val isFormValid by viewModel.isFormValid
 
     LaunchedEffect(resetSuccess) {
         if (resetSuccess) {
             onResetSuccess()
-        }
-    }
-
-    var email by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-
-    val isFormValid by remember {
-        derivedStateOf {
-            email.isNotBlank() && emailError.isEmpty()
         }
     }
 
@@ -116,22 +110,23 @@ fun ResetPasswordScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-            AuthTextField(email, {
-                email = it
-                emailError = ValidationUtils.validateEmail(it)
-            }, "Email Address", "Enter your email address", keyboardType = KeyboardType.Email, errorMessage = emailError,
-                modifier = Modifier.testTag("email_field").fillMaxWidth(),
-                leadingIcon = R.drawable.user,
-                onFocusLost = {
-                    emailError = ValidationUtils.validateEmail(email)
-                }
-            )
+        AuthTextField(
+            value = email,
+            onValueChange = { viewModel.onEmailChanged(it) },
+            fieldText = "Email Address",
+            hintText = "Enter your email address",
+            keyboardType = KeyboardType.Email,
+            errorMessage = emailError ?: "",
+            modifier = Modifier.testTag("email_field").fillMaxWidth(),
+            leadingIcon = R.drawable.user,
+            onFocusLost = { viewModel.validateEmail() }
+        )
 
         Spacer(modifier = Modifier.height(25.dp))
 
-        if (resetError.isNotEmpty()) {
+        if (resetError != null) {
             Text(
-                text = resetError,
+                text = resetError!!,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 14.sp,
             )
@@ -142,7 +137,7 @@ fun ResetPasswordScreen(
         Button(
             onClick = {
                 viewModel.clearError()
-                viewModel.resetPassword(email)
+                viewModel.resetPassword()
             },
             enabled = isFormValid,
             colors = ButtonDefaults.buttonColors(

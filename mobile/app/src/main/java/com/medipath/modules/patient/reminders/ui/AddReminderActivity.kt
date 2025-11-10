@@ -15,26 +15,32 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.clickable
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Intent
+import java.util.Calendar
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medipath.core.network.DataStoreSessionManager
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.reminders.AddReminderViewModel
+import com.medipath.modules.shared.auth.ui.LoginActivity
 
 class AddReminderActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val sessionManager = DataStoreSessionManager(this)
 
         setContent {
             MediPathTheme {
                 AddReminderScreen(
-                    sessionManager = sessionManager,
                     onBackClick = { finish() },
                     onSuccess = {
                         Toast.makeText(this, "Reminder added successfully", Toast.LENGTH_SHORT).show()
@@ -49,12 +55,13 @@ class AddReminderActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReminderScreen(
-    sessionManager: DataStoreSessionManager,
     onBackClick: () -> Unit,
     onSuccess: () -> Unit,
-    viewModel: AddReminderViewModel = remember { AddReminderViewModel() }
+    viewModel: AddReminderViewModel = viewModel()
 ) {
     val colors = LocalCustomColors.current
+
+    val context = LocalContext.current
 
     val title by viewModel.title
     val content by viewModel.content
@@ -62,8 +69,23 @@ fun AddReminderScreen(
     val endDate by viewModel.endDate
     val reminderTime by viewModel.reminderTime
     val isLoading by viewModel.isLoading
+    val error by viewModel.error
+    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin
     
     val isFormValid = title.isNotBlank() && startDate.isNotBlank() && reminderTime.isNotBlank()
+
+    if (shouldRedirectToLogin) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            (context as? ComponentActivity)?.finish()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -197,9 +219,8 @@ fun AddReminderScreen(
 
                     OutlinedTextField(
                         value = startDate,
-                        onValueChange = { viewModel.updateStartDate(it) },
+                        onValueChange = { },
                         label = { Text("Start date*") },
-                        placeholder = { Text("YYYY-MM-DD (e.g. 2025-10-23)") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.CalendarToday,
@@ -207,16 +228,39 @@ fun AddReminderScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                val cal = Calendar.getInstance()
+                                val dpd = DatePickerDialog(
+                                    context,
+                                    { _, year, month, dayOfMonth ->
+                                        val formatted = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                                        viewModel.updateStartDate(formatted)
+                                    },
+                                    cal.get(Calendar.YEAR),
+                                    cal.get(Calendar.MONTH),
+                                    cal.get(Calendar.DAY_OF_MONTH)
+                                )
+                                dpd.show()
+                            },
                         shape = RoundedCornerShape(12.dp),
-                        singleLine = true
+                        singleLine = true,
+                        readOnly = true,
+                        enabled = false,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
 
                     OutlinedTextField(
                         value = endDate,
-                        onValueChange = { viewModel.updateEndDate(it) },
+                        onValueChange = { },
                         label = { Text("End date") },
-                        placeholder = { Text("YYYY-MM-DD (for recurring reminders)") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Event,
@@ -224,16 +268,39 @@ fun AddReminderScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                val cal = Calendar.getInstance()
+                                val dpd = DatePickerDialog(
+                                    context,
+                                    { _, year, month, dayOfMonth ->
+                                        val formatted = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                                        viewModel.updateEndDate(formatted)
+                                    },
+                                    cal.get(Calendar.YEAR),
+                                    cal.get(Calendar.MONTH),
+                                    cal.get(Calendar.DAY_OF_MONTH)
+                                )
+                                dpd.show()
+                            },
                         shape = RoundedCornerShape(12.dp),
-                        singleLine = true
+                        singleLine = true,
+                        readOnly = true,
+                        enabled = false,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
 
                     OutlinedTextField(
                         value = reminderTime,
-                        onValueChange = { viewModel.updateReminderTime(it) },
+                        onValueChange = { },
                         label = { Text("Reminder time*") },
-                        placeholder = { Text("HH:MM (e.g. 14:30)") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Schedule,
@@ -241,11 +308,45 @@ fun AddReminderScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                val cal = Calendar.getInstance()
+                                val hour = cal.get(Calendar.HOUR_OF_DAY)
+                                val minute = cal.get(Calendar.MINUTE)
+                                val tpd = TimePickerDialog(
+                                    context,
+                                    { _, selectedHour, selectedMinute ->
+                                        val formatted = String.format("%02d:%02d", selectedHour, selectedMinute)
+                                        viewModel.updateReminderTime(formatted)
+                                    },
+                                    hour,
+                                    minute,
+                                    true
+                                )
+                                tpd.show()
+                            },
                         shape = RoundedCornerShape(12.dp),
-                        singleLine = true
+                        singleLine = true,
+                        readOnly = true,
+                        enabled = false,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
+            }
+
+            if (error != null) {
+                Text(
+                    text = error!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
 
             Row(
@@ -269,7 +370,12 @@ fun AddReminderScreen(
 
                     Button(
                     onClick = {
-                        viewModel.addReminder(sessionManager, onSuccess)
+                        viewModel.addReminder(
+                            onSuccess = onSuccess,
+                            onError = { errorMsg ->
+                                Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                            }
+                        )
                     },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(30.dp),

@@ -30,9 +30,10 @@ import androidx.compose.runtime.getValue
 import com.medipath.core.models.RegisterRequest
 import com.medipath.modules.shared.components.SearchableCityDropdown
 import com.medipath.modules.shared.components.SearchableProvinceDropdown
-import com.medipath.utils.ValidationUtils
+import com.medipath.core.utils.ValidationUtils
 import android.widget.Toast
 import androidx.compose.ui.platform.testTag
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 class RegisterActivity : ComponentActivity() {
@@ -58,64 +59,48 @@ class RegisterActivity : ComponentActivity() {
 }
 
 
-
 @Composable
-fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel() }, onSignInClick: () -> Unit = {}, onRegistrationSuccess: () -> Unit = {}) {
-
-    var city by remember { mutableStateOf("") }
-    var province by remember { mutableStateOf("") }
+fun RegisterScreen(
+    viewModel: RegisterViewModel = viewModel(),
+    onSignInClick: () -> Unit = {},
+    onRegistrationSuccess: () -> Unit = {}
+) {
     val registrationError by viewModel.registrationError
     val registrationSuccess by viewModel.registrationSuccess
+
+    val name by viewModel.name
+    val surname by viewModel.surname
+    val governmentId by viewModel.governmentId
+    val birthDate by viewModel.birthDate
+    val number by viewModel.number
+    val street by viewModel.street
+    val postalCode by viewModel.postalCode
+    val phoneNumber by viewModel.phoneNumber
+    val email by viewModel.email
+    val password by viewModel.password
+    val confirmPassword by viewModel.confirmPassword
+    val city by viewModel.city
+    val province by viewModel.province
+    val isChecked by viewModel.isChecked
+    val isFormValid by viewModel.isFormValid
+
+    val nameError by viewModel.nameError
+    val surnameError by viewModel.surnameError
+    val governmentIdError by viewModel.governmentIdError
+    val birthDateError by viewModel.birthDateError
+    val numberError by viewModel.numberError
+    val streetError by viewModel.streetError
+    val postalCodeError by viewModel.postalCodeError
+    val phoneNumberError by viewModel.phoneNumberError
+    val emailError by viewModel.emailError
+    val passwordError by viewModel.passwordError
+    val confirmPasswordError by viewModel.confirmPasswordError
+    val cityError by viewModel.cityError
+    val provinceError by viewModel.provinceError
 
     LaunchedEffect(registrationSuccess) {
         if (registrationSuccess) {
             onRegistrationSuccess()
-        }
-    }
-
-    var isChecked by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf("") }
-    var surname by remember { mutableStateOf("") }
-    var governmentId by remember { mutableStateOf("") }
-    var birthDate by remember { mutableStateOf("") }
-    var number by remember { mutableStateOf("") }
-    var street by remember { mutableStateOf("") }
-    var postalCode by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-
-    var nameError by remember { mutableStateOf("") }
-    var surnameError by remember { mutableStateOf("") }
-    var governmentIdError by remember { mutableStateOf("") }
-    var birthDateError by remember { mutableStateOf("") }
-    var numberError by remember { mutableStateOf("") }
-    var streetError by remember { mutableStateOf("") }
-    var postalCodeError by remember { mutableStateOf("") }
-    var phoneNumberError by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
-    var confirmPasswordError by remember { mutableStateOf("") }
-    var cityError by remember { mutableStateOf("") }
-    var provinceError by remember { mutableStateOf("") }
-
-    val isFormValid by remember {
-        derivedStateOf {
-            name.isNotBlank() &&
-            surname.isNotBlank() &&
-            governmentId.isNotBlank() &&
-            birthDate.isNotBlank() &&
-            number.isNotBlank() &&
-            street.isNotBlank() &&
-            postalCode.isNotBlank() &&
-            phoneNumber.isNotBlank() &&
-            email.isNotBlank() &&
-            password.isNotBlank() &&
-            confirmPassword.isNotBlank() &&
-            city.isNotBlank() &&
-            province.isNotBlank() &&
-            isChecked
         }
     }
 
@@ -134,154 +119,149 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
         Spacer(modifier = Modifier.height(30.dp))
 
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            AuthTextField(name, {
-                name = it
-                nameError = ValidationUtils.validateName(it)
-            },
-                "Name", "Enter your first name", errorMessage = nameError,
-                onFocusLost = {
-                    nameError = ValidationUtils.validateName(name)
-                }
+            AuthTextField(
+                value = name,
+                onValueChange = { viewModel.onNameChanged(it) },
+                fieldText = "Name",
+                hintText = "Enter your first name",
+                errorMessage = nameError ?: "",
+                onFocusLost = { viewModel.validateName() }
             )
 
-            AuthTextField(surname, {
-                surname = it
-                surnameError = ValidationUtils.validateSurname(it)
-            }, "Surname", "Enter your last name", errorMessage = surnameError,
-                onFocusLost = {
-                    surnameError = ValidationUtils.validateSurname(surname)
-                }
+            AuthTextField(
+                value = surname,
+                onValueChange = { viewModel.onSurnameChanged(it) },
+                fieldText = "Surname",
+                hintText = "Enter your last name",
+                errorMessage = surnameError ?: "",
+                onFocusLost = { viewModel.validateSurname() }
             )
 
-            AuthTextField(governmentId, {
-                governmentId = it
-                governmentIdError = ValidationUtils.validateGovernmentId(it)
-            }, "Government ID", "Enter your PESEL number", errorMessage = governmentIdError,
-                onFocusLost = {
-                    governmentIdError = ValidationUtils.validateGovernmentId(governmentId)
-                }
-                )
+            AuthTextField(
+                value = governmentId,
+                onValueChange = { viewModel.onGovernmentIdChanged(it) },
+                fieldText = "Government ID",
+                hintText = "Enter your PESEL number",
+                errorMessage = governmentIdError ?: "",
+                onFocusLost = { viewModel.validateGovernmentId() }
+            )
 
-            AuthTextField(birthDate, {
-                birthDate = it
-                birthDateError = ValidationUtils.validateBirthDate(it)
-            }, "Birth Date", "DD-MM-YYYY format", errorMessage = birthDateError,
-                onFocusLost = {
-                    birthDateError = ValidationUtils.validateBirthDate(birthDate)
-                }
-                )
+            AuthTextField(
+                value = birthDate,
+                onValueChange = { viewModel.onBirthDateChanged(it) },
+                fieldText = "Birth Date",
+                hintText = "DD-MM-YYYY format",
+                errorMessage = birthDateError ?: "",
+                onFocusLost = { viewModel.validateBirthDate() }
+            )
 
             SearchableProvinceDropdown(
                 viewModel = viewModel,
                 selectedProvince = province,
-                onProvinceSelected = {
-                    province = it
-                    provinceError = ValidationUtils.validateProvince(it)
-                },
-                errorMessage = provinceError,
-                onFocusLost = {
-                    provinceError = ValidationUtils.validateProvince(province)
-                }
+                onProvinceSelected = { viewModel.onProvinceChanged(it) },
+                errorMessage = provinceError ?: "",
+                onFocusLost = { viewModel.validateProvince() }
             )
 
-            AuthTextField(postalCode, {
-                postalCode = it
-                postalCodeError = ValidationUtils.validatePostalCode(it)
-            }, "Postal Code", "XX-XXX format", errorMessage = postalCodeError,
-                onFocusLost = {
-                    postalCodeError = ValidationUtils.validatePostalCode(postalCode)
-                }
+            AuthTextField(
+                value = postalCode,
+                onValueChange = { viewModel.onPostalCodeChanged(it) },
+                fieldText = "Postal Code",
+                hintText = "XX-XXX format",
+                errorMessage = postalCodeError ?: "",
+                onFocusLost = { viewModel.validatePostalCode() }
             )
 
             SearchableCityDropdown(
                 viewModel = viewModel,
                 selectedCity = city,
-                onCitySelected = {
-                    city = it
-                    cityError = ValidationUtils.validateCity(it)
-                },
-                errorMessage = cityError,
-                onFocusLost = {
-                    cityError = ValidationUtils.validateCity(city)
-                }
+                onCitySelected = { viewModel.onCityChanged(it) },
+                errorMessage = cityError ?: "",
+                onFocusLost = { viewModel.validateCity() }
             )
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                AuthTextField(number, {
-                    number = it
-                    numberError = ValidationUtils.validateNumber(it)
-                }, "Number", "Enter number", modifier = Modifier.width(130.dp), errorMessage = numberError,
-                    onFocusLost = {
-                        numberError = ValidationUtils.validateNumber(number)
-                    }
+                AuthTextField(
+                    value = number,
+                    onValueChange = { viewModel.onNumberChanged(it) },
+                    fieldText = "Number",
+                    hintText = "Enter number",
+                    modifier = Modifier.width(130.dp),
+                    errorMessage = numberError ?: "",
+                    onFocusLost = { viewModel.validateNumber() }
                 )
 
-                AuthTextField(street, {
-                    street = it
-                    streetError = ValidationUtils.validateStreet(it)
-                }, "Street", "Enter street", errorMessage = streetError,
-                    onFocusLost = {
-                        streetError = ValidationUtils.validateStreet(street)
-                    }
+                AuthTextField(
+                    value = street,
+                    onValueChange = { viewModel.onStreetChanged(it) },
+                    fieldText = "Street",
+                    hintText = "Enter street",
+                    errorMessage = streetError ?: "",
+                    onFocusLost = { viewModel.validateStreet() }
                 )
             }
 
-            AuthTextField(phoneNumber, {
-                phoneNumber = it
-                phoneNumberError = ValidationUtils.validatePhoneNumber(it)
-            }, "Phone Number", "Enter your phone number", keyboardType = KeyboardType.Phone, errorMessage = phoneNumberError,
+            AuthTextField(
+                value = phoneNumber,
+                onValueChange = { viewModel.onPhoneNumberChanged(it) },
+                fieldText = "Phone Number",
+                hintText = "Enter your phone number",
+                keyboardType = KeyboardType.Phone,
+                errorMessage = phoneNumberError ?: "",
                 modifier = Modifier.testTag("phone_number"),
-                onFocusLost = {
-                    phoneNumberError = ValidationUtils.validatePhoneNumber(phoneNumber)
-                }
+                onFocusLost = { viewModel.validatePhoneNumber() }
             )
 
-            AuthTextField(email, {
-                email = it
-                emailError = ValidationUtils.validateEmail(it)
-            }, "Email Address", "Enter your email address", keyboardType = KeyboardType.Email, errorMessage = emailError,
+            AuthTextField(
+                value = email,
+                onValueChange = { viewModel.onEmailChanged(it) },
+                fieldText = "Email Address",
+                hintText = "Enter your email address",
+                keyboardType = KeyboardType.Email,
+                errorMessage = emailError ?: "",
                 modifier = Modifier.testTag("email_field"),
-                onFocusLost = {
-                    emailError = ValidationUtils.validateEmail(email)
-                }
+                onFocusLost = { viewModel.validateEmail() }
             )
 
-            AuthTextField(password, {
-                password = it
-                passwordError = ValidationUtils.validatePassword(it)
-                if (confirmPassword.isNotEmpty()) {
-                    confirmPasswordError = ValidationUtils.validateConfirmPassword(it, confirmPassword)
-                }
-            }, "Password", "Enter your password", isPassword = true, errorMessage = passwordError,
+            AuthTextField(
+                value = password,
+                onValueChange = { viewModel.onPasswordChanged(it) },
+                fieldText = "Password",
+                hintText = "Enter your password",
+                isPassword = true,
+                errorMessage = passwordError ?: "",
                 modifier = Modifier.testTag("password_field"),
-                onFocusLost = {
-                    passwordError = ValidationUtils.validatePassword(password)
-                }
+                onFocusLost = { viewModel.validatePassword() }
             )
 
-            AuthTextField(confirmPassword, {
-                confirmPassword = it
-                confirmPasswordError = ValidationUtils.validateConfirmPassword(password, it)
-            }, "Confirm Password", "Re-enter your password", isPassword = true, errorMessage = confirmPasswordError,
+            AuthTextField(
+                value = confirmPassword,
+                onValueChange = { viewModel.onConfirmPasswordChanged(it) },
+                fieldText = "Confirm Password",
+                hintText = "Re-enter your password",
+                isPassword = true,
+                errorMessage = confirmPasswordError ?: "",
                 modifier = Modifier.testTag("confirm_password_field"),
-                onFocusLost = {
-                    confirmPasswordError = ValidationUtils.validateConfirmPassword(password, confirmPassword)
-                }
+                onFocusLost = { viewModel.validateConfirmPassword() }
             )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(isChecked, { isChecked = it }, modifier = Modifier.testTag("conditions_checkbox"))
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { viewModel.onCheckedChanged(it) },
+                modifier = Modifier.testTag("conditions_checkbox")
+            )
             Text("Accept Terms & Conditions", fontSize = 13.sp, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        if (registrationError.isNotEmpty()) {
+        if (registrationError != null) {
             Text(
-                text = registrationError,
+                text = registrationError!!,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -291,21 +271,7 @@ fun RegisterScreen(viewModel: RegisterViewModel = remember { RegisterViewModel()
         Button(
             onClick = {
                 viewModel.clearError()
-                val registerRequest = RegisterRequest(
-                    name = name,
-                    surname = surname,
-                    email = email,
-                    govID = governmentId,
-                    birthDate = birthDate,
-                    province = province,
-                    city = city,
-                    postalCode = postalCode,
-                    phoneNumber = phoneNumber,
-                    street = street,
-                    number = number,
-                    password = password
-                )
-                viewModel.registerUser(registerRequest)
+                viewModel.registerUser()
             },
             enabled = isFormValid,
             colors = ButtonDefaults.buttonColors(

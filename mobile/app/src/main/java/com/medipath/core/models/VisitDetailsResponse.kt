@@ -13,5 +13,6 @@ data class VisitDetails(
     val id: String,
     val status: String,
     val note: String,
-    val codes: List<Code>
+    val codes: List<Code>,
+    val commentId: String?
 )

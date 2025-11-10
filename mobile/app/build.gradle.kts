@@ -84,4 +84,6 @@ dependencies {
     implementation("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
 
     implementation("androidx.compose.ui:ui-text-google-fonts:1.9.3")
+    
+    implementation("io.coil-kt:coil-compose:2.5.0")
 }
