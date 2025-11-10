@@ -1,6 +1,8 @@
 package com.medipath.modules.patient.visits.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,14 +17,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medipath.core.network.DataStoreSessionManager
+import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.visits.ReviewVisitViewModel
 import com.medipath.modules.patient.visits.ui.components.RatingCard
+import com.medipath.modules.shared.auth.ui.LoginActivity
 
 class ReviewVisitActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +36,10 @@ class ReviewVisitActivity : ComponentActivity() {
         val visitId = intent.getStringExtra("VISIT_ID") ?: ""
         val doctorName = intent.getStringExtra("DOCTOR_NAME") ?: ""
         val institutionName = intent.getStringExtra("INSTITUTION_NAME") ?: ""
-        val sessionManager = DataStoreSessionManager(this)
+        val preDoctorRating = intent.getDoubleExtra("PRE_DOCTOR_RATING", 0.0)
+        val preInstitutionRating = intent.getDoubleExtra("PRE_INSTITUTION_RATING", 0.0)
+        val preComments = intent.getStringExtra("PRE_COMMENTS") ?: ""
+        val commentId = intent.getStringExtra("COMMENT_ID") ?: ""
 
         setContent {
             MediPathTheme {
@@ -40,7 +47,10 @@ class ReviewVisitActivity : ComponentActivity() {
                     visitId = visitId,
                     doctorName = doctorName,
                     institutionName = institutionName,
-                    sessionManager = sessionManager,
+                    commentId = commentId,
+                    initialDoctorRating = if (preDoctorRating > 0.0) preDoctorRating else null,
+                    initialInstitutionRating = if (preInstitutionRating > 0.0) preInstitutionRating else null,
+                    initialComments = if (preComments.isNotEmpty()) preComments else null,
                     onBackClick = { finish() },
                     onSubmitSuccess = { finish() }
                 )
@@ -55,30 +65,60 @@ fun ReviewVisitScreen(
     visitId: String,
     doctorName: String,
     institutionName: String,
-    sessionManager: DataStoreSessionManager,
     viewModel: ReviewVisitViewModel = remember { ReviewVisitViewModel() },
+    commentId: String? = null,
+    initialDoctorRating: Double? = null,
+    initialInstitutionRating: Double? = null,
+    initialComments: String? = null,
     onBackClick: () -> Unit,
     onSubmitSuccess: () -> Unit
 ) {
     val colors = LocalCustomColors.current
-    val isLoading by viewModel.isLoading
-    val error by viewModel.error
-    val submitSuccess by viewModel.submitSuccess
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val submitSuccess by viewModel.submitSuccess.collectAsState()
+    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
+    val context = LocalContext.current
+
     
-    var doctorRating by remember { mutableStateOf(0.0) }
-    var institutionRating by remember { mutableStateOf(0.0) }
-    var comments by remember { mutableStateOf("") }
+    var doctorRating by remember { mutableStateOf(initialDoctorRating ?: 0.0) }
+    var institutionRating by remember { mutableStateOf(initialInstitutionRating ?: 0.0) }
+    var comments by remember { mutableStateOf(initialComments ?: "") }
 
     LaunchedEffect(submitSuccess) {
         if (submitSuccess) {
+            val message = if (commentId.isNullOrEmpty()) {
+                "Review added successfully"
+            } else {
+                "Review updated successfully"
+            }
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             onSubmitSuccess()
+        }
+    }
+
+    if (shouldRedirectToLogin) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            (context as? ComponentActivity)?.finish()
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Review visit", color = Color.White) },
+                title = { 
+                    Text(
+                        if (commentId.isNullOrEmpty()) "Add Review" else "Edit Review",
+                        color = Color.White
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -204,7 +244,7 @@ fun ReviewVisitScreen(
                             doctorRating = doctorRating,
                             institutionRating = institutionRating,
                             comments = comments,
-                            sessionManager = sessionManager
+                            commentId = commentId
                         )
                     },
                     modifier = Modifier
@@ -225,13 +265,13 @@ fun ReviewVisitScreen(
                         )
                     } else {
                         Text(
-                            text = "SAVE REVIEW",
+                            text = if (commentId.isNullOrEmpty()) "SAVE REVIEW" else "UPDATE REVIEW",
                             fontSize = 16.sp,
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
+                    }
                     }
                 }
             }
         }
     }
-}

@@ -2,6 +2,7 @@ package com.medipath.modules.shared.components
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,6 +52,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,25 +68,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.R
 import com.medipath.core.models.NavTab
-import com.medipath.core.network.DataStoreSessionManager
+import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.modules.patient.codes.ui.CodesActivity
 import com.medipath.modules.patient.home.ui.HomeActivity
 import com.medipath.modules.patient.visits.ui.VisitsActivity
-import com.medipath.modules.patient.prescriptions.ui.PrescriptionsActivity
-import com.medipath.modules.patient.referrals.ui.ReferralsActivity
 import com.medipath.modules.patient.medical_history.ui.MedicalHistoryActivity
 import com.medipath.modules.patient.comments.ui.CommentsActivity
 import com.medipath.modules.patient.notifications.NotificationsViewModel
 import com.medipath.modules.patient.reminders.ui.RemindersActivity
-import com.medipath.modules.shared.components.NavigationRouter.notificationsViewModel
+import com.medipath.modules.patient.search.InstitutionDetailsViewModel
+import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.profile.ui.EditProfileActivity
 import kotlinx.coroutines.launch
 
 object NavigationRouter {
     private var isNavigating = false
-    val notificationsViewModel = NotificationsViewModel()
     fun navigateToTab(context: Context, tab: String, currentTab: String) {
         if (isNavigating) return
         if (tab == currentTab) return
@@ -92,8 +94,8 @@ object NavigationRouter {
         val activityClass = when (tab) {
             "Dashboard" -> HomeActivity::class.java
             "Visits" -> VisitsActivity::class.java
-            "Prescriptions" -> PrescriptionsActivity::class.java
-            "Referrals" -> ReferralsActivity::class.java
+            "Prescriptions" -> CodesActivity::class.java
+            "Referrals" -> CodesActivity::class.java
             "Medical history" -> MedicalHistoryActivity::class.java
             "Comments" -> CommentsActivity::class.java
             "Reminders" -> RemindersActivity::class.java
@@ -103,6 +105,12 @@ object NavigationRouter {
         isNavigating = true
         try {
             val intent = Intent(context, activityClass)
+            
+            when (tab) {
+                "Prescriptions" -> intent.putExtra("code_type", "PRESCRIPTION")
+                "Referrals" -> intent.putExtra("code_type", "REFERRAL")
+            }
+            
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             context.startActivity(intent)
             (context as? ComponentActivity)?.overridePendingTransition(0, 0)
@@ -117,6 +125,7 @@ object NavigationRouter {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Navigation(
+    notificationsViewModel: NotificationsViewModel,
     content: @Composable (PaddingValues) -> Unit,
     screenTitle: String? = null,
     onNotificationsClick: () -> Unit = {},
@@ -135,12 +144,22 @@ fun Navigation(
     var showUserMenu by remember { mutableStateOf(false) }
     var showRoleMenu by remember { mutableStateOf(false) }
     var isNavigating by remember { mutableStateOf(false) }
-    val sessionManager = remember { DataStoreSessionManager(context) }
-    
-    LaunchedEffect(Unit) {
-        notificationsViewModel.fetchNotifications(sessionManager)
+
+    val shouldRedirect by notificationsViewModel.shouldRedirectToLogin.collectAsState()
+    if (shouldRedirect) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            (context as? ComponentActivity)?.finish()
+        }
     }
-    val notifications by notificationsViewModel.notifications
+
+    val notifications by notificationsViewModel.notifications.collectAsState()
     val unreadNotificationsCount by remember {
         derivedStateOf { notifications.count { !it.read } }
     }

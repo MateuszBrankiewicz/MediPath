@@ -64,14 +64,16 @@ public class MedicalHistoryService {
         userRepository.save(patient);
     }
 
-    public void modifyMedHisEntry(String med_his_id, MedicalHistory medicalHistory, String loggedUserID)
+    public void modifyMedHisEntry(String med_his_id, 
+                            MedicalHistory medicalHistory, String loggedUserID)
             throws IllegalArgumentException, IllegalAccessException {
 
         Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         Optional<MedicalHistory> oldMedHisOpt = medicalHistoryRepository.findById(med_his_id);
-        if (oldMedHisOpt.isEmpty()) throw new IllegalAccessException("Medical history entry not found");
+        if (oldMedHisOpt.isEmpty()) 
+            throw new IllegalAccessException("Medical history entry not found");
 
         MedicalHistory oldMedicalHistory = oldMedHisOpt.get();
 
@@ -84,11 +86,9 @@ public class MedicalHistoryService {
         oldMedicalHistory.setDate(medicalHistory.getDate());
         oldMedicalHistory.setNote(medicalHistory.getNote());
         oldMedicalHistory.setTitle(medicalHistory.getTitle());
-
         User user = userOpt.get();
         LinkedList<MedicalHistory> histories = user.getLatestMedicalHistory();
         boolean foundInLatest = false;
-
         for (int i = 0; i < histories.size(); i++) {
 
             if (histories.get(i).getId().equals(med_his_id)) {
@@ -96,10 +96,8 @@ public class MedicalHistoryService {
                 foundInLatest = true;
             }
         }
-
         medicalHistoryRepository.save(oldMedicalHistory);
         if (foundInLatest) userRepository.save(user);
-
     }
 
     public void deleteMedHisEntry(String med_his_id, String loggedUserID)

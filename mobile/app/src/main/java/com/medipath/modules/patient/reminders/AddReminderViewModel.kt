@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.medipath.core.models.AddNotificationRequest
-import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
 import kotlinx.coroutines.launch
 
@@ -31,6 +30,12 @@ class AddReminderViewModel : ViewModel() {
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
+    private val _error = mutableStateOf<String?>(null)
+    val error: State<String?> = _error
+
+    private val _shouldRedirectToLogin = mutableStateOf(false)
+    val shouldRedirectToLogin: State<Boolean> = _shouldRedirectToLogin
+
     fun updateTitle(value: String) {
         _title.value = value
     }
@@ -51,17 +56,13 @@ class AddReminderViewModel : ViewModel() {
         _reminderTime.value = value
     }
 
-    fun addReminder(sessionManager: DataStoreSessionManager, onSuccess: () -> Unit) {
+    fun addReminder(onSuccess: () -> Unit, onError: (String) -> Unit) {
 
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-
-                val sessionId = sessionManager.getSessionId()
-                if (sessionId == null) {
-                    _isLoading.value = false
-                    return@launch
-                }
+                _error.value = null
+                _shouldRedirectToLogin.value = false
 
                 val request = AddNotificationRequest(
                     userId = null,
@@ -72,12 +73,20 @@ class AddReminderViewModel : ViewModel() {
                     reminderTime = _reminderTime.value
                 )
 
-                notificationsService.addNotification(request, "SESSION=$sessionId")
+                val response = notificationsService.addNotification(request)
 
-                _isLoading.value = false
-                onSuccess()
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else if (response.code() == 401) {
+                    _shouldRedirectToLogin.value = true
+                } else {
+                    onError("Failed to add reminder: ${response.code()}")
+                }
+
             } catch (e: Exception) {
                 Log.e("AddReminderViewModel", "Error adding reminder", e)
+                onError("Network error: ${e.message}")
+            } finally {
                 _isLoading.value = false
             }
         }

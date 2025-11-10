@@ -1,6 +1,8 @@
 package com.medipath.modules.shared.profile.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -16,24 +18,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medipath.core.network.DataStoreSessionManager
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.patient.home.HomeViewModel
+import com.medipath.modules.shared.auth.ui.LoginActivity
 
 class EditProfileActivity : ComponentActivity() {
-    private lateinit var sessionManager: DataStoreSessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        sessionManager = DataStoreSessionManager(this)
-
         setContent {
             MediPathTheme {
                 EditProfileScreen(
-                    onBackClick = { finish() },
-                    sessionManager = sessionManager
+                    onBackClick = { finish() }
                 )
             }
         }
@@ -43,16 +43,30 @@ class EditProfileActivity : ComponentActivity() {
 @Composable
 fun EditProfileScreen(
     onBackClick: () -> Unit,
-    sessionManager: DataStoreSessionManager,
-    viewModel: HomeViewModel = remember { HomeViewModel() }
+    viewModel: HomeViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val firstName by viewModel.firstName
-    val lastName by viewModel.lastName
-    val isLoading by viewModel.isLoading
+    val firstName by viewModel.firstName.collectAsState()
+    val lastName by viewModel.lastName.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.fetchUserProfile(sessionManager)
+        viewModel.fetchUserProfile()
+    }
+
+    if (shouldRedirectToLogin) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG)
+                .show()
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            (context as? ComponentActivity)?.finish()
+        }
     }
 
     Column(
@@ -84,66 +98,71 @@ fun EditProfileScreen(
         }
 
         when {
-            isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
-            }
-            else -> {
-                var editedFirstName by remember { mutableStateOf(firstName) }
-                var editedLastName by remember { mutableStateOf(lastName) }
-
-                LaunchedEffect(firstName, lastName) {
-                    editedFirstName = firstName
-                    editedLastName = lastName
-                }
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 20.dp),
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    item {
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
-                    item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
+            !shouldRedirectToLogin -> {
+                when {
+                    isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp)
-                            ) {
-                                Text(
-                                    text = "Personal Information",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(bottom = 16.dp)
-                                )
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
 
-                                OutlinedTextField(
-                                    value = editedFirstName,
-                                    onValueChange = { editedFirstName = it },
-                                    label = { Text("First Name") },
+                    else -> {
+                        var editedFirstName by remember { mutableStateOf(firstName) }
+                        var editedLastName by remember { mutableStateOf(lastName) }
+
+                        LaunchedEffect(firstName, lastName) {
+                            editedFirstName = firstName
+                            editedLastName = lastName
+                        }
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 20.dp),
+                            verticalArrangement = Arrangement.Top
+                        ) {
+                            item {
+                                Spacer(modifier = Modifier.height(20.dp))
+                            }
+                            item {
+                                Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 8.dp)
-                                )
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(16.dp)
+                                    ) {
+                                        Text(
+                                            text = "Personal Information",
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.padding(bottom = 16.dp)
+                                        )
 
-                                OutlinedTextField(
-                                    value = editedLastName,
-                                    onValueChange = { editedLastName = it },
-                                    label = { Text("Last Name") },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp)
-                                )
+                                        OutlinedTextField(
+                                            value = editedFirstName,
+                                            onValueChange = { editedFirstName = it },
+                                            label = { Text("First Name") },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 8.dp)
+                                        )
+
+                                        OutlinedTextField(
+                                            value = editedLastName,
+                                            onValueChange = { editedLastName = it },
+                                            label = { Text("Last Name") },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 8.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
