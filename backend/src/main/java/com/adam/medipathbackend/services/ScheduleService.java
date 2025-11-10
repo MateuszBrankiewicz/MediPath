@@ -221,4 +221,8 @@ public class ScheduleService {
 
         return false;
     }
+
+    public void deleteUpcomingSchedulesForDoctor(String doctorid) {
+        scheduleRepository.deleteAllFutureSchedulesForDoctor(doctorid);
+    }
 }

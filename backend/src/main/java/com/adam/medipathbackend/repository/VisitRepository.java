@@ -45,4 +45,7 @@ public interface VisitRepository extends MongoRepository<Visit, String> {
 
     @Query("{ 'doctor.userId': ?0, 'patient.userId': ?1 }")
     ArrayList<Visit> findVisitsByDoctorAndPatient(String doctorId, String patientId);
+
+    @Query("{'doctor.userId': ?0, 'time.startTime': { $gt: new Date() }, 'status': 'Upcoming'}")
+    ArrayList<Visit> getUpcomingDoctorVisits(String patientID);
 }

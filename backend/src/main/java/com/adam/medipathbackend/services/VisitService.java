@@ -347,6 +347,10 @@ public class VisitService {
         return visitWithPfp;
     }
 
+    public boolean hasUpcomingVisits(String doctorId) {
+        return !visitRepository.getUpcomingDoctorVisits(doctorId).isEmpty();
+    }
+
 
     @Autowired
     private VisitRepository visitRepository;

@@ -33,6 +33,11 @@ public class UserService {
     @Autowired
     private MedicalHistoryRepository mhRepository;
 
+    @Autowired
+    private VisitService visitService;
+
+    @Autowired
+    ScheduleService scheduleService;
 
     @Autowired
     PasswordResetEntryRepository preRepository;
@@ -598,6 +603,13 @@ public class UserService {
             throw new IllegalAccessException();
         }
         User user = userOpt.get();
+
+        if(visitService.hasUpcomingVisits(loggedUserId)) {
+            throw new IllegalStateException("please cancel all upcoming visits before deactivating your account");
+        }
+
+        scheduleService.deleteUpcomingSchedulesForDoctor(loggedUserId);
+
         employeeManagementService.removeEmployeeFromAllInstitutions(user);
 
         user.setActive(false);

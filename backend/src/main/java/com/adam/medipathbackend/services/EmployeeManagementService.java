@@ -238,7 +238,9 @@ public class EmployeeManagementService {
 
     public void removeEmployeeFromAllInstitutions(User user) {
         for(InstitutionDigest institutionDigest: user.getEmployers()) {
-            Institution institution = institutionRepository.findActiveById(institutionDigest.getInstitutionId()).get();
+            Optional<Institution> institutionOpt = institutionRepository.findActiveById(institutionDigest.getInstitutionId());
+            if(institutionOpt.isEmpty()) continue;
+            Institution institution = institutionOpt.get();
             if(checkIfEmployeeIsLastAdminOfInstitution(user.getId(), institution)) {
                 throw new IllegalStateException("You are last administrator of institution " +
                         institution.getName() + ". Please deactivate the institution or add another administrator.");
