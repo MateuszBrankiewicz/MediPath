@@ -53,18 +53,8 @@ public class MedicalHistoryService {
 
             if (userOpt.isEmpty()) throw new IllegalAccessException("Patient not found");
 
-
             if (!medicalHistory.getDoctor().getUserId().equals(loggedUserID)) throw new IllegalAccessException();
 
-
-            authorizationService.startAuthChain(loggedUserID, null).doctorServedPatient(medicalHistory.getUserId());
-
-            Optional<User> doctorOpt = userRepository.findActiveById(medicalHistory.getDoctor().getUserId());
-            if (doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
-
-            User doctor = doctorOpt.get();
-            medicalHistory.setDoctor(new DoctorDigest(doctor.getId(), doctor.getName(),
-                    doctor.getSurname(), doctor.getSpecialisations()));
         }
 
         User patient = userOpt.get();

@@ -28,6 +28,9 @@ public class VisitService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private MedicalHistoryService medicalHistoryService;
+
     public Schedule validateVisitForm(AddVisitForm visit) {
 
         if(visit.getScheduleID() == null || visit.getScheduleID().isBlank()) {
@@ -287,9 +290,18 @@ public class VisitService {
             codes.add(new Code(Code.CodeType.REFERRAL, prescriptionCode, true));
         }
 
+        MedicalHistory newMHEntry = new MedicalHistory(visit.getPatient().getUserId(),
+                visit.getDoctor().getDoctorName() + " " + visit.getDoctor().getDoctorSurname() +
+                " " + visit.getTime().getStartTime(), visit.getNote(), visit.getTime().getStartTime().toLocalDate(),
+                visit.getDoctor());
+
+
+
         visit.setCodes(codes);
         visit.setNote(completionForm.getNote());
         visitRepository.save(visit);
+
+        medicalHistoryService.addMedicalHistory(newMHEntry, loggedUserID);
     }
 
 
