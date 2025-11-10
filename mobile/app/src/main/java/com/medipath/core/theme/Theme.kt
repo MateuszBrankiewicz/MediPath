@@ -54,7 +54,8 @@ private val CustomLightColorScheme = CustomColors(
     medicalHistoryIcon = Color(0xFF4DB6AC),
     commentsIcon = Color(0xFFF06292),
     remindersIcon = Color(0xFF7986CB),
-    error = Color(0xFFDE2E2E)
+    error = Color(0xFFDE2E2E),
+    yellow = Color(0xFFFFC100)
 )
 
 private val CustomDarkColorScheme = CustomColors(
@@ -77,7 +78,8 @@ private val CustomDarkColorScheme = CustomColors(
     medicalHistoryIcon = Color(0xFF4DB6AC),
     commentsIcon = Color(0xFFF06292),
     remindersIcon = Color(0xFF7986CB),
-    error = Color(0xFFDE2E2E)
+    error = Color(0xFFDE2E2E),
+    yellow = Color(0xFFFFC100)
 )
 
 @Composable

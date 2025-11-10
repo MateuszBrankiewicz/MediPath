@@ -5,8 +5,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +48,7 @@ fun SearchBar() {
     var specialisation by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var showAdvanced by remember { mutableStateOf(false) }
+    var isSearching by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -78,11 +84,15 @@ fun SearchBar() {
 
             ExposedDropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { expanded = false }
+                onDismissRequest = { expanded = false },
+                containerColor = MaterialTheme.colorScheme.background
             ) {
                 types.forEach { type ->
                     DropdownMenuItem(
-                        text = { Text(if (type == "doctor") "Doctor" else "Institution") },
+                        text = { Text(
+                            if (type == "doctor") "Doctor" else "Institution",
+                            color = MaterialTheme.colorScheme.onSurface
+                        ) },
                         onClick = {
                             selectedType = type
                             expanded = false
@@ -156,37 +166,60 @@ fun SearchBar() {
 
         Button(
             onClick = {
-                scope.launch {
-                    try {
-                        val response = searchService.search(
-                            query = query.ifBlank { "" },
-                            type = selectedType,
-                            city = if (city.isBlank()) null else city,
-                            specialisations = if (specialisation.isBlank()) null else specialisation
-                        )
+                if (!isSearching) {
+                    isSearching = true
+                    scope.launch {
+                        try {
+                            val response = searchService.search(
+                                query = query.ifBlank { "" },
+                                type = selectedType,
+                                city = if (city.isBlank()) null else city,
+                                specialisations = if (specialisation.isBlank()) null else specialisation
+                            )
 
-                        if (response.isSuccessful) {
-                            val intent = Intent(context, SearchResultsActivity::class.java)
-                            intent.putExtra("search_query", query)
-                            intent.putExtra("search_type", selectedType)
-                            intent.putExtra("search_city", city)
-                            intent.putExtra("search_specialisation", specialisation)
-                            context.startActivity(intent)
+                            if (response.isSuccessful) {
+                                val intent = Intent(context, SearchResultsActivity::class.java)
+                                intent.putExtra("search_query", query)
+                                intent.putExtra("search_type", selectedType)
+                                intent.putExtra("search_city", city)
+                                intent.putExtra("search_specialisation", specialisation)
+                                context.startActivity(intent)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } finally {
+                            isSearching = false
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
                     }
                 }
             },
+            enabled = !isSearching,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.background
+                contentColor = MaterialTheme.colorScheme.background,
+                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                disabledContentColor = MaterialTheme.colorScheme.background.copy(alpha = 0.6f)
             ),
             shape = RoundedCornerShape(30.dp),
             modifier = Modifier.width(410.dp)
         ) {
+            if (isSearching) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.background,
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
             Text(
-                text = "SEARCH",
+                text = if (isSearching) "SEARCHING..." else "SEARCH",
                 fontSize = 16.sp,
                 modifier = Modifier.padding(vertical = 8.dp)
             )

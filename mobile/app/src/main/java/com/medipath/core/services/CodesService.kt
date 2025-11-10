@@ -6,9 +6,9 @@ import retrofit2.http.*
 
 interface CodesService {
     @PUT("/api/visits/code")
-    suspend fun markCodeAsUsed(@Header("Cookie") cookie: String, @Body request: CodeRequest): Response<Unit>
+    suspend fun markCodeAsUsed(@Body request: CodeRequest): Response<Unit>
 
-    @DELETE("/api/visits/code")
-    suspend fun deleteCode(@Header("Cookie") cookie: String, @Body request: CodeRequest): Response<Unit>
+    @HTTP(method = "DELETE", path = "/api/visits/code", hasBody = true)
+    suspend fun deleteCode(@Body request: CodeRequest): Response<Unit>
 }
 

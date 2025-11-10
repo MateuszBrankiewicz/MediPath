@@ -2,7 +2,7 @@ package com.medipath.core.services
 
 import com.medipath.core.models.LoginRequest
 import com.medipath.core.models.RegisterRequest
-import com.medipath.core.responses.ApiResponse
+import com.medipath.core.models.ApiResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET

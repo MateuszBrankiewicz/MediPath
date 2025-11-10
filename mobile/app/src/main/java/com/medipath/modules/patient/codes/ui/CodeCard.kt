@@ -10,6 +10,10 @@ import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +33,8 @@ fun CodeCard(
     isCopied: Boolean = false
 ) {
     val customColors = LocalCustomColors.current
+    var showMarkAsUsedDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -37,7 +43,7 @@ fun CodeCard(
             containerColor = if (codeItem.codes.isActive) 
                 MaterialTheme.colorScheme.background 
             else 
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
         )
     ) {
         Column(
@@ -156,7 +162,7 @@ fun CodeCard(
                 )
             }
 
-            if (codeItem.codes.isActive) {
+
                 Spacer(modifier = Modifier.height(12.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
                 Spacer(modifier = Modifier.height(12.dp))
@@ -166,38 +172,81 @@ fun CodeCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        onClick = onMarkAsUsedClick,
+                        onClick = { showMarkAsUsedDialog = true },
                         modifier = Modifier.weight(1f),
+                        enabled = codeItem.codes.isActive,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = customColors.green800
+                            containerColor = customColors.blue800
                         )
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Mark as Used")
+                        Text("MARK AS USED")
                     }
 
-                    OutlinedButton(
-                        onClick = onDeleteClick,
+                    Button(
+                        onClick = { showDeleteDialog = true },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = LocalCustomColors.current.red800
                         )
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Delete")
+                        Text("DELETE")
                     }
                 }
-            }
         }
+    }
+    
+    if (showMarkAsUsedDialog) {
+        AlertDialog(
+            onDismissRequest = { showMarkAsUsedDialog = false },
+            title = { Text("Confirm Mark as Used") },
+            text = { 
+                Text("Are you sure you want to mark this ${if (codeItem.codes.codeType == "PRESCRIPTION") "prescription" else "referral"} (${codeItem.codes.code}) as used?") 
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showMarkAsUsedDialog = false
+                        onMarkAsUsedClick()
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showMarkAsUsedDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    }
+    
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Confirm Deletion") },
+            text = { 
+                Text("Are you sure you want to delete this ${if (codeItem.codes.codeType == "PRESCRIPTION") "prescription" else "referral"} (${codeItem.codes.code})? This action cannot be undone.") 
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        )
     }
 }

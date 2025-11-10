@@ -1,5 +1,6 @@
-package com.medipath.utils
+package com.medipath.core.utils
 
+import android.util.Patterns
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.regex.Pattern
@@ -81,7 +82,7 @@ object ValidationUtils {
     fun validateEmail(email: String): String {
         return when {
             email.isBlank() -> "Email is required"
-            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() ->
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() ->
                 "Invalid email format"
             else -> ""
         }

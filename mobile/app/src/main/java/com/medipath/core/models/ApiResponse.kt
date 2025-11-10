@@ -1,4 +1,4 @@
-package com.medipath.core.responses
+package com.medipath.core.models
 
 data class ApiResponse(
     val message: String,

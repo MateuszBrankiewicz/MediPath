@@ -88,11 +88,12 @@ fun GenericFiltersSection(
                 )
                 ExposedDropdownMenu(
                     expanded = statusExpanded,
-                    onDismissRequest = { statusExpanded = false }
+                    onDismissRequest = { statusExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.background
                 ) {
                     filterConfig.statusOptions.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option) },
+                            text = { Text(option, color = MaterialTheme.colorScheme.onSurface) },
                             onClick = {
                                 onStatusFilterChange(option)
                                 statusExpanded = false
@@ -142,11 +143,12 @@ fun GenericFiltersSection(
                 )
                 ExposedDropdownMenu(
                     expanded = sortExpanded,
-                    onDismissRequest = { sortExpanded = false }
+                    onDismissRequest = { sortExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.background
                 ) {
                     filterConfig.sortByOptions.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option) },
+                            text = { Text(option, color = MaterialTheme.colorScheme.onSurface) },
                             onClick = {
                                 onSortByChange(option)
                                 sortExpanded = false
@@ -177,11 +179,12 @@ fun GenericFiltersSection(
                     )
                     ExposedDropdownMenu(
                         expanded = orderExpanded,
-                        onDismissRequest = { orderExpanded = false }
+                        onDismissRequest = { orderExpanded = false },
+                        containerColor = MaterialTheme.colorScheme.background
                     ) {
                         filterConfig.sortOrderOptions.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(option) },
+                                text = { Text(option, color = MaterialTheme.colorScheme.onSurface) },
                                 onClick = {
                                     onSortOrderChange(option)
                                     orderExpanded = false

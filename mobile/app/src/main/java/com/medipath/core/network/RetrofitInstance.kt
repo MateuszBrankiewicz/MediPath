@@ -9,7 +9,8 @@ import com.medipath.core.services.NotificationsService
 import com.medipath.core.services.VisitsService
 import com.medipath.core.services.CommentsService
 import com.medipath.core.services.CodesService
-import com.medipath.utils.MyCookieJar
+import com.medipath.core.services.MedicalHistoryService
+import com.medipath.core.utils.SessionCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -19,14 +20,12 @@ import java.util.concurrent.TimeUnit
 object RetrofitInstance {
     private const val BASE_URL = "https://genitourinary-sunday-superplausibly.ngrok-free.dev"
 //    private const val BASE_URL = "http://10.0.2.2:8080/"
-    private const val BACKEND_HOST = "10.0.2.2"
-
-    private lateinit var dataStoreSessionManager: DataStoreSessionManager
-    private lateinit var myCookieJar: MyCookieJar
+    private lateinit var sessionManager: SharedPreferencesSessionManager
+    private lateinit var sessionCookieJar: SessionCookieJar
 
     fun initialize(context: Context) {
-        dataStoreSessionManager = DataStoreSessionManager(context)
-        myCookieJar = MyCookieJar(dataStoreSessionManager, BACKEND_HOST)
+        sessionManager = SharedPreferencesSessionManager(context)
+        sessionCookieJar = SessionCookieJar(sessionManager)
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -39,7 +38,7 @@ object RetrofitInstance {
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
-            .cookieJar(myCookieJar)
+            .cookieJar(sessionCookieJar)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -87,10 +86,14 @@ object RetrofitInstance {
         retrofit.create(CodesService::class.java)
     }
 
-    fun getSessionManager(): DataStoreSessionManager {
-        if (!::dataStoreSessionManager.isInitialized) {
+    val medicalHistoryService: MedicalHistoryService by lazy {
+        retrofit.create(MedicalHistoryService::class.java)
+    }
+
+    fun getSessionManager(): SharedPreferencesSessionManager {
+        if (!::sessionManager.isInitialized) {
             throw IllegalStateException("RetrofitClient has not been initialized")
         }
-        return dataStoreSessionManager
+        return sessionManager
     }
 }

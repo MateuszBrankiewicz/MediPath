@@ -23,67 +23,39 @@ import android.content.Intent
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.shared.components.AuthTextField
 import androidx.compose.runtime.getValue
-import com.medipath.utils.ValidationUtils
 import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
-import androidx.lifecycle.lifecycleScope
-import com.medipath.core.network.DataStoreSessionManager
-import com.medipath.core.models.LoginRequest
 import com.medipath.modules.patient.home.ui.HomeActivity
 import com.medipath.modules.shared.auth.LoginViewModel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.Dispatchers
-import android.util.Log
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val sessionManager = DataStoreSessionManager(this)
+
         setContent {
             MediPathTheme {
-                var shouldNavigate by remember { mutableStateOf(false) }
-                var sessionId by remember { mutableStateOf("") }
                 LoginScreen(
                     onSignUpClick = {
                         val intent = Intent(this, RegisterActivity::class.java)
                         startActivity(intent)
                         finish()
                     },
-                    onLoginSuccess = { id ->
-                        sessionId = id
-                        shouldNavigate = true
+                    onLoginSuccess = {
+                        Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_LONG).show()
+                        val intent = Intent(this@LoginActivity, HomeActivity::class.java)
+                        startActivity(intent)
+                        finish()
                     },
                     onForgotClick = {
                         val intent = Intent(this, ResetPasswordActivity::class.java)
                         startActivity(intent)
                     }
                 )
-                if (shouldNavigate && sessionId.isNotEmpty()) {
-                    LaunchedEffect(sessionId) {
-                        // Save session id on a background dispatcher and only navigate after it's saved
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            try {
-                                Log.d("LoginActivity", "Saving session id (masked): ${sessionId.take(8)}...")
-                                sessionManager.saveSessionId(sessionId)
-                                Log.d("LoginActivity", "Session id saved")
-                            } catch (e: Exception) {
-                                Log.e("LoginActivity", "Error saving session id: $e")
-                            }
-
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_LONG).show()
-                                val intent = Intent(this@LoginActivity, HomeActivity::class.java)
-                                startActivity(intent)
-                                finish()
-                            }
-                        }
-                    }
-                }
             }
         }
     }
@@ -92,57 +64,34 @@ class LoginActivity : ComponentActivity() {
 
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSignUpClick: () -> Unit = {}, onForgotClick: () -> Unit = {}, onLoginSuccess: (String) -> Unit = {}) {
+fun LoginScreen(
+    viewModel: LoginViewModel = viewModel(),
+    onSignUpClick: () -> Unit = {},
+    onForgotClick: () -> Unit = {},
+    onLoginSuccess: () -> Unit = {}
+) {
     val loginError by viewModel.loginError
     val loginSuccess by viewModel.loginSuccess
-    val sessionId by viewModel.sessionId
     val isLoading by viewModel.isLoading
+    val email by viewModel.email
+    val password by viewModel.password
+    val emailError by viewModel.emailError
+    val passwordError by viewModel.passwordError
+    val isFormValid by viewModel.isFormValid
 
-    LaunchedEffect(loginSuccess, sessionId) {
-        if (loginSuccess && sessionId.isNotEmpty()) {
-            onLoginSuccess(sessionId)
-        }
-    }
-
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
-
-    LaunchedEffect(email) {
-        if (email.isNotBlank()) {
-            kotlinx.coroutines.delay(300)
-            withContext(kotlinx.coroutines.Dispatchers.Default) {
-                emailError = ValidationUtils.validateEmail(email)
-            }
-        } else {
-            emailError = ""
-        }
-    }
-    LaunchedEffect(password) {
-        if (password.isNotBlank()) {
-            kotlinx.coroutines.delay(300)
-            withContext(kotlinx.coroutines.Dispatchers.Default) {
-                passwordError = ValidationUtils.validatePassword(password)
-            }
-        } else {
-            passwordError = ""
-        }
-    }
-
-    val isFormValid by remember {
-        derivedStateOf {
-            email.isNotBlank() &&
-            password.isNotBlank() &&
-            emailError.isEmpty() &&
-            passwordError.isEmpty()
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            onLoginSuccess()
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(WindowInsets.navigationBars.asPaddingValues()).background(MaterialTheme.colorScheme.background).padding(horizontal = 30.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(WindowInsets.navigationBars.asPaddingValues())
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -157,24 +106,29 @@ fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSig
             Spacer(modifier = Modifier.height(40.dp))
 
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.End) {
-                AuthTextField(email, {
-                    email = it
-                }, "Email Address", "Enter your email address", keyboardType = KeyboardType.Email, errorMessage = emailError,
+                AuthTextField(
+                    value = email,
+                    onValueChange = { viewModel.onEmailChanged(it) },
+                    fieldText = "Email Address",
+                    hintText = "Enter your email address",
+                    keyboardType = KeyboardType.Email,
+                    errorMessage = emailError ?: "",
                     modifier = Modifier.testTag("email_field"),
                     leadingIcon = R.drawable.user,
-                    onFocusLost = {
-                        emailError = ValidationUtils.validateEmail(email)
-                    }
+                    onFocusLost = { viewModel.validateEmail() }
                 )
-                AuthTextField(password, {
-                    password = it
-                }, "Password", "Enter your password", isPassword = true, errorMessage = passwordError,
+                AuthTextField(
+                    value = password,
+                    onValueChange = { viewModel.onPasswordChanged(it) },
+                    fieldText = "Password",
+                    hintText = "Enter your password",
+                    isPassword = true,
+                    errorMessage = passwordError ?: "",
                     modifier = Modifier.testTag("password_field"),
                     leadingIcon = R.drawable.password,
-                    onFocusLost = {
-                        passwordError = ValidationUtils.validatePassword(password)
-                    }
+                    onFocusLost = { viewModel.validatePassword() }
                 )
+
                 Text("Forgot password?", fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.ExtraBold, modifier = Modifier.clickable {
                     onForgotClick()
                 })
@@ -182,9 +136,9 @@ fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSig
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            if (loginError.isNotEmpty()) {
+            if (loginError != null) {
                 Text(
-                    text = loginError,
+                    text = loginError!!,
                     color = MaterialTheme.colorScheme.error,
                     fontSize = 14.sp,
                 )
@@ -195,11 +149,7 @@ fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSig
             Button(
                 onClick = {
                     viewModel.clearError()
-                    val loginRequest = LoginRequest(
-                        email = email,
-                        password = password
-                    )
-                    viewModel.loginUser(loginRequest)
+                    viewModel.loginUser()
                 },
                 enabled = isFormValid && !isLoading,
                 colors = ButtonDefaults.buttonColors(
@@ -209,7 +159,9 @@ fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSig
                     disabledContentColor = MaterialTheme.colorScheme.background
                 ),
                 shape = RoundedCornerShape(30.dp),
-                modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 14.dp)
             ) {
                 Text(
                     text = if (isLoading) "Signing in..." else "SIGN IN",
@@ -229,7 +181,9 @@ fun LoginScreen(viewModel: LoginViewModel = remember { LoginViewModel() }, onSig
         }
         if (isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()

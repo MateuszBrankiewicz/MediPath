@@ -2,6 +2,7 @@ package com.medipath.modules.patient.codes.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,10 +11,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Receipt
@@ -21,7 +22,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
-import com.medipath.core.network.DataStoreSessionManager
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -30,12 +30,17 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.codes.CodesViewModel
 import com.medipath.modules.patient.home.HomeViewModel
+import com.medipath.modules.patient.notifications.NotificationsViewModel
 import com.medipath.modules.patient.notifications.ui.NotificationsActivity
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.ActionButton
@@ -55,39 +60,33 @@ import kotlinx.coroutines.withContext
 
 class CodesActivity : ComponentActivity() {
     private var currentCodeType = mutableStateOf("PRESCRIPTION")
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val codeType = intent.getStringExtra("code_type") ?: "PRESCRIPTION"
         currentCodeType.value = codeType
-        val sessionManager = DataStoreSessionManager(this)
 
         setContent {
             MediPathTheme {
                 CodesScreen(
-                    sessionManager = sessionManager,
                     codeType = currentCodeType.value,
                     onLogoutClick = {
                         lifecycleScope.launch(Dispatchers.IO) {
+                            val authService = RetrofitInstance.authService
+                            val sessionManager = RetrofitInstance.getSessionManager()
                             try {
+                                authService.logout()
+                            } catch (e: Exception) {
+                                Log.e("CodesActivity", "Logout API error", e)
+                            } finally {
                                 sessionManager.deleteSessionId()
                                 withContext(Dispatchers.Main) {
                                     startActivity(
-                                        Intent(
-                                            this@CodesActivity,
-                                            LoginActivity::class.java
-                                        )
+                                        Intent(this@CodesActivity, LoginActivity::class.java)
+                                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                                     )
                                     finish()
-                                }
-                            } catch (e: Exception) {
-                                withContext(Dispatchers.Main) {
-                                    Toast.makeText(
-                                        this@CodesActivity,
-                                        "Logout error",
-                                        Toast.LENGTH_LONG
-                                    ).show()
                                 }
                             }
                         }
@@ -107,21 +106,27 @@ class CodesActivity : ComponentActivity() {
 
 @Composable
 fun CodesScreen(
-    sessionManager: DataStoreSessionManager,
-    profileViewModel: HomeViewModel = remember { HomeViewModel() },
+    profileViewModel: HomeViewModel = viewModel(),
     onLogoutClick: () -> Unit,
     codeType: String
 ) {
     val codesViewModel: CodesViewModel = viewModel()
-    val codes by codesViewModel.codes
-    val isLoading by codesViewModel.isLoading
-    val error by codesViewModel.error
-    val successMessage by codesViewModel.successMessage
+
+    val codes by codesViewModel.codes.collectAsState()
+    val isLoading by codesViewModel.isLoading.collectAsState()
+    val error by codesViewModel.error.collectAsState()
+    val successMessage by codesViewModel.successMessage.collectAsState()
+
+    val firstName by profileViewModel.firstName.collectAsState()
+    val lastName by profileViewModel.lastName.collectAsState()
+    val profileIsLoading by profileViewModel.isLoading.collectAsState()
+
+    val profileShouldRedirect by profileViewModel.shouldRedirectToLogin.collectAsState()
+    val codesShouldRedirect by codesViewModel.shouldRedirectToLogin.collectAsState()
+
     val clipboardManager = LocalClipboardManager.current
     var copiedCode by remember { mutableStateOf("") }
     val context = LocalContext.current
-    val firstName by profileViewModel.firstName
-    val lastName by profileViewModel.lastName
     val scope = rememberCoroutineScope()
     val colors = LocalCustomColors.current
 
@@ -134,11 +139,22 @@ fun CodesScreen(
     var showFilters by remember { mutableStateOf(false) }
     val label = if (codeType == "PRESCRIPTION") "prescriptions" else "referrals"
 
-    LaunchedEffect(codeType) {
-        val sessionToken = sessionManager.getSessionId()
-        if (!sessionToken.isNullOrEmpty()) {
-            codesViewModel.fetchCodes(sessionToken, label)
-            profileViewModel.fetchUserProfile(sessionManager)
+
+    val notificationsViewModel: NotificationsViewModel = viewModel()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner, codeType) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val currentLabel = if (codeType == "PRESCRIPTION") "prescriptions" else "referrals"
+                profileViewModel.fetchUserProfile()
+                codesViewModel.fetchCodes(currentLabel)
+                notificationsViewModel.fetchNotifications()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -150,18 +166,22 @@ fun CodesScreen(
     }
 
     LaunchedEffect(successMessage) {
-        if (successMessage.isNotEmpty()) {
-            Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show()
-            delay(2000)
-            codesViewModel.clearSuccessMessage()
+        successMessage?.let {
+            if (it.isNotEmpty()) {
+                Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show()
+                delay(2000)
+                codesViewModel.clearSuccessMessage()
+            }
         }
     }
 
     LaunchedEffect(error) {
-        if (error.isNotEmpty()) {
-            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-            delay(2000)
-            codesViewModel.clearError()
+        error?.let {
+            if (it.isNotEmpty()) {
+                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                delay(2000)
+                codesViewModel.clearError()
+            }
         }
     }
 
@@ -212,36 +232,57 @@ fun CodesScreen(
     val usedCodes = allCodesOfType.count { !it.codes.isActive }
     val unusedCodes = allCodesOfType.count { it.codes.isActive }
 
-    val actionButtons = remember {
-        listOf(
-            ActionButton(
-                icon = Icons.Default.FilterList,
-                label = "FILTERS",
-                onClick = { showFilters = !showFilters },
-                color = colors.blue800,
-                isOutlined = true
-            ),
-            ActionButton(
-                icon = Icons.Default.Refresh,
-                label = "REFRESH",
-                onClick = {
-                    scope.launch {
-                        val sessionToken = sessionManager.getSessionId()
-                        if (!sessionToken.isNullOrEmpty()) {
-                            val apiCodeType = when (codeType) {
-                                "PRESCRIPTION" -> "prescriptions"
-                                "REFERRAL" -> "referrals"
-                                else -> null
-                            }
-                            codesViewModel.fetchCodes(sessionToken, apiCodeType)
-                        } } },
-                color = colors.blue800,
-                isOutlined = true
-            )
+    val actionButtons = listOf(
+        ActionButton(
+            icon = Icons.Default.Refresh,
+            label = "REFRESH",
+            onClick = {
+                val apiCodeType = when (codeType) {
+                    "PRESCRIPTION" -> "prescriptions"
+                    "REFERRAL" -> "referrals"
+                    else -> null
+                }
+                codesViewModel.fetchCodes(apiCodeType)
+            },
+            color = colors.blue800,
+            isOutlined = true
+        ),
+        ActionButton(
+            icon = Icons.Default.FilterList,
+            label = "FILTERS",
+            onClick = { showFilters = !showFilters },
+            color = colors.blue800,
+            isOutlined = true
+        ),
+        ActionButton(
+            icon = Icons.Default.Clear,
+            label = "CLEAR FILTERS",
+            onClick = {
+                searchQuery = ""
+                statusFilter = "All"
+                dateFromFilter = ""
+                dateToFilter = ""
+                sortBy = "Date"
+                sortOrder = "Descending"
+            },
+            color = colors.error,
+            isOutlined = true
         )
-    }
+    )
 
-    if (isLoading) {
+    val shouldRedirect = profileShouldRedirect || codesShouldRedirect
+    if (shouldRedirect) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            (context as? ComponentActivity)?.finish()
+        }
+    } else if (isLoading || profileIsLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -250,6 +291,7 @@ fun CodesScreen(
         }
     } else {
         Navigation(
+            notificationsViewModel = notificationsViewModel,
             screenTitle = if (codeType == "PRESCRIPTION") "Prescriptions" else "Referrals",
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
@@ -302,7 +344,7 @@ fun CodesScreen(
                     
                     GenericActionButtonsRow(
                         buttons = actionButtons,
-                        buttonsPerRow = 2
+                        buttonsPerRow = 3
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -361,7 +403,7 @@ fun CodesScreen(
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = 20.dp, vertical = 10.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Top
                         ) {
@@ -373,28 +415,16 @@ fun CodesScreen(
                                     copiedCode = code
                                 },
                                 onMarkAsUsedClick = {
-                                    scope.launch {
-                                        val sessionToken = sessionManager.getSessionId()
-                                        if (!sessionToken.isNullOrEmpty()) {
-                                            codesViewModel.markCodeAsUsed(
-                                                sessionToken,
-                                                codeItem.codes.codeType,
-                                                codeItem.codes.code
-                                            )
-                                        }
-                                    }
+                                    codesViewModel.markCodeAsUsed(
+                                        codeItem.codes.codeType,
+                                        codeItem.codes.code
+                                    )
                                 },
                                 onDeleteClick = {
-                                    scope.launch {
-                                        val sessionToken = sessionManager.getSessionId()
-                                        if (!sessionToken.isNullOrEmpty()) {
-                                            codesViewModel.deleteCode(
-                                                sessionToken,
-                                                codeItem.codes.codeType,
-                                                codeItem.codes.code
-                                            )
-                                        }
-                                    }
+                                    codesViewModel.deleteCode(
+                                        codeItem.codes.codeType,
+                                        codeItem.codes.code
+                                    )
                                 },
                                 isCopied = copiedCode == codeItem.codes.code
                             )
@@ -409,22 +439,5 @@ fun CodesScreen(
             lastName = lastName,
             currentTab = if (codeType == "PRESCRIPTION") "Prescriptions" else "Referrals"
         )
-    }
-
-    if (copiedCode.isNotEmpty()) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text(
-                text = "Code copied to clipboard",
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(16.dp),
-                fontSize = 14.sp
-            )
-        }
     }
 }

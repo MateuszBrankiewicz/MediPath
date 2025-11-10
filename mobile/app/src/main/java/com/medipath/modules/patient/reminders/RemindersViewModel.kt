@@ -1,14 +1,14 @@
 package com.medipath.modules.patient.reminders
 
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.medipath.core.models.MarkNotificationReadRequest
 import com.medipath.core.models.Notification
-import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -17,118 +17,136 @@ import java.time.format.DateTimeFormatter
 class RemindersViewModel : ViewModel() {
     private val notificationsService = RetrofitInstance.notificationsService
 
-    private val _reminders = mutableStateOf<List<Notification>>(emptyList())
-    val reminders: State<List<Notification>> = _reminders
+    private val _reminders = MutableStateFlow<List<Notification>>(emptyList())
+    val reminders: StateFlow<List<Notification>> = _reminders.asStateFlow()
 
-    private val _filteredReminders = mutableStateOf<List<Notification>>(emptyList())
-    val filteredReminders: State<List<Notification>> = _filteredReminders
+    private val _filteredReminders = MutableStateFlow<List<Notification>>(emptyList())
+    val filteredReminders: StateFlow<List<Notification>> = _filteredReminders.asStateFlow()
 
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _error = mutableStateOf<String?>(null)
-    val error: State<String?> = _error
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
-    private val _statusFilter = mutableStateOf("All")
-    val statusFilter: State<String> = _statusFilter
+    private val _selectedTab = MutableStateFlow("received")
+    val selectedTab: StateFlow<String> = _selectedTab.asStateFlow()
 
-    private val _dateFromFilter = mutableStateOf("")
-    val dateFromFilter: State<String> = _dateFromFilter
+    private val _statusFilter = MutableStateFlow("All")
+    val statusFilter: StateFlow<String> = _statusFilter.asStateFlow()
 
-    private val _dateToFilter = mutableStateOf("")
-    val dateToFilter: State<String> = _dateToFilter
+    private val _dateFromFilter = MutableStateFlow("")
+    val dateFromFilter: StateFlow<String> = _dateFromFilter.asStateFlow()
 
-    private val _sortBy = mutableStateOf("Date (Newest first)")
-    val sortBy: State<String> = _sortBy
+    private val _dateToFilter = MutableStateFlow("")
+    val dateToFilter: StateFlow<String> = _dateToFilter.asStateFlow()
 
-    private val _searchQuery = mutableStateOf("")
-    val searchQuery: State<String> = _searchQuery
+    private val _sortBy = MutableStateFlow("Date")
+    val sortBy: StateFlow<String> = _sortBy.asStateFlow()
 
-    private val _totalReminders = mutableStateOf(0)
-    val totalReminders: State<Int> = _totalReminders
+    private val _sortOrder = MutableStateFlow("Descending")
+    val sortOrder: StateFlow<String> = _sortOrder.asStateFlow()
 
-    private val _unreadReminders = mutableStateOf(0)
-    val unreadReminders: State<Int> = _unreadReminders
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _todayReminders = mutableStateOf(0)
-    val todayReminders: State<Int> = _todayReminders
+    private val _totalReminders = MutableStateFlow(0)
+    val totalReminders: StateFlow<Int> = _totalReminders.asStateFlow()
 
-    fun fetchReminders(sessionManager: DataStoreSessionManager) {
+    private val _unreadReminders = MutableStateFlow(0)
+    val unreadReminders: StateFlow<Int> = _unreadReminders.asStateFlow()
+
+    private val _todayReminders = MutableStateFlow(0)
+    val todayReminders: StateFlow<Int> = _todayReminders.asStateFlow()
+
+    private val _shouldRedirectToLogin = MutableStateFlow(false)
+    val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
+
+    fun fetchReminders() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 _error.value = null
+                _shouldRedirectToLogin.value = false
 
-                val sessionId = sessionManager.getSessionId()
-                if (sessionId == null) {
-                    _error.value = "No session found"
-                    _isLoading.value = false
-                    return@launch
+                val response = notificationsService.getUserNotifications(_selectedTab.value)
+
+                if (response.isSuccessful) {
+                    _reminders.value = response.body()?.notifications ?: emptyList()
+                    updateStatistics()
+                    applyFilters()
+                } else if (response.code() == 401) {
+                    _shouldRedirectToLogin.value = true
+                } else {
+                    _error.value = "Failed to load reminders: ${response.code()}"
                 }
-
-                val response = notificationsService.getUserNotifications("SESSION=$sessionId")
-
-                _reminders.value = response.notifications
-                updateStatistics()
-                applyFilters()
-                _isLoading.value = false
             } catch (e: Exception) {
-                Log.e("RemindersViewModel", "Error fetching reminders", e)
                 _error.value = "Failed to load reminders: ${e.message}"
+            } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun markAsRead(notification: Notification, sessionManager: DataStoreSessionManager) {
+    fun markAsRead(notification: Notification, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             try {
-                val sessionId = sessionManager.getSessionId()
+                _isLoading.value = true
+                _error.value = null
 
                 val request = MarkNotificationReadRequest(
                     timestamp = notification.timestamp,
                     title = notification.title
                 )
 
-                notificationsService.markNotificationAsRead(request, "SESSION=$sessionId")
+                val response = notificationsService.markNotificationAsRead(request)
 
-                _reminders.value = _reminders.value.map {
-                    if (it.timestamp == notification.timestamp && it.title == notification.title) {
-                        it.copy(read = true)
-                    } else {
-                        it
+                if (response.isSuccessful) {
+                    fetchReminders()
+                    onSuccess()
+                } else {
+                    when (response.code()) {
+                        401 -> _shouldRedirectToLogin.value = true
+                        else -> _error.value = "Failed to mark as read: ${response.code()}"
                     }
                 }
-                updateStatistics()
-                applyFilters()
             } catch (e: Exception) {
-                Log.e("RemindersViewModel", "Error marking as read", e)
                 _error.value = "Failed to mark as read: ${e.message}"
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
-    fun markAllAsRead(sessionManager: DataStoreSessionManager) {
+    fun markAllAsRead(onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             try {
-                val sessionId = sessionManager.getSessionId()
+                _isLoading.value = true
+                _error.value = null
 
-                notificationsService.markAllNotificationsAsRead("SESSION=$sessionId")
+                val response = notificationsService.markAllNotificationsAsRead()
 
-                _reminders.value = _reminders.value.map { it.copy(read = true) }
-                updateStatistics()
-                applyFilters()
+                if (response.isSuccessful) {
+                    fetchReminders()
+                    onSuccess()
+                } else {
+                    when (response.code()) {
+                        401 -> _error.value = "Unauthorized"
+                        else -> _error.value = "Failed to mark all as read: ${response.code()}"
+                    }
+                    _isLoading.value = false
+                }
             } catch (e: Exception) {
                 Log.e("RemindersViewModel", "Error marking all as read", e)
                 _error.value = "Failed to mark all as read: ${e.message}"
+                _isLoading.value = false
             }
         }
     }
 
-    fun deleteReminder(notification: Notification, sessionManager: DataStoreSessionManager) {
+    fun deleteReminder(notification: Notification) {
         viewModelScope.launch {
             try {
-                val sessionId = sessionManager.getSessionId()
                 val parsed = LocalDateTime.parse(notification.timestamp, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 
                 val request = com.medipath.core.models.DeleteNotificationsRequest(
@@ -138,10 +156,10 @@ class RemindersViewModel : ViewModel() {
                     endDate = parsed.toLocalDate().toString()
                 )
 
-                val response = notificationsService.deleteNotifications(request, "SESSION=$sessionId")
+                val response = notificationsService.deleteNotifications(request)
 
                 if (response.isSuccessful) {
-                    fetchReminders(sessionManager)
+                    fetchReminders()
                 } else {
                     when (response.code()) {
                         401 -> _error.value = "Unauthorized"
@@ -176,8 +194,18 @@ class RemindersViewModel : ViewModel() {
         applyFilters()
     }
 
+    fun updateSortOrder(order: String) {
+        _sortOrder.value = order
+        applyFilters()
+    }
+
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
+        applyFilters()
+    }
+
+    fun updateSelectedTab(tab: String) {
+        _selectedTab.value = tab
         applyFilters()
     }
 
@@ -185,7 +213,8 @@ class RemindersViewModel : ViewModel() {
         _statusFilter.value = "All"
         _dateFromFilter.value = ""
         _dateToFilter.value = ""
-        _sortBy.value = "Date (Newest first)"
+        _sortBy.value = "Date"
+        _sortOrder.value = "Descending"
         _searchQuery.value = ""
         applyFilters()
     }
@@ -262,10 +291,20 @@ class RemindersViewModel : ViewModel() {
         }
 
         filtered = when (_sortBy.value) {
-            "Date (Newest first)" -> filtered.sortedByDescending { it.timestamp }
-            "Date (Oldest first)" -> filtered.sortedByDescending { it.timestamp }.reversed()
-            "Title (A-Z)" -> filtered.sortedBy { it.title }
-            "Title (Z-A)" -> filtered.sortedBy { it.title }.reversed()
+            "Date" -> {
+                if (_sortOrder.value == "Ascending") {
+                    filtered.sortedBy { it.timestamp }
+                } else {
+                    filtered.sortedByDescending { it.timestamp }
+                }
+            }
+            "Title" -> {
+                if (_sortOrder.value == "Ascending") {
+                    filtered.sortedBy { it.title }
+                } else {
+                    filtered.sortedByDescending { it.title }
+                }
+            }
             else -> filtered
         }
 
