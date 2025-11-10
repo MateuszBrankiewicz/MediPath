@@ -113,7 +113,7 @@ public class VisitService {
             throw new IllegalArgumentException("this visit is already cancelled");
         }
 
-        Optional<User> userOptional = userRepository.findById(visitToCancel.getPatient().getUserId());
+        Optional<User> userOptional = userRepository.findActiveById(visitToCancel.getPatient().getUserId());
         Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToCancel.getTime().getScheduleId());
         if(userOptional.isEmpty() || scheduleOptional.isEmpty()) {
             throw new IllegalAccessException();
@@ -206,7 +206,7 @@ public class VisitService {
             throw new IllegalComponentStateException();
         }
 
-        Optional<User> userOptional = userRepository.findById(visitToReschedule.getPatient().getUserId());
+        Optional<User> userOptional = userRepository.findActiveById(visitToReschedule.getPatient().getUserId());
         if(userOptional.isEmpty()) {
             throw new IllegalComponentStateException();
         }
@@ -310,7 +310,7 @@ public class VisitService {
         String doctorId = visit.getDoctor().getUserId();
 
         Optional<User> doctorOpt = userRepository.findDoctorById(doctorId);
-        Optional<Institution> institutionOpt = institutionRepository.findById(institutionId);
+        Optional<Institution> institutionOpt = institutionRepository.findActiveById(institutionId);
 
         if(doctorOpt.isEmpty()) {
             throw new IllegalComponentStateException("doctor id corrupted");

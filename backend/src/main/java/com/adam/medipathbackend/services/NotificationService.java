@@ -50,12 +50,12 @@ public class NotificationService {
         Optional<User> optUser;
         if (notificationForm.getUserId() == null || notificationForm.getUserId().isBlank()) {
 
-            optUser = userRepository.findById(loggedUserID);
+            optUser = userRepository.findActiveById(loggedUserID);
             if (optUser.isEmpty()) throw new IllegalAccessException("User not found");
 
         } else {
 
-            optUser = userRepository.findById(notificationForm.getUserId());
+            optUser = userRepository.findActiveById(notificationForm.getUserId());
             if (optUser.isEmpty()) throw new IllegalAccessException("Patient not found");
 
             ArrayList<Visit> patientsvisits = visitRepository.getAllVisitsForPatient(notificationForm.getUserId());
@@ -84,7 +84,7 @@ public class NotificationService {
 
     public void readNotification(Notification notifToChange, String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         User user = userOpt.get();
@@ -113,7 +113,7 @@ public class NotificationService {
 
     public void readAllNotifications(String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         User user = userOpt.get();
@@ -155,7 +155,7 @@ public class NotificationService {
 
 
     public void removeNotifications(AddNotificationForm notificationForm, String loggedUserID) throws IllegalAccessException {
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         if(notificationForm.getTitle() == null || notificationForm.getTitle().isBlank()) {

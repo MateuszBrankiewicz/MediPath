@@ -36,7 +36,7 @@ public class MedicalHistoryService {
 
         if (medicalHistory.getUserId() == null || medicalHistory.getUserId().isBlank()) {
 
-            userOpt = userRepository.findById(loggedUserID);
+            userOpt = userRepository.findActiveById(loggedUserID);
             if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
             medicalHistory.setDoctor(null);
@@ -49,7 +49,7 @@ public class MedicalHistoryService {
 
                 throw new IllegalArgumentException("Doctor digest must be included when adding for a patient");
 
-            userOpt = userRepository.findById(medicalHistory.getUserId());
+            userOpt = userRepository.findActiveById(medicalHistory.getUserId());
 
             if (userOpt.isEmpty()) throw new IllegalAccessException("Patient not found");
 
@@ -59,7 +59,7 @@ public class MedicalHistoryService {
 
             authorizationService.startAuthChain(loggedUserID, null).doctorServedPatient(medicalHistory.getUserId());
 
-            Optional<User> doctorOpt = userRepository.findById(medicalHistory.getDoctor().getUserId());
+            Optional<User> doctorOpt = userRepository.findActiveById(medicalHistory.getDoctor().getUserId());
             if (doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
 
             User doctor = doctorOpt.get();
@@ -77,7 +77,7 @@ public class MedicalHistoryService {
     public void modifyMedHisEntry(String med_his_id, MedicalHistory medicalHistory, String loggedUserID)
             throws IllegalArgumentException, IllegalAccessException {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         Optional<MedicalHistory> oldMedHisOpt = medicalHistoryRepository.findById(med_his_id);
@@ -115,7 +115,7 @@ public class MedicalHistoryService {
     public void deleteMedHisEntry(String med_his_id, String loggedUserID)
             throws IllegalArgumentException, IllegalAccessException {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         Optional<MedicalHistory> oldMedHisOpt = medicalHistoryRepository.findById(med_his_id);

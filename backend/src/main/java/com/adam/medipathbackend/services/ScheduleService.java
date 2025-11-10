@@ -30,10 +30,10 @@ public class ScheduleService {
         authorizationService.startAuthChain(loggedUserID, schedule.getInstitutionID()).employeeOfInstitution();
         authorizationService.startAuthChain(schedule.getDoctorID(), schedule.getInstitutionID()).doctorOfInstitution();
 
-        Optional<User> optUser = userRepository.findById(schedule.getDoctorID());
+        Optional<User> optUser = userRepository.findActiveById(schedule.getDoctorID());
 
         if (optUser.isEmpty()) throw new IllegalArgumentException("Doctor not found");
-        Optional<Institution> optInst = institutionRepository.findById(schedule.getInstitutionID());
+        Optional<Institution> optInst = institutionRepository.findActiveById(schedule.getInstitutionID());
 
         if (optInst.isEmpty()) throw new IllegalArgumentException("Institution not found");
         if (isScheduleOverlapping(schedule.getStartHour(), schedule.getEndHour(), schedule.getDoctorID(), null)) throw new IllegalStateException("Doctor is booked at this hour");
@@ -55,10 +55,10 @@ public class ScheduleService {
         authorizationService.startAuthChain(loggedUserID, schedule.getInstitutionID()).employeeOfInstitution();
         authorizationService.startAuthChain(schedule.getDoctorID(), schedule.getInstitutionID()).doctorOfInstitution();
 
-        Optional<User> optUser = userRepository.findById(schedule.getDoctorID());
+        Optional<User> optUser = userRepository.findActiveById(schedule.getDoctorID());
         if (optUser.isEmpty()) throw new IllegalArgumentException("Doctor not found");
 
-        Optional<Institution> optInst = institutionRepository.findById(schedule.getInstitutionID());
+        Optional<Institution> optInst = institutionRepository.findActiveById(schedule.getInstitutionID());
         if (optInst.isEmpty()) throw new IllegalArgumentException("Institution not found");
 
         LocalDateTime start = schedule.getStartHour();
@@ -86,10 +86,10 @@ public class ScheduleService {
         authorizationService.startAuthChain(loggedUserID, newSchedule.getInstitutionID()).employeeOfInstitution();
         authorizationService.startAuthChain(newSchedule.getDoctorID(), newSchedule.getInstitutionID()).doctorOfInstitution();
 
-        Optional<User> optUser = userRepository.findById(newSchedule.getDoctorID());
+        Optional<User> optUser = userRepository.findActiveById(newSchedule.getDoctorID());
         if (optUser.isEmpty()) throw new IllegalArgumentException("Doctor not found");
 
-        Optional<Institution> optInst = institutionRepository.findById(newSchedule.getInstitutionID());
+        Optional<Institution> optInst = institutionRepository.findActiveById(newSchedule.getInstitutionID());
         if (optInst.isEmpty()) throw new IllegalArgumentException("Institution not found");
 
         ArrayList<Schedule> schedulesToReset = scheduleRepository.getSchedulesBetween(newSchedule.getDoctorID(),

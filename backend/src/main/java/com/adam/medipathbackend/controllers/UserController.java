@@ -290,4 +290,22 @@ public class UserController {
         }
     }
 
+    @PostMapping(value = {"/me/deactivate", "/me/deactivate/"})
+    public ResponseEntity<Map<String, Object>> deactivateUser(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+
+            userService.deactivateMe(loggedUserID);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(IllegalStateException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
+
 }

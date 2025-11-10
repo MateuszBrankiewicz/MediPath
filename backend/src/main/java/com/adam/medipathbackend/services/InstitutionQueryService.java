@@ -16,10 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Service
@@ -44,7 +41,11 @@ public class InstitutionQueryService {
                 .filter(doctor -> specialisation == null || doctor.getSpecialisations().contains(specialisation))
                 .map(doctor -> {
 
-                    User doctorProfile = userRepository.findById(doctor.getUserId()).get();
+                    Optional<User> doctorProfileOpt = userRepository.findActiveById(doctor.getUserId());
+                    if(doctorProfileOpt.isEmpty()) {
+                        return null;
+                    }
+                    User doctorProfile = doctorProfileOpt.get();
                     Map<String, Object> doctorMap = new HashMap<>();
                     doctorMap.put("doctorId", doctor.getUserId());
                     doctorMap.put("doctorName", doctor.getName());
@@ -93,7 +94,7 @@ public class InstitutionQueryService {
     }
 
     public Map<String, Object> getInstitutionFields(String institutionId, String[] fields, boolean isEmployee) {
-        var institution = institutionRepository.findById(institutionId)
+        var institution = institutionRepository.findActiveById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid institution id"));
 
         Map<String, Object> outputFields = new HashMap<>();

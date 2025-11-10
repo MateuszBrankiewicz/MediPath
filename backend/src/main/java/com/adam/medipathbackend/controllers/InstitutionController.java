@@ -289,4 +289,22 @@ public class InstitutionController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
+
+    @PostMapping(value = {"/{institutionid}/deactivate", "/{institutionid}/deactivate/"})
+    public ResponseEntity<Map<String, Object>> deactivateInstitution(HttpSession session, @PathVariable String institutionid) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            authorizationService.startAuthChain(loggedUserID, institutionid).adminOfInstitution().check();
+            institutionService.deactivateInstitution(institutionid);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(IllegalStateException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
 }

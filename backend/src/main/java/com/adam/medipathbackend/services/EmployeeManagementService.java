@@ -13,12 +13,14 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.Option;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
@@ -34,13 +36,13 @@ public class EmployeeManagementService {
     private PasswordResetEntryRepository preRepository;
 
     public void addEmployeesToInstitution(String institutionId, ArrayList<AddEmployeeForm> employees) {
-        Institution institution = institutionRepository.findById(institutionId)
+        Institution institution = institutionRepository.findActiveById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
 
         validateEmployeeIds(employees);
 
         for (AddEmployeeForm employeeForm : employees) {
-            User user = userRepository.findById(employeeForm.getUserID())
+            User user = userRepository.findActiveById(employeeForm.getUserID())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
             addEmployeeToInstitution(institution, user, employeeForm);
@@ -53,7 +55,7 @@ public class EmployeeManagementService {
     public User registerEmployee(AddComboForm comboForm, String institutionId) {
         validateComboForm(comboForm);
 
-        Institution institution = institutionRepository.findById(institutionId)
+        Institution institution = institutionRepository.findActiveById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
 
         RegistrationForm registrationForm = comboForm.getUserDetails();
@@ -103,10 +105,10 @@ public class EmployeeManagementService {
 
      
     public void updateEmployee(String institutionId, AddEmployeeForm employeeUpdate, String adminId) {
-        Institution institution = institutionRepository.findById(institutionId)
+        Institution institution = institutionRepository.findActiveById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
 
-        User user = userRepository.findById(employeeUpdate.getUserID())
+        User user = userRepository.findActiveById(employeeUpdate.getUserID())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (institution.getEmployees().stream()
@@ -131,10 +133,10 @@ public class EmployeeManagementService {
             throw new IllegalStateException("You cannot delete yourself from the employee list");
         }
 
-        Institution institution = institutionRepository.findById(institutionId)
+        Institution institution = institutionRepository.findActiveById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (institution.getEmployees().stream()
@@ -210,6 +212,43 @@ public class EmployeeManagementService {
         ArrayList<InstitutionDigest> employers = user.getEmployers();
         employers.removeIf(e -> e.getInstitutionId().equals(institutionId));
         user.setEmployers(employers);
+    }
+
+
+    private boolean checkIfEmployeeIsLastAdminOfInstitution(String userId, Institution institution) {
+        for(StaffDigest digest: institution.getEmployees()) {
+            if(digest.getUserId().equals(userId) && digest.getRoleCode() > 8) {
+                return institution.getEmployees().stream()
+                        .filter(employee -> employee.getRoleCode() > 8).count() == 1;
+            }
+        }
+        return false;
+    }
+
+    public void removeAllEmployeesFromInstitution(Institution institution) {
+        for(StaffDigest digest: institution.getEmployees()) {
+            User user = userRepository.findActiveById(digest.getUserId()).get();
+            ArrayList<InstitutionDigest> employers = user.getEmployers();
+            employers.removeIf(institutionDigest -> institutionDigest.getInstitutionId().equals(institution.getId()));
+            user.setEmployers(employers);
+            userRepository.save(user);
+        }
+        institution.setEmployees(new ArrayList<>());
+    }
+
+    public void removeEmployeeFromAllInstitutions(User user) {
+        for(InstitutionDigest institutionDigest: user.getEmployers()) {
+            Institution institution = institutionRepository.findActiveById(institutionDigest.getInstitutionId()).get();
+            if(checkIfEmployeeIsLastAdminOfInstitution(user.getId(), institution)) {
+                throw new IllegalStateException("You are last administrator of institution " +
+                        institution.getName() + ". Please deactivate the institution or add another administrator.");
+            }
+            ArrayList<StaffDigest> employees = institution.getEmployees();
+            employees.removeIf(e -> e.getUserId().equals(user.getId()));
+            institution.setEmployees(employees);
+            institutionRepository.save(institution);
+        }
+        user.setEmployers(new ArrayList<>());
     }
 
     private void validateEmployeeIds(ArrayList<AddEmployeeForm> employees) {
