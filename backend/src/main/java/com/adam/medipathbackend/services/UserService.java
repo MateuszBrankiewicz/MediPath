@@ -80,14 +80,18 @@ public class UserService {
                 SecureRandom secureRandom = new SecureRandom();
                 String token = Long.toHexString(secureRandom.nextLong());
 
-                passwordResetEntry = preRepository.save(new PasswordResetEntry(address, token));;
+                passwordResetEntry = 
+                        preRepository.save(new PasswordResetEntry(address, token));
+                
                 emailService.sendResetMail(userOpt.get(), token);
 
-            } catch (MailException | MessagingException | UnsupportedEncodingException e) {
+            } catch (MessagingException | UnsupportedEncodingException e) {
                 if (passwordResetEntry != null) {
                     preRepository.delete(passwordResetEntry);
                 }
-                throw new IllegalStateException("the mail service threw an error: " + e.getMessage());
+                throw new IllegalStateException(
+                    "the mail service threw an error: " + e.getMessage()
+                    );
             }
         }
         return Map.of("message", "password reset mail has been sent, if the account exists");
@@ -248,12 +252,16 @@ public class UserService {
         }
 
         if(!missingFields.isEmpty()) {
-            throw new IllegalArgumentException("missing fields in request body: " + missingFields);
+            throw new IllegalArgumentException(
+                "missing fields in request body: " + missingFields
+                );
         }
         
         Optional<User> user = userRepository.findByEmail(loginForm.getEmail());
 
-        if(user.isEmpty() || !argon2PasswordEncoder.matches(loginForm.getPassword(), user.get().getPasswordHash())) {
+        if(user.isEmpty() || !argon2PasswordEncoder.matches(loginForm.getPassword(),
+                        user.get().getPasswordHash()))
+        {
             throw new IllegalAccessException("invalid email or password");
         }
         return user.get().getId();
@@ -342,7 +350,8 @@ public class UserService {
         }
 
         if(!missingFields.isEmpty()) {
-            throw new IllegalArgumentException("missing fields in request body" + missingFields.stream().reduce(" ", (total, string) -> total + string + " "));
+            throw new IllegalArgumentException("missing fields in request body" + 
+                missingFields.stream().reduce(" ", (total, string) -> total + string + " "));
         }
 
         Optional<PasswordResetEntry> p = preRepository.findValidToken(resetForm.getToken());
@@ -620,5 +629,22 @@ public class UserService {
 
         user.setActive(false);
         userRepository.save(user);
+    public Map<String, Object> findEmployeeByGovId(String govid, String loggedUserID)
+            throws IllegalAccessException {
+        Optional<User> adminOpt = userRepository.findById(loggedUserID);
+        if(adminOpt.isEmpty() || adminOpt.get().getRoleCode() < 8) {
+            throw new IllegalAccessException();
+        }
+
+        Optional<User> employeeOpt = userRepository.findByGovID(govid);
+        if(employeeOpt.isEmpty()) {
+            throw new IllegalArgumentException("user not found");
+        }
+        User employee = employeeOpt.get();
+
+        return Map.of("id", employee.getId(), "name", employee.getName(), "surname", employee.getSurname(),
+                "email", employee.getEmail(), "birthDate", employee.getBirthDate().toString(), "address",
+                employee.getAddress());
+
     }
 }

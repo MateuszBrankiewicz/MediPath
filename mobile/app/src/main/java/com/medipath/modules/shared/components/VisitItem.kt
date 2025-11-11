@@ -14,7 +14,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,7 +39,8 @@ fun VisitItem(
     visit: Visit,
     onCancelVisit: (String) -> Unit,
     onViewDetails: ((String) -> Unit)? = null,
-    onReschedule: ((String) -> Unit)? = null
+    onReschedule: ((String) -> Unit)? = null,
+    elevation: CardElevation = CardDefaults.cardElevation()
 ) {
     val colors = LocalCustomColors.current
 
@@ -73,7 +76,7 @@ fun VisitItem(
         isScheduled -> colors.orange800
         isCancelled -> colors.red800
         isCompleted -> colors.green800
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
+        else -> MaterialTheme.colorScheme.primary.copy(0.03f)
     }
 
     Card(
@@ -81,9 +84,9 @@ fun VisitItem(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.background
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = elevation
     ) {
         Column(
             modifier = Modifier
@@ -156,9 +159,7 @@ fun VisitItem(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.blue800,
-                        contentColor = MaterialTheme.colorScheme.background,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentColor = MaterialTheme.colorScheme.background
                     )
                 ) {
                     Text("DETAILS", fontSize = 12.sp)
@@ -169,9 +170,7 @@ fun VisitItem(
                     modifier = Modifier.weight(1.2f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.purple800,
-                        contentColor = MaterialTheme.colorScheme.background,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentColor = MaterialTheme.colorScheme.background
                     )
                 ) {
                     Text("RESCHEDULE", fontSize = 12.sp)
@@ -195,23 +194,24 @@ fun VisitItem(
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
-            title = { Text("Confirm cancellation") },
+            title = { Text("Confirm Cancellation") },
             text = { Text("Are you sure you want to cancel the appointment with Dr. ${visit.doctor.doctorName} ${visit.doctor.doctorSurname}?") },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         showCancelDialog = false
                         onCancelVisit(visit.id)
                     }
                 ) {
-                    Text("YES", color = colors.red800)
+                    Text("Confirm")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showCancelDialog = false }) {
-                    Text("NO")
+                OutlinedButton(onClick = { showCancelDialog = false }) {
+                    Text("Cancel")
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.background
         )
     }
 }

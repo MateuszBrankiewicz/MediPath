@@ -49,15 +49,15 @@
             android:exported="false" />
         <activity android:name=".modules.patient.visits.ui.VisitDetailsActivity"
             android:exported="false" />
+        <activity android:name=".modules.patient.visits.ui.ReviewDetailsActivity"
+            android:exported="false" />
         <activity android:name=".modules.patient.visits.ui.ReviewVisitActivity"
             android:exported="false" />
         <activity android:name=".modules.patient.comments.ui.CommentsActivity"
             android:exported="false" />
         <activity android:name=".modules.patient.medical_history.ui.MedicalHistoryActivity"
             android:exported="false" />
-        <activity android:name=".modules.patient.prescriptions.ui.PrescriptionsActivity"
-            android:exported="false" />
-        <activity android:name=".modules.patient.referrals.ui.ReferralsActivity"
+        <activity android:name=".modules.patient.medical_history.ui.MedicalHistoryDetailsActivity"
             android:exported="false" />
         <activity android:name=".modules.patient.reminders.ui.RemindersActivity"
             android:exported="false" />
@@ -66,6 +66,10 @@
         <activity android:name=".modules.shared.profile.ui.EditProfileActivity"
             android:exported="false" />
         <activity android:name=".modules.shared.settings.ui.SettingsActivity"
+            android:exported="false" />
+        <activity android:name=".modules.patient.booking.ui.RescheduleVisitActivity"
+            android:exported="false" />
+        <activity android:name=".modules.patient.search.ui.InstitutionDetailsActivity"
             android:exported="false" />
     </application>
 

@@ -1,59 +1,59 @@
 package com.medipath.modules.patient.visits
 
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.medipath.core.models.VisitDetails
-import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
 class VisitDetailsViewModel : ViewModel() {
     private val visitsService = RetrofitInstance.visitsService
 
-    private val _visitDetails = mutableStateOf<VisitDetails?>(null)
-    val visitDetails: State<VisitDetails?> = _visitDetails
+    private val _visitDetails = MutableStateFlow<VisitDetails?>(null)
+    val visitDetails: StateFlow<VisitDetails?> = _visitDetails.asStateFlow()
 
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _error = mutableStateOf<String?>(null)
-    val error: State<String?> = _error
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
-    fun fetchVisitDetails(visitId: String, sessionManager: DataStoreSessionManager) {
+    private val _shouldRedirectToLogin = MutableStateFlow(false)
+    val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
+
+    fun fetchVisitDetails(visitId: String) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 _error.value = null
+                _shouldRedirectToLogin.value = false
 
-                val sessionId = sessionManager.getSessionId()
-                if (sessionId == null) {
-                    _error.value = "No session found"
-                    _isLoading.value = false
-                    return@launch
-                }
+                val response = visitsService.getVisitDetails(visitId = visitId)
 
-                val response = visitsService.getVisitDetails(
-                    visitId = visitId,
-                    cookie = "SESSION=$sessionId"
-                )
-
-                _visitDetails.value = response.visit
-                _isLoading.value = false
-            } catch (e: Exception) {
-                Log.e("VisitDetailsViewModel", "Error fetching visit details", e)
-                _error.value = when (e) {
-                    is HttpException -> when (e.code()) {
-                        401 -> "User is not logged in"
+                if (response.isSuccessful) {
+                    _visitDetails.value = response.body()?.visit
+                } else if (response.code() == 401) {
+                    _shouldRedirectToLogin.value = true
+                } else {
+                    _error.value = when (response.code()) {
                         403 -> "You don't have permission to view this visit"
                         404 -> "Visit not found"
-                        else -> "Failed to load visit details: ${e.message()}"
+                        else -> "Failed to load visit details: ${response.code()}"
                     }
-                    else -> "Failed to load visit details: ${e.message}"
                 }
+            } catch (e: Exception) {
+                Log.e("VisitDetailsViewModel", "Error fetching visit details", e)
+                if (e is HttpException && e.code() == 401) {
+                    _shouldRedirectToLogin.value = true
+                } else {
+                    _error.value = "Failed to load visit details: ${e.message}"
+                }
+            } finally {
                 _isLoading.value = false
             }
         }

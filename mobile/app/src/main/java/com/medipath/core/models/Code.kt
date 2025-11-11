@@ -8,5 +8,6 @@ data class CodeItem(
 
 data class CodeData(
     val codeType: String,
-    val code: String
+    val code: String,
+    val isActive: Boolean
 )

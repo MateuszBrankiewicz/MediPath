@@ -34,8 +34,7 @@ fun TabSelector(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .padding(bottom = 10.dp)
-            .padding(top = 7.dp),
+            .padding(vertical = 5.dp),
         horizontalArrangement = Arrangement.Center
     ) {
         Button(

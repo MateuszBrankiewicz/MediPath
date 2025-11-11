@@ -23,17 +23,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.core.models.VisitDetails
 import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun VisitDetailsContent(
-    visitDetails: com.medipath.core.models.VisitDetails,
-    onReviewClick: () -> Unit
+    visitDetails: VisitDetails,
+    onReviewClick: () -> Unit,
+    onSeeReviewClick: () -> Unit
 ) {
     val colors = LocalCustomColors.current
     val scrollState = rememberScrollState()
+    val hasReview = !visitDetails.commentId.isNullOrEmpty()
 
     val startDateTime = try {
         val parsedDateTime = LocalDateTime.parse(
@@ -154,9 +157,11 @@ fun VisitDetailsContent(
             }
         }
 
+
+
         if (visitDetails.status.lowercase() == "completed") {
             Button(
-                onClick = onReviewClick,
+                onClick = if (hasReview) onSeeReviewClick else onReviewClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -167,7 +172,7 @@ fun VisitDetailsContent(
                 shape = RoundedCornerShape(30.dp)
             ) {
                 Text(
-                    text = "REVIEW VISIT",
+                    text = if (hasReview) "SEE REVIEW" else "ADD REVIEW",
                     fontSize = 16.sp,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )

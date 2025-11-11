@@ -1,47 +1,51 @@
 package com.medipath.modules.patient.notifications
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import android.util.Log
 import com.medipath.core.models.Notification
 import com.medipath.core.services.NotificationsService
-import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class NotificationsViewModel(
     private val notificationsService: NotificationsService = RetrofitInstance.notificationsService
 ) : ViewModel() {
 
-    private val _notifications = mutableStateOf<List<Notification>>(emptyList())
-    val notifications: State<List<Notification>> = _notifications
+    private val _notifications = MutableStateFlow<List<Notification>>(emptyList())
+    val notifications: StateFlow<List<Notification>> = _notifications.asStateFlow()
 
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _error = mutableStateOf("")
-    val error: State<String> = _error
+    private val _error = MutableStateFlow("")
+    val error: StateFlow<String> = _error.asStateFlow()
+
+    private val _shouldRedirectToLogin = MutableStateFlow(false)
+    val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
 
     val unreadCount: Int
         get() = _notifications.value.count { !it.read }
 
-    fun fetchNotifications(sessionManager: DataStoreSessionManager) {
+    fun fetchNotifications() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 _error.value = ""
+                _shouldRedirectToLogin.value = false
 
-                val token = sessionManager.getSessionId()
-                if (token.isNullOrEmpty()) {
-                    _error.value = "No session ID found"
-                    _isLoading.value = false
-                    return@launch
+                val response = notificationsService.getUserNotifications("received")
+
+                if (response.isSuccessful) {
+                    _notifications.value = response.body()?.notifications?.sortedByDescending { it.timestamp } ?: emptyList()
+                } else if (response.code() == 401) {
+                    _shouldRedirectToLogin.value = true
+                } else {
+                    _error.value = "Error fetching notifications (${response.code()})"
                 }
-
-                val notificationsResponse = notificationsService.getUserNotifications("SESSION=$token")
-                _notifications.value = notificationsResponse.notifications
 
             } catch (e: Exception) {
                 _error.value = "Error fetching notifications: ${e.message}"
@@ -56,15 +60,15 @@ class NotificationsViewModel(
         _error.value = ""
     }
 
-    fun markAllAsRead(sessionManager: DataStoreSessionManager) {
+    fun markAllAsRead(onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             try {
-                val sessionId = sessionManager.getSessionId()
-                if (sessionId == null) return@launch
-
-                val response = notificationsService.markAllNotificationsAsRead("SESSION=$sessionId")
+                val response = notificationsService.markAllNotificationsAsRead()
                 if (response.isSuccessful) {
-                    _notifications.value = _notifications.value.map { it.copy(read = true) }
+                    fetchNotifications()
+                    onSuccess()
+                } else if (response.code() == 401) {
+                    _shouldRedirectToLogin.value = true
                 } else {
                     Log.e("NotificationsViewModel", "Failed to mark all as read: ${response.code()}")
                 }

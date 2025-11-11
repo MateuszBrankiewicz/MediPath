@@ -1,5 +1,6 @@
 package com.medipath.modules.patient.search.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,7 +28,12 @@ class SearchResultsActivity : ComponentActivity() {
                         searchQuery = searchQuery,
                         city = searchCity,
                         specialisation = searchSpecialisations,
-                        onBackClick = { finish() }
+                        onBackClick = { finish() },
+                        onInstitutionClick = { institution ->
+                            val intent = Intent(this, InstitutionDetailsActivity::class.java)
+                            intent.putExtra("institution_id", institution.id)
+                            startActivity(intent)
+                        }
                     )
                 }
             }

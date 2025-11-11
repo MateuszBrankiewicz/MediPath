@@ -964,3 +964,17 @@ Permanently deactivates an institution. All employees are removed.
 - 400 - invalid id
 - 403
 
+### /users/find/{govid}
+#### Method: GET
+
+#### Description:
+Find a user by their government ID number
+
+#### Path variables:
+- govid - user's government id number
+
+#### Returns:
+- 401
+- 403 - user is not admin
+- 400 - invalid user
+- 200

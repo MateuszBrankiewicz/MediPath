@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.services.SearchService
-import com.medipath.core.responses.SearchResult
+import com.medipath.core.models.SearchResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

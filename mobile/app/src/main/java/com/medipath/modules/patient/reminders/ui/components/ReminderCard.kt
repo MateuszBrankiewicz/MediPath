@@ -43,7 +43,8 @@ import java.time.format.DateTimeFormatter
 fun ReminderCard(
     reminder: Notification,
     onDelete: () -> Unit,
-    onMarkAsRead: () -> Unit
+    onMarkAsRead: () -> Unit,
+    showMark: Boolean = true
 ) {
     val colors = LocalCustomColors.current
     val cardBackground = if (!reminder.read) Color(0xFFF9F9F9) else Color.White
@@ -147,25 +148,27 @@ fun ReminderCard(
                     Text("DELETE", fontSize = 12.sp)
                 }
 
-                Button(
-                    onClick = onMarkAsRead,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(30.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colors.blue900
-                    ),
-                    enabled = !reminder.read
-                ) {
-                    Icon(
-                        imageVector = if (reminder.read) Icons.Default.Done else Icons.Default.DoneAll,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = if (reminder.read) "READ" else "MARK",
-                        fontSize = 12.sp
-                    )
+                if (showMark) {
+                    Button(
+                        onClick = onMarkAsRead,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(30.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colors.blue900
+                        ),
+                        enabled = !reminder.read
+                    ) {
+                        Icon(
+                            imageVector = if (reminder.read) Icons.Default.Done else Icons.Default.DoneAll,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (reminder.read) "READ" else "MARK",
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
         }
