@@ -45,7 +45,8 @@ export interface Appointment {
 })
 export class DoctorSchedule
   extends PaginatedComponentBase<Appointment>
-  implements OnInit {
+  implements OnInit
+{
   protected translationService = inject(TranslationService);
   protected dateTimeService = inject(DateTimeService);
   private doctorService = inject(DoctorService);
@@ -64,22 +65,22 @@ export class DoctorSchedule
   public readonly filterConfig: FilterButtonConfig<
     'all' | 'booked' | 'available'
   >[] = [
-      {
-        value: 'all',
-        labelKey: 'doctor.schedule.filter.all',
-        icon: 'pi-list',
-      },
-      {
-        value: 'booked',
-        labelKey: 'doctor.schedule.filter.booked',
-        icon: 'pi-user',
-      },
-      {
-        value: 'available',
-        labelKey: 'doctor.schedule.filter.available',
-        icon: 'pi-calendar-plus',
-      },
-    ];
+    {
+      value: 'all',
+      labelKey: 'doctor.schedule.filter.all',
+      icon: 'pi-list',
+    },
+    {
+      value: 'booked',
+      labelKey: 'doctor.schedule.filter.booked',
+      icon: 'pi-user',
+    },
+    {
+      value: 'available',
+      labelKey: 'doctor.schedule.filter.available',
+      icon: 'pi-calendar-plus',
+    },
+  ];
 
   public readonly currentDayNumber = new Date().getDate();
   public readonly currentDayName = this.dateTimeService.getDayName(new Date());
@@ -189,7 +190,6 @@ export class DoctorSchedule
   }
 
   public cancelVisit(): void {
-
     const selectedAppointment = this.selectedAppointment();
     if (!selectedAppointment) {
       return;
@@ -198,27 +198,32 @@ export class DoctorSchedule
     const ref = this.dialogService.open(AcceptActionDialogComponent, {
       width: '50%',
       data: {
-        message: "Are you sure want to cancel the Visit?"
-      }
-    })
+        message: 'Are you sure want to cancel the Visit?',
+      },
+    });
 
     if (!ref) {
       return;
     }
 
-    ref.onClose.subscribe(res => {
+    ref.onClose.subscribe((res) => {
       if (!res) {
         return;
       }
-      this.visitsService.cancelVisit(selectedAppointment.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: () => {
-          this.toastService.showSuccess("Visit canceled");
-        },
-        error: (err) => {
-          console.log(err)
-          this.toastService.showError("Visit cannot be canceled please try again later");
-        }
-      })
+      this.visitsService
+        .cancelVisit(selectedAppointment.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.toastService.showSuccess('Visit canceled');
+          },
+          error: (err) => {
+            console.log(err);
+            this.toastService.showError(
+              'Visit cannot be canceled please try again later',
+            );
+          },
+        });
     });
   }
 
@@ -250,8 +255,8 @@ export class DoctorSchedule
     const selected: Date | null = this.selectedDate();
     const dateString = selected
       ? `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(
-        selected.getDate(),
-      ).padStart(2, '0')}`
+          selected.getDate(),
+        ).padStart(2, '0')}`
       : '';
 
     const allSlots = this.getAllSlotsForDate(date);
@@ -337,9 +342,9 @@ export class DoctorSchedule
         const slot = slotsMap.get(apt.id);
         return slot
           ? {
-            id: slot.id,
-            startHour: slot.startHour,
-          }
+              id: slot.id,
+              startHour: slot.startHour,
+            }
           : null;
       })
       .filter(

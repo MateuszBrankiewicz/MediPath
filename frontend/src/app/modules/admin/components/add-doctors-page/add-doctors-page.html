@@ -1,4 +1,11 @@
 <div class="add-doctor-page">
+  @if (isSubmitting()) {
+    <div class="floating-center-spinner">
+      <p-progress-spinner
+        [style]="{ width: '20%', height: '20%' }"
+      ></p-progress-spinner>
+    </div>
+  }
   <div class="page-header">
     <div class="breadcrumb">
       <a routerLink="/admin/doctors" class="breadcrumb-link">
@@ -14,6 +21,17 @@
   <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()" class="doctor-form">
     <p-card>
       <div class="form-container">
+        <h4>Wyszukaj istniejacego użytkownika</h4>
+        <div class="search-container">
+          <div class="form-field">
+            <label for="name" class="field-label">Podaj adres pesel </label>
+
+            <input type="text" pInputText [formControl]="govId" />
+          </div>
+          <p-button (onClick)="loadUserData()" label="Wyszukaj"></p-button>
+        </div>
+
+        <p-divider />
         <app-doctor-personal-info-form
           [formGroup]="doctorForm"
           [translationKey]="'admin.addDoctor'"

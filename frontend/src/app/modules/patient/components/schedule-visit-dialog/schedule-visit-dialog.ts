@@ -220,7 +220,6 @@ export class ScheduleVisitDialog implements OnInit {
       .subscribe((response: ScheduleResponse) => {
         let schedules = response.schedules || [];
         const availableDaysMap = new Map<string, AvailableDay>();
-        console.log(schedules.length);
         schedules = schedules.filter((schedule) => {
           return (
             schedule.institution.institutionName ===

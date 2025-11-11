@@ -4,7 +4,11 @@ import { map, Observable } from 'rxjs';
 import { UpcomingVisitItem } from '../../../modules/admin/components/admin-dashboard/widgets/upcoming-visits-card';
 import { API_URL } from '../../../utils/constants';
 import { AddDoctorRequest } from '../../models/add-docotr.model';
-import { DoctorApiResponse, DoctorProfile } from '../../models/doctor.model';
+import {
+  DoctorApiResponse,
+  DoctorProfile,
+  FindedEmployee,
+} from '../../models/doctor.model';
 import {
   AdminInstitutionResponse,
   Institution,
@@ -36,7 +40,9 @@ export class InstitutionService {
   private http = inject(HttpClient);
   public getInstitution(institutionId: string): Observable<Institution> {
     return this.http
-      .get<InstitutionResponse>(`${API_URL}/institution/${institutionId}`)
+      .get<InstitutionResponse>(`${API_URL}/institution/${institutionId}`, {
+        withCredentials: true,
+      })
       .pipe(
         map((value: InstitutionResponse): Institution => {
           const inst = value.institution;
@@ -210,5 +216,12 @@ export class InstitutionService {
         },
       )
       .pipe(map((response) => response.visits));
+  }
+
+  public findUserByGovId(govId: string): Observable<FindedEmployee> {
+    console.log(govId);
+    return this.http.get<FindedEmployee>(`${API_URL}/users/find/${govId}`, {
+      withCredentials: true,
+    });
   }
 }

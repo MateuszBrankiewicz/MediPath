@@ -57,15 +57,15 @@ export class VisitDialogService {
   public openReviewDialog(options: OpenReviewDialogOptions): DynamicDialogRef {
     const dialogData = options.commentId
       ? {
-        id: options.commentId,
-        doctorName: options.doctorName,
-        institutionName: options.institutionName,
-      }
+          id: options.commentId,
+          doctorName: options.doctorName,
+          institutionName: options.institutionName,
+        }
       : {
-        visitId: options.visitId,
-        doctorName: options.doctorName,
-        institutionName: options.institutionName,
-      };
+          visitId: options.visitId,
+          doctorName: options.doctorName,
+          institutionName: options.institutionName,
+        };
 
     return this.dialogService.open(ReviewVisitDialog, {
       data: dialogData,
@@ -110,9 +110,9 @@ export class VisitDialogService {
     const ref = this.dialogService.open(AcceptActionDialogComponent, {
       width: '50%',
       data: {
-        message: "Are you sure want to cancel visit?"
-      }
-    })
-    return ref.onClose
+        message: 'Are you sure want to cancel visit?',
+      },
+    });
+    return ref.onClose;
   }
 }

@@ -112,4 +112,12 @@ export class UserSettingsService {
       userNotifications: settings.userNotifications,
     };
   }
+
+  public deactivateAccount() {
+    return this.http.post(
+      `${API_URL}/users/me/deactivate`,
+      {},
+      { withCredentials: true },
+    );
+  }
 }

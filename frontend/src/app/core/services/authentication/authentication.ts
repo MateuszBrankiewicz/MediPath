@@ -412,4 +412,15 @@ export class AuthenticationService {
         (notification): notification is Notification => notification !== null,
       );
   }
+
+  public changePassword(currentPassword: string, newPassword: string) {
+    return this.http.post(
+      `${API_URL}/users/me/resetpassword`,
+      {
+        newPassword: newPassword,
+        currentPassword: currentPassword,
+      },
+      { withCredentials: true },
+    );
+  }
 }

@@ -120,12 +120,20 @@ export class EditDoctorDetailsComponent implements OnInit {
   }
 
   private patchForm(doctor: FullDoctorInfo): void {
+    const birthDate = Array.isArray(doctor.dateOfBirth)
+      ? new Date(
+          doctor.dateOfBirth[0],
+          doctor.dateOfBirth[1] - 1,
+          doctor.dateOfBirth[2],
+        )
+      : new Date(doctor.dateOfBirth);
+
     this.doctorForm.patchValue({
       name: doctor.name,
       surname: doctor.surname,
       email: doctor.email,
-      birthDate: new Date(doctor.dateOfBirth),
-      phoneNumber: '123456789', // TODO: add phoneNumber to FullDoctorInfo
+      birthDate: birthDate,
+      phoneNumber: doctor.phoneNumber,
       personalId: doctor.govId,
       pwzNumber: doctor.pwzNumber,
       specialisation: doctor.specialisation,
@@ -156,13 +164,11 @@ export class EditDoctorDetailsComponent implements OnInit {
     const currentInstitutions = this.doctorInstitutions();
     const original = this.originalInstitutions();
 
-    // Find institutions to add (new ones)
     const toAdd = currentInstitutions.filter(
       (curr) =>
         !original.some((orig) => orig.institutionId === curr.institutionId),
     );
 
-    // Find institutions to remove (deleted ones)
     const toRemove = original.filter(
       (orig) =>
         !currentInstitutions.some(
@@ -170,7 +176,6 @@ export class EditDoctorDetailsComponent implements OnInit {
         ),
     );
 
-    // Find institutions to update (existing ones - update specialisations)
     const toUpdate = currentInstitutions.filter((curr) =>
       original.some((orig) => orig.institutionId === curr.institutionId),
     );
@@ -181,7 +186,6 @@ export class EditDoctorDetailsComponent implements OnInit {
       | typeof this.institutionService.updateEmployee
     >[] = [];
 
-    // Add new institutions
     if (toAdd.length > 0) {
       toAdd.forEach((inst) => {
         requests.push(
@@ -196,7 +200,6 @@ export class EditDoctorDetailsComponent implements OnInit {
       });
     }
 
-    // Remove institutions
     if (toRemove.length > 0) {
       toRemove.forEach((inst) => {
         requests.push(
@@ -208,7 +211,6 @@ export class EditDoctorDetailsComponent implements OnInit {
       });
     }
 
-    // Update existing institutions (specialisations and roleCode)
     if (toUpdate.length > 0) {
       toUpdate.forEach((inst) => {
         requests.push(

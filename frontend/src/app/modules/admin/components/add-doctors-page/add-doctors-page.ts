@@ -1,7 +1,9 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -24,6 +26,10 @@ import { getCorrectDayFormat } from '../../../../utils/dateFormatter';
 import { DoctorAddressFormComponent } from '../shared/doctor-address-form/doctor-address-form';
 import { DoctorPersonalInfoFormComponent } from '../shared/doctor-personal-info-form/doctor-personal-info-form';
 import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-professional-info-form/doctor-professional-info-form';
+import { InputTextModule } from 'primeng/inputtext';
+import { DoctorService } from '../../../../core/services/doctor/doctor.service';
+import { FullDoctorInfo } from '../../../../core/models/doctor.model';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-add-doctors-page',
@@ -37,6 +43,9 @@ import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-profession
     DoctorPersonalInfoFormComponent,
     DoctorProfessionalInfoFormComponent,
     DoctorAddressFormComponent,
+    InputTextModule,
+    FormsModule,
+    ProgressSpinnerModule,
   ],
   templateUrl: './add-doctors-page.html',
   styleUrl: './add-doctors-page.scss',
@@ -56,6 +65,8 @@ export class AddDoctorsPage implements OnInit {
   private specialisationService = inject(SpecialisationService);
   protected cities = signal<string[]>([]);
   protected provinces = signal<string[]>([]);
+  protected govId = new FormControl('');
+  private userId = signal('');
   protected roleOptions = [
     {
       id: 1,
@@ -65,9 +76,9 @@ export class AddDoctorsPage implements OnInit {
     { id: 2, name: 'Staff', roleCode: 4 },
     { id: 3, name: 'Doctor', roleCode: 2 },
   ];
-
+  private doctorService = inject(DoctorService);
   protected specialisations = signal<Specialisation[]>([]);
-
+  protected userExist = signal(false);
   ngOnInit(): void {
     this.loadCities();
     this.loadProvinces();
@@ -91,7 +102,7 @@ export class AddDoctorsPage implements OnInit {
       personalId: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
       specialisation: [[]],
       pwzNumber: ['', [Validators.pattern(/^\d{7}$/)]],
-      roleCode: [0, Validators.required],
+      roleCode: [[0], Validators.required],
       residentialAddress: this.fb.group({
         province: ['', Validators.required],
         postalCode: [
@@ -106,6 +117,11 @@ export class AddDoctorsPage implements OnInit {
   }
 
   protected onSubmit(): void {
+    if (this.userExist()) {
+      this.addEmployeeToInstitution();
+      return;
+    }
+
     if (this.doctorForm.invalid) {
       this.doctorForm.markAllAsTouched();
       this.toastService.showError(
@@ -115,6 +131,9 @@ export class AddDoctorsPage implements OnInit {
     }
     this.isSubmitting.set(true);
     const formValue = this.doctorForm.value;
+    const role = this.doctorForm.value.roleCode.reduce(
+      (acc: number, element: number) => acc + element,
+    );
     const addEmployeeRequest: AddDoctorRequest = {
       userDetails: {
         name: formValue.name,
@@ -133,7 +152,7 @@ export class AddDoctorsPage implements OnInit {
         licenceNumber: formValue.pwzNumber,
         specialisations: formValue.specialisation,
       },
-      roleCode: formValue.roleCode,
+      roleCode: role,
     };
 
     this.institutionService
@@ -272,6 +291,90 @@ export class AddDoctorsPage implements OnInit {
               'admin.addDoctor.error.loadProvinces',
             ),
           );
+        },
+      });
+  }
+
+  private patchFormValue(doctorData: FullDoctorInfo) {
+    this.userExist.set(true);
+    const birthDate = Array.isArray(doctorData.dateOfBirth)
+      ? new Date(
+          doctorData.dateOfBirth[0],
+          doctorData.dateOfBirth[1] - 1,
+          doctorData.dateOfBirth[2],
+        )
+      : null;
+
+    this.doctorForm.patchValue({
+      name: doctorData.name,
+      surname: doctorData.surname,
+      email: doctorData.email,
+      birthDate: birthDate,
+      phoneNumber: doctorData.phoneNumber,
+      personalId: doctorData.govId,
+      specialisation: doctorData.specialisations,
+      pwzNumber: doctorData.licenceNumber,
+      residentialAddress: {
+        province: doctorData.address.province,
+        city: doctorData.address.city,
+        street: doctorData.address.street,
+        number: doctorData.address.number,
+        postalCode: doctorData.address.postalCode,
+      },
+    });
+  }
+
+  protected loadUserData() {
+    this.isSubmitting.set(true);
+    this.institutionService
+      .findUserByGovId(this.govId.value!)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.userId.set(result.id);
+          this.doctorService
+            .getDoctorFullInfo(result.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((res) => {
+              this.isSubmitting.set(false);
+              this.patchFormValue(res);
+            });
+        },
+        error: () => {
+          this.isSubmitting.set(false);
+          this.toastService.showError('User not found');
+        },
+      });
+  }
+
+  private addEmployeeToInstitution() {
+    const role = this.doctorForm.value.roleCode.reduce(
+      (acc: number, element: number) => acc + element,
+    );
+    this.institutionService
+      .addEmployees(this.institutionId(), [
+        {
+          userID: this.userId(),
+          rolecode: role,
+          specialisations: this.doctorForm.value.specialisation,
+        },
+      ])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess(
+            this.translationService.translate('admin.addDoctor.success'),
+          );
+          this.router.navigate(['/admin/doctors']);
+        },
+        error: () => {
+          this.isSubmitting.set(false);
+          this.toastService.showError(
+            this.translationService.translate('admin.addDoctor.error'),
+          );
+        },
+        complete: () => {
+          this.isSubmitting.set(false);
         },
       });
   }

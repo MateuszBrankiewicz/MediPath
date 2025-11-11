@@ -1,4 +1,3 @@
-
 {
   "register.title": "Register",
   "register.form.name": "Name",
@@ -138,7 +137,6 @@
   "patient.reminders.edit": "Edit",
   "patient.reminders.delete": "Cancel",
   "patient.reminders.add": "Add Reminder",
-
 
   "patient.medicalHistory.title": "Medical History",
   "patient.medicalHistory.addEntry": "ADD NEW ENTRY",
@@ -430,8 +428,7 @@
   "shared.filters.dateTo": "Date to",
   "shared.filters.apply": "Apply",
   "shared.filters.clear": "Clear",
-  "shared.filters.all": "All"
-  ,
+  "shared.filters.all": "All",
   "shared.filters.sortBy": "Sort by",
   "shared.filters.title": "Filters",
 
@@ -440,7 +437,7 @@
   "shared.filters.descending": "Descending",
   "shared.filters.date": "Date",
   "shared.filters.showFilters": "Show Filters",
- "code.statusActive": "Not Used",
+  "code.statusActive": "Not Used",
   "code.statusUsed": "Used",
   "comment.edit.success": "Comment edited successfully",
   "comments.edit.failed": "Failed to edit comment",
@@ -452,7 +449,7 @@
 
   "comment.delete.message": "Are you sure you want to delete this comment?",
 
-    "notifications.toast.addSuccess": "Notification added successfully",
+  "notifications.toast.addSuccess": "Notification added successfully",
   "notifications.toast.addError": "Failed to add notification",
   "notifications.toast.markAllSuccess": "All notifications marked as read",
   "notifications.toast.markAllError": "Failed to mark all as read",
@@ -465,13 +462,13 @@
   "admin.createSchedule.selectDoctorPlaceholder": "Choose a doctor",
   "admin.createSchedule.selectedDoctor": "Selected doctor",
   "admin.createSchedule.estimatedTimeForOneVisit": "Estimated time for one visit (min)",
-    "admin.createSchedule.summary.title": "Summary",
-    "admin.createSchedule.summary.institution": "Institution",
-    "admin.createSchedule.summary.doctor": "Doctor",
-    "admin.createSchedule.summary.duration": "Visit duration for one visit",
-    "admin.createSchedule.summary.date": "Selected date",
-    "admin.createSchedule.summary.start": "Start time",
-    "admin.createSchedule.summary.end": "End time",
+  "admin.createSchedule.summary.title": "Summary",
+  "admin.createSchedule.summary.institution": "Institution",
+  "admin.createSchedule.summary.doctor": "Doctor",
+  "admin.createSchedule.summary.duration": "Visit duration for one visit",
+  "admin.createSchedule.summary.date": "Selected date",
+  "admin.createSchedule.summary.start": "Start time",
+  "admin.createSchedule.summary.end": "End time",
   "admin.createSchedule.createSchedule": "Create Schedule",
   "admin.createSchedule.selectInstitution": "Select institution",
   "admin.createSchedule.scheduleCreated": "Schedule created successfully",
@@ -594,7 +591,7 @@
   "admin.addDoctor.specialisations.pediatrics": "Pediatrician",
   "admin.addDoctor.specialisations.psychiatry": "Psychiatrist",
   "admin.addDoctor.specialisations.general": "General Practitioner",
-
+  "admin.addDoctor.role": "User role in institution",
   "admin.doctorList.addDoctor": "Add Doctor",
   "admin.doctorList.searchPlaceholder": "Search by name or PWZ number...",
   "admin.doctorList.results": "results",
@@ -771,7 +768,3 @@
   "doctor.patientProfile.visitsLoadError": "Failed to load patient visits",
   "patient.doctor.conflict": "Patient and doctor cannot be the same person"
 }
-
-
-
-

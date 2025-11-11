@@ -112,7 +112,8 @@ export interface DoctorPatientsVisitApiResponse {
 }
 
 export interface FullDoctorInfo extends DoctorPageModel {
-  pwzNumber: string;
+  pwzNumber?: string;
+  licenceNumber: string;
   address: {
     city: string;
     street: string;
@@ -120,13 +121,22 @@ export interface FullDoctorInfo extends DoctorPageModel {
     postalCode: string;
     province: string;
   };
-  dateOfBirth: string;
+  dateOfBirth: number[] | string;
   govId: string;
   email: string;
   phoneNumber: string;
   roleCode: number;
+  specialisations: string[];
 }
 
 export interface FullDoctorInfoApiResponse {
   doctor: FullDoctorInfo;
+}
+
+export interface FindedEmployee {
+  id: string;
+  birthDate: string;
+  email: string;
+  name: string;
+  surname: string;
 }
