@@ -480,6 +480,10 @@ public class UserService {
             anyChanges = true;
         }
 
+        if(updateUserForm.getProfilePicture() != null) {
+            user.setPfpimage(updateUserForm.getProfilePicture());
+        }
+
         if(anyChanges) userRepository.save(user);
 
     }
@@ -496,6 +500,8 @@ public class UserService {
         }
 
         if(!user.getUserSettings().equals(userSettings))  {
+            int lastPanel = user.getUserSettings().getLastPanel();
+            userSettings.setLastPanel(lastPanel);
             user.setUserSettings(userSettings);
             userRepository.save(user);
         }

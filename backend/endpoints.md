@@ -361,6 +361,7 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - number - street number
 - street - street name
 - phoneNumber - phone number
+- profilePicture - profile picture
 
 #### Returns:
 - 401 - User is not logged in
