@@ -12,5 +12,5 @@ interface SettingsService {
     suspend fun getSettings(): Response<UserSettingsResponse>
 
     @PUT("/api/users/me/settings")
-    suspend fun updateSettings(@Body comment: UserSettingsRequest): Response<Unit>
+    suspend fun updateSettings(@Body settings: UserSettingsRequest): Response<Unit>
 }
