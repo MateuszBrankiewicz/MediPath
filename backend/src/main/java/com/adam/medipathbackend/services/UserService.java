@@ -489,8 +489,8 @@ public class UserService {
             anyChanges = true;
         }
 
-        if(updateUserForm.getProfilePicture() != null) {
-            user.setPfpimage(updateUserForm.getProfilePicture());
+        if(updateUserForm.getPfpImage() != null) {
+            user.setPfpimage(updateUserForm.getPfpImage());
         }
 
         if(anyChanges) userRepository.save(user);
@@ -614,12 +614,12 @@ public class UserService {
 
     public void deactivateMe(String loggedUserId) throws IllegalAccessException {
         Optional<User> userOpt = userRepository.findActiveById(loggedUserId);
-        if(userOpt.isEmpty()) {
+        if (userOpt.isEmpty()) {
             throw new IllegalAccessException();
         }
         User user = userOpt.get();
 
-        if(visitService.hasUpcomingVisits(loggedUserId)) {
+        if (visitService.hasUpcomingVisits(loggedUserId)) {
             throw new IllegalStateException("please cancel all upcoming visits before deactivating your account");
         }
 
@@ -629,6 +629,8 @@ public class UserService {
 
         user.setActive(false);
         userRepository.save(user);
+    }
+
     public Map<String, Object> findEmployeeByGovId(String govid, String loggedUserID)
             throws IllegalAccessException {
         Optional<User> adminOpt = userRepository.findById(loggedUserID);

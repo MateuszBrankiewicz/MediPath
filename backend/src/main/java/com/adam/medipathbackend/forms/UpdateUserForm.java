@@ -9,9 +9,9 @@ public class UpdateUserForm {
     private final String number;
     private final String street;
     private final String phoneNumber;
-    private final String profilePicture;
+    private final String pfpImage;
 
-    public UpdateUserForm(String city, String name, String surname, String province, String postalCode, String number, String street, String phoneNumber, String profilePicture) {
+    public UpdateUserForm(String city, String name, String surname, String province, String postalCode, String number, String street, String phoneNumber, String pfpImage) {
         this.name = name;
         this.surname = surname;
         this.province = province;
@@ -20,7 +20,7 @@ public class UpdateUserForm {
         this.street = street;
         this.phoneNumber = phoneNumber;
         this.city = city;
-        this.profilePicture = profilePicture;
+        this.pfpImage = pfpImage;
     }
 
     public String getCity() {
@@ -55,7 +55,7 @@ public class UpdateUserForm {
         return phoneNumber;
     }
 
-    public String getProfilePicture() {
-        return profilePicture;
+    public String getPfpImage() {
+        return pfpImage;
     }
 }
