@@ -185,7 +185,6 @@ public class UserController {
         }
         try {
             userService.resetMyPassword(loggedUserID, form);
-            session.invalidate();
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (IllegalWriteException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
