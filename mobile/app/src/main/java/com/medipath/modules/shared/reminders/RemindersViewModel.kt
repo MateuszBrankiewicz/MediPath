@@ -1,8 +1,9 @@
-package com.medipath.modules.patient.reminders
+package com.medipath.modules.shared.reminders
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.core.models.DeleteNotificationsRequest
 import com.medipath.core.models.MarkNotificationReadRequest
 import com.medipath.core.models.Notification
 import com.medipath.core.network.RetrofitInstance
@@ -149,7 +150,7 @@ class RemindersViewModel : ViewModel() {
             try {
                 val parsed = LocalDateTime.parse(notification.timestamp, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 
-                val request = com.medipath.core.models.DeleteNotificationsRequest(
+                val request = DeleteNotificationsRequest(
                     title = notification.title,
                     reminderTime = parsed.toLocalTime().toString(),
                     startDate = parsed.toLocalDate().toString(),

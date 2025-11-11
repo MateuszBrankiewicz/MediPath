@@ -2,7 +2,6 @@ package com.medipath.core.services
 
 import com.medipath.core.models.UserProfileResponse
 import com.medipath.core.models.CodesResponse
-import com.medipath.core.models.UserSettingsRequest
 import com.medipath.core.models.UserUpdateRequest
 import com.medipath.core.models.ResetPasswordRequest
 import retrofit2.Response
@@ -27,4 +26,7 @@ interface UserService {
 
     @POST("/api/users/me/resetpassword")
     suspend fun resetPassword(@Body password: ResetPasswordRequest): Response<Unit>
+
+    @PUT("/api/users/me/defaultpanel/{panel}")
+    suspend fun updateDefaultPanel(@Path("panel") panel: Int): Response<Unit>
 }

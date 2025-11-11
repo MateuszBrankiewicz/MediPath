@@ -8,6 +8,7 @@ import com.medipath.core.models.Visit
 import com.medipath.core.services.UserService
 import com.medipath.core.services.VisitsService
 import com.medipath.core.network.RetrofitInstance
+import com.medipath.core.utils.RoleManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +32,12 @@ class HomeViewModel(
 
     private val _userId = MutableStateFlow("")
     val userId: StateFlow<String> = _userId.asStateFlow()
+
+    private val _roleCode = MutableStateFlow(1)
+    val roleCode: StateFlow<Int> = _roleCode.asStateFlow()
+
+    private val _canBeDoctor = MutableStateFlow(false)
+    val canBeDoctor: StateFlow<Boolean> = _canBeDoctor.asStateFlow()
 
     private val _prescriptionCode = MutableStateFlow("")
     val prescriptionCode: StateFlow<String> = _prescriptionCode.asStateFlow()
@@ -57,6 +64,8 @@ class HomeViewModel(
                     _firstName.value = user.name
                     _lastName.value = user.surname
                     _userId.value = user.id
+                    _roleCode.value = user.roleCode
+                    _canBeDoctor.value = RoleManager.canBeDoctor(user.roleCode)
                     fetchUpcomingVisits()
                     fetchActiveCodes()
                 } else if (userResponse.code() == 401) {

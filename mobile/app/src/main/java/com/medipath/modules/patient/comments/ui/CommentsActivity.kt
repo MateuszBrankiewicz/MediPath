@@ -29,8 +29,8 @@ import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.comments.CommentsViewModel
 import com.medipath.modules.patient.comments.ui.components.CommentCard
 import com.medipath.modules.patient.home.HomeViewModel
-import com.medipath.modules.patient.notifications.NotificationsViewModel
-import com.medipath.modules.patient.notifications.ui.NotificationsActivity
+import com.medipath.modules.shared.notifications.NotificationsViewModel
+import com.medipath.modules.shared.notifications.ui.NotificationsActivity
 import com.medipath.modules.patient.visits.ui.ReviewDetailsActivity
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.FilterChipsConfig
@@ -171,9 +171,6 @@ fun CommentsScreen(
             },
             onSettingsClick = {
                 context.startActivity(Intent(context, SettingsActivity::class.java))
-            },
-            onSelectRoleClick = {
-                Toast.makeText(context, "Select Role", Toast.LENGTH_SHORT).show()
             },
             content = { innerPadding ->
                 LazyColumn (

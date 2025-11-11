@@ -45,7 +45,10 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.ArrowDropDown
+import androidx.compose.material.icons.outlined.ArrowDropUp
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.DropdownMenu
@@ -68,7 +71,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.MediPathApplication
 import com.medipath.R
 import com.medipath.core.models.NavTab
 import com.medipath.core.network.RetrofitInstance
@@ -78,37 +81,58 @@ import com.medipath.modules.patient.home.ui.HomeActivity
 import com.medipath.modules.patient.visits.ui.VisitsActivity
 import com.medipath.modules.patient.medical_history.ui.MedicalHistoryActivity
 import com.medipath.modules.patient.comments.ui.CommentsActivity
-import com.medipath.modules.patient.notifications.NotificationsViewModel
-import com.medipath.modules.patient.reminders.ui.RemindersActivity
-import com.medipath.modules.patient.search.InstitutionDetailsViewModel
+import com.medipath.modules.shared.notifications.NotificationsViewModel
+import com.medipath.modules.shared.reminders.ui.RemindersActivity
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.profile.ui.EditProfileActivity
+import com.medipath.modules.doctor.dashboard.ui.DoctorDashboardActivity
+import com.medipath.modules.doctor.schedule.ui.DoctorScheduleActivity
+import com.medipath.modules.doctor.visits.ui.DoctorVisitsActivity
+import com.medipath.modules.doctor.patients.ui.DoctorPatientsActivity
 import kotlinx.coroutines.launch
 
 object NavigationRouter {
     private var isNavigating = false
-    fun navigateToTab(context: Context, tab: String, currentTab: String) {
+    
+    fun navigateToTab(context: Context, tab: String, currentTab: String, isDoctor: Boolean = false) {
         if (isNavigating) return
         if (tab == currentTab) return
         
-        val activityClass = when (tab) {
-            "Dashboard" -> HomeActivity::class.java
-            "Visits" -> VisitsActivity::class.java
-            "Prescriptions" -> CodesActivity::class.java
-            "Referrals" -> CodesActivity::class.java
-            "Medical history" -> MedicalHistoryActivity::class.java
-            "Comments" -> CommentsActivity::class.java
-            "Reminders" -> RemindersActivity::class.java
-            else -> return
+        val activityClass = if (isDoctor) {
+            when (tab) {
+                "Dashboard" -> DoctorDashboardActivity::class.java
+                "Schedule" -> DoctorScheduleActivity::class.java
+                "Visits" -> DoctorVisitsActivity::class.java
+                "Patients" -> DoctorPatientsActivity::class.java
+                "Reminders" -> RemindersActivity::class.java
+                else -> return
+            }
+        } else {
+            when (tab) {
+                "Dashboard" -> HomeActivity::class.java
+                "Visits" -> VisitsActivity::class.java
+                "Prescriptions" -> CodesActivity::class.java
+                "Referrals" -> CodesActivity::class.java
+                "Medical history" -> MedicalHistoryActivity::class.java
+                "Comments" -> CommentsActivity::class.java
+                "Reminders" -> RemindersActivity::class.java
+                else -> return
+            }
         }
         
         isNavigating = true
         try {
             val intent = Intent(context, activityClass)
             
-            when (tab) {
-                "Prescriptions" -> intent.putExtra("code_type", "PRESCRIPTION")
-                "Referrals" -> intent.putExtra("code_type", "REFERRAL")
+            if (tab == "Reminders") {
+                intent.putExtra("isDoctor", isDoctor)
+            }
+            
+            if (!isDoctor) {
+                when (tab) {
+                    "Prescriptions" -> intent.putExtra("code_type", "PRESCRIPTION")
+                    "Referrals" -> intent.putExtra("code_type", "REFERRAL")
+                }
             }
             
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -132,10 +156,11 @@ fun Navigation(
     onLogoutClick: () -> Unit = {},
     onEditProfileClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    onSelectRoleClick: () -> Unit = {},
     firstName: String,
     lastName: String,
-    currentTab: String
+    currentTab: String,
+    isDoctor: Boolean = false,
+    canSwitchRole: Boolean = false
 ) {
     val context = LocalContext.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -164,15 +189,25 @@ fun Navigation(
         derivedStateOf { notifications.count { !it.read } }
     }
 
-    val tabs = listOf(
-        NavTab("Dashboard", Icons.Outlined.Home, colors.dashboardIcon),
-        NavTab("Visits", Icons.Outlined.Event, colors.visitsIcon),
-        NavTab("Prescriptions", Icons.Outlined.Receipt, colors.prescriptionsIcon),
-        NavTab("Referrals", Icons.AutoMirrored.Outlined.Send, colors.referralsIcon),
-        NavTab("Medical history", Icons.Outlined.MedicalServices, colors.medicalHistoryIcon),
-        NavTab("Comments", Icons.AutoMirrored.Outlined.Comment, colors.commentsIcon),
-        NavTab("Reminders", Icons.Outlined.Notifications, colors.remindersIcon)
-    )
+    val tabs = if (isDoctor) {
+        listOf(
+            NavTab("Dashboard", Icons.Outlined.Home, colors.dashboardIcon),
+            NavTab("Schedule", Icons.Outlined.CalendarMonth, colors.visitsIcon),
+            NavTab("Visits", Icons.Outlined.Event, colors.prescriptionsIcon),
+            NavTab("Patients", Icons.Outlined.People, colors.referralsIcon),
+            NavTab("Reminders", Icons.Outlined.Notifications, colors.remindersIcon)
+        )
+    } else {
+        listOf(
+            NavTab("Dashboard", Icons.Outlined.Home, colors.dashboardIcon),
+            NavTab("Visits", Icons.Outlined.Event, colors.visitsIcon),
+            NavTab("Prescriptions", Icons.Outlined.Receipt, colors.prescriptionsIcon),
+            NavTab("Referrals", Icons.AutoMirrored.Outlined.Send, colors.referralsIcon),
+            NavTab("Medical history", Icons.Outlined.MedicalServices, colors.medicalHistoryIcon),
+            NavTab("Comments", Icons.AutoMirrored.Outlined.Comment, colors.commentsIcon),
+            NavTab("Reminders", Icons.Outlined.Notifications, colors.remindersIcon)
+        )
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -221,7 +256,7 @@ fun Navigation(
                                 scope.launch { 
                                     drawerState.close()
                                     kotlinx.coroutines.delay(300)
-                                    NavigationRouter.navigateToTab(context, tab.name, currentTab)
+                                    NavigationRouter.navigateToTab(context, tab.name, currentTab, isDoctor)
                                     kotlinx.coroutines.delay(200)
                                     isNavigating = false
                                 }
@@ -383,7 +418,8 @@ fun Navigation(
                                                 )
                                             }
                                         },
-                                        onClick = { showRoleMenu = !showRoleMenu }
+                                        onClick = { showRoleMenu = !showRoleMenu },
+                                        enabled = true
                                     )
 
                                     if (showRoleMenu) {
@@ -392,22 +428,52 @@ fun Navigation(
                                             onClick = {
                                                 showRoleMenu = false
                                                 showUserMenu = false
-                                                onSelectRoleClick()
+                                                scope.launch {
+                                                    try {
+                                                        RetrofitInstance.userService.updateDefaultPanel(1)
+                                                        val intent = Intent(context, HomeActivity::class.java).apply {
+                                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                                        }
+                                                        context.startActivity(intent)
+                                                    } catch (e: Exception) {
+                                                        Toast.makeText(context, "Error switching to patient: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
                                             },
                                             modifier = Modifier.padding(start = 40.dp)
                                         )
-                                        DropdownMenuItem(
-                                            text = { Text("Doctor") },
-                                            onClick = {
-                                                showRoleMenu = false
-                                                showUserMenu = false
-                                                onSelectRoleClick()
-                                            },
-                                            modifier = Modifier.padding(start = 40.dp)
-                                        )
+                                        if(canSwitchRole) {
+                                            DropdownMenuItem(
+                                                text = { Text("Doctor") },
+                                                onClick = {
+                                                    showRoleMenu = false
+                                                    showUserMenu = false
+                                                    scope.launch {
+                                                        try {
+                                                            RetrofitInstance.userService.updateDefaultPanel(
+                                                                2
+                                                            )
+                                                            val intent = Intent(
+                                                                context,
+                                                                DoctorDashboardActivity::class.java
+                                                            ).apply {
+                                                                flags =
+                                                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                                            }
+                                                            context.startActivity(intent)
+                                                        } catch (e: Exception) {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Error switching to doctor: ${e.message}",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        }
+                                                    }
+                                                },
+                                                modifier = Modifier.padding(start = 40.dp)
+                                            )
+                                        }
                                     }
-
-
 
                                     HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 4.dp),
@@ -480,6 +546,7 @@ fun Navigation(
                                     },
                                     onClick = {
                                         showUserMenu = false
+                                        (context.applicationContext as MediPathApplication).disconnectWebSocket()
                                         onLogoutClick()
                                     }
                                 )

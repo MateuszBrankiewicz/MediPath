@@ -1,23 +1,15 @@
 package com.medipath.modules.patient.home.ui
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,7 +41,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.UserNotificationsService
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.InfoCard
 import com.medipath.modules.shared.components.MenuCard
@@ -57,73 +48,40 @@ import com.medipath.modules.shared.components.Navigation
 import com.medipath.modules.shared.components.NavigationRouter
 import com.medipath.modules.shared.components.SearchBar
 import com.medipath.modules.shared.components.VisitItem
-import com.medipath.modules.patient.notifications.ui.NotificationsActivity
+import com.medipath.modules.shared.notifications.ui.NotificationsActivity
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.patient.booking.ui.RescheduleVisitActivity
 import com.medipath.modules.patient.home.HomeViewModel
-import com.medipath.modules.patient.notifications.NotificationsViewModel
-import com.medipath.modules.patient.notifications.ui.NotificationsScreen
+import com.medipath.modules.shared.notifications.NotificationsViewModel
 import com.medipath.modules.patient.visits.VisitsViewModel
 import com.medipath.modules.patient.visits.ui.VisitDetailsActivity
 import com.medipath.modules.shared.profile.ui.EditProfileActivity
 import com.medipath.modules.shared.settings.ui.SettingsActivity
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.medipath.MediPathApplication
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class HomeActivity : ComponentActivity() {
 
-    private lateinit var notificationsService: UserNotificationsService
-    private val activityDisposable = CompositeDisposable()
-    private val channelId = "medipath_notifications"
-    private var notificationId = 1
-    
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
-        if (!isGranted)
-            Toast.makeText(this, "Permission denied", Toast.LENGTH_LONG).show()
+        if (isGranted) {
+            Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
-        createNotificationChannel()
-        checkNotificationPermission()
-
-        val sessionManager = RetrofitInstance.getSessionManager()
-
-        val token = sessionManager.getSessionId()
-        Log.d("HomeActivity", "Loaded session token: ${token}")
-
-        if (token != null) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    notificationsService = UserNotificationsService(token)
-
-                    val notificationSubscription = notificationsService.notifications
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe { notification ->
-                            Log.d("HomeActivity", "Received notification: ${notification.title}")
-                            showNotification(notification.title, notification.content, notification.timestamp)
-                        }
-                    activityDisposable.add(notificationSubscription)
-                    notificationsService.connect(RetrofitInstance.getBaseUrl())
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@HomeActivity, "Error initializing notifications service", Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-        } else {
-            Log.e("HomeActivity", "Session token is null, cannot start notification service.")
-        }
 
         enableEdgeToEdge()
+        val sessionManager = RetrofitInstance.getSessionManager()
         val authService = RetrofitInstance.authService
+
+        checkNotificationPermission()
 
         setContent {
             MediPathTheme {
@@ -152,83 +110,13 @@ class HomeActivity : ComponentActivity() {
         }
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "MediPath Notifications"
-            val descriptionText = "Notifications from MediPath"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(channelId, name, importance).apply {
-                description = descriptionText
-            }
-
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
     private fun checkNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            when {
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED -> {
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
+        val app = application as MediPathApplication
+        if (app.shouldRequestNotificationPermission()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
-        }
-    }
-
-    private fun showNotification(title: String, content: String, timestamp: String?) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) 
-                != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "New notification: $title", Toast.LENGTH_SHORT).show()
-                return
-            }
-        }
-        
-        val intent = Intent(this, NotificationsActivity::class.java)
-
-        val requestCode = (title + (timestamp ?: "")).hashCode()
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(
-            this, requestCode, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val builder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle(title)
-            .setContentText(content)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-
-        try {
-            with(NotificationManagerCompat.from(this)) {
-                if (areNotificationsEnabled()) {
-                    notify(notificationId++, builder.build())
-                } else {
-                    Toast.makeText(this@HomeActivity, "New notification: $title", Toast.LENGTH_SHORT).show()
-                }
-            }
-        } catch (e: Exception) {
-            Toast.makeText(this, "New notification: $title", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                if (::notificationsService.isInitialized) {
-                    notificationsService.disconnect()
-                }
-                activityDisposable.clear()
-            } catch (e: Exception) {
-                Log.e("HomeActivity", "Error during onDestroy cleanup", e)
-            }
+            app.markPermissionRequested()
         }
     }
 }
@@ -314,6 +202,7 @@ fun HomeScreen(
         val upcomingVisits by viewModel.upcomingVisits.collectAsState()
         val prescriptionCode by viewModel.prescriptionCode.collectAsState()
         val referralCode by viewModel.referralCode.collectAsState()
+        val canBeDoctor by viewModel.canBeDoctor.collectAsState()
         var currentTab by remember { mutableStateOf("Dashboard") }
 
         Navigation(
@@ -327,9 +216,10 @@ fun HomeScreen(
             onSettingsClick = {
                 context.startActivity(Intent(context, SettingsActivity::class.java))
             },
-            onSelectRoleClick = {
-                Toast.makeText(context, "Select Role", Toast.LENGTH_SHORT).show()
-            },
+            firstName = firstName,
+            lastName = lastName,
+            currentTab = currentTab,
+            canSwitchRole = canBeDoctor,
             content = { innerPadding ->
                 val colors = LocalCustomColors.current
 
@@ -510,10 +400,7 @@ fun HomeScreen(
                     }
                 }
             },
-            onLogoutClick = onLogoutClick,
-            firstName = firstName,
-            lastName = lastName,
-            currentTab = currentTab
+            onLogoutClick = onLogoutClick
         )
     }
 }
