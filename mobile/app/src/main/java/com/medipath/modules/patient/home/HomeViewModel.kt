@@ -1,84 +1,81 @@
 package com.medipath.modules.patient.home
 
-import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import com.medipath.core.models.Visit
 import com.medipath.core.services.UserService
 import com.medipath.core.services.VisitsService
-import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class HomeViewModel(
     private val userService: UserService = RetrofitInstance.userService,
     private val visitsService: VisitsService = RetrofitInstance.visitsService
 ) : ViewModel() {
 
-    private val _isLoading = mutableStateOf(true)
-    val isLoading: State<Boolean> = _isLoading
-    private val _firstName = mutableStateOf("")
-    val firstName: State<String> = _firstName
-    private val _lastName = mutableStateOf("")
-    val lastName: State<String> = _lastName
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _firstName = MutableStateFlow("")
+    val firstName: StateFlow<String> = _firstName.asStateFlow()
 
-    private val _upcomingVisits = mutableStateOf<List<Visit>>(emptyList())
-    val upcomingVisits: State<List<Visit>> = _upcomingVisits
+    private val _lastName = MutableStateFlow("")
+    val lastName: StateFlow<String> = _lastName.asStateFlow()
 
-    private val _userId = mutableStateOf("")
+    private val _upcomingVisits = MutableStateFlow<List<Visit>>(emptyList())
+    val upcomingVisits: StateFlow<List<Visit>> = _upcomingVisits.asStateFlow()
 
-    private val _deleteSuccess = mutableStateOf(false)
-    val deleteSuccess: State<Boolean> = _deleteSuccess
+    private val _userId = MutableStateFlow("")
+    val userId: StateFlow<String> = _userId.asStateFlow()
 
-    private val _deleteError = mutableStateOf("")
-    val deleteError: State<String> = _deleteError
+    private val _prescriptionCode = MutableStateFlow("")
+    val prescriptionCode: StateFlow<String> = _prescriptionCode.asStateFlow()
 
-    private val _prescriptionCode = mutableStateOf("")
-    val prescriptionCode: State<String> = _prescriptionCode
+    private val _referralCode = MutableStateFlow("")
+    val referralCode: StateFlow<String> = _referralCode.asStateFlow()
 
-    private val _referralCode = mutableStateOf("")
-    val referralCode: State<String> = _referralCode
+    private val _shouldRedirectToLogin = MutableStateFlow(false)
+    val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
 
-    private val _shouldRedirectToLogin = mutableStateOf(false)
-    val shouldRedirectToLogin: State<Boolean> = _shouldRedirectToLogin
-
-    private suspend fun handleAuthError(sessionManager: DataStoreSessionManager, error: Exception) {
+    private fun handleAuthError(error: Exception) {
         if (error is retrofit2.HttpException && error.code() == 401) {
-            sessionManager.deleteSessionId()
             _shouldRedirectToLogin.value = true
         }
     }
 
-    fun fetchUserProfile(sessionManager: DataStoreSessionManager) {
+    fun fetchUserProfile() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val token = sessionManager.getSessionId()
-                if(token.isNullOrEmpty()) {
-                    _isLoading.value = false
-                    return@launch
+                val userResponse = userService.getUserProfile()
+                if (userResponse.isSuccessful) {
+                    val user = userResponse.body()!!.user
+                    _firstName.value = user.name
+                    _lastName.value = user.surname
+                    _userId.value = user.id
+                    fetchUpcomingVisits()
+                    fetchActiveCodes()
+                } else if (userResponse.code() == 401) {
+                    _shouldRedirectToLogin.value = true
                 }
-                val userResponse = userService.getUserProfile("SESSION=$token")
-                _firstName.value = userResponse.user.name
-                _lastName.value = userResponse.user.surname
-                _userId.value = userResponse.user.id
-                fetchUpcomingVisits(token)
-                fetchActiveCodes(token)
             } catch (e: Exception) {
-                handleAuthError(sessionManager, e)
+                handleAuthError(e)
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    private suspend fun fetchUpcomingVisits(token: String) {
+    private suspend fun fetchUpcomingVisits() {
         try {
-            val visitsResponse = visitsService.getUpcomingVisits("true", "SESSION=$token")
-            _upcomingVisits.value = visitsResponse.visits
+            val visitsResponse = visitsService.getUpcomingVisits("true")
+            if(visitsResponse.isSuccessful) {
+                _upcomingVisits.value = visitsResponse.body()?.visits ?: emptyList()
+            }
         } catch (e: retrofit2.HttpException) {
             Log.e("HomeViewModel", "HTTP Error ${e.code()}: ${e.message()}")
         } catch (e: Exception) {
@@ -86,9 +83,9 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun fetchActiveCodes(token: String) {
+    private suspend fun fetchActiveCodes() {
         try {
-            val codesResponse = userService.getAllUserCodes("SESSION=$token")
+            val codesResponse = userService.getAllUserCodes()
             if (codesResponse.isSuccessful) {
                 val codes = codesResponse.body()?.codes ?: emptyList()
                 val prescriptions = codes.filter { it.codes.codeType == "PRESCRIPTION" }
@@ -100,47 +97,5 @@ class HomeViewModel(
         } catch (e: Exception) {
             Log.e("HomeViewModel", "Error fetching codes: $e")
         }
-    }
-
-    fun getCurrentUserId(): String {
-        return _userId.value
-    }
-
-    fun cancelVisit(visitId: String, sessionManager: DataStoreSessionManager) {
-        viewModelScope.launch {
-            try {
-                if (visitId.isEmpty()) {
-                    _deleteError.value = "Nieprawidłowy ID wizyty"
-                    return@launch
-                }
-
-                val token = sessionManager.getSessionId()
-                if (token.isNullOrEmpty()) {
-                    _deleteError.value = "Brak sesji użytkownika"
-                    return@launch
-                }
-                val response = visitsService.cancelVisit(visitId, "SESSION=$token")
-
-                if (response.isSuccessful) {
-                    _deleteSuccess.value = true
-                    fetchUpcomingVisits(token)
-                } else {
-                    val errorMessage = when (response.code()) {
-                        400 -> "Wizyta została już zakończona lub anulowana"
-                        401 -> "Sesja wygasła, zaloguj się ponownie"
-                        403 -> "Brak uprawnień do anulowania tej wizyty"
-                        else -> "Błąd podczas anulowania wizyty (${response.code()})"
-                    }
-                    _deleteError.value = errorMessage
-                }
-            } catch (e: Exception) {
-                _deleteError.value = "Błąd sieciowy: ${e.message}"
-            }
-        }
-    }
-
-    fun clearDeleteMessages() {
-        _deleteSuccess.value = false
-        _deleteError.value = ""
     }
 }

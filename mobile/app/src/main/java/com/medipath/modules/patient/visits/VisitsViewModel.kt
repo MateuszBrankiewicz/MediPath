@@ -1,14 +1,13 @@
 package com.medipath.modules.patient.visits
 
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.medipath.core.models.Visit
-import com.medipath.core.network.DataStoreSessionManager
 import com.medipath.core.network.RetrofitInstance
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -19,85 +18,86 @@ class VisitsViewModel : ViewModel() {
     
     private val apiDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-    private val _visits = mutableStateOf<List<Visit>>(emptyList())
-    val visits: State<List<Visit>> = _visits
+    private val _visits = MutableStateFlow<List<Visit>>(emptyList())
+    val visits: StateFlow<List<Visit>> = _visits.asStateFlow()
 
-    private val _filteredVisits = mutableStateOf<List<Visit>>(emptyList())
-    val filteredVisits: State<List<Visit>> = _filteredVisits
+    private val _filteredVisits = MutableStateFlow<List<Visit>>(emptyList())
+    val filteredVisits: StateFlow<List<Visit>> = _filteredVisits.asStateFlow()
 
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _error = mutableStateOf<String?>(null)
-    val error: State<String?> = _error
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
-    private val _statusFilter = mutableStateOf("All")
-    val statusFilter: State<String> = _statusFilter
+    private val _statusFilter = MutableStateFlow("All")
+    val statusFilter: StateFlow<String> = _statusFilter.asStateFlow()
 
-    private val _dateFromFilter = mutableStateOf("")
-    val dateFromFilter: State<String> = _dateFromFilter
+    private val _dateFromFilter = MutableStateFlow("")
+    val dateFromFilter: StateFlow<String> = _dateFromFilter.asStateFlow()
 
-    private val _dateToFilter = mutableStateOf("")
-    val dateToFilter: State<String> = _dateToFilter
+    private val _dateToFilter = MutableStateFlow("")
+    val dateToFilter: StateFlow<String> = _dateToFilter.asStateFlow()
 
-    private val _sortBy = mutableStateOf("Date")
-    val sortBy: State<String> = _sortBy
+    private val _sortBy = MutableStateFlow("Date")
+    val sortBy: StateFlow<String> = _sortBy.asStateFlow()
 
-    private val _sortOrder = mutableStateOf("Descending")
-    val sortOrder: State<String> = _sortOrder
+    private val _sortOrder = MutableStateFlow("Descending")
+    val sortOrder: StateFlow<String> = _sortOrder.asStateFlow()
 
-    private val _searchQuery = mutableStateOf("")
-    val searchQuery: State<String> = _searchQuery
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _totalVisits = mutableStateOf(0)
-    val totalVisits: State<Int> = _totalVisits
+    private val _totalVisits = MutableStateFlow(0)
+    val totalVisits: StateFlow<Int> = _totalVisits.asStateFlow()
 
-    private val _scheduledVisits = mutableStateOf(0)
-    val scheduledVisits: State<Int> = _scheduledVisits
+    private val _scheduledVisits = MutableStateFlow(0)
+    val scheduledVisits: StateFlow<Int> = _scheduledVisits.asStateFlow()
 
-    private val _completedVisits = mutableIntStateOf(0)
-    val completedVisits: State<Int> = _completedVisits
+    private val _completedVisits = MutableStateFlow(0)
+    val completedVisits: StateFlow<Int> = _completedVisits.asStateFlow()
 
-    fun fetchVisits(sessionManager: DataStoreSessionManager, upcoming: Boolean = false) {
+    private val _shouldRedirectToLogin = MutableStateFlow(false)
+    val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
+
+    private val _cancelSuccess = MutableStateFlow(false)
+    val cancelSuccess: StateFlow<Boolean> = _cancelSuccess.asStateFlow()
+
+    fun fetchVisits(upcoming: Boolean = false) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 _error.value = null
+                _shouldRedirectToLogin.value = false
 
-                val sessionId = sessionManager.getSessionId()
-                if (sessionId == null) {
-                    _error.value = "No session found"
-                    _isLoading.value = false
-                    return@launch
+                val response = visitsService.getAllVisits()
+
+                if (response.isSuccessful) {
+                    _visits.value = response.body()?.visits ?: emptyList()
+                    updateStatistics()
+                    applyFilters()
+                } else if (response.code() == 401) {
+                    _shouldRedirectToLogin.value = true
+                } else {
+                    _error.value = "Failed to load visits: ${response.code()}"
                 }
-
-                val response = visitsService.getAllVisits(
-                    cookie = "SESSION=$sessionId"
-                )
-
-                _visits.value = response.visits
-                updateStatistics()
-                applyFilters()
-                _isLoading.value = false
             } catch (e: Exception) {
                 Log.e("VisitsViewModel", "Error fetching visits", e)
                 _error.value = "Failed to load visits: ${e.message}"
+            } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun cancelVisit(visitId: String, sessionManager: DataStoreSessionManager) {
+    fun cancelVisit(visitId: String) {
         viewModelScope.launch {
             try {
-                val sessionId = sessionManager.getSessionId()
-                if (sessionId == null) {
-                    _error.value = "No session found"
-                    return@launch
-                }
+                _error.value = null
+                _cancelSuccess.value = false
 
-                val response = visitsService.cancelVisit(visitId, "SESSION=$sessionId")
-                
+                val response = visitsService.cancelVisit(visitId)
+
                 if (response.isSuccessful) {
                     _visits.value = _visits.value.map {
                         if (it.id == visitId) {
@@ -108,15 +108,17 @@ class VisitsViewModel : ViewModel() {
                     }
                     updateStatistics()
                     applyFilters()
+                    _cancelSuccess.value = true
+                } else if (response.code() == 401) {
+                    _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to cancel visit"
+                    _error.value = "Failed to cancel visit: ${response.code()}"
                 }
             } catch (e: Exception) {
                 _error.value = "Failed to cancel visit: ${e.message}"
             }
         }
     }
-
     fun updateStatusFilter(status: String) {
         _statusFilter.value = status
         applyFilters()

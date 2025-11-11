@@ -43,12 +43,14 @@ import androidx.compose.material.icons.outlined.MedicalInformation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.medipath.core.network.DataStoreSessionManager
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.services.UserNotificationsService
 import com.medipath.modules.shared.auth.ui.LoginActivity
-import com.medipath.modules.patient.codes.ui.CodesActivity
 import com.medipath.modules.shared.components.InfoCard
 import com.medipath.modules.shared.components.MenuCard
 import com.medipath.modules.shared.components.Navigation
@@ -57,7 +59,12 @@ import com.medipath.modules.shared.components.SearchBar
 import com.medipath.modules.shared.components.VisitItem
 import com.medipath.modules.patient.notifications.ui.NotificationsActivity
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.modules.patient.booking.ui.RescheduleVisitActivity
 import com.medipath.modules.patient.home.HomeViewModel
+import com.medipath.modules.patient.notifications.NotificationsViewModel
+import com.medipath.modules.patient.notifications.ui.NotificationsScreen
+import com.medipath.modules.patient.visits.VisitsViewModel
+import com.medipath.modules.patient.visits.ui.VisitDetailsActivity
 import com.medipath.modules.shared.profile.ui.EditProfileActivity
 import com.medipath.modules.shared.settings.ui.SettingsActivity
 import io.reactivex.disposables.CompositeDisposable
@@ -86,31 +93,38 @@ class HomeActivity : ComponentActivity() {
         createNotificationChannel()
         checkNotificationPermission()
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val sessionManager = DataStoreSessionManager(this@HomeActivity)
-                val token = sessionManager.getSessionId()
-                Log.d("HomeActivity", "Loaded session token: ${token}")
-                notificationsService = UserNotificationsService(token)
+        val sessionManager = RetrofitInstance.getSessionManager()
 
-                val notificationSubscription = notificationsService.notifications
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { notification ->
-                Log.d("HomeActivity", "Received notification: ${notification.title}")
-                showNotification(notification.title, notification.content, notification.timestamp)
+        val token = sessionManager.getSessionId()
+        Log.d("HomeActivity", "Loaded session token: ${token}")
+
+        if (token != null) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    notificationsService = UserNotificationsService(token)
+
+                    val notificationSubscription = notificationsService.notifications
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { notification ->
+                            Log.d("HomeActivity", "Received notification: ${notification.title}")
+                            showNotification(notification.title, notification.content, notification.timestamp)
+                        }
+                    activityDisposable.add(notificationSubscription)
+                    notificationsService.connect(RetrofitInstance.getBaseUrl())
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@HomeActivity, "Error initializing notifications service", Toast.LENGTH_LONG).show()
                     }
-                activityDisposable.add(notificationSubscription)
-                notificationsService.connect(RetrofitInstance.getBaseUrl())
-            } catch (e: Exception) {
-                Toast.makeText(this@HomeActivity, "Error initializing notifications service", Toast.LENGTH_LONG).show()
+                }
             }
+        } else {
+            Log.e("HomeActivity", "Session token is null, cannot start notification service.")
         }
 
         enableEdgeToEdge()
-        val sessionManager = DataStoreSessionManager(this)
         val authService = RetrofitInstance.authService
-        
+
         setContent {
             MediPathTheme {
                 HomeScreen(
@@ -119,17 +133,20 @@ class HomeActivity : ComponentActivity() {
                             try {
                                 authService.logout()
                             } catch (e: Exception) {
-                                Toast.makeText(this@HomeActivity, "Logout error", Toast.LENGTH_LONG).show()
-                            } finally {
-                                withContext(Dispatchers.Main) {
-                                    sessionManager.deleteSessionId()
-                                    startActivity(Intent(this@HomeActivity, LoginActivity::class.java))
-                                    finish()
-                                }
+                                Log.e("HomeActivity", "Logout API error", e)
+                            }
+
+                            sessionManager.deleteSessionId()
+
+                            withContext(Dispatchers.Main) {
+                                startActivity(
+                                    Intent(this@HomeActivity, LoginActivity::class.java)
+                                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                )
+                                finish()
                             }
                         }
-                    },
-                    sessionManager = sessionManager
+                    }
                 )
             }
         }
@@ -210,7 +227,7 @@ class HomeActivity : ComponentActivity() {
                 }
                 activityDisposable.clear()
             } catch (e: Exception) {
-                Toast.makeText(this@HomeActivity, "Error during cleanup", Toast.LENGTH_LONG).show()
+                Log.e("HomeActivity", "Error during onDestroy cleanup", e)
             }
         }
     }
@@ -219,17 +236,47 @@ class HomeActivity : ComponentActivity() {
 @Composable
 fun HomeScreen(
     onLogoutClick: () -> Unit = {},
-    viewModel: HomeViewModel = remember { HomeViewModel() },
-    sessionManager: DataStoreSessionManager
-) {
+    viewModel: HomeViewModel = viewModel()
+    ) {
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchUserProfile(sessionManager)
+    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    val notificationsViewModel: NotificationsViewModel = viewModel()
+
+    val visitsViewModel: VisitsViewModel = viewModel()
+    val visitsError by visitsViewModel.error.collectAsState(null)
+    val visitsShouldRedirect by visitsViewModel.shouldRedirectToLogin.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.fetchUserProfile()
+                notificationsViewModel.fetchNotifications()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
-    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin
-    val isLoading by viewModel.isLoading
+    LaunchedEffect(visitsError) {
+        if (visitsError != null) {
+            Toast.makeText(context, visitsError, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val cancelSuccess by visitsViewModel.cancelSuccess.collectAsState()
+    LaunchedEffect(cancelSuccess) {
+        if (cancelSuccess) {
+            viewModel.fetchUserProfile()
+        }
+    }
 
     if (shouldRedirectToLogin) {
         Box(
@@ -239,11 +286,21 @@ fun HomeScreen(
             CircularProgressIndicator()
         }
 
-        LaunchedEffect(shouldRedirectToLogin) {
+        LaunchedEffect(shouldRedirectToLogin || visitsShouldRedirect) {
             if (!shouldRedirectToLogin) return@LaunchedEffect
-            context.startActivity(Intent(context, LoginActivity::class.java))
+
+            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
             (context as? ComponentActivity)?.finish()
         }
+
     } else if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -252,16 +309,15 @@ fun HomeScreen(
             CircularProgressIndicator()
         }
     } else {
-        val firstName by viewModel.firstName
-        val lastName by viewModel.lastName
-        val upcomingVisits by viewModel.upcomingVisits
-        val deleteSuccess by viewModel.deleteSuccess
-        val deleteError by viewModel.deleteError
-        val prescriptionCode by viewModel.prescriptionCode
-        val referralCode by viewModel.referralCode
+        val firstName by viewModel.firstName.collectAsState()
+        val lastName by viewModel.lastName.collectAsState()
+        val upcomingVisits by viewModel.upcomingVisits.collectAsState()
+        val prescriptionCode by viewModel.prescriptionCode.collectAsState()
+        val referralCode by viewModel.referralCode.collectAsState()
         var currentTab by remember { mutableStateOf("Dashboard") }
-        Log.d("HomeActivity", "Current tab: ${viewModel.referralCode}")
+
         Navigation(
+            notificationsViewModel = notificationsViewModel,
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
             },
@@ -307,11 +363,7 @@ fun HomeScreen(
                                 label = "Code:",
                                 code = prescriptionCode.ifEmpty { "No active prescriptions" },
                                 onClick = {
-                                    val intent = Intent(context, CodesActivity::class.java)
-                                    intent.putExtra("code_type", "PRESCRIPTION")
-                                    Log.d("HomeActivity", "User ID for intent: ${viewModel.getCurrentUserId()}")
-                                    intent.putExtra("user_id", viewModel.getCurrentUserId())
-                                    context.startActivity(intent)
+                                    NavigationRouter.navigateToTab(context, "Prescriptions", "Dashboard")
                                 }
                             )
 
@@ -322,10 +374,7 @@ fun HomeScreen(
                                 label = "Code:",
                                 code = referralCode.ifEmpty { "No active referrals" },
                                 onClick = {
-                                    val intent = Intent(context, CodesActivity::class.java)
-                                    intent.putExtra("code_type", "REFERRAL")
-                                    intent.putExtra("user_id", viewModel.getCurrentUserId())
-                                    context.startActivity(intent)
+                                    NavigationRouter.navigateToTab(context, "Referrals", "Dashboard")
                                 }
                             )
 
@@ -439,15 +488,20 @@ fun HomeScreen(
                                 VisitItem(
                                     visit = visit,
                                     onCancelVisit = { visitId ->
-                                        viewModel.cancelVisit(visitId, sessionManager)
+                                        visitsViewModel.cancelVisit(visitId)
                                     },
                                     onViewDetails = { visitId ->
-                                        val intent = Intent(context, com.medipath.modules.patient.visits.ui.VisitDetailsActivity::class.java)
+                                        val intent = Intent(context, VisitDetailsActivity::class.java)
                                         intent.putExtra("VISIT_ID", visitId)
                                         context.startActivity(intent)
                                     },
                                     onReschedule = { visitId ->
-                                        Toast.makeText(context, "Reschedule visit: $visitId", Toast.LENGTH_SHORT).show()
+                                        val intent = Intent(context, RescheduleVisitActivity::class.java)
+                                        intent.putExtra("visit_id", visit.id)
+                                        intent.putExtra("doctor_id", visit.doctor.userId)
+                                        intent.putExtra("doctor_name", "${visit.doctor.doctorName} ${visit.doctor.doctorSurname}")
+                                        intent.putExtra("current_date", "${visit.time.startTime} at ${visit.institution.institutionName}")
+                                        context.startActivity(intent)
                                     }
                                 )
                                 HorizontalDivider()
@@ -461,37 +515,11 @@ fun HomeScreen(
             lastName = lastName,
             currentTab = currentTab
         )
-
-        if (deleteSuccess) {
-            AlertDialog(
-                onDismissRequest = { viewModel.clearDeleteMessages() },
-                title = { Text("Success") },
-                text = { Text("Visits successfully canceled") },
-                confirmButton = {
-                    TextButton(onClick = { viewModel.clearDeleteMessages() }) {
-                        Text("OK")
-                    }
-                }
-            )
-        }
-
-        if (deleteError.isNotEmpty()) {
-            AlertDialog(
-                onDismissRequest = { viewModel.clearDeleteMessages() },
-                title = { Text("Error") },
-                text = { Text(deleteError) },
-                confirmButton = {
-                    TextButton(onClick = { viewModel.clearDeleteMessages() }) {
-                        Text("OK")
-                    }
-                }
-            )
-        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-//    MediPathTheme { HomeScreen() }
+    MediPathTheme { HomeScreen() }
 }

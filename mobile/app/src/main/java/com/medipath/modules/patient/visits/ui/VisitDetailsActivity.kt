@@ -2,6 +2,7 @@ package com.medipath.modules.patient.visits.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,11 +18,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medipath.core.network.DataStoreSessionManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.visits.VisitDetailsViewModel
 import com.medipath.modules.patient.visits.ui.components.VisitDetailsContent
+import com.medipath.modules.shared.auth.ui.LoginActivity
 
 class VisitDetailsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,13 +35,11 @@ class VisitDetailsActivity : ComponentActivity() {
         enableEdgeToEdge()
         
         val visitId = intent.getStringExtra("VISIT_ID") ?: ""
-        val sessionManager = DataStoreSessionManager(this)
 
         setContent {
             MediPathTheme {
                 VisitDetailsScreen(
                     visitId = visitId,
-                    sessionManager = sessionManager,
                     onBackClick = { finish() }
                 )
             }
@@ -47,17 +51,45 @@ class VisitDetailsActivity : ComponentActivity() {
 @Composable
 fun VisitDetailsScreen(
     visitId: String,
-    sessionManager: DataStoreSessionManager,
-    viewModel: VisitDetailsViewModel = remember { VisitDetailsViewModel() },
+    viewModel: VisitDetailsViewModel = viewModel(),
     onBackClick: () -> Unit
 ) {
     val colors = LocalCustomColors.current
-    val visitDetails by viewModel.visitDetails
-    val isLoading by viewModel.isLoading
-    val error by viewModel.error
+    val visitDetails by viewModel.visitDetails.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(visitId) {
-        viewModel.fetchVisitDetails(visitId, sessionManager)
+        viewModel.fetchVisitDetails(visitId)
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.fetchVisitDetails(visitId)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    if (shouldRedirectToLogin) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            (context as? ComponentActivity)?.finish()
+        }
     }
 
     Scaffold(
@@ -108,21 +140,36 @@ fun VisitDetailsScreen(
                     }
                 }
 
-                visitDetails != null -> {
-                    val context = LocalContext.current
+                visitDetails != null && !shouldRedirectToLogin -> {
                     VisitDetailsContent(
                         visitDetails = visitDetails!!,
                         onReviewClick = {
-                            val intent = Intent(context, ReviewVisitActivity::class.java).apply {
+                            val commentId = visitDetails!!.commentId
+                            if (!commentId.isNullOrEmpty()) {
+                                val intent = Intent(context, ReviewDetailsActivity::class.java).apply {
+                                    putExtra("COMMENT_ID", commentId)
+                                    putExtra("VISIT_ID", visitId)
+                                }
+                                context.startActivity(intent)
+                            } else {
+                                val intent = Intent(context, ReviewVisitActivity::class.java).apply {
+                                    putExtra("VISIT_ID", visitId)
+                                    putExtra(
+                                        "DOCTOR_NAME",
+                                        "Dr. ${visitDetails!!.doctor.doctorName} ${visitDetails!!.doctor.doctorSurname}"
+                                    )
+                                    putExtra(
+                                        "INSTITUTION_NAME",
+                                        visitDetails!!.institution.institutionName
+                                    )
+                                }
+                                context.startActivity(intent)
+                            }
+                        },
+                        onSeeReviewClick = {
+                            val intent = Intent(context, ReviewDetailsActivity::class.java).apply {
+                                putExtra("COMMENT_ID", visitDetails!!.commentId)
                                 putExtra("VISIT_ID", visitId)
-                                putExtra(
-                                    "DOCTOR_NAME",
-                                    "Dr. ${visitDetails!!.doctor.doctorName} ${visitDetails!!.doctor.doctorSurname}"
-                                )
-                                putExtra(
-                                    "INSTITUTION_NAME",
-                                    visitDetails!!.institution.institutionName
-                                )
                             }
                             context.startActivity(intent)
                         }

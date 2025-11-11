@@ -1,6 +1,8 @@
 package com.medipath.modules.shared.settings.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -16,24 +18,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medipath.core.network.DataStoreSessionManager
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.patient.home.HomeViewModel
+import com.medipath.modules.shared.auth.ui.LoginActivity
 
 class SettingsActivity : ComponentActivity() {
-    private lateinit var sessionManager: DataStoreSessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        sessionManager = DataStoreSessionManager(this)
-
         setContent {
             MediPathTheme {
                 SettingsScreen(
-                    onBackClick = { finish() },
-                    sessionManager = sessionManager
+                    onBackClick = { finish() }
                 )
             }
         }
@@ -43,14 +43,27 @@ class SettingsActivity : ComponentActivity() {
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
-    sessionManager: DataStoreSessionManager,
-    viewModel: HomeViewModel = remember { HomeViewModel() }
+    viewModel: HomeViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val isLoading by viewModel.isLoading
+    val isLoading by viewModel.isLoading.collectAsState()
+    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.fetchUserProfile(sessionManager)
+        viewModel.fetchUserProfile()
+    }
+
+    if (shouldRedirectToLogin) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            (context as? ComponentActivity)?.finish()
+        }
     }
 
     var notificationsEnabled by remember { mutableStateOf(true) }
@@ -84,58 +97,61 @@ fun SettingsScreen(
             )
         }
 
-        when {
-            isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
-            }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 20.dp),
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    item {
-                        Spacer(modifier = Modifier.height(20.dp))
+        if (!shouldRedirectToLogin) {
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
+                }
 
-                    item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp)
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp),
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        item {
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
+
+                        item {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
                             ) {
-                                Text(
-                                    text = "Notifications",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(bottom = 8.dp)
-                                )
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                Column(
+                                    modifier = Modifier.padding(16.dp)
                                 ) {
                                     Text(
-                                        text = "Push Notifications",
-                                        fontSize = 16.sp,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        text = "Notifications",
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(bottom = 8.dp)
                                     )
-                                    Switch(
-                                        checked = notificationsEnabled,
-                                        onCheckedChange = { notificationsEnabled = it }
-                                    )
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Push Notifications",
+                                            fontSize = 16.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Switch(
+                                            checked = notificationsEnabled,
+                                            onCheckedChange = { notificationsEnabled = it }
+                                        )
+                                    }
                                 }
                             }
                         }

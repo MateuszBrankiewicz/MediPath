@@ -22,7 +22,8 @@ public class MedicalHistoryService {
     @Autowired
     private AuthorizationService authorizationService;
 
-    public void addMedicalHistory(MedicalHistory medicalHistory, String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
+    public void addMedicalHistory(MedicalHistory medicalHistory, String loggedUserID)
+            throws IllegalArgumentException, IllegalAccessException {
 
         ArrayList<String> missingFields = new ArrayList<>();
         if (medicalHistory.getDate() == null) missingFields.add("date");
@@ -42,7 +43,12 @@ public class MedicalHistoryService {
             medicalHistory.setUserId(loggedUserID);
 
         } else {
-            if (medicalHistory.getDoctor() == null || medicalHistory.getDoctor().getUserId() == null || medicalHistory.getDoctor().getUserId().isBlank()) throw new IllegalArgumentException("Doctor digest must be included when adding for a patient");
+            if (medicalHistory.getDoctor() == null ||
+                    medicalHistory.getDoctor().getUserId() == null ||
+                    medicalHistory.getDoctor().getUserId().isBlank())
+
+                throw new IllegalArgumentException("Doctor digest must be included when adding for a patient");
+
             userOpt = userRepository.findById(medicalHistory.getUserId());
 
             if (userOpt.isEmpty()) throw new IllegalAccessException("Patient not found");
@@ -57,7 +63,8 @@ public class MedicalHistoryService {
             if (doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
 
             User doctor = doctorOpt.get();
-            medicalHistory.setDoctor(new DoctorDigest(doctor.getId(), doctor.getName(), doctor.getSurname(), doctor.getSpecialisations()));
+            medicalHistory.setDoctor(new DoctorDigest(doctor.getId(), doctor.getName(),
+                    doctor.getSurname(), doctor.getSpecialisations()));
         }
 
         User patient = userOpt.get();
@@ -67,50 +74,55 @@ public class MedicalHistoryService {
         userRepository.save(patient);
     }
 
-    public void modifyMedHisEntry(String med_his_id, MedicalHistory medicalHistory, String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
+    public void modifyMedHisEntry(String med_his_id, 
+                            MedicalHistory medicalHistory, String loggedUserID)
+            throws IllegalArgumentException, IllegalAccessException {
 
         Optional<User> userOpt = userRepository.findById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         Optional<MedicalHistory> oldMedHisOpt = medicalHistoryRepository.findById(med_his_id);
-        if (oldMedHisOpt.isEmpty()) throw new IllegalAccessException("Medical history entry not found");
+        if (oldMedHisOpt.isEmpty()) 
+            throw new IllegalAccessException("Medical history entry not found");
 
         MedicalHistory oldMedicalHistory = oldMedHisOpt.get();
-        if (!oldMedicalHistory.getUserId().equals(loggedUserID)) throw new IllegalAccessException("User not authorized");
-        if (oldMedicalHistory.getDoctor() != null) throw new IllegalAccessException("Entries added by doctors cannot be changed");
+
+        if (!oldMedicalHistory.getUserId().equals(loggedUserID))
+            throw new IllegalAccessException("User not authorized");
+
+        if (oldMedicalHistory.getDoctor() != null)
+            throw new IllegalAccessException("Entries added by doctors cannot be changed");
 
         oldMedicalHistory.setDate(medicalHistory.getDate());
         oldMedicalHistory.setNote(medicalHistory.getNote());
         oldMedicalHistory.setTitle(medicalHistory.getTitle());
-
         User user = userOpt.get();
         LinkedList<MedicalHistory> histories = user.getLatestMedicalHistory();
         boolean foundInLatest = false;
-
         for (int i = 0; i < histories.size(); i++) {
 
             if (histories.get(i).getId().equals(med_his_id)) {
                 histories.set(i, oldMedicalHistory);
                 foundInLatest = true;
             }
-
         }
-
         medicalHistoryRepository.save(oldMedicalHistory);
         if (foundInLatest) userRepository.save(user);
-
     }
 
-    public void deleteMedHisEntry(String med_his_id, String loggedUserID) throws IllegalArgumentException, IllegalAccessException {
+    public void deleteMedHisEntry(String med_his_id, String loggedUserID)
+            throws IllegalArgumentException, IllegalAccessException {
 
         Optional<User> userOpt = userRepository.findById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         Optional<MedicalHistory> oldMedHisOpt = medicalHistoryRepository.findById(med_his_id);
-        if (oldMedHisOpt.isEmpty()) throw new IllegalAccessException("Medical history entry not found");
+        if (oldMedHisOpt.isEmpty())
+            throw new IllegalAccessException("Medical history entry not found");
 
         MedicalHistory oldMedicalHistory = oldMedHisOpt.get();
-        if (!oldMedicalHistory.getUserId().equals(loggedUserID)) throw new IllegalAccessException("User not authorized");
+        if (!oldMedicalHistory.getUserId().equals(loggedUserID))
+            throw new IllegalAccessException("User not authorized");
 
         if (oldMedicalHistory.getDoctor() != null)
             throw new IllegalAccessException("Entries added by doctors cannot be deleted");

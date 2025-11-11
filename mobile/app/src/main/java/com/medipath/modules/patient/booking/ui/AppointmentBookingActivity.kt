@@ -1,44 +1,57 @@
 package com.medipath.modules.patient.booking.ui
 
 import android.os.Bundle
+import com.medipath.core.models.Institution
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import android.widget.Toast
+import com.medipath.core.models.DoctorScheduleItem
+import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
+import com.medipath.modules.patient.booking.BookingViewModel
+import com.medipath.modules.patient.booking.ToastMessage
+import com.medipath.modules.patient.booking.DoctorCommentsViewModel
+import com.medipath.modules.patient.booking.ui.components.BookingTabContent
+import com.medipath.modules.patient.booking.ui.components.InformationTab
 import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class AppointmentBookingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val doctorId = intent.getStringExtra("doctor_id") ?: ""
         val doctorName = intent.getStringExtra("doctor_name") ?: ""
+        val doctorImage = intent.getStringExtra("doctor_image") ?: ""
+        val doctorRating = intent.getDoubleExtra("doctor_rating", 0.0)
+        val numOfRatings = intent.getIntExtra("num_of_ratings", 0)
+        val specialisations = intent.getStringExtra("specialisations") ?: ""
 
         setContent {
             MediPathTheme {
                 AppointmentBookingScreen(
+                    doctorId = doctorId,
                     doctorName = doctorName,
+                    doctorImage = doctorImage,
+                    doctorRating = doctorRating,
+                    numOfRatings = numOfRatings,
+                    specialisations = specialisations,
                     onBackClick = { finish() },
-                    onConfirm = {  }
+                    onBookingSuccess = { finish() }
                 )
             }
         }
@@ -48,238 +61,194 @@ class AppointmentBookingActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppointmentBookingScreen(
+    doctorId: String,
     doctorName: String,
+    doctorImage: String = "",
+    doctorRating: Double = 0.0,
+    numOfRatings: Int = 0,
+    specialisations: String = "",
     onBackClick: () -> Unit,
-    onConfirm: () -> Unit
+    onBookingSuccess: () -> Unit
 ) {
+    val context = LocalContext.current
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabs = listOf("Information", "Book Appointment")
+
+    val viewModel: BookingViewModel = viewModel()
+    val schedules by viewModel.schedules.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val bookingSuccess by viewModel.bookingSuccess.collectAsState()
+
+    val commentsViewModel: DoctorCommentsViewModel = viewModel()
+
+    val comments by commentsViewModel.comments.collectAsState()
+    val isLoadingComments by commentsViewModel.isLoading.collectAsState()
+
+    LaunchedEffect(doctorId) {
+        viewModel.loadSchedules(doctorId)
+        commentsViewModel.loadComments(doctorId)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.toastMessage.collect { message ->
+            when (message) {
+                is ToastMessage.Error -> {
+                    Toast.makeText(context, message.message, Toast.LENGTH_LONG).show()
+                }
+                is ToastMessage.Success -> {
+                    Toast.makeText(context, message.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(bookingSuccess) {
+        if (bookingSuccess) {
+            onBookingSuccess()
+        }
+    }
+
+    var selectedInstitution by remember { mutableStateOf<Institution?>(null) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-    var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
-    var selectedInstitution by remember { mutableStateOf("") }
+    var selectedSchedule by remember { mutableStateOf<DoctorScheduleItem?>(null) }
     var patientNotes by remember { mutableStateOf("") }
+    var showConfirmDialog by remember { mutableStateOf(false) }
+    var currentMonth by remember { mutableStateOf(LocalDate.now()) }
 
-    val availableDates = remember { mutableListOf<LocalDate>() }
+    val institutions = remember(schedules) {
+        schedules.map { it.institution }.distinctBy { it.institutionId }
+    }
 
-    val availableTimes = remember { mutableListOf<LocalTime>() }
+    if (showConfirmDialog && selectedSchedule != null) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text("Confirm Appointment") },
+            text = {
+                Column {
+                    val schedule = selectedSchedule!!
+                    val dateTime = LocalDateTime.parse(schedule.startHour, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    
+                    Text("Doctor: $doctorName")
+                    Text("Institution: ${schedule.institution.institutionName}")
+                    Text("Date: ${dateTime.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy"))}")
+                    Text("Time: ${dateTime.format(DateTimeFormatter.ofPattern("HH:mm"))}")
+                    if (patientNotes.isNotEmpty()) {
+                        Text("Notes: $patientNotes")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.bookAppointment(selectedSchedule!!.id, patientNotes.ifEmpty { null })
+                        showConfirmDialog = false
+                    }
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showConfirmDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    }
 
-    val institutions = listOf("Klinia GPS Zalas", "Medical Center", "Health Plus")
-
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(WindowInsets.navigationBars.asPaddingValues())
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.secondary)
     ) {
-        item {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(LocalCustomColors.current.blue900)
+                .padding(top = 20.dp)
+        ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBackClick) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.primary
+                        contentDescription = "Return",
+                        tint = MaterialTheme.colorScheme.background
                     )
                 }
-                Text(
-                    text = "Book Appointment",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Doctor: $doctorName",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Select Institution",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        items(institutions) { institution ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 2.dp)
-                    .clickable { selectedInstitution = institution }
-                    .border(
-                        width = if (selectedInstitution == institution) 2.dp else 0.dp,
-                        color = if (selectedInstitution == institution) MaterialTheme.colorScheme.primary else Color.Transparent,
-                        shape = RoundedCornerShape(8.dp)
-                    ),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
-            ) {
-                Text(
-                    text = institution,
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Select Date",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(availableDates) { date ->
-                    Card(
-                        modifier = Modifier
-                            .clickable { selectedDate = date }
-                            .border(
-                                width = if (selectedDate == date) 2.dp else 0.dp,
-                                color = if (selectedDate == date) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                shape = RoundedCornerShape(8.dp)
-                            ),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = date.format(DateTimeFormatter.ofPattern("MMM")),
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = date.dayOfMonth.toString(),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = date.format(DateTimeFormatter.ofPattern("EEE")),
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            if (selectedDate != null) {
-                Text(
-                    text = "Select Time",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-
-        if (selectedDate != null) {
-            items(availableTimes.chunked(4)) { timeRow ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                Column(
+                    modifier = Modifier.padding(start = 8.dp).padding(vertical = 24.dp)
                 ) {
-                    timeRow.forEach { time ->
-                        Card(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable { selectedTime = time }
-                                .border(
-                                    width = if (selectedTime == time) 2.dp else 0.dp,
-                                    color = if (selectedTime == time) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                    shape = RoundedCornerShape(8.dp)
-                                ),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
-                        ) {
-                            Text(
-                                text = time.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                modifier = Modifier.padding(12.dp),
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
+                    Text(
+                        text = "Doctor Details",
+                        fontSize = 23.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.background
+                    )
+                    Text(
+                        text = doctorName,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                    )
                 }
-                Spacer(modifier = Modifier.height(6.dp))
             }
         }
 
-        item {
-            if (selectedTime != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Patient Notes (Optional)",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = patientNotes,
-                    onValueChange = { patientNotes = it },
-                    placeholder = { Text("Add any notes for the doctor...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3,
-                    maxLines = 5,
-                    shape = RoundedCornerShape(8.dp)
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onBackClick,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("CANCEL")
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.primary
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = {
+                        Text(
+                            text = title,
+                            fontSize = 14.sp,
+                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
+                        )
                     }
-
-                    Button(
-                        onClick = onConfirm,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp),
-                        enabled = selectedDate != null && selectedTime != null && selectedInstitution.isNotEmpty()
-                    ) {
-                        Text("CONFIRM")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
+                )
             }
+        }
+
+        when (selectedTab) {
+            0 -> InformationTab(
+                doctorName = doctorName,
+                doctorImage = doctorImage,
+                doctorRating = doctorRating,
+                numOfRatings = numOfRatings,
+                specialisations = specialisations,
+                institutions = institutions,
+                comments = comments,
+                isLoading = isLoadingComments
+            )
+            1 -> BookingTabContent(
+                schedules = schedules,
+                isLoading = isLoading,
+                selectedInstitution = selectedInstitution,
+                selectedDate = selectedDate,
+                selectedSchedule = selectedSchedule,
+                patientNotes = patientNotes,
+                currentMonth = currentMonth,
+                showConfirmDialog = showConfirmDialog,
+                doctorName = doctorName,
+                onInstitutionSelected = { selectedInstitution = it; selectedDate = null; selectedSchedule = null },
+                onDateSelected = { selectedDate = it; selectedSchedule = null },
+                onScheduleSelected = { selectedSchedule = it },
+                onNotesChanged = { patientNotes = it },
+                onMonthChanged = { currentMonth = it },
+                onShowDialog = { showConfirmDialog = it },
+                onConfirmBooking = {
+                    viewModel.bookAppointment(selectedSchedule!!.id, patientNotes.ifEmpty { null })
+                    showConfirmDialog = false
+                }
+            )
         }
     }
 }
