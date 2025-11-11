@@ -56,9 +56,48 @@ export class InstitutionVisits implements OnInit {
   }
   private loadVisits(): void {
     this.institutionService
-      .getVisits(this.institutionStore.getInstitution().id)
-      .subscribe((res) => {
-        console.log(res);
+      .getVisitsForInstitution(this.institutionStore.getInstitution().id)
+      .subscribe((visits) => {
+        const mappedVisits = (Array.isArray(visits) ? visits : []).map(
+          (visit) => ({
+            id: visit.id,
+            patientName: visit.patient
+              ? `${visit.patient.name} ${visit.patient.surname}`
+              : '',
+            institutionName: visit.institution?.institutionName || '',
+            visitDate: visit.time?.startTime
+              ? this.formatDate(visit.time.startTime)
+              : '',
+            visitTime: visit.time?.startTime
+              ? this.formatTime(visit.time.startTime)
+              : '',
+            status: 'completed' as const,
+
+            patientId: visit.patient?.userId,
+          }),
+        );
+        this.visits.set(mappedVisits);
       });
+  }
+  private formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d
+      ? d.toLocaleDateString('pl-PL', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
+      : '';
+  }
+
+  private formatTime(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d
+      ? d.toLocaleTimeString('pl-PL', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+      : '';
   }
 }

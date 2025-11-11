@@ -10,8 +10,11 @@ import {
   Institution,
   InstitutionResponse,
 } from '../../models/institution.model';
-import { UpcomingVisitsResponse } from '../../models/visit.model';
-import { AuthenticationService } from '../authentication/authentication';
+import {
+  UpcomingVisitsResponse,
+  VisitApiResponseArray,
+  VisitResponse,
+} from '../../models/visit.model';
 import { UserRoles } from '../authentication/authentication.model';
 
 export interface UpdateEmployeeRequest {
@@ -31,7 +34,6 @@ export interface AddEmployeesRequest {
 })
 export class InstitutionService {
   private http = inject(HttpClient);
-  private authService = inject(AuthenticationService);
   public getInstitution(institutionId: string): Observable<Institution> {
     return this.http
       .get<InstitutionResponse>(`${API_URL}/institution/${institutionId}`)
@@ -195,5 +197,18 @@ export class InstitutionService {
       employees,
       { withCredentials: true },
     );
+  }
+
+  public getVisitsForInstitution(
+    institutionId: string,
+  ): Observable<VisitResponse[]> {
+    return this.http
+      .get<VisitApiResponseArray>(
+        `${API_URL}/institution/${institutionId}/visits`,
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(map((response) => response.visits));
   }
 }
