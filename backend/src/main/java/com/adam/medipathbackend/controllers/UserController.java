@@ -185,7 +185,6 @@ public class UserController {
         }
         try {
             userService.resetMyPassword(loggedUserID, form);
-            session.invalidate();
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (IllegalWriteException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.SERVICE_UNAVAILABLE);
@@ -305,6 +304,24 @@ public class UserController {
 
         } catch(IllegalArgumentException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping(value = {"/me/deactivate", "/me/deactivate/"})
+    public ResponseEntity<Map<String, Object>> deactivateUser(HttpSession session) {
+        String loggedUserID = (String) session.getAttribute("id");
+        if(loggedUserID == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+
+            userService.deactivateMe(loggedUserID);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch(IllegalStateException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
+        } catch (IllegalAccessException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 

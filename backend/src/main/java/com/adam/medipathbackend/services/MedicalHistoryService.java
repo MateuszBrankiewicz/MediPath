@@ -36,7 +36,7 @@ public class MedicalHistoryService {
 
         if (medicalHistory.getUserId() == null || medicalHistory.getUserId().isBlank()) {
 
-            userOpt = userRepository.findById(loggedUserID);
+            userOpt = userRepository.findActiveById(loggedUserID);
             if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
             medicalHistory.setDoctor(null);
@@ -49,22 +49,12 @@ public class MedicalHistoryService {
 
                 throw new IllegalArgumentException("Doctor digest must be included when adding for a patient");
 
-            userOpt = userRepository.findById(medicalHistory.getUserId());
+            userOpt = userRepository.findActiveById(medicalHistory.getUserId());
 
             if (userOpt.isEmpty()) throw new IllegalAccessException("Patient not found");
 
-
             if (!medicalHistory.getDoctor().getUserId().equals(loggedUserID)) throw new IllegalAccessException();
 
-
-            authorizationService.startAuthChain(loggedUserID, null).doctorServedPatient(medicalHistory.getUserId());
-
-            Optional<User> doctorOpt = userRepository.findById(medicalHistory.getDoctor().getUserId());
-            if (doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
-
-            User doctor = doctorOpt.get();
-            medicalHistory.setDoctor(new DoctorDigest(doctor.getId(), doctor.getName(),
-                    doctor.getSurname(), doctor.getSpecialisations()));
         }
 
         User patient = userOpt.get();
@@ -78,7 +68,7 @@ public class MedicalHistoryService {
                             MedicalHistory medicalHistory, String loggedUserID)
             throws IllegalArgumentException, IllegalAccessException {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         Optional<MedicalHistory> oldMedHisOpt = medicalHistoryRepository.findById(med_his_id);
@@ -113,7 +103,7 @@ public class MedicalHistoryService {
     public void deleteMedHisEntry(String med_his_id, String loggedUserID)
             throws IllegalArgumentException, IllegalAccessException {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if (userOpt.isEmpty()) throw new IllegalAccessException("User not found");
 
         Optional<MedicalHistory> oldMedHisOpt = medicalHistoryRepository.findById(med_his_id);
