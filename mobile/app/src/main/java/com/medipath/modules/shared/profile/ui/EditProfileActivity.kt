@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -19,9 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.modules.shared.profile.ProfileViewModel
+import com.medipath.modules.shared.profile.ui.components.*
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.modules.shared.components.rememberBase64Image
+import com.medipath.modules.shared.components.rememberBase64ImagePicker
 import com.medipath.modules.patient.home.HomeViewModel
 import com.medipath.modules.shared.auth.ui.LoginActivity
 
@@ -43,16 +48,61 @@ class EditProfileActivity : ComponentActivity() {
 @Composable
 fun EditProfileScreen(
     onBackClick: () -> Unit,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    profileViewModel: ProfileViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val firstName by viewModel.firstName.collectAsState()
-    val lastName by viewModel.lastName.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val isLoadingAuth by viewModel.isLoading.collectAsState()
     val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
+
+    val name by profileViewModel.name.collectAsState()
+    val surname by profileViewModel.surname.collectAsState()
+    val birthDate by profileViewModel.birthDate.collectAsState()
+    val phoneNumber by profileViewModel.phoneNumber.collectAsState()
+    val govId by profileViewModel.govId.collectAsState()
+    val city by profileViewModel.city.collectAsState()
+    val province by profileViewModel.province.collectAsState()
+    val street by profileViewModel.street.collectAsState()
+    val number by profileViewModel.number.collectAsState()
+    val postalCode by profileViewModel.postalCode.collectAsState()
+    val pfpImage by profileViewModel.pfpImage.collectAsState()
+    val isLoading by profileViewModel.isLoading.collectAsState()
+    val error by profileViewModel.error.collectAsState()
+    val updateSuccess by profileViewModel.updateSuccess.collectAsState()
+    val resetSuccess by profileViewModel.resetSuccess.collectAsState()
+
+    val nameError by profileViewModel.nameError.collectAsState()
+    val surnameError by profileViewModel.surnameError.collectAsState()
+    val phoneError by profileViewModel.phoneError.collectAsState()
+    val cityError by profileViewModel.cityError.collectAsState()
+    val provinceError by profileViewModel.provinceError.collectAsState()
+    val streetError by profileViewModel.streetError.collectAsState()
+    val numberError by profileViewModel.numberError.collectAsState()
+    val postalCodeError by profileViewModel.postalCodeError.collectAsState()
+    val currentPasswordError by profileViewModel.currentPasswordError.collectAsState()
+    val newPasswordError by profileViewModel.newPasswordError.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.fetchUserProfile()
+        profileViewModel.fetchProfile()
+    }
+
+    LaunchedEffect(error) {
+        if (error != null && error != "401") {
+            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(updateSuccess) {
+        if (updateSuccess) {
+            Toast.makeText(context, "Profile saved", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(resetSuccess) {
+        if (resetSuccess) {
+            Toast.makeText(context, "Password changed", Toast.LENGTH_SHORT).show()
+        }
     }
 
     if (shouldRedirectToLogin) {
@@ -72,6 +122,7 @@ fun EditProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(WindowInsets.navigationBars.asPaddingValues())
             .background(MaterialTheme.colorScheme.secondary)
     ) {
         Row(
@@ -100,7 +151,7 @@ fun EditProfileScreen(
         when {
             !shouldRedirectToLogin -> {
                 when {
-                    isLoading -> {
+                    isLoading || isLoadingAuth -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -108,14 +159,32 @@ fun EditProfileScreen(
                             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         }
                     }
-
                     else -> {
-                        var editedFirstName by remember { mutableStateOf(firstName) }
-                        var editedLastName by remember { mutableStateOf(lastName) }
+                        var editedName by remember { mutableStateOf(name) }
+                        var editedSurname by remember { mutableStateOf(surname) }
+                        var editedPhone by remember { mutableStateOf(phoneNumber) }
+                        var editedCity by remember { mutableStateOf(city) }
+                        var editedProvince by remember { mutableStateOf(province) }
+                        var editedStreet by remember { mutableStateOf(street) }
+                        var editedNumber by remember { mutableStateOf(number) }
+                        var editedPostal by remember { mutableStateOf(postalCode) }
 
-                        LaunchedEffect(firstName, lastName) {
-                            editedFirstName = firstName
-                            editedLastName = lastName
+                        LaunchedEffect(name, surname, phoneNumber, city, province, street, number, postalCode) {
+                            editedName = name
+                            editedSurname = surname
+                            editedPhone = phoneNumber
+                            editedCity = city
+                            editedProvince = province
+                            editedStreet = street
+                            editedNumber = number
+                            editedPostal = postalCode
+                        }
+
+                        var currentPassword by remember { mutableStateOf("") }
+                        var newPassword by remember { mutableStateOf("") }
+
+                        val imagePickerLauncher = rememberBase64ImagePicker { base64Image ->
+                            profileViewModel.setPfpImage(base64Image)
                         }
 
                         LazyColumn(
@@ -124,45 +193,90 @@ fun EditProfileScreen(
                                 .padding(horizontal = 20.dp),
                             verticalArrangement = Arrangement.Top
                         ) {
+                            item { Spacer(modifier = Modifier.height(20.dp)) }
+
                             item {
-                                Spacer(modifier = Modifier.height(20.dp))
+                                val profileImage = rememberBase64Image(pfpImage)
+                                ProfilePictureSection(
+                                    profileImage = profileImage,
+                                    imagePickerLauncher = imagePickerLauncher
+                                )
                             }
+
                             item {
-                                Card(
+                                PersonalInformationSection(
+                                    editedName = editedName,
+                                    onNameChange = { editedName = it; profileViewModel.setName(it) },
+                                    nameError = nameError,
+                                    editedSurname = editedSurname,
+                                    onSurnameChange = { editedSurname = it; profileViewModel.setSurname(it) },
+                                    surnameError = surnameError,
+                                    birthDate = birthDate,
+                                    govId = govId
+                                )
+                            }
+
+                            item {
+                                ContactAddressSection(
+                                    editedPhone = editedPhone,
+                                    onPhoneChange = { editedPhone = it; profileViewModel.setPhoneNumber(it) },
+                                    phoneError = phoneError,
+                                    editedCity = editedCity,
+                                    onCityChange = { editedCity = it; profileViewModel.setCity(it) },
+                                    cityError = cityError,
+                                    editedProvince = editedProvince,
+                                    onProvinceChange = { editedProvince = it; profileViewModel.setProvince(it) },
+                                    provinceError = provinceError,
+                                    editedPostal = editedPostal,
+                                    onPostalChange = { editedPostal = it; profileViewModel.setPostalCode(it) },
+                                    postalCodeError = postalCodeError,
+                                    editedNumber = editedNumber,
+                                    onNumberChange = { editedNumber = it; profileViewModel.setNumber(it) },
+                                    numberError = numberError,
+                                    editedStreet = editedStreet,
+                                    onStreetChange = { editedStreet = it; profileViewModel.setStreet(it) },
+                                    streetError = streetError
+                                )
+                            }
+
+                            item {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Button(
+                                    onClick = { profileViewModel.updateProfile() },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 8.dp)
+                                        .padding(vertical = 8.dp),
+                                    shape = RoundedCornerShape(30.dp),
+                                    enabled = true,
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                                 ) {
-                                    Column(
-                                        modifier = Modifier.padding(16.dp)
-                                    ) {
-                                        Text(
-                                            text = "Personal Information",
-                                            fontSize = 18.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.padding(bottom = 16.dp)
-                                        )
-
-                                        OutlinedTextField(
-                                            value = editedFirstName,
-                                            onValueChange = { editedFirstName = it },
-                                            label = { Text("First Name") },
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 8.dp)
-                                        )
-
-                                        OutlinedTextField(
-                                            value = editedLastName,
-                                            onValueChange = { editedLastName = it },
-                                            label = { Text("Last Name") },
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 8.dp)
-                                        )
-                                    }
+                                    Text(text = "SAVE CHANGES", color = MaterialTheme.colorScheme.background)
                                 }
+                            }
+
+                            item {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                HorizontalDivider()
+                            }
+
+                            item {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                ChangePasswordSection(
+                                    currentPassword = currentPassword,
+                                    onCurrentPasswordChange = { 
+                                        currentPassword = it
+                                        profileViewModel.validateCurrentPassword(it)
+                                    },
+                                    currentPasswordError = currentPasswordError,
+                                    newPassword = newPassword,
+                                    onNewPasswordChange = { 
+                                        newPassword = it
+                                        profileViewModel.validateNewPassword(it)
+                                    },
+                                    newPasswordError = newPasswordError,
+                                    onResetPassword = { profileViewModel.resetPassword(currentPassword, newPassword) },
+                                    enabled = currentPassword.isNotBlank() && newPassword.isNotBlank()
+                                )
                             }
                         }
                     }
