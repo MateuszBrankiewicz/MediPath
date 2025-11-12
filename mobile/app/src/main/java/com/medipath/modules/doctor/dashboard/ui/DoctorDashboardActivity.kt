@@ -33,7 +33,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.MediPathTheme
-import com.medipath.modules.patient.home.HomeViewModel
+import com.medipath.modules.shared.profile.ProfileViewModel
+import com.medipath.modules.doctor.dashboard.DoctorDashboardViewModel
 import com.medipath.modules.shared.notifications.NotificationsViewModel
 import com.medipath.modules.shared.notifications.ui.NotificationsActivity
 import com.medipath.modules.shared.auth.ui.LoginActivity
@@ -104,12 +105,21 @@ class DoctorDashboardActivity : ComponentActivity() {
 
 @Composable
 fun DoctorDashboardScreen(
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: ProfileViewModel = viewModel(),
+    dashboardViewModel: DoctorDashboardViewModel = viewModel(),
     notificationsViewModel: NotificationsViewModel = viewModel(),
     onLogoutClick: () -> Unit = {}
 ) {
-    val firstName by viewModel.firstName.collectAsState()
-    val lastName by viewModel.lastName.collectAsState()
+    val name by viewModel.name.collectAsState()
+    val surname by viewModel.surname.collectAsState()
+    val rating by viewModel.rating.collectAsState()
+    val numOfRatings by viewModel.numOfRatings.collectAsState()
+    val canSwitchRole by viewModel.canSwitchRole.collectAsState()
+    
+    val selectedDateVisits by dashboardViewModel.selectedDateVisits.collectAsState()
+    val currentVisit by dashboardViewModel.currentVisit.collectAsState()
+    val patientCount by dashboardViewModel.selectedDatePatientCount.collectAsState()
+    
     val context = androidx.compose.ui.platform.LocalContext.current
     
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
@@ -118,8 +128,13 @@ fun DoctorDashboardScreen(
     val colors = LocalCustomColors.current
 
     LaunchedEffect(Unit) {
-        viewModel.fetchUserProfile()
+        viewModel.fetchProfile()
         notificationsViewModel.fetchNotifications()
+        dashboardViewModel.fetchVisitsForDate(LocalDate.now())
+    }
+    
+    LaunchedEffect(selectedDate) {
+        dashboardViewModel.fetchVisitsForDate(selectedDate)
     }
 
     Navigation(
@@ -168,7 +183,7 @@ fun DoctorDashboardScreen(
                                     verticalAlignment = Alignment.Bottom
                                 ) {
                                     Text(
-                                        text = "0.0",
+                                        text = String.format("%.1f", rating),
                                         fontSize = 36.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onPrimary
@@ -180,7 +195,10 @@ fun DoctorDashboardScreen(
                                     )
                                 }
                                 Text(
-                                    text = "satisfied patients",
+                                    text = if (numOfRatings > 0) 
+                                        "$numOfRatings satisfied patients"
+                                    else 
+                                        "No ratings yet",
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
@@ -214,7 +232,7 @@ fun DoctorDashboardScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "0",
+                                    text = "$patientCount",
                                     fontSize = 36.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimary
@@ -336,12 +354,44 @@ fun DoctorDashboardScreen(
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(bottom = 12.dp)
                             )
-                            Text(
-                                text = "No appointment scheduled",
-                                fontSize = 14.sp,
-                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            )
+                            
+                            if (currentVisit != null) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = "${currentVisit!!.patient.name} ${currentVisit!!.patient.surname}",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    
+                                    Text(
+                                        text = "Time: ${currentVisit!!.time.startTime.substring(11, 16)} - ${currentVisit!!.time.endTime.substring(11, 16)}",
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                    )
+                                    
+                                    if (!currentVisit!!.patientRemarks.isNullOrEmpty()) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = "Remarks: ${currentVisit!!.patientRemarks}",
+                                            fontSize = 14.sp,
+                                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    text = "No appointment scheduled",
+                                    fontSize = 14.sp,
+                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                            }
                         }
                     }
                 }
@@ -369,22 +419,91 @@ fun DoctorDashboardScreen(
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(bottom = 12.dp)
                             )
-                            Text(
-                                text = "No appointments scheduled",
-                                fontSize = 14.sp,
-                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            )
+                            
+                            if (selectedDateVisits.isEmpty()) {
+                                Text(
+                                    text = "No appointments scheduled",
+                                    fontSize = 14.sp,
+                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                            } else {
+                                selectedDateVisits.forEachIndexed { index, visit ->
+                                    if (index > 0) {
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(vertical = 12.dp),
+                                            thickness = 1.dp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                        )
+                                    }
+                                    
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Text(
+                                                text = "${visit.patient.name} ${visit.patient.surname}",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            
+                                            Text(
+                                                text = "${visit.time.startTime.substring(11, 16)} - ${visit.time.endTime.substring(11, 16)}",
+                                                fontSize = 13.sp,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                            )
+                                            
+                                            if (!visit.patientRemarks.isNullOrEmpty()) {
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = visit.patientRemarks!!,
+                                                    fontSize = 13.sp,
+                                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                )
+                                            }
+                                        }
+                                        
+                                        Surface(
+                                            color = when(visit.status) {
+                                                "Upcoming" -> colors.green800.copy(alpha = 0.2f)
+                                                "Completed" -> colors.blue800.copy(alpha = 0.2f)
+                                                else -> MaterialTheme.colorScheme.surfaceVariant
+                                            },
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Text(
+                                                text = visit.status,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = when(visit.status) {
+                                                    "Upcoming" -> colors.green800
+                                                    "Completed" -> colors.blue800
+                                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
         },
         onLogoutClick = onLogoutClick,
-        firstName = firstName,
-        lastName = lastName,
+        firstName = name,
+        lastName = surname,
         currentTab = "Dashboard",
         isDoctor = true,
-        canSwitchRole = true
+        canSwitchRole = canSwitchRole
     )
 }

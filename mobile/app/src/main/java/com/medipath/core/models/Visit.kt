@@ -9,7 +9,8 @@ data class Visit(
     val status: String,
     val note: String,
     val codes: List<Code>,
-    val patientRemarks: String?
+    val patientRemarks: String?,
+    val commentId: String?
 )
 
 data class Code(
