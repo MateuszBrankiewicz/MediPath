@@ -1,4 +1,4 @@
-package com.medipath.modules.patient.reminders.ui.components
+package com.medipath.modules.shared.reminders.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

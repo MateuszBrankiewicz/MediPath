@@ -34,6 +34,8 @@ public class Institution {
 
     private String description;
 
+    private boolean isActive;
+
     public Institution(String name, boolean isPublic, Address address, String image, ArrayList<String> types, String description) {
         this.name = name;
         this.isPublic = isPublic;
@@ -44,6 +46,7 @@ public class Institution {
         this.description = description;
         this.employees = new ArrayList<>();
         this.numOfRatings = 0;
+        isActive = true;
     }
 
     public String getName() {
@@ -143,5 +146,14 @@ public class Institution {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }

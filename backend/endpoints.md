@@ -361,6 +361,7 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - number - street number
 - street - street name
 - phoneNumber - phone number
+- pfpImage - profile picture
 
 #### Returns:
 - 401 - User is not logged in
@@ -405,29 +406,19 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 - 200 - Success
 
 
-### /medicalhistory/{id}
-#### Method: PUT
-
-#### Path variables;
-- id - object id of the medical history entry to modify
-
-#### Body:
--title - title of the visit
-- note - note attached to the visit
-- date - date of adding - yyyy-mm-dd
-
-
-#### Returns:
-- 401 - User not logged in
-- 403 - Entry does not exist, user does not have access or entry is created by doctor
-- 200 - Success
-
-
 ### /medicalhistory/add
 #### Method: POST
 
-#### Path variables;
-- id - object id of the medical history entry to delete
+#### Body:
+- userId - id of the user to add the medical history entry to. If omitted, add to your profile,
+- title
+- note - content
+- date - yyyy-mm-dd
+- doctor - if adding to another user, this is required, contains the following fields
+    - userId - doctor's user id,
+    - doctorName 
+    - doctorSurname 
+    - specialisations - array of strings with specialisations
 
 #### Returns:
 - 401 - User not logged in
@@ -931,7 +922,7 @@ doctorDetails: {
 #### Returns:
 - 401
 - 403 - User not a doctor
-- 200 
+- 200
 
 
 ### /notifications/
@@ -947,6 +938,31 @@ doctorDetails: {
 - 401
 - 400 - missing field or no notification matches criteria
 - 200 - success
+
+
+### /users/me/deactivate
+#### Method: POST
+
+#### Description:
+Permanently deactivates your account. If employed at any institution, get automatically removed from each.
+
+### Returns:
+- 200
+- 401 - not logged in
+- 409 - is last remaining admin of an institution
+- 403 - already deactivated
+
+### /institution/{id}/deactivate
+#### Method: POST
+
+#### Description:
+Permanently deactivates an institution. All employees are removed.
+
+#### Returns:
+- 200
+- 401 - not logged in
+- 400 - invalid id
+- 403
 
 ### /users/find/{govid}
 #### Method: GET

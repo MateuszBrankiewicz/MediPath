@@ -1,4 +1,4 @@
-package com.medipath.modules.patient.reminders.ui
+package com.medipath.modules.shared.reminders.ui
 
 import android.os.Bundle
 import android.widget.Toast
@@ -30,7 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
-import com.medipath.modules.patient.reminders.AddReminderViewModel
+import com.medipath.modules.shared.reminders.AddReminderViewModel
 import com.medipath.modules.shared.auth.ui.LoginActivity
 
 class AddReminderActivity : ComponentActivity() {

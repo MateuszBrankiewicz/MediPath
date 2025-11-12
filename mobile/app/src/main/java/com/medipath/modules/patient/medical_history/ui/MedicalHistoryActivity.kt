@@ -11,7 +11,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -32,8 +31,8 @@ import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.home.HomeViewModel
 import com.medipath.modules.patient.medical_history.MedicalHistoryViewModel
 import com.medipath.modules.patient.medical_history.ui.components.MedicalHistoryCard
-import com.medipath.modules.patient.notifications.NotificationsViewModel
-import com.medipath.modules.patient.notifications.ui.NotificationsActivity
+import com.medipath.modules.shared.notifications.NotificationsViewModel
+import com.medipath.modules.shared.notifications.ui.NotificationsActivity
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.FilterChipsConfig
 import com.medipath.modules.shared.components.GenericFilterChipsSection
@@ -174,9 +173,6 @@ fun MedicalHistoryScreen(
             },
             onSettingsClick = {
                 context.startActivity(Intent(context, SettingsActivity::class.java))
-            },
-            onSelectRoleClick = {
-                Toast.makeText(context, "Select Role", Toast.LENGTH_SHORT).show()
             },
             content = { innerPadding ->
                 Box(

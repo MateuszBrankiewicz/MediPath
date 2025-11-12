@@ -1,4 +1,4 @@
-package com.medipath.modules.patient.reminders.ui
+package com.medipath.modules.shared.reminders.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -37,11 +37,11 @@ import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.home.HomeViewModel
-import com.medipath.modules.patient.notifications.NotificationsViewModel
-import com.medipath.modules.patient.notifications.ui.NotificationsActivity
-import com.medipath.modules.patient.reminders.RemindersViewModel
-import com.medipath.modules.patient.reminders.ui.components.ReminderCard
-import com.medipath.modules.patient.reminders.ui.components.TabSelector
+import com.medipath.modules.shared.notifications.NotificationsViewModel
+import com.medipath.modules.shared.notifications.ui.NotificationsActivity
+import com.medipath.modules.shared.reminders.RemindersViewModel
+import com.medipath.modules.shared.reminders.ui.components.ReminderCard
+import com.medipath.modules.shared.reminders.ui.components.TabSelector
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.ActionButton
 import com.medipath.modules.shared.components.FilterConfig
@@ -50,7 +50,6 @@ import com.medipath.modules.shared.components.GenericFiltersSection
 import com.medipath.modules.shared.components.GenericSearchBar
 import com.medipath.modules.shared.components.GenericStatisticsCards
 import com.medipath.modules.shared.components.Navigation
-import com.medipath.modules.shared.components.NavigationRouter
 import com.medipath.modules.shared.components.StatisticItem
 import com.medipath.modules.shared.profile.ui.EditProfileActivity
 import com.medipath.modules.shared.settings.ui.SettingsActivity
@@ -64,10 +63,13 @@ class RemindersActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        val isDoctor = intent.getBooleanExtra("isDoctor", false)
+
         setContent {
             MediPathTheme {
 
                 RemindersScreen(
+                    isDoctor = isDoctor,
                     onLogoutClick = {
                         lifecycleScope.launch(Dispatchers.IO) {
                             val authService = RetrofitInstance.authService
@@ -98,6 +100,7 @@ fun RemindersScreen(
     refreshTrigger: Int = 0,
     profileViewModel: HomeViewModel = viewModel(),
     remindersViewModel: RemindersViewModel = viewModel(),
+    isDoctor: Boolean = false,
     onLogoutClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -105,6 +108,8 @@ fun RemindersScreen(
     val lastName by profileViewModel.lastName.collectAsState()
     val isProfileLoading by profileViewModel.isLoading.collectAsState()
     val profileShouldRedirect by profileViewModel.shouldRedirectToLogin.collectAsState()
+    val roleCode by profileViewModel.roleCode.collectAsState()
+    val canBeDoctor by profileViewModel.canBeDoctor.collectAsState()
     val colors = LocalCustomColors.current
 
     val reminders by remindersViewModel.filteredReminders.collectAsState()
@@ -291,9 +296,6 @@ fun RemindersScreen(
             onSettingsClick = {
                 context.startActivity(Intent(context, SettingsActivity::class.java))
             },
-            onSelectRoleClick = {
-                Toast.makeText(context, "Select Role", Toast.LENGTH_SHORT).show()
-            },
             content = { innerPadding ->
                 Column(
                     modifier = Modifier
@@ -381,7 +383,9 @@ fun RemindersScreen(
             onLogoutClick = onLogoutClick,
             firstName = firstName,
             lastName = lastName,
-            currentTab = "Reminders"
+            currentTab = "Reminders",
+            isDoctor = isDoctor,
+            canSwitchRole = canBeDoctor
         )
     }
 }

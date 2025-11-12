@@ -1,11 +1,17 @@
 package com.medipath.modules.shared.components
 
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Base64
+import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun rememberBase64Image(base64String: String?): ImageBitmap? {
@@ -25,6 +31,32 @@ fun rememberBase64Image(base64String: String?): ImageBitmap? {
             bitmap?.asImageBitmap()
         } catch (e: Exception) {
             null
+        }
+    }
+}
+
+@Composable
+fun rememberBase64ImagePicker(
+    onImageSelected: (String) -> Unit
+): ManagedActivityResultLauncher<String, Uri?> {
+    val context = LocalContext.current
+    
+    return rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            try {
+                val inputStream = context.contentResolver.openInputStream(it)
+                val bytes = inputStream?.readBytes()
+                inputStream?.close()
+                
+                bytes?.let { imageBytes ->
+                    val base64String = Base64.encodeToString(imageBytes, Base64.NO_WRAP)
+                    onImageSelected("data:image/jpeg;base64,$base64String")
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error loading image: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

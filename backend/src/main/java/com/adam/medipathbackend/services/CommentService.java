@@ -44,9 +44,8 @@ public class CommentService {
                     visit.getDoctor(), visit.getInstitution(), 
                     visit.getPatient(), commentForm.getVisitID());
 
-        Optional<Institution> institutionOpt = 
-            institutionRepository.findById(visit.getInstitution().getInstitutionId());
-        Optional<User> doctorOpt = userRepository.findById(visit.getDoctor().getUserId());
+        Optional<Institution> institutionOpt = institutionRepository.findActiveById(visit.getInstitution().getInstitutionId());
+        Optional<User> doctorOpt = userRepository.findActiveById(visit.getDoctor().getUserId());
 
         if (institutionOpt.isEmpty()) 
             throw new IllegalArgumentException("Institution not found");
@@ -189,7 +188,7 @@ public class CommentService {
      
     public Map<String, Object> getCommentsForInstitution(String id) {
 
-        if (!institutionRepository.existsById(id)) {
+        if (institutionRepository.findActiveById(id).isEmpty()) {
             return Map.of("comments", new ArrayList<Comment>());
         }
 

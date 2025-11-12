@@ -40,8 +40,8 @@ import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.codes.CodesViewModel
 import com.medipath.modules.patient.home.HomeViewModel
-import com.medipath.modules.patient.notifications.NotificationsViewModel
-import com.medipath.modules.patient.notifications.ui.NotificationsActivity
+import com.medipath.modules.shared.notifications.NotificationsViewModel
+import com.medipath.modules.shared.notifications.ui.NotificationsActivity
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.ActionButton
 import com.medipath.modules.shared.components.FilterConfig
@@ -301,9 +301,6 @@ fun CodesScreen(
             },
             onSettingsClick = {
                 context.startActivity(Intent(context, SettingsActivity::class.java))
-            },
-            onSelectRoleClick = {
-                Toast.makeText(context, "Select Role", Toast.LENGTH_SHORT).show()
             },
             content = { innerPadding ->
                 Column(

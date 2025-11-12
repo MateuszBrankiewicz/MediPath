@@ -29,6 +29,9 @@ public class VisitService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private MedicalHistoryService medicalHistoryService;
+
     public Schedule validateVisitForm(AddVisitForm visit) {
 
         if(visit.getScheduleID() == null || visit.getScheduleID().isBlank()) {
@@ -109,7 +112,7 @@ public class VisitService {
             throw new IllegalArgumentException("this visit is already cancelled");
         }
 
-        Optional<User> userOptional = userRepository.findById(visitToCancel.getPatient().getUserId());
+        Optional<User> userOptional = userRepository.findActiveById(visitToCancel.getPatient().getUserId());
         Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToCancel.getTime().getScheduleId());
         if(userOptional.isEmpty() || scheduleOptional.isEmpty()) {
             throw new IllegalAccessException();
@@ -202,7 +205,7 @@ public class VisitService {
             throw new IllegalComponentStateException();
         }
 
-        Optional<User> userOptional = userRepository.findById(visitToReschedule.getPatient().getUserId());
+        Optional<User> userOptional = userRepository.findActiveById(visitToReschedule.getPatient().getUserId());
         if(userOptional.isEmpty()) {
             throw new IllegalComponentStateException();
         }
@@ -283,9 +286,18 @@ public class VisitService {
             codes.add(new Code(Code.CodeType.REFERRAL, prescriptionCode, true));
         }
 
+        MedicalHistory newMHEntry = new MedicalHistory(visit.getPatient().getUserId(),
+                visit.getDoctor().getDoctorName() + " " + visit.getDoctor().getDoctorSurname() +
+                " " + visit.getTime().getStartTime(), visit.getNote(), visit.getTime().getStartTime().toLocalDate(),
+                visit.getDoctor());
+
+
+
         visit.setCodes(codes);
         visit.setNote(completionForm.getNote());
         visitRepository.save(visit);
+
+        medicalHistoryService.addMedicalHistory(newMHEntry, loggedUserID);
     }
 
 
@@ -306,7 +318,7 @@ public class VisitService {
         String doctorId = visit.getDoctor().getUserId();
 
         Optional<User> doctorOpt = userRepository.findDoctorById(doctorId);
-        Optional<Institution> institutionOpt = institutionRepository.findById(institutionId);
+        Optional<Institution> institutionOpt = institutionRepository.findActiveById(institutionId);
 
         if(doctorOpt.isEmpty()) {
             throw new IllegalComponentStateException("doctor id corrupted");
@@ -394,6 +406,10 @@ public class VisitService {
 
         visitRepository.save(visit);
     }
+    public boolean hasUpcomingVisits(String doctorId) {
+        return !visitRepository.getUpcomingDoctorVisits(doctorId).isEmpty();
+    }
+
 
     @Autowired
     private VisitRepository visitRepository;

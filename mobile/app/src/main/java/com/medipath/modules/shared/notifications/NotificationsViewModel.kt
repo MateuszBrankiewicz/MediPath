@@ -1,4 +1,4 @@
-package com.medipath.modules.patient.notifications
+package com.medipath.modules.shared.notifications
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,8 +27,6 @@ class NotificationsViewModel(
     private val _shouldRedirectToLogin = MutableStateFlow(false)
     val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
 
-    val unreadCount: Int
-        get() = _notifications.value.count { !it.read }
 
     fun fetchNotifications() {
         viewModelScope.launch {
@@ -54,10 +52,6 @@ class NotificationsViewModel(
                 _isLoading.value = false
             }
         }
-    }
-
-    fun clearError() {
-        _error.value = ""
     }
 
     fun markAllAsRead(onSuccess: () -> Unit = {}) {

@@ -3,6 +3,7 @@ package com.medipath
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -23,11 +24,13 @@ import androidx.compose.ui.unit.dp
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.patient.home.ui.HomeActivity
+import com.medipath.modules.doctor.dashboard.ui.DoctorDashboardActivity
 import com.medipath.core.theme.MediPathTheme
 import kotlinx.coroutines.delay
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -40,11 +43,28 @@ class SplashActivity : ComponentActivity() {
                     delay(2000)
 
                     val sessionManager = RetrofitInstance.getSessionManager()
-
                     val isLoggedIn = sessionManager.isLoggedIn()
+                    Log.d("SplashActivity", "Is user logged in? $isLoggedIn")
 
                     if (isLoggedIn) {
-                        startActivity(Intent(this@SplashActivity, HomeActivity::class.java))
+                        try {
+                            (application as MediPathApplication).initializeWebSocket()
+                            
+                            val settingsResponse = RetrofitInstance.settingsService.getSettings()
+                            if (settingsResponse.isSuccessful) {
+                                val lastPanel = settingsResponse.body()?.settings?.lastPanel ?: 1
+                                val targetActivity = if (lastPanel == 2) {
+                                    DoctorDashboardActivity::class.java
+                                } else {
+                                    HomeActivity::class.java
+                                }
+                                startActivity(Intent(this@SplashActivity, targetActivity))
+                            } else {
+                                startActivity(Intent(this@SplashActivity, HomeActivity::class.java))
+                            }
+                        } catch (e: Exception) {
+                            startActivity(Intent(this@SplashActivity, HomeActivity::class.java))
+                        }
                     } else {
                         startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
                     }

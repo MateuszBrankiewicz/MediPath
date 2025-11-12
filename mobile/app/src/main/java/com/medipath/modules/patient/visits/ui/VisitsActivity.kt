@@ -11,7 +11,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
@@ -35,10 +34,10 @@ import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.home.HomeViewModel
-import com.medipath.modules.patient.notifications.ui.NotificationsActivity
+import com.medipath.modules.shared.notifications.ui.NotificationsActivity
 import com.medipath.modules.patient.visits.VisitsViewModel
 import com.medipath.modules.patient.booking.ui.RescheduleVisitActivity
-import com.medipath.modules.patient.notifications.NotificationsViewModel
+import com.medipath.modules.shared.notifications.NotificationsViewModel
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.ActionButton
 import com.medipath.modules.shared.components.FilterConfig
@@ -227,10 +226,6 @@ fun VisitsScreen(
             onSettingsClick = {
                 context.startActivity(Intent(context, SettingsActivity::class.java))
             },
-            onSelectRoleClick = {
-                Toast.makeText(context, "Select Role", Toast.LENGTH_SHORT).show()
-            },
-
             content = { innerPadding ->
                 Column(
                     modifier = Modifier
