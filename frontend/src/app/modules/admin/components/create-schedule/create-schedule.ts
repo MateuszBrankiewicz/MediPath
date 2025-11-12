@@ -141,6 +141,9 @@ export class CreateSchedule implements OnInit {
   }
   protected onInstitutionChange(value: InstitutionOption) {
     this.selectedInstitution.set(value);
+    this.institutionStoreService.setInstitution(value);
+
+    this.initDoctors();
   }
   protected today = new Date();
 
@@ -212,8 +215,14 @@ export class CreateSchedule implements OnInit {
   }
   private initDoctors() {
     this.isLoading.set(true);
+    const selectedInstitution =
+      this.institutionStoreService.selectedInstitution();
+    if (!selectedInstitution) {
+      return;
+    }
+
     this.institutionService
-      .getDoctorsForInstitution('68c5dc05d2569d07e73a8456')
+      .getDoctorsForInstitution(selectedInstitution.id)
       .pipe(
         catchError(() => {
           this.toastService.showError(

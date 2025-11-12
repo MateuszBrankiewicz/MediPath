@@ -43,11 +43,12 @@ export class InstitutionList implements OnInit {
   private loadInstitutions(): void {
     this.isLoading.set(true);
     this.institutionService
-      .getInstitutionsForAdmin()
+      .getInstitutionsForAdmin(this.authService.getLastPanel())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (institutions) => {
           this.institutions.set(institutions);
+
           this.isLoading.set(false);
         },
         error: (error) => {
@@ -77,5 +78,16 @@ export class InstitutionList implements OnInit {
 
   protected redirectToInstitutionView(institutionId: string): void {
     this.router.navigate(['/admin/institutions', institutionId]);
+  }
+
+  protected isAdminForThisInstitution(): boolean {
+    if (this.authService.getLastPanel() !== 'admin') {
+      return false;
+    }
+    return true;
+  }
+
+  protected redirectToInstitutionEdit(institutionId: string): void {
+    this.router.navigate([`/admin/institutions/${institutionId}/edit`]);
   }
 }

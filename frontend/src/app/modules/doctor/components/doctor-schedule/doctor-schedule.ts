@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   inject,
   OnInit,
   signal,
@@ -20,6 +21,11 @@ import {
   FilterButtonConfig,
   FilterButtonsComponent,
 } from '../../../shared/components/filter-buttons/filter-buttons.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ToastService } from '../../../../core/services/toast/toast.service';
+import { DialogService } from 'primeng/dynamicdialog';
+import { Dialog } from 'primeng/dialog';
+import { AcceptActionDialogComponent } from '../../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 
 export interface Appointment {
   id: string;
@@ -34,6 +40,7 @@ export interface Appointment {
   imports: [CommonModule, ButtonModule, Calendar, FilterButtonsComponent],
   templateUrl: './doctor-schedule.html',
   styleUrl: './doctor-schedule.scss',
+  providers: [DialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DoctorSchedule
@@ -44,7 +51,9 @@ export class DoctorSchedule
   protected dateTimeService = inject(DateTimeService);
   private doctorService = inject(DoctorService);
   private visitsService = inject(VisitsService);
-
+  private destroyRef = inject(DestroyRef);
+  private toastService = inject(ToastService);
+  private readonly dialogService = inject(DialogService);
   public selectedAppointment = signal<Appointment | null>(null);
   public currentMonth = signal<Date>(new Date());
   public selectedDate = signal<Date | null>(new Date());
@@ -181,7 +190,41 @@ export class DoctorSchedule
   }
 
   public cancelVisit(): void {
-    console.log('Cancel visit for:', this.selectedAppointment()?.patientName);
+    const selectedAppointment = this.selectedAppointment();
+    if (!selectedAppointment) {
+      return;
+    }
+
+    const ref = this.dialogService.open(AcceptActionDialogComponent, {
+      width: '50%',
+      data: {
+        message: 'Are you sure want to cancel the Visit?',
+      },
+    });
+
+    if (!ref) {
+      return;
+    }
+
+    ref.onClose.subscribe((res) => {
+      if (!res) {
+        return;
+      }
+      this.visitsService
+        .cancelVisit(selectedAppointment.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.toastService.showSuccess('Visit canceled');
+          },
+          error: (err) => {
+            console.log(err);
+            this.toastService.showError(
+              'Visit cannot be canceled please try again later',
+            );
+          },
+        });
+    });
   }
 
   public setViewFilter(filter: 'all' | 'booked' | 'available'): void {
@@ -233,7 +276,6 @@ export class DoctorSchedule
           }
         };
 
-        // Tworzymy mapę wizyt po scheduleId dla szybkiego dostępu
         const visitsByScheduleId = new Map(
           visits.map((visit) => [
             typeof visit.time === 'string' ? visit.time : visit.time.scheduleId,
@@ -241,12 +283,10 @@ export class DoctorSchedule
           ]),
         );
 
-        // Tworzymy appointments łącząc sloty z wizytami
         const appointments: Appointment[] = allSlots.map((slot) => {
           const visit = visitsByScheduleId.get(slot.id);
 
           if (visit) {
-            // Jest wizyta - pokazujemy dane pacjenta
             return {
               id: visit.id,
               time:
@@ -258,7 +298,6 @@ export class DoctorSchedule
               remarks: visit.patientRemarks ?? undefined,
             };
           } else {
-            // Nie ma wizyty - slot jest wolny
             return {
               id: slot.id,
               time: slot.startHour,
@@ -272,8 +311,6 @@ export class DoctorSchedule
         this.todayAppointments.set(appointments);
       },
       error: (error) => {
-        console.error('Error loading appointments:', error);
-        // W przypadku błędu pokazujemy wszystkie sloty jako dostępne
         const emptyAppointments: Appointment[] = allSlots.map((slot) => ({
           id: slot.id,
           time: slot.startHour,
@@ -297,7 +334,6 @@ export class DoctorSchedule
 
     if (!selectedDay?.appointments) return [];
 
-    // Pobieramy szczegóły slotów z zapisanych danych schedule
     const allSlots = this.allScheduleSlots();
     const slotsMap = new Map(allSlots.map((slot) => [slot.id, slot]));
 

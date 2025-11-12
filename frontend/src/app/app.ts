@@ -52,4 +52,9 @@ export class App {
     const guestRoutes = ['/auth', '/'];
     return !guestRoutes.some((route) => url?.startsWith(route));
   });
+
+  public readonly isSearchPage = computed(() => {
+    const url = this.currentUrl();
+    return url?.startsWith('/search');
+  });
 }

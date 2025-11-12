@@ -25,6 +25,7 @@ import {
   SupportedLanguage,
 } from '../../../../core/services/translation/language.model';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 
 @Component({
   selector: 'app-account-settings',
@@ -38,7 +39,7 @@ export class AccountSettings implements OnInit {
   private readonly userSettingsService = inject(UserSettingsService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
-
+  private readonly authenticationService = inject(AuthenticationService);
   public readonly isLoading = signal(false);
   public readonly settings = signal<AccountSettingsForm>(DEFAULT_FORM);
 
@@ -116,7 +117,12 @@ export class AccountSettings implements OnInit {
   }
 
   onDeactivateAccount() {
-    console.log('Deactivate account requested');
+    this.userSettingsService
+      .deactivateAccount()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.authenticationService.logout();
+      });
   }
 
   private updateStateFromSettings(settings: UserSettings) {

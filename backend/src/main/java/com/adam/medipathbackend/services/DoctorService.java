@@ -256,5 +256,68 @@ public Map<String, Object> getPatientVisits(String loggedUserID, String patientI
         "visits", visitsList,
         "totalVisits", visitsList.size()
     );
+
+
 }
+
+    public Map<String, Object> getDoctorFullInfo(String doctorId) throws IllegalArgumentException {
+
+        if(!Utils.isValidMongoOID(doctorId)) throw new IllegalArgumentException("Invalid doctor id");
+
+        Optional<User> doctorOpt = userRepository.findDoctorById(doctorId);
+        if(doctorOpt.isEmpty()) throw new IllegalArgumentException("Doctor not found");
+
+        User doctor = doctorOpt.get();
+
+        ArrayList<InstitutionDigest> employers = doctor.getEmployers();
+        ArrayList<Map<String, Object>> institutionsList = new ArrayList<>();
+        boolean updated = false;
+
+        for(int i = 0; i < employers.size(); i++) {
+            InstitutionDigest digest = employers.get(i);
+            Optional<Institution> institutionOpt = institutionRepository.findById(digest.getInstitutionId());
+
+            if(institutionOpt.isEmpty()) {
+                continue;
+            }
+            Institution institution = institutionOpt.get();
+
+            if (!institution.getName().equals(digest.getInstitutionName())) {
+                employers.set(i, new InstitutionDigest(digest.getInstitutionId(), institution.getName()));
+                updated = true;
+            }
+
+            institutionsList.add(Map.of(
+                    "institutionId", institution.getId(),
+                    "institutionName", institution.getName(),
+                    "image", institution.getImage(),
+                    "address", institution.getAddress()
+            ));
+        }
+
+        if(updated) {
+            doctor.setEmployers(employers);
+            userRepository.save(doctor);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", doctor.getId());
+        result.put("name", doctor.getName());
+        result.put("surname", doctor.getSurname());
+        result.put("email", doctor.getEmail());
+        result.put("phoneNumber", doctor.getPhoneNumber());
+        result.put("dateOfBirth", doctor.getBirthDate());
+        result.put("address", doctor.getAddress());
+        result.put("govId", doctor.getGovId());
+        result.put("pwzNumber", doctor.getLicenceNumber());
+        result.put("licenceNumber", doctor.getLicenceNumber());
+        result.put("specialisations", doctor.getSpecialisations());
+        result.put("rating", doctor.getRating());
+        result.put("numOfRatings", doctor.getNumOfRatings());
+        result.put("image", doctor.getPfpimage());
+        result.put("institutions", institutionsList);
+        result.put("roleCode", doctor.getRoleCode());
+
+        return Map.of("doctor", result);
+    }
 }

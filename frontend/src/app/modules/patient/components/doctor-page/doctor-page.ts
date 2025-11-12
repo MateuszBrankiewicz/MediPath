@@ -21,6 +21,7 @@ import { Textarea } from 'primeng/textarea';
 import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { groupSchedulesByDate } from '../../../../utils/scheduleMapper';
 
+import { HttpErrorResponse } from '@angular/common/http';
 import { DoctorPageModel } from '../../../../core/models/doctor.model';
 import { InstitutionShortInfo } from '../../../../core/models/institution.model';
 import {
@@ -206,7 +207,11 @@ export class DoctorPage implements OnInit {
           this.initDoctorSchedule();
           this.toastService.showSuccess('patient.appointment.bookSuccess');
         },
-        error: () => {
+        error: (error: HttpErrorResponse) => {
+          if (error.status === 409) {
+            this.toastService.showError('patient.doctor.conflict');
+            return;
+          }
           this.toastService.showError('patient.appointment.bookError');
         },
       });

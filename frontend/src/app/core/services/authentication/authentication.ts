@@ -57,6 +57,10 @@ export class AuthenticationService {
     return this.http.get<SelectOption[]>(API_URL + `/cities/${searchTerm}`);
   }
 
+  public getCityWithoutSearch() {
+    return this.http.get<{ name: string }[]>(API_URL + '/cities');
+  }
+
   public getProvinces() {
     return this.http.get<string[]>(API_URL + '/provinces');
   }
@@ -241,6 +245,7 @@ export class AuthenticationService {
       city: address.city ?? '',
       number: address.number ?? '',
       street: address.street ?? '',
+      rating: user.rating ?? null,
     };
   }
 
@@ -370,6 +375,7 @@ export class AuthenticationService {
       notifications: this.normalizeNotifications(
         response.user.notifications ?? [],
       ),
+      rating: response.user.rating ?? undefined,
       pfpImage: response.user.pfpImage,
       userSettings: {
         ...this.normalizeUserSettings(response.user.userSettings),
@@ -405,5 +411,16 @@ export class AuthenticationService {
       .filter(
         (notification): notification is Notification => notification !== null,
       );
+  }
+
+  public changePassword(currentPassword: string, newPassword: string) {
+    return this.http.post(
+      `${API_URL}/users/me/resetpassword`,
+      {
+        newPassword: newPassword,
+        currentPassword: currentPassword,
+      },
+      { withCredentials: true },
+    );
   }
 }

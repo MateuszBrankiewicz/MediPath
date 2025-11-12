@@ -7,15 +7,20 @@ import {
 } from '@angular/forms';
 
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
-import { DoctorPageModel } from '../../../../core/models/doctor.model';
+import { forkJoin, of } from 'rxjs';
+import { FullDoctorInfo } from '../../../../core/models/doctor.model';
 import { InstitutionShortInfo } from '../../../../core/models/institution.model';
+import { Specialisation } from '../../../../core/models/specialisation.model';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
+import { SpecialisationService } from '../../../../core/services/specialisation/specialisation.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
@@ -23,11 +28,6 @@ import { DoctorAddressFormComponent } from '../shared/doctor-address-form/doctor
 import { DoctorInstitutionsListComponent } from '../shared/doctor-institutions-list/doctor-institutions-list';
 import { DoctorPersonalInfoFormComponent } from '../shared/doctor-personal-info-form/doctor-personal-info-form';
 import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-professional-info-form/doctor-professional-info-form';
-
-interface Specialisation {
-  code: string;
-  name: string;
-}
 
 @Component({
   selector: 'app-edit-doctor-details',
@@ -56,98 +56,93 @@ export class EditDoctorDetailsComponent implements OnInit {
   private institutionStoreService = inject(InstitutionStoreService);
   private destroyRef = inject(DestroyRef);
   private activatedRoute = inject(ActivatedRoute);
-
   protected doctorForm!: FormGroup;
   protected isSubmitting = signal<boolean>(false);
-  private doctor = signal<DoctorPageModel | undefined>(undefined);
+  private doctor = signal<FullDoctorInfo | undefined>(undefined);
+  private doctorId = signal<string>('');
+  private originalInstitutions = signal<InstitutionShortInfo[]>([]);
   protected doctorInstitutions = signal<InstitutionShortInfo[]>([]);
   protected availableInstitutions = signal<InstitutionShortInfo[]>([]);
-
-  protected specialisations: Specialisation[] = [];
+  private specialisationService = inject(SpecialisationService);
+  protected specialisations = signal<Specialisation[]>([]);
+  private readonly authentication = inject(AuthenticationService);
+  protected cities = signal<string[]>([]);
+  protected provinces = signal<string[]>([]);
 
   ngOnInit(): void {
     this.initializeForm();
+    this.loadProvinces();
+    this.loadCities();
     this.loadSpecialisations();
+    this.loadAvailableInstitutions();
+
     const doctorId = this.activatedRoute.snapshot.paramMap.get('doctorId');
     if (doctorId) {
-      this.loadDoctorData(doctorId);
+      this.doctorId.set(doctorId);
+      this.doctorService
+        .getDoctorFullInfo(doctorId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((doctorData) => {
+          this.doctor.set(doctorData);
+          this.originalInstitutions.set([...doctorData.institutions]);
+          this.patchForm(doctorData);
+        });
     }
-    this.loadAvailableInstitutions();
   }
 
   private initializeForm(): void {
     this.doctorForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      surname: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      birthDate: ['', Validators.required],
-      phoneNumber: ['', Validators.required],
-      personalId: [
-        { value: '', disabled: true },
-        [Validators.required, Validators.pattern(/^\d{11}$/)],
-      ],
+      name: [{ value: '', disabled: true }, [Validators.required]],
+      surname: [{ value: '', disabled: true }, [Validators.required]],
+      email: [{ value: '', disabled: true }, [Validators.required]],
+      birthDate: [{ value: '', disabled: true }, Validators.required],
+      phoneNumber: [{ value: '', disabled: true }, Validators.required],
+      personalId: [{ value: '', disabled: true }, [Validators.required]],
       specialisation: [[], Validators.required],
       pwzNumber: ['', [Validators.required, Validators.pattern(/^\d{7}$/)]],
       residentialAddress: this.fb.group({
-        province: ['', Validators.required],
-        postalCode: [
-          '',
-          [Validators.required, Validators.pattern(/^\d{2}-\d{3}$/)],
-        ],
-        city: ['', Validators.required],
-        number: ['', Validators.required],
-        street: ['', Validators.required],
+        province: [{ value: '', disabled: true }, Validators.required],
+        postalCode: [{ value: '', disabled: true }, Validators.required],
+        city: [{ value: '', disabled: true }, Validators.required],
+        number: [{ value: '', disabled: true }, Validators.required],
+        street: [{ value: '', disabled: true }, Validators.required],
       }),
     });
   }
 
-  private loadDoctorData(id: string): void {
-    this.doctorService
-      .getDoctorDetails(id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((doctor) => {
-        this.doctor.set(doctor);
-        this.patchForm(doctor);
-        this.loadDoctorInstitutions(id);
-      });
-  }
-
   private loadAvailableInstitutions(): void {
-    // Mock data for now - replace with actual API call
-    // this.institutionService
-    //   .getAllInstitutions()
-    //   .pipe(takeUntilDestroyed(this.destroyRef))
-    //   .subscribe((institutions) => {
-    //     this.availableInstitutions.set(institutions);
-    //   });
+    this.availableInstitutions.set(
+      this.institutionStoreService.institutionOptions().map((inst) => ({
+        institutionId: inst.id,
+        institutionName: inst.name,
+      })),
+    );
   }
 
-  private loadDoctorInstitutions(doctorId: string): void {
-    // Mock data for now - replace with actual API call
-    // this.doctorService
-    //   .getDoctorInstitutions(doctorId)
-    //   .pipe(takeUntilDestroyed(this.destroyRef))
-    //   .subscribe((institutions) => {
-    //     this.doctorInstitutions.set(institutions);
-    //   });
-  }
+  private patchForm(doctor: FullDoctorInfo): void {
+    const birthDate = Array.isArray(doctor.dateOfBirth)
+      ? new Date(
+          doctor.dateOfBirth[0],
+          doctor.dateOfBirth[1] - 1,
+          doctor.dateOfBirth[2],
+        )
+      : new Date(doctor.dateOfBirth);
 
-  private patchForm(doctor: DoctorPageModel): void {
     this.doctorForm.patchValue({
       name: doctor.name,
       surname: doctor.surname,
-      email: 'email@cos.pl',
-      birthDate: new Date(),
-      phoneNumber: 'doctor.phoneNumber',
-      personalId: 'doctor.govId',
-      pwzNumber: 'doctor.pwzNumber',
+      email: doctor.email,
+      birthDate: birthDate,
+      phoneNumber: doctor.phoneNumber,
+      personalId: doctor.govId,
+      pwzNumber: doctor.pwzNumber,
       specialisation: doctor.specialisation,
       residentialAddress: {
-        province: 'doctor.province',
-        postalCode: 'doctor.postalCode',
-        city: 'doctor.city',
-        street: 'doctor.street',
-        number: 'doctor.number',
+        province: doctor.address.province,
+        postalCode: doctor.address.postalCode,
+        city: doctor.address.city,
+        street: doctor.address.street,
+        number: doctor.address.number,
       },
     });
     this.doctorInstitutions.set(doctor.institutions);
@@ -166,16 +161,103 @@ export class EditDoctorDetailsComponent implements OnInit {
 
     this.isSubmitting.set(true);
     const formValue = this.doctorForm.getRawValue();
-    const updatedDoctorData = { ...formValue };
+    const currentInstitutions = this.doctorInstitutions();
+    const original = this.originalInstitutions();
 
-    console.log('Updated doctor data:', updatedDoctorData);
-    setTimeout(() => {
+    const toAdd = currentInstitutions.filter(
+      (curr) =>
+        !original.some((orig) => orig.institutionId === curr.institutionId),
+    );
+
+    const toRemove = original.filter(
+      (orig) =>
+        !currentInstitutions.some(
+          (curr) => curr.institutionId === orig.institutionId,
+        ),
+    );
+
+    const toUpdate = currentInstitutions.filter((curr) =>
+      original.some((orig) => orig.institutionId === curr.institutionId),
+    );
+
+    const requests: ReturnType<
+      | typeof this.institutionService.addEmployees
+      | typeof this.institutionService.deleteEmployee
+      | typeof this.institutionService.updateEmployee
+    >[] = [];
+
+    if (toAdd.length > 0) {
+      toAdd.forEach((inst) => {
+        requests.push(
+          this.institutionService.addEmployees(inst.institutionId, [
+            {
+              userID: this.doctorId(),
+              rolecode: inst.roleCode || 2, // Use institution-specific role code
+              specialisations: formValue.specialisation,
+            },
+          ]),
+        );
+      });
+    }
+
+    if (toRemove.length > 0) {
+      toRemove.forEach((inst) => {
+        requests.push(
+          this.institutionService.deleteEmployee(
+            inst.institutionId,
+            this.doctorId(),
+          ),
+        );
+      });
+    }
+
+    if (toUpdate.length > 0) {
+      toUpdate.forEach((inst) => {
+        requests.push(
+          this.institutionService.updateEmployee(inst.institutionId, {
+            userID: this.doctorId(),
+            roleCode: inst.roleCode || 2, // Use institution-specific role code
+            specialisations: formValue.specialisation,
+          }),
+        );
+      });
+    }
+
+    if (requests.length === 0) {
       this.isSubmitting.set(false);
-      this.toastService.showSuccess(
-        this.translationService.translate('admin.editDoctor.success'),
+      this.toastService.showInfo(
+        this.translationService.translate('admin.editDoctor.noChanges'),
       );
-      this.router.navigate(['/admin/doctors']);
-    }, 1000);
+      return;
+    }
+
+    forkJoin(requests.length > 0 ? requests : [of(null)])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.toastService.showSuccess(
+            this.translationService.translate('admin.editDoctor.success'),
+          );
+          this.router.navigate(['/admin/doctors']);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.isSubmitting.set(false);
+          if (error.status === 403) {
+            this.toastService.showError(
+              this.translationService.translate('admin.editDoctor.forbidden'),
+            );
+          } else if (error.status === 400) {
+            this.toastService.showError(
+              this.translationService.translate('admin.editDoctor.badRequest'),
+            );
+          } else {
+            this.toastService.showError(
+              this.translationService.translate('admin.editDoctor.error'),
+            );
+          }
+        },
+      });
   }
 
   protected onCancel(): void {
@@ -183,83 +265,38 @@ export class EditDoctorDetailsComponent implements OnInit {
   }
 
   protected onAddInstitution(institution: InstitutionShortInfo): void {
-    // const doctorId = this.doctor()?.id;
-    // if (!doctorId) return;
-    //
-    // // Mock implementation - replace with actual API call
-    // this.doctorInstitutions.update((institutions) => [
-    //   ...institutions,
-    //   institution,
-    // ]);
-    // this.toastService.showSuccess(
-    //   this.translationService.translate('admin.editDoctor.institutionAdded'),
-    // );
+    this.doctorInstitutions.update((institutions) => [
+      ...institutions,
+      institution,
+    ]);
   }
 
-  protected onRemoveInstitution(institutionId: string): void {
-    // const doctorId = this.doctor()?.id;
-    // if (!doctorId) return;
-    //
-    // // Mock implementation - replace with actual API call
-    // this.doctorInstitutions.update((institutions) =>
-    //   institutions.filter((i) => i.institutionId !== institutionId),
-    // );
-    // this.toastService.showSuccess(
-    //   this.translationService.translate('admin.editDoctor.institutionRemoved'),
-    // );
+  protected onRemoveInstitution(_institutionId: string): void {
+    this.doctorInstitutions.update((institutions) =>
+      institutions.filter((i) => i.institutionId !== _institutionId),
+    );
+  }
+
+  protected onRoleChanged(event: {
+    institutionId: string;
+    roleCode: number;
+  }): void {
+    this.doctorInstitutions.update((institutions) =>
+      institutions.map((inst) =>
+        inst.institutionId === event.institutionId
+          ? { ...inst, roleCode: event.roleCode }
+          : inst,
+      ),
+    );
   }
 
   private loadSpecialisations(): void {
-    this.specialisations = [
-      {
-        code: 'cardiology',
-        name: this.translationService.translate(
-          'admin.addDoctor.specialisations.cardiology',
-        ),
-      },
-      {
-        code: 'cardio_surgery',
-        name: this.translationService.translate(
-          'admin.addDoctor.specialisations.cardio_surgery',
-        ),
-      },
-      {
-        code: 'dermatology',
-        name: this.translationService.translate(
-          'admin.addDoctor.specialisations.dermatology',
-        ),
-      },
-      {
-        code: 'neurology',
-        name: this.translationService.translate(
-          'admin.addDoctor.specialisations.neurology',
-        ),
-      },
-      {
-        code: 'orthopedics',
-        name: this.translationService.translate(
-          'admin.addDoctor.specialisations.orthopedics',
-        ),
-      },
-      {
-        code: 'pediatrics',
-        name: this.translationService.translate(
-          'admin.addDoctor.specialisations.pediatrics',
-        ),
-      },
-      {
-        code: 'psychiatry',
-        name: this.translationService.translate(
-          'admin.addDoctor.specialisations.psychiatry',
-        ),
-      },
-      {
-        code: 'general',
-        name: this.translationService.translate(
-          'admin.addDoctor.specialisations.general',
-        ),
-      },
-    ];
+    this.specialisationService
+      .getSpecialisations(false)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((specialisations) => {
+        this.specialisations.set(specialisations);
+      });
   }
 
   protected getFieldError(fieldPath: string): string {
@@ -307,5 +344,41 @@ export class EditDoctorDetailsComponent implements OnInit {
 
   protected get residentialAddressForm(): FormGroup {
     return this.doctorForm.get('residentialAddress') as FormGroup;
+  }
+
+  private loadProvinces(): void {
+    this.authentication
+      .getProvinces()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (provinces) => {
+          this.provinces.set(provinces);
+        },
+        error: () => {
+          this.toastService.showError(
+            this.translationService.translate(
+              'admin.editDoctor.error.loadProvinces',
+            ),
+          );
+        },
+      });
+  }
+
+  private loadCities(): void {
+    this.authentication
+      .getCityWithoutSearch()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (cities) => {
+          this.cities.set(cities.map((city) => city.name));
+        },
+        error: () => {
+          this.toastService.showError(
+            this.translationService.translate(
+              'admin.editDoctor.error.loadCities',
+            ),
+          );
+        },
+      });
   }
 }

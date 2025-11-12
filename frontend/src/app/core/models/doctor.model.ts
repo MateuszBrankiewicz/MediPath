@@ -110,3 +110,33 @@ export interface VisitsForPatientProfile {
 export interface DoctorPatientsVisitApiResponse {
   visits: VisitsForPatientProfile[];
 }
+
+export interface FullDoctorInfo extends DoctorPageModel {
+  pwzNumber?: string;
+  licenceNumber: string;
+  address: {
+    city: string;
+    street: string;
+    number: string;
+    postalCode: string;
+    province: string;
+  };
+  dateOfBirth: number[] | string;
+  govId: string;
+  email: string;
+  phoneNumber: string;
+  roleCode: number;
+  specialisations: string[];
+}
+
+export interface FullDoctorInfoApiResponse {
+  doctor: FullDoctorInfo;
+}
+
+export interface FindedEmployee {
+  id: string;
+  birthDate: string;
+  email: string;
+  name: string;
+  surname: string;
+}

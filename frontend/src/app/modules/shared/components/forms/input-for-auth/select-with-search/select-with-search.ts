@@ -83,7 +83,6 @@ export class SelectWithSearch {
       )
       .subscribe({
         next: (options) => {
-          console.log(options as SelectOption[]);
           this.dynamicOptions.set((options as SelectOption[]) || []);
           this.isLoading.set(false);
         },

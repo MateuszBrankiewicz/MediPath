@@ -67,7 +67,7 @@ public class InstitutionController {
 
     @PostMapping(value = { "/{institutionid}/employees/", "/{institutionid}/employees" })
     public ResponseEntity<Map<String, Object>> addEmployeeToInstitution(@PathVariable String institutionid,
-            @RequestBody ArrayList<AddEmployeeForm> employeeIds, HttpSession session) {
+                                                                        @RequestBody ArrayList<AddEmployeeForm> employeeIds, HttpSession session) {
 
         String loggedUserID = (String) session.getAttribute("id");
         if (loggedUserID == null) {
@@ -83,6 +83,12 @@ public class InstitutionController {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (IllegalAccessException e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Database error in addEmployeeToInstitution: " + e.getMessage());
+            return new ResponseEntity<>(
+                    Map.of("message", "Database connection error", "error", e.getMessage()),
+                    HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
 

@@ -222,14 +222,6 @@ export class DoctorDashboard implements OnInit {
     this.router.navigate(['/doctor/current-visit', appointment.id]);
   }
 
-  protected onDateTimeSelected(event: {
-    date: Date;
-    time: string;
-    slotId?: string;
-  }): void {
-    console.log('Date/time selected:', event);
-  }
-
   private hasAppointmentsOnDate(date: Date): boolean {
     return this.availableAppointments().some((app) => {
       const appDate = new Date(app.date);

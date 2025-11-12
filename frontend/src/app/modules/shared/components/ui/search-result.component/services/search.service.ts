@@ -52,9 +52,7 @@ export class SearchService {
 
   public search(searchQuery: SearchQuery) {
     let params = new HttpParams();
-
     params = params.set('type', searchQuery.category);
-
     if (searchQuery.location) {
       params = params.set('city', searchQuery.location);
     }

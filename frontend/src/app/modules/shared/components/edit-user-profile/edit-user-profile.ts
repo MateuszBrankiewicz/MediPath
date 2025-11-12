@@ -20,12 +20,15 @@ import { AuthenticationService } from '../../../../core/services/authentication/
 import { UserProfileFormValue } from '../../../../core/services/authentication/profile.model';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { DialogService } from 'primeng/dynamicdialog';
+import { ChangePasswordDialog } from './components/change-password-dialog/change-password-dialog';
 
 @Component({
   selector: 'app-edit-user-profile',
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './edit-user-profile.html',
   styleUrl: './edit-user-profile.scss',
+  providers: [DialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditUserProfile implements OnInit {
@@ -34,7 +37,7 @@ export class EditUserProfile implements OnInit {
   private authService = inject(AuthenticationService);
   private destroyRef = inject(DestroyRef);
   public isSubmitting = signal(false);
-
+  private dialogService = inject(DialogService);
   public profileFormGroup = new FormGroup<ProfileFormControls>({
     name: new FormControl<string>('', {
       nonNullable: true,
@@ -130,7 +133,13 @@ export class EditUserProfile implements OnInit {
   }
 
   public onChangePassword() {
-    console.log('Change password clicked');
+    this.dialogService.open(ChangePasswordDialog, {
+      width: '50%',
+      height: '50%',
+      header: 'Change password',
+      modal: true,
+      closable: true,
+    });
   }
 
   private markFormGroupTouched() {

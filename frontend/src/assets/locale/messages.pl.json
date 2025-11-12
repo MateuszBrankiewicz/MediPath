@@ -1,4 +1,3 @@
-
 {
   "register.title": "Rejestracja",
   "register.form.name": "Imię",
@@ -318,7 +317,6 @@
   "notifications.markSingleError": "Nie udało się zaktualizować powiadomienia. Spróbuj ponownie.",
   "notifications.add": "Dodaj przypomnienie",
 
-
   "doctor.dashboard.title": "Panel główny",
   "doctor.dashboard.welcomeBack": "Witaj ponownie",
   "doctor.dashboard.haveNiceDay": "Miłego dnia!",
@@ -417,15 +415,13 @@
   "patient.dashboard.empty.visits": "Brak nadchodzących wizyt",
   "patient.dashboard.empty.prescriptionsMessage": "Nie masz obecnie żadnych aktywnych recept.",
   "patient.dashboard.empty.referralsMessage": "Nie masz obecnie żadnych aktywnych skierowań.",
-  "patient.dashboard.empty.visitsMessage": "Nie masz zaplanowanych wizyt w najbliższym czasie."
+  "patient.dashboard.empty.visitsMessage": "Nie masz zaplanowanych wizyt w najbliższym czasie.",
 
-  ,
   "admin.dashboard.selectInstitution": "Wybierz instytucję",
   "admin.dashboard.comments": "Komentarze",
   "admin.dashboard.upcomingVisits": "Nadchodzące wizyty",
-  "admin.dashboard.changeDoctor": "Zmień lekarza"
+  "admin.dashboard.changeDoctor": "Zmień lekarza",
 
-  ,
   "shared.filters.searchPlaceholder": "Szukaj po lekarzu lub placówce...",
   "shared.filters.search": "Szukaj",
   "shared.filters.status": "Status",
@@ -445,15 +441,15 @@
   "shared.filters.title": "Filtry",
   "comment.edit.success": "Komentarz edytowan pomyślnie",
   "comments.edit.failed": "Nie udało się edytować komentarza",
-   "comments.delete.success": "Usunięto komentarz",
-  "comments.delete.error" : "Wystąpił błąd",
+  "comments.delete.success": "Usunięto komentarz",
+  "comments.delete.error": "Wystąpił błąd",
   "comment.add.success": "Dodano komentarz",
   "comment.add.error": "Wystąpił błąd podczas dodawania komentarza",
   "comment.delete.message": "Czy na pewno chcesz usunąć ten komentarz?",
   "comment.deleted.success": "Komentarz usunięty pomyślnie",
   "comment.delete.title": "Usuń komentarz",
   "comment.deleted.error": "Wystąpił błąd podczas usuwania komentarza",
-    "notifications.toast.addSuccess": "Powiadomienie dodane pomyślnie",
+  "notifications.toast.addSuccess": "Powiadomienie dodane pomyślnie",
   "notifications.toast.addError": "Nie udało się dodać powiadomienia",
   "notifications.toast.markAllSuccess": "Wszystkie powiadomienia oznaczone jako przeczytane",
   "notifications.toast.markAllError": "Nie udało się oznaczyć wszystkich jako przeczytane",
@@ -465,8 +461,7 @@
   "admin.createSchedule.selectDoctor": "Wybierz lekarza",
   "admin.createSchedule.selectDoctorPlaceholder": "Wybierz lekarza",
   "admin.createSchedule.selectedDoctor": "Wybrany lekarz",
-  "admin.createSchedule.estimatedTimeForOneVisit": "Szacowany czas jednej wizyty (min)"
-  ,
+  "admin.createSchedule.estimatedTimeForOneVisit": "Szacowany czas jednej wizyty (min)",
   "admin.createSchedule.summary.title": "Podsumowanie",
   "admin.createSchedule.summary.institution": "Placówka",
   "admin.createSchedule.summary.doctor": "Lekarz",
@@ -597,7 +592,7 @@
   "admin.addDoctor.specialisations.pediatrics": "Pediatra",
   "admin.addDoctor.specialisations.psychiatry": "Psychiatra",
   "admin.addDoctor.specialisations.general": "Lekarz rodzinny",
-
+  "admin.addDoctor.role": "Rola w instytucji",
   "admin.doctorList.addDoctor": "Dodaj pracownika",
   "admin.doctorList.searchPlaceholder": "Szukaj po nazwisku lub numerze PWZ...",
   "admin.doctorList.results": "wyników",
@@ -693,6 +688,9 @@
   "admin.editDoctor.phoneNumber": "Numer telefonu",
   "admin.editDoctor.personalId": "Numer PESEL",
   "admin.editDoctor.role": "Rola",
+  "admin.editDoctor.selectRole": "Wybierz rolę",
+  "admin.editDoctor.institution": "Instytucja",
+  "admin.editDoctor.editRoleDialog": "Zmień rolę w instytucji",
   "admin.editDoctor.specialisation": "Specjalizacja",
   "admin.editDoctor.pwzNumber": "NUMER PWZ",
   "admin.editDoctor.province": "Województwo",
@@ -729,11 +727,28 @@
   "admin.editDoctor.validation.fillAll": "Wypełnij poprawnie wszystkie wymagane pola",
   "admin.editDoctor.success": "Lekarz został zaktualizowany pomyślnie",
   "admin.editDoctor.error": "Nie udało się zaktualizować lekarza. Spróbuj ponownie.",
+  "admin.editDoctor.error.loadProvinces": "Nie udało się załadować województw",
+  "admin.editDoctor.error.loadCities": "Nie udało się załadować miast",
+  "admin.editDoctor.noChanges": "Nie wprowadzono żadnych zmian",
+  "admin.editDoctor.forbidden": "Nie masz uprawnień do edycji tego lekarza",
+  "admin.editDoctor.badRequest": "Nieprawidłowe dane. Sprawdź formularz i spróbuj ponownie.",
   "admin.editDoctor.institutionAdded": "Instytucja dodana pomyślnie",
   "admin.editDoctor.institutionRemoved": "Instytucja usunięta pomyślnie",
 
   "common.cancel": "Anuluj",
   "common.add": "Dodaj",
+  "common.save": "Zapisz",
+
+  "admin.changeDoctor.loading": "Ładowanie lekarzy...",
+  "admin.changeDoctor.description": "Wybierz nowego lekarza dla tej wizyty z listy dostępnych lekarzy w placówce.",
+  "admin.changeDoctor.currentDoctor": "Aktualnie przypisany lekarz",
+  "admin.changeDoctor.selectDoctor": "Wybierz lekarza",
+  "admin.changeDoctor.selectDoctorPlaceholder": "Wyszukaj lekarza...",
+  "admin.changeDoctor.loadDoctorsError": "Nie udało się załadować listy lekarzy",
+  "admin.changeDoctor.noDoctorsAvailable": "Brak dostępnych lekarzy w tej placówce",
+  "admin.changeDoctor.changeDoctorError": "Nie udało się zmienić lekarza",
+  "admin.changeDoctor.changeDoctorSuccess": "Lekarz został pomyślnie zmieniony",
+  "admin.changeDoctor.confirm": "Zmień lekarza",
 
   "patient.profile.birthDate": "Data urodzenia",
   "patient.profile.years": "lat",
@@ -751,5 +766,6 @@
   "patient.profile.codes": "Kody",
 
   "doctor.patientProfile.loadError": "Nie udało się załadować profilu pacjenta",
-  "doctor.patientProfile.visitsLoadError": "Nie udało się załadować wizyt pacjenta"
+  "doctor.patientProfile.visitsLoadError": "Nie udało się załadować wizyt pacjenta",
+  "patient.doctor.conflict": "Pacjent oraz lekarz nie mogą być tą samą osobą"
 }

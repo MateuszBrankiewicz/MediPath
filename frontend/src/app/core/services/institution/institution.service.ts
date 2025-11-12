@@ -4,28 +4,48 @@ import { map, Observable } from 'rxjs';
 import { UpcomingVisitItem } from '../../../modules/admin/components/admin-dashboard/widgets/upcoming-visits-card';
 import { API_URL } from '../../../utils/constants';
 import { AddDoctorRequest } from '../../models/add-docotr.model';
-import { DoctorApiResponse, DoctorProfile } from '../../models/doctor.model';
+import {
+  DoctorApiResponse,
+  DoctorProfile,
+  FindedEmployee,
+} from '../../models/doctor.model';
 import {
   AdminInstitutionResponse,
   Institution,
   InstitutionResponse,
 } from '../../models/institution.model';
-import { UpcomingVisitsResponse } from '../../models/visit.model';
-import { AuthenticationService } from '../authentication/authentication';
+import {
+  UpcomingVisitsResponse,
+  VisitApiResponseArray,
+  VisitResponse,
+} from '../../models/visit.model';
+import { UserRoles } from '../authentication/authentication.model';
+
+export interface UpdateEmployeeRequest {
+  userID: string;
+  roleCode: number;
+  specialisations?: string[];
+}
+
+export interface AddEmployeesRequest {
+  userID: string;
+  rolecode: number;
+  specialisations?: string[];
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class InstitutionService {
   private http = inject(HttpClient);
-  private authService = inject(AuthenticationService);
   public getInstitution(institutionId: string): Observable<Institution> {
     return this.http
-      .get<InstitutionResponse>(`${API_URL}/institution/${institutionId}`)
+      .get<InstitutionResponse>(`${API_URL}/institution/${institutionId}`, {
+        withCredentials: true,
+      })
       .pipe(
         map((value: InstitutionResponse): Institution => {
           const inst = value.institution;
-          console.log(inst);
           return {
             address: {
               province: inst.address.province,
@@ -53,9 +73,15 @@ export class InstitutionService {
       );
   }
 
-  public getInstitutionsForAdmin(): Observable<Institution[]> {
-    const httpParam = new HttpParams().set('role', 'staff');
-
+  public getInstitutionsForAdmin(
+    role: UserRoles | null,
+  ): Observable<Institution[]> {
+    let httpParam;
+    if (role === 'admin') {
+      httpParam = new HttpParams().set('role', 'admin');
+    } else {
+      httpParam = new HttpParams().set('role', 'staff');
+    }
     return this.http
       .get<AdminInstitutionResponse>(`${API_URL}/users/me/institutions`, {
         params: httpParam,
@@ -97,25 +123,37 @@ export class InstitutionService {
   }
 
   public addInstitution(institution: Partial<Institution>): Observable<void> {
-    return this.http
-      .post<void>(
-        `${API_URL}/institution/add`,
-        {
-          name: institution.name,
-          types: institution.specialisation,
-          address: institution.address,
-          image: institution.image,
-          isPublic: institution.isPublic,
-        },
-        {
-          withCredentials: true,
-        },
-      )
-      .pipe(
-        map(() => {
-          console.log('Institution added successfully');
-        }),
-      );
+    return this.http.post<void>(
+      `${API_URL}/institution/add`,
+      {
+        name: institution.name,
+        types: institution.specialisation,
+        address: institution.address,
+        image: institution.image,
+        isPublic: institution.isPublic,
+      },
+      {
+        withCredentials: true,
+      },
+    );
+  }
+  public editInstitution(
+    institutionId: string,
+    institution: Partial<Institution>,
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${API_URL}/institution/${institutionId}/`,
+      {
+        name: institution.name,
+        types: institution.specialisation,
+        address: institution.address,
+        image: institution.image,
+        isPublic: institution.isPublic,
+      },
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   public addEmployee(
@@ -131,6 +169,58 @@ export class InstitutionService {
 
   public getVisits(institutionId: string): Observable<unknown> {
     return this.http.get(`${API_URL}/institution/${institutionId}/visits`, {
+      withCredentials: true,
+    });
+  }
+
+  public updateEmployee(
+    institutionId: string,
+    employeeData: UpdateEmployeeRequest,
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${API_URL}/institution/${institutionId}/employee/`,
+      employeeData,
+      { withCredentials: true },
+    );
+  }
+
+  public deleteEmployee(
+    institutionId: string,
+    userId: string,
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${API_URL}/institution/${institutionId}/employee/${userId}`,
+      { withCredentials: true },
+    );
+  }
+
+  public addEmployees(
+    institutionId: string,
+    employees: AddEmployeesRequest[],
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${API_URL}/institution/${institutionId}/employees/`,
+      employees,
+      { withCredentials: true },
+    );
+  }
+
+  public getVisitsForInstitution(
+    institutionId: string,
+  ): Observable<VisitResponse[]> {
+    return this.http
+      .get<VisitApiResponseArray>(
+        `${API_URL}/institution/${institutionId}/visits`,
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(map((response) => response.visits));
+  }
+
+  public findUserByGovId(govId: string): Observable<FindedEmployee> {
+    console.log(govId);
+    return this.http.get<FindedEmployee>(`${API_URL}/users/find/${govId}`, {
       withCredentials: true,
     });
   }

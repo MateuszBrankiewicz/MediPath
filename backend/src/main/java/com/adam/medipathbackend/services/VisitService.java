@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.adam.medipathbackend.config.Constants;
 import java.awt.*;
+import java.time.LocalDateTime;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,12 +51,14 @@ public class VisitService {
             visit.setPatientRemarks("");
         }
         Schedule foundSchedule = validateVisitForm(visit);
-        PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(),
-                foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
-        VisitTime time = new VisitTime(foundSchedule.getId(),
-                foundSchedule.getStartHour(), foundSchedule.getEndHour());
-        Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(),
-                time,foundSchedule.getInstitution(), visit.getPatientRemarks());
+        if(foundSchedule.getDoctor().getUserId().equals(foundUser.getId())){
+            throw new IllegalStateException("Doctor and patient is the same person");
+        }
+        
+
+        PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(), foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
+        VisitTime time = new VisitTime(foundSchedule.getId(), foundSchedule.getStartHour(), foundSchedule.getEndHour());
+        Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(), time,foundSchedule.getInstitution(), visit.getPatientRemarks());
 
         foundSchedule.setBooked(true);
         ArrayList<Code> codes = new ArrayList<>();
@@ -89,7 +92,7 @@ public class VisitService {
         visitRepository.save(newVisit);
     }
 
-        
+
     public void cancelVisit(String visitid, String loggedUserID) throws IllegalAccessException {
 
         Optional<Visit> optVisit = visitRepository.findById(visitid);
@@ -97,7 +100,7 @@ public class VisitService {
             throw new IllegalStateException();
         }
         Visit visitToCancel = optVisit.get();
-        
+
         authorizationService.startAuthChain(loggedUserID, visitToCancel.getInstitution().getInstitutionId()).matchAnyPermission().
                 patientInVisit(visitToCancel).employeeOfInstitution().check();
 
@@ -340,6 +343,69 @@ public class VisitService {
         return visitWithPfp;
     }
 
+    public void updateDoctorInVisit(String visitId, String newDoctorId, String loggedUserID) throws IllegalAccessException {
+        Optional<Visit> optVisit = visitRepository.findById(visitId);
+        if(optVisit.isEmpty()) {
+            throw new IllegalAccessException();
+        }
+
+        Visit visit = optVisit.get();
+
+        authorizationService.startAuthChain(loggedUserID, visit.getInstitution().getInstitutionId())
+                .employeeOfInstitution().check();
+
+        if(visit.getStatus().equals("Completed")) {
+            throw new IllegalArgumentException("this visit is completed");
+        }
+
+        if(visit.getStatus().equals("Cancelled")) {
+            throw new IllegalArgumentException("this visit is cancelled");
+        }
+
+        Optional<User> newDoctorOpt = userRepository.findDoctorById(newDoctorId);
+        if(newDoctorOpt.isEmpty()) {
+            throw new IllegalArgumentException("invalid doctor id");
+        }
+
+        User newDoctor = newDoctorOpt.get();
+        DoctorDigest oldDoctor = visit.getDoctor();
+        DoctorDigest doctorDigest = new DoctorDigest(newDoctor.getId(),
+                newDoctor.getName(), newDoctor.getSurname(), newDoctor.getSpecialisations());
+
+        visit.setDoctor(doctorDigest);
+
+        Optional<User> patientOpt = userRepository.findById(visit.getPatient().getUserId());
+        if(patientOpt.isPresent()) {
+            User patient = patientOpt.get();
+
+            if(patient.getUserSettings().isSystemNotifications()) {
+                String content, title;
+
+                if(patient.getUserSettings().getLanguage().equals("PL")) {
+                    content = String.format("Informujemy, że lekarz prowadzący Twoją wizytę w placówce %s dnia %s został zmieniony z %s %s na %s %s.",
+                            visit.getInstitution().getInstitutionName(),
+                            visit.getTime().getStartTime().toLocalDate(),
+                            oldDoctor.getDoctorName(), oldDoctor.getDoctorSurname(),
+                            newDoctor.getName(), newDoctor.getSurname());
+                    title = "Zmiana lekarza";
+                } else {
+                    content = String.format("We inform you that the doctor for your visit at %s on %s has been changed from %s %s to %s %s.",
+                            visit.getInstitution().getInstitutionName(),
+                            visit.getTime().getStartTime().toLocalDate(),
+                            oldDoctor.getDoctorName(), oldDoctor.getDoctorSurname(),
+                            newDoctor.getName(), newDoctor.getSurname());
+                    title = "Doctor change";
+                }
+
+                Notification notification = new Notification(title, content,
+                        LocalDateTime.now().plusMinutes(5), true, false);
+                patient.addNotification(notification);
+                userRepository.save(patient);
+            }
+        }
+
+        visitRepository.save(visit);
+    }
     public boolean hasUpcomingVisits(String doctorId) {
         return !visitRepository.getUpcomingDoctorVisits(doctorId).isEmpty();
     }

@@ -148,4 +148,19 @@ public class DoctorController {
     }
 
 }
+
+    @GetMapping(value = {"/{doctorId}/fullInfo", "/{doctorId}/fullInfo/"})
+    public ResponseEntity<Map<String,Object>> getDoctorFullInfo(@PathVariable String doctorId, HttpSession session){
+        String loggedUserId = (String) session.getAttribute("id");
+        if (loggedUserId == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            Map<String, Object> result = doctorService.getDoctorFullInfo(doctorId);
+            return new ResponseEntity(result, HttpStatus.OK);
+        }catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

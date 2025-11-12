@@ -24,7 +24,7 @@ export interface UpcomingVisitItem {
       <div class="upcoming-list">
         @for (visit of visits(); track visit.id) {
           <div class="upcoming-item">
-            <span class="upcoming-time">{{ visit.time }}</span>
+            <span class="upcoming-time">{{ visit.time | date }}</span>
             <span class="upcoming-name">- {{ visit.patientName }}</span>
             <span class="spacer"></span>
             <p-button

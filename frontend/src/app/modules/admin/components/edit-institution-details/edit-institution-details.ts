@@ -323,7 +323,7 @@ export class EditInstitutionDetails implements OnInit {
     this.isSaving.set(true);
 
     this.institutionService
-      .addInstitution(institutionObject)
+      .editInstitution(this.institutionId(), institutionObject)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
@@ -348,7 +348,6 @@ export class EditInstitutionDetails implements OnInit {
   }
 
   protected loadAvailableCities(): void {
-    console.log('Loading cities');
     this.addressService
       .getCities('')
       .pipe(

@@ -120,8 +120,25 @@ export class VisitPage
     this.initVisitList();
   }
 
-  protected cancelVisit() {
-    console.log('cancel');
+  protected cancelVisit(visitId: string) {
+    this.visitDialogService.openAcceptActionDialog().subscribe((res) => {
+      if (!res) {
+        return;
+      }
+      this.visitService
+        .cancelVisit(visitId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.toastService.showSuccess('Visit caneled');
+          },
+          error: () => {
+            this.toastService.showError(
+              'Error occurs, please try again later.',
+            );
+          },
+        });
+    });
   }
 
   protected getStatusTranslation(status: VisitStatus): string {
@@ -303,8 +320,7 @@ export class VisitPage
           this.showSuccessMessage('comment.edit.success');
           this.initVisitList();
         },
-        error: (err) => {
-          console.log(err);
+        error: () => {
           this.showErrorMessage('comments.edit.failed');
         },
       });
@@ -326,8 +342,7 @@ export class VisitPage
           this.showSuccessMessage('comment.add.success');
           this.initVisitList();
         },
-        error: (err) => {
-          console.log(err);
+        error: () => {
           this.showErrorMessage('comment.add.error');
         },
       });

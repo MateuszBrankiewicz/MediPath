@@ -71,7 +71,6 @@
     &:hover:not(:disabled) {
       background: var(--primary-600);
       border-color: var(--primary-600);
-      transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
@@ -158,7 +157,6 @@
 
     &:hover {
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-      transform: translateY(-4px);
     }
 
     .p-card-body {
@@ -356,7 +354,6 @@
 
       &:not(.p-button-outlined) {
         &:hover:not(:disabled) {
-          transform: translateY(-1px);
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
       }
@@ -438,18 +435,6 @@
   gap: 0.75rem;
   padding-top: 1rem;
   border-top: 1px solid var(--surface-border);
-}
-
-// Animations
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .doctors-grid {

@@ -7,8 +7,9 @@
     @for (institution of getDataForInstitutionCard(); track institution.id) {
       <app-hospital-card
         [hospital]="institution"
-        [canDisabled]="roleCode() === 'admin'"
-        [canEdit]="roleCode() === 'admin'"
+        [canDisabled]="isAdminForThisInstitution()"
+        [canEdit]="isAdminForThisInstitution()"
+        (editClicked)="redirectToInstitutionEdit(institution.id)"
         (institutionClicked)="redirectToInstitutionView(institution.id)"
       ></app-hospital-card>
     }

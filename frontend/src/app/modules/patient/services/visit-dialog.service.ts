@@ -8,6 +8,7 @@ import {
   VisitDetailsDialog,
   VisitDetailsDialogResult,
 } from '../components/visit-details-dialog/visit-details-dialog';
+import { AcceptActionDialogComponent } from '../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 
 export interface OpenReviewDialogOptions {
   visitId: string;
@@ -102,6 +103,16 @@ export class VisitDialogService {
     visitId: string,
   ): Observable<VisitDetailsDialogResult | undefined> {
     const ref = this.openVisitDetailsDialog({ visitId });
+    return ref.onClose;
+  }
+
+  public openAcceptActionDialog(): Observable<boolean> {
+    const ref = this.dialogService.open(AcceptActionDialogComponent, {
+      width: '50%',
+      data: {
+        message: 'Are you sure want to cancel visit?',
+      },
+    });
     return ref.onClose;
   }
 }

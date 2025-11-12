@@ -61,6 +61,7 @@ export interface ApiUserResponse {
     email: string;
     userSettings: UserSettings;
     pfpImage?: string;
+    rating?: number;
   };
 }
 

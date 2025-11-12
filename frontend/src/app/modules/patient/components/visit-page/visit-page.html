@@ -78,7 +78,7 @@
               <button
                 type="button"
                 class="menu-item"
-                (click)="cancelVisit(); op.hide()"
+                (click)="cancelVisit(visit.id); op.hide()"
               >
                 <span>{{
                   translationService.translate("patient.visits.cancel")

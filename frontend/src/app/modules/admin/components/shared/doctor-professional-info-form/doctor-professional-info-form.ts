@@ -2,14 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
-import { MultiSelectModule } from 'primeng/multiselect';
+import { MultiSelectChangeEvent, MultiSelectModule } from 'primeng/multiselect';
 import { SelectChangeEvent, SelectModule } from 'primeng/select';
+import { Specialisation } from '../../../../../core/models/specialisation.model';
 import { TranslationService } from '../../../../../core/services/translation/translation.service';
-
-interface Specialisation {
-  code: string;
-  name: string;
-}
 
 interface RoleOption {
   id: number;
@@ -42,7 +38,7 @@ interface RoleOption {
               <i class="pi pi-address-book"></i>
               {{ translationService.translate(translationKey() + '.role') }}
             </label>
-            <p-select
+            <p-multiselect
               id="role"
               [options]="roleOptions()"
               formControlName="roleCode"
@@ -50,7 +46,7 @@ interface RoleOption {
               optionLabel="name"
               optionValue="roleCode"
             >
-            </p-select>
+            </p-multiselect>
           </div>
         }
         <div class="form-field">
@@ -65,7 +61,7 @@ interface RoleOption {
             formControlName="specialisation"
             [options]="specialisations()"
             optionLabel="name"
-            optionValue="code"
+            optionValue="name"
             [placeholder]="
               translationService.translate(
                 translationKey() + '.placeholders.specialisation'
@@ -124,7 +120,8 @@ export class DoctorProfessionalInfoFormComponent {
 
   protected translationService = inject(TranslationService);
 
-  protected handleRoleChange(event: SelectChangeEvent): void {
+  protected handleRoleChange(event: MultiSelectChangeEvent): void {
+    console.log(event);
     this.roleChanged.emit(event);
   }
 }

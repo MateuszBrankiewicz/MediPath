@@ -7,10 +7,15 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { DialogService } from 'primeng/dynamicdialog';
 import { ProgressSpinner } from 'primeng/progressspinner';
+import { MedicalHistoryResponse } from '../../../../core/models/medical-history.model';
 import { VisitCode } from '../../../../core/models/visit.model';
+import { MedicalHistoryService } from '../../../../core/services/medical-history/medical-history.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
+import { MedicalHistoryDialog } from '../../../patient/components/medical-history-page/components/medical-history-dialog/medical-history-dialog';
 
 @Component({
   selector: 'app-current-visit',
@@ -31,6 +36,8 @@ export class CurrentVisit implements OnInit {
       .map((r) => r.code)
       .join(', ');
   }
+  private dialogService = inject(DialogService);
+  private medicalHistoryService = inject(MedicalHistoryService);
   protected readonly translationService = inject(TranslationService);
   protected readonly isLoading = signal<boolean>(false);
   protected readonly patientName = signal<string>('Monika Nowak');
@@ -44,7 +51,7 @@ export class CurrentVisit implements OnInit {
   protected readonly visitStatus = signal<string>('');
   protected readonly visitDate = signal<Date | null>(null);
   protected readonly pinDraft = signal<string>('');
-
+  private toastService = inject(ToastService);
   protected readonly isEditable = computed(() => {
     const status = this.visitStatus();
     const visitDate = this.visitDate();
@@ -68,16 +75,7 @@ export class CurrentVisit implements OnInit {
     return now >= dayBefore && now <= dayAfter;
   });
 
-  protected readonly medicalHistory = signal<{ date: string; title: string }[]>(
-    [
-      { date: '10-10-2024', title: 'Diagnostic visit' },
-      { date: '10-01-2023', title: 'Hearth Surgeon' },
-      { date: '10-01-2023', title: 'Teeth removal' },
-      { date: '10-10-2024', title: 'Diagnostic visit' },
-      { date: '10-01-2023', title: 'Hearth Surgeon' },
-      { date: '10-01-2023', title: 'Teeth removal' },
-    ],
-  );
+  protected readonly medicalHistory = signal<MedicalHistoryResponse[]>([]);
   private activatedRoute = inject(ActivatedRoute);
 
   private visitService = inject(VisitsService);
@@ -149,10 +147,15 @@ export class CurrentVisit implements OnInit {
       )
       .subscribe({
         next: () => {
-          console.log('Visit finished successfully');
+          this.toastService.showSuccess(
+            this.translationService.translate('doctor.visit.finishSuccess'),
+          );
+          this.visitStatus.set('Completed');
         },
-        error: (error) => {
-          console.error('Error finishing visit:', error);
+        error: () => {
+          this.toastService.showError(
+            this.translationService.translate('doctor.visit.finishError'),
+          );
         },
       });
   }
@@ -181,12 +184,33 @@ export class CurrentVisit implements OnInit {
             : [],
         );
         this.isLoading.set(false);
-        console.log(this.visitStatus());
+        this.loadMedicalHistory(visit.visit.patient.userId);
       },
       error: (error) => {
         this.isLoading.set(false);
         console.error('Error loading visit data:', error);
       },
+    });
+  }
+  private loadMedicalHistory(patientId: string) {
+    this.medicalHistoryService.getPatientMedicalHistory(patientId).subscribe({
+      next: (history) => {
+        this.medicalHistory.set(history);
+      },
+      error: (error) => {
+        console.error('Error loading medical history:', error);
+      },
+    });
+  }
+
+  protected viewHistoryDetails(item: MedicalHistoryResponse): void {
+    this.dialogService.open(MedicalHistoryDialog, {
+      data: { mode: 'view', record: item },
+      header: this.translationService.translate('doctor.visit.historyDetails'),
+      width: '50%',
+      closable: true,
+      modal: true,
+      styleClass: 'medical-history-dialog',
     });
   }
 }

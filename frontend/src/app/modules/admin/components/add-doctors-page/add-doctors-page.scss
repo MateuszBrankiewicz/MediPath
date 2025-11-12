@@ -24,5 +24,17 @@
 .form-actions {
   @include form-actions;
 }
+.form-field {
+  @include form-field;
+  @include input-focus;
+  @include input-invalid;
+}
+.search-container {
+  display: flex;
+  gap: 20px;
+  p-button {
+    align-self: flex-end;
+  }
+}
 
 @include accessibility-features;

@@ -79,12 +79,9 @@ export class VisitsService {
 
   public getDoctorVisitByDate(date: string): Observable<VisitResponse[]> {
     return this.http
-      .get<UpcomingVisitsResponse>(
-        `${API_URL}/doctors/me/visitsbydate/${date}`,
-        {
-          withCredentials: true,
-        },
-      )
+      .get<UpcomingVisitsResponse>(`${API_URL}/doctors/me/visits/${date}`, {
+        withCredentials: true,
+      })
       .pipe(map((response) => response.visits ?? []));
   }
 
@@ -99,6 +96,14 @@ export class VisitsService {
         referrals: finishVisit.referrals,
         note: finishVisit.note,
       },
+      { withCredentials: true },
+    );
+  }
+
+  public changeDoctor(visitId: string, doctorId: string): Observable<void> {
+    return this.http.put<void>(
+      `${API_URL}/visits/${visitId}/changeDoctor`,
+      { doctorId },
       { withCredentials: true },
     );
   }

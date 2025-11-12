@@ -7,11 +7,13 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { CommentService } from '../../../../core/services/comment/comment.service';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
+import { ChangeDoctorDialogService } from '../../services/change-doctor-dialog.service';
 import { InstitutionStoreService } from './../../services/institution/institution-store.service';
 import { CommentItem, CommentsCard } from './widgets/comments-card';
 import {
@@ -40,6 +42,9 @@ export class AdminDashboard {
   private institutionStoreService = inject(InstitutionStoreService);
   private commentsService = inject(CommentService);
   private institutionService = inject(InstitutionService);
+  private changeDoctorDialogService = inject(ChangeDoctorDialogService);
+  private visitsService = inject(VisitsService);
+  private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   protected readonly institutions = computed(() =>
     this.institutionStoreService.institutionOptions(),
@@ -81,12 +86,31 @@ export class AdminDashboard {
     this.loadUpcomingVisits();
   }
 
-  protected onChangeDoctor(_visit: UpcomingVisitItem): void {
-    console.log('Change doctor clicked', _visit);
+  protected onChangeDoctor(visit: UpcomingVisitItem): void {
+    const institutionId = this.selectedInstitution()?.id;
+    if (!institutionId) {
+      return;
+    }
+
+    const dialogRef = this.changeDoctorDialogService.openChangeDoctorDialog({
+      visitId: visit.id.toString(),
+      institutionId: institutionId,
+      currentDoctorId: visit.doctorId,
+      currentDoctorName: visit.doctorName,
+    });
+
+    dialogRef.onClose.subscribe((result) => {
+      if (result?.success) {
+        this.loadUpcomingVisits();
+      }
+    });
   }
 
   protected onCancelVisit(_visit: UpcomingVisitItem): void {
-    console.log('Cancel visit clicked', _visit);
+    this.visitsService.cancelVisit(_visit.id.toString()).subscribe(() => {
+      this.toastService.showSuccess('Visit cancelled successfully.');
+      this.loadUpcomingVisits();
+    });
   }
 
   selectedInstitution = computed(() =>
@@ -104,24 +128,6 @@ export class AdminDashboard {
         }));
         this.comments.set(formattedComments);
         this.isCommentsLoading.set(false);
-      });
-  }
-
-  private loadInstitutions(): void {
-    this.isInstitutionLoading.set(true);
-    this.institutionService
-      .getInstitutionsForAdmin()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((institutions) => {
-        const formattedInstitutions = institutions.map((inst) => ({
-          id: inst.id,
-          name: inst.name,
-        }));
-        this.institutionStoreService.setInstitution(formattedInstitutions[0]);
-
-        this.loadUpcomingVisits();
-        this.loadCommentsForInstitution(formattedInstitutions[0].id);
-        this.isInstitutionLoading.set(false);
       });
   }
 

@@ -106,7 +106,9 @@ export class DoctorList {
   }
 
   protected onAddDoctor(): void {
-    this.router.navigate(['/admin/add-doctor']);
+    this.router.navigate([
+      `/admin/doctors/${this.institutionStoreService.selectedInstitution()?.id}/add`,
+    ]);
   }
 
   protected onViewDoctor(doctorId: string): void {

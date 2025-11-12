@@ -3,9 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   output,
 } from '@angular/core';
+import { TranslationService } from '../../../../core/services/translation/translation.service';
 
 export interface FilterButtonConfig<T = string> {
   value: T;
@@ -22,7 +24,7 @@ export interface FilterButtonConfig<T = string> {
 })
 export class FilterButtonsComponent<T = string> {
   filters = input.required<FilterButtonConfig<T>[]>();
-
+  protected translationService = inject(TranslationService);
   activeFilter = input.required<T>();
 
   filterChange = output<T>();

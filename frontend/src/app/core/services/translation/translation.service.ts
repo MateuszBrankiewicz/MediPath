@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { AuthenticationService } from '../authentication/authentication';
 import { UserSettingsService } from '../authentication/user-settings.service';
 import { DEFAULT_LANGUAGE, SupportedLanguage } from './language.model';
 
@@ -13,13 +14,18 @@ export class TranslationService {
   public readonly isLoading = signal(false);
   private http = inject(HttpClient);
   private userSettingsService = inject(UserSettingsService);
+  private authService = inject(AuthenticationService);
 
   constructor() {
     this.applyLanguage(DEFAULT_LANGUAGE, true);
-    this.userSettingsService.ensureSettingsLoaded().subscribe({
-      next: (settings) => this.applyLanguage(settings.language),
-      error: () => this.applyLanguage(DEFAULT_LANGUAGE),
-    });
+
+    // Only load user settings if user is authenticated
+    if (this.authService.isAuthenticated()) {
+      this.userSettingsService.ensureSettingsLoaded().subscribe({
+        next: (settings) => this.applyLanguage(settings.language),
+        error: () => this.applyLanguage(DEFAULT_LANGUAGE),
+      });
+    }
 
     effect(() => {
       const language = this.userSettingsService.language();
