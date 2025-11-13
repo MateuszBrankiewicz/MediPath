@@ -14,6 +14,9 @@ interface MedicalHistoryService {
     @GET("/api/users/me/medicalhistory")
     suspend fun getUserMedicalHistory(): Response<UserMedicalHistoryResponse>
 
+    @GET("/api/users/{id}/medicalhistory")
+    suspend fun getPatientMedicalHistory(@Path("id") patientId: String): Response<UserMedicalHistoryResponse>
+
     @POST("/api/medicalhistory/add")
     suspend fun addMedicalHistory(@Body comment: MedicalHistoryRequest): Response<Unit>
 
@@ -21,8 +24,5 @@ interface MedicalHistoryService {
     suspend fun deleteMedicalHistory(@Path("id") historyId: String): Response<Unit>
 
     @PUT("/api/medicalhistory/{id}")
-    suspend fun updateMedicalHistory(
-        @Path("id") commentId: String,
-        @Body comment: MedicalHistoryRequest
-    ): Response<Unit>
+    suspend fun updateMedicalHistory(@Path("id") commentId: String, @Body comment: MedicalHistoryRequest): Response<Unit>
 }

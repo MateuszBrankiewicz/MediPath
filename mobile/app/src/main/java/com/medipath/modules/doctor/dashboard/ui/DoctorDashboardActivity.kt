@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,9 +42,16 @@ import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.Navigation
 import com.medipath.modules.shared.profile.ui.EditProfileActivity
 import com.medipath.modules.shared.settings.ui.SettingsActivity
+import com.medipath.modules.doctor.visit.ui.DoctorVisitDetailsActivity
 import com.medipath.MediPathApplication
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.doctor.dashboard.ui.components.CalendarGrid
+import com.google.gson.Gson
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,6 +67,8 @@ class DoctorDashboardActivity : ComponentActivity() {
             Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
         }
     }
+    
+    private var shouldRefreshOnResume by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +78,8 @@ class DoctorDashboardActivity : ComponentActivity() {
         setContent {
             MediPathTheme {
                 DoctorDashboardScreen(
+                    shouldRefresh = shouldRefreshOnResume,
+                    onRefreshHandled = { shouldRefreshOnResume = false },
                     onLogoutClick = {
                         lifecycleScope.launch(Dispatchers.IO) {
                             val authService = RetrofitInstance.authService
@@ -92,6 +104,11 @@ class DoctorDashboardActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        shouldRefreshOnResume = true
+    }
+
     private fun checkNotificationPermission() {
         val app = application as MediPathApplication
         if (app.shouldRequestNotificationPermission()) {
@@ -105,6 +122,8 @@ class DoctorDashboardActivity : ComponentActivity() {
 
 @Composable
 fun DoctorDashboardScreen(
+    shouldRefresh: Boolean = false,
+    onRefreshHandled: () -> Unit = {},
     viewModel: ProfileViewModel = viewModel(),
     dashboardViewModel: DoctorDashboardViewModel = viewModel(),
     notificationsViewModel: NotificationsViewModel = viewModel(),
@@ -120,7 +139,7 @@ fun DoctorDashboardScreen(
     val currentVisit by dashboardViewModel.currentVisit.collectAsState()
     val patientCount by dashboardViewModel.selectedDatePatientCount.collectAsState()
     
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
@@ -131,6 +150,13 @@ fun DoctorDashboardScreen(
         viewModel.fetchProfile()
         notificationsViewModel.fetchNotifications()
         dashboardViewModel.fetchVisitsForDate(LocalDate.now())
+    }
+    
+    LaunchedEffect(shouldRefresh) {
+        if (shouldRefresh) {
+            dashboardViewModel.fetchVisitsForDate(selectedDate)
+            onRefreshHandled()
+        }
     }
     
     LaunchedEffect(selectedDate) {
@@ -357,7 +383,14 @@ fun DoctorDashboardScreen(
                             
                             if (currentVisit != null) {
                                 Column(
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            val intent = Intent(context, DoctorVisitDetailsActivity::class.java)
+                                            intent.putExtra("VISIT_JSON", Gson().toJson(currentVisit))
+                                            intent.putExtra("IS_CURRENT", true)
+                                            context.startActivity(intent)
+                                        }
                                 ) {
                                     Text(
                                         text = "${currentVisit!!.patient.name} ${currentVisit!!.patient.surname}",
@@ -379,7 +412,7 @@ fun DoctorDashboardScreen(
                                         Text(
                                             text = "Remarks: ${currentVisit!!.patientRemarks}",
                                             fontSize = 14.sp,
-                                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                            fontStyle = FontStyle.Italic,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                         )
                                     }
@@ -388,7 +421,7 @@ fun DoctorDashboardScreen(
                                 Text(
                                     text = "No appointment scheduled",
                                     fontSize = 14.sp,
-                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                    fontStyle = FontStyle.Italic,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                 )
                             }
@@ -424,7 +457,7 @@ fun DoctorDashboardScreen(
                                 Text(
                                     text = "No appointments scheduled",
                                     fontSize = 14.sp,
-                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                    fontStyle = FontStyle.Italic,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                 )
                             } else {
@@ -438,7 +471,14 @@ fun DoctorDashboardScreen(
                                     }
                                     
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                val intent = Intent(context, DoctorVisitDetailsActivity::class.java)
+                                                intent.putExtra("VISIT_JSON", Gson().toJson(visit))
+                                                intent.putExtra("IS_CURRENT", false)
+                                                context.startActivity(intent)
+                                            },
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.Top
                                     ) {
@@ -465,7 +505,7 @@ fun DoctorDashboardScreen(
                                                 Text(
                                                     text = visit.patientRemarks!!,
                                                     fontSize = 13.sp,
-                                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                                    fontStyle = FontStyle.Italic,
                                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                                 )
                                             }
