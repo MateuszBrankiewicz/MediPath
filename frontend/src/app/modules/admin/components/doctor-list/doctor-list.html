@@ -47,7 +47,7 @@
           <p-card styleClass="doctor-card">
             <div class="card-header">
               <div class="doctor-avatar">
-                @if (doctor.doctorPfp) {
+                @if (doctor.doctorPfp !== "") {
                   <img [src]="doctor.doctorPfp" [alt]="doctor.doctorName" />
                 } @else {
                   <i class="pi pi-user"></i>

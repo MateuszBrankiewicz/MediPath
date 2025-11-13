@@ -85,6 +85,7 @@ export interface UserProfileFormValue {
   number: string;
   street: string;
   rating?: number | null;
+  pfpImage?: string | null;
 }
 
 export interface UpdateUserProfileRequest {

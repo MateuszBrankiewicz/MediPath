@@ -22,10 +22,11 @@ import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ChangePasswordDialog } from './components/change-password-dialog/change-password-dialog';
+import { FileUploadModule } from 'primeng/fileupload';
 
 @Component({
   selector: 'app-edit-user-profile',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FileUploadModule],
   templateUrl: './edit-user-profile.html',
   styleUrl: './edit-user-profile.scss',
   providers: [DialogService],
@@ -38,6 +39,7 @@ export class EditUserProfile implements OnInit {
   private destroyRef = inject(DestroyRef);
   public isSubmitting = signal(false);
   private dialogService = inject(DialogService);
+  private profilePicture = signal('');
   public profileFormGroup = new FormGroup<ProfileFormControls>({
     name: new FormControl<string>('', {
       nonNullable: true,
@@ -104,9 +106,10 @@ export class EditUserProfile implements OnInit {
   public onSubmit() {
     if (this.profileFormGroup.valid) {
       this.isSubmitting.set(true);
-      const formValue =
-        this.profileFormGroup.getRawValue() as UserProfileFormValue;
-
+      const formValue = {
+        ...(this.profileFormGroup.getRawValue() as UserProfileFormValue),
+        pfpImage: this.profilePicture(),
+      };
       this.authService
         .updateUserProfile(formValue)
         .pipe(
@@ -140,6 +143,17 @@ export class EditUserProfile implements OnInit {
       modal: true,
       closable: true,
     });
+  }
+
+  protected onImageUpload(event: { files: File[] }): void {
+    const file = event.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        this.profilePicture.set(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   private markFormGroupTouched() {

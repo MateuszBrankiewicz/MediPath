@@ -89,7 +89,7 @@ export class DoctorList {
     this.isLoading.set(true);
 
     this.institutionService
-      .getDoctorsForInstitution(doctorId)
+      .getEmployeesForInstitution(doctorId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (doctors) => {

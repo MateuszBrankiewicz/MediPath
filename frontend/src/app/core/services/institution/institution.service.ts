@@ -98,6 +98,17 @@ export class InstitutionService {
       .pipe(map((res: DoctorApiResponse): DoctorProfile[] => res.doctors));
   }
 
+  public getEmployeesForInstitution(
+    institutionId: string,
+  ): Observable<DoctorProfile[]> {
+    return this.http
+      .get<DoctorApiResponse>(
+        `${API_URL}/institution/${institutionId}/employees`,
+        { withCredentials: true },
+      )
+      .pipe(map((res: DoctorApiResponse): DoctorProfile[] => res.doctors));
+  }
+
   public getUpcomingVisitsForInstitution(
     institutionId: string,
   ): Observable<UpcomingVisitItem[]> {
