@@ -1,4 +1,4 @@
-package com.medipath.modules.patient.notifications.ui
+package com.medipath.modules.shared.notifications.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -28,19 +28,23 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.core.theme.LocalCustomColors
-import com.medipath.modules.patient.notifications.NotificationsViewModel
+import com.medipath.modules.shared.notifications.NotificationsViewModel
 import com.medipath.modules.shared.components.NavigationRouter
 import com.medipath.core.models.Notification
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.modules.shared.auth.ui.LoginActivity
+import com.medipath.modules.patient.home.HomeViewModel
 
 class NotificationsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val isDoctor = intent.getBooleanExtra("isDoctor", false)
+
         setContent {
             MediPathTheme {
                 NotificationsScreen(
+                    isDoctor = isDoctor,
                     onBackClick = { finish() }
                 )
             }
@@ -50,10 +54,12 @@ class NotificationsActivity : ComponentActivity() {
 
 @Composable
 fun NotificationsScreen(
+    isDoctor: Boolean = false,
     onBackClick: () -> Unit
 ) {
     val colors = LocalCustomColors.current
     val viewModel: NotificationsViewModel = viewModel()
+    val profileViewModel: HomeViewModel = viewModel()
     val notifications by viewModel.notifications.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -62,6 +68,7 @@ fun NotificationsScreen(
 
     LaunchedEffect(Unit) {
         viewModel.fetchNotifications()
+        profileViewModel.fetchUserProfile()
     }
     if (shouldRedirectToLogin) {
         Box(
@@ -244,7 +251,8 @@ fun NotificationsScreen(
                                     NavigationRouter.navigateToTab(
                                         context,
                                         "Reminders",
-                                        "Notifications"
+                                        "Notifications",
+                                        isDoctor
                                     )
                                 },
                                 modifier = Modifier

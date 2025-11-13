@@ -33,6 +33,11 @@ public class UserService {
     @Autowired
     private MedicalHistoryRepository mhRepository;
 
+    @Autowired
+    private VisitService visitService;
+
+    @Autowired
+    ScheduleService scheduleService;
 
     @Autowired
     PasswordResetEntryRepository preRepository;
@@ -55,6 +60,9 @@ public class UserService {
 
     @Autowired
     private AuthorizationService authorizationService;
+
+    @Autowired
+    private EmployeeManagementService employeeManagementService;
 
     private Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
 
@@ -137,7 +145,7 @@ public class UserService {
         }
 
         boolean isAnyPresent = false;
-        Optional<User> patientOpt = userRepository.findById(patientid);
+        Optional<User> patientOpt = userRepository.findActiveById(patientid);
         User doctor = doctorStaffOpt.get();
 
         for (InstitutionDigest digest : doctor.getEmployers()) {
@@ -167,7 +175,7 @@ public class UserService {
             throw new IllegalArgumentException("Missing user ID");
         }
 
-        Optional<User> opt = userRepository.findById(id);
+        Optional<User> opt = userRepository.findActiveById(id);
 
         if (opt.isEmpty()) {
             throw new IllegalArgumentException("User not found");
@@ -324,7 +332,8 @@ public class UserService {
                                         "institution", comment.getInstitution().getInstitutionName(),
                                         "doctorRating", comment.getDoctorRating(),
                                         "institutionRating", comment.getInstitutionRating(),
-                                        "content", comment.getContent()))
+                                        "content", comment.getContent(),
+                                        "createdAt", comment.getCreatedAtString()))
                         .toList()
         );
     }
@@ -363,7 +372,7 @@ public class UserService {
     }
 
     public void resetMyPassword(String loggedUserID, ResetMyPasswordForm form) throws IllegalWriteException, IllegalAccessException {
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
 
         if(userOpt.isEmpty() || !argon2PasswordEncoder.matches(form.getCurrentPassword(), userOpt.get().getPasswordHash())) {
             throw new IllegalAccessException("invalid password");
@@ -397,7 +406,7 @@ public class UserService {
 
     public void updatePanel(String value, String loggedUserID) {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if(userOpt.isEmpty()) {
             throw new IllegalStateException();
         }
@@ -425,7 +434,7 @@ public class UserService {
     }
 
     public void updateMe(UpdateUserForm updateUserForm, String loggedUserID) {
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if(userOpt.isEmpty()) {
             throw new IllegalStateException();
         }
@@ -480,12 +489,16 @@ public class UserService {
             anyChanges = true;
         }
 
+        if(updateUserForm.getPfpImage() != null) {
+            user.setPfpimage(updateUserForm.getPfpImage());
+        }
+
         if(anyChanges) userRepository.save(user);
 
     }
     public void updateSettings(UserSettings userSettings, String loggedUserID) {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if(userOpt.isEmpty()) {
             throw new IllegalStateException();
         }
@@ -496,6 +509,8 @@ public class UserService {
         }
 
         if(!user.getUserSettings().equals(userSettings))  {
+            int lastPanel = user.getUserSettings().getLastPanel();
+            userSettings.setLastPanel(lastPanel);
             user.setUserSettings(userSettings);
             userRepository.save(user);
         }
@@ -504,7 +519,7 @@ public class UserService {
 
     public UserSettings getUserSettings(String loggedUserID) {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if(userOpt.isEmpty()) {
             throw new IllegalStateException();
         }
@@ -517,7 +532,7 @@ public class UserService {
     }
 
     public List<MedicalHistory> getMedicalHistoriesForPatient(String loggedUserID, String patientId) throws IllegalAccessException {
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if(userOpt.isEmpty()) {
             throw new IllegalStateException();
         }
@@ -530,7 +545,7 @@ public class UserService {
 
     public List<?> getMyNotifications(String loggedUserID, String filter) {
 
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if(userOpt.isEmpty()) {
             return new ArrayList<>();
         }
@@ -573,7 +588,7 @@ public class UserService {
 
 
     public List<?> getMyInstitutions(String loggedUserID, String role) {
-        Optional<User> userOpt = userRepository.findById(loggedUserID);
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserID);
         if(userOpt.isEmpty()) {
             return new ArrayList<>();
         }
@@ -595,6 +610,25 @@ public class UserService {
         } else {
             throw new IllegalArgumentException("invalid role");
         }
+    }
+
+    public void deactivateMe(String loggedUserId) throws IllegalAccessException {
+        Optional<User> userOpt = userRepository.findActiveById(loggedUserId);
+        if (userOpt.isEmpty()) {
+            throw new IllegalAccessException();
+        }
+        User user = userOpt.get();
+
+        if (visitService.hasUpcomingVisits(loggedUserId)) {
+            throw new IllegalStateException("please cancel all upcoming visits before deactivating your account");
+        }
+
+        scheduleService.deleteUpcomingSchedulesForDoctor(loggedUserId);
+
+        employeeManagementService.removeEmployeeFromAllInstitutions(user);
+
+        user.setActive(false);
+        userRepository.save(user);
     }
 
     public Map<String, Object> findEmployeeByGovId(String govid, String loggedUserID)

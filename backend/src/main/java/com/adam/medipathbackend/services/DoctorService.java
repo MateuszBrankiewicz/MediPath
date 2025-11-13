@@ -73,8 +73,8 @@ public class DoctorService {
 
     for (int i = 0; i < employers.size(); i++) {
 
-      InstitutionDigest digest = employers.get(i);
-      Optional<Institution> institutionOpt = institutionRepository.findById(digest.getInstitutionId());
+            InstitutionDigest digest = employers.get(i);
+            Optional<Institution> institutionOpt = institutionRepository.findActiveById(digest.getInstitutionId());
 
       if (institutionOpt.isEmpty()) {
         continue;
@@ -131,11 +131,9 @@ public class DoctorService {
   public void updateDoctor(String doctorid, DoctorUpdateForm doctorUpdateForm, String loggedUserID)
       throws IllegalArgumentException, IllegalAccessException {
 
-    Optional<User> adminOpt = userRepository.findById(loggedUserID);
-    if (adminOpt.isEmpty() || adminOpt.get().getRoleCode() < 8)
-      throw new IllegalAccessException("User not authorized");
-    if (!Utils.isValidMongoOID(doctorid))
-      throw new IllegalAccessException("Invalid doctor id");
+        Optional<User> adminOpt = userRepository.findActiveById(loggedUserID);
+        if(adminOpt.isEmpty() || adminOpt.get().getRoleCode() < 8) throw new IllegalAccessException("User not authorized");
+        if(!Utils.isValidMongoOID(doctorid)) throw new IllegalAccessException("Invalid doctor id");
 
     Optional<User> doctorOpt = userRepository.findDoctorById(doctorid);
 

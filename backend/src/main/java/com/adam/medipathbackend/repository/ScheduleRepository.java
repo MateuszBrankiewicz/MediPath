@@ -3,6 +3,7 @@ package com.adam.medipathbackend.repository;
 import com.adam.medipathbackend.models.Schedule;
 import com.adam.medipathbackend.models.Visit;
 import org.springframework.data.mongodb.repository.Aggregation;
+import org.springframework.data.mongodb.repository.DeleteQuery;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -28,5 +29,8 @@ public interface ScheduleRepository extends MongoRepository<Schedule, String> {
 
     @Query("{'institution.institutionId': ?0}}")
     ArrayList<Schedule> getInstitutionSchedules(String institutionId);
+
+    @DeleteQuery("{'doctor.userId': ?0, 'startHour': {$gt: new Date()}}")
+    void deleteAllFutureSchedulesForDoctor(String doctorid);
 
 }

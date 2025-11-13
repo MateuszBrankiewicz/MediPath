@@ -1,4 +1,4 @@
-package com.medipath.modules.patient.reminders
+package com.medipath.modules.shared.reminders
 
 import android.util.Log
 import androidx.compose.runtime.State

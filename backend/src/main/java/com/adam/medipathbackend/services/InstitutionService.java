@@ -19,6 +19,10 @@ public class InstitutionService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmployeeManagementService employeeManagementService;
+
+
     public Institution createInstitution(Institution institution, User admin) {
         validateInstitution(institution);
         checkForDuplicates(institution);
@@ -41,8 +45,9 @@ public class InstitutionService {
         return savedInstitution;
     }
 
+
     public Institution updateInstitution(String institutionId, Institution newInstitution) {
-        Institution existing = institutionRepository.findById(institutionId)
+        Institution existing = institutionRepository.findActiveById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
 
         validateInstitution(newInstitution);
@@ -62,7 +67,7 @@ public class InstitutionService {
     }
 
     public Optional<Institution> getInstitution(String id) {
-        return institutionRepository.findById(id);
+        return institutionRepository.findActiveById(id);
     }
 
     public boolean institutionExists(String id) {
@@ -92,5 +97,16 @@ public class InstitutionService {
                 throw new IllegalStateException("This institution is a possible duplicate");
             }
         }
+    }
+
+    public void deactivateInstitution(String institutionId) throws IllegalAccessException {
+        Optional<Institution> institutionOptional = institutionRepository.findActiveById(institutionId);
+        if(institutionOptional.isEmpty()) {
+            throw new IllegalAccessException();
+        }
+        Institution institution = institutionOptional.get();
+        employeeManagementService.removeAllEmployeesFromInstitution(institution);
+        institution.setActive(false);
+        institutionRepository.save(institution);
     }
 }
