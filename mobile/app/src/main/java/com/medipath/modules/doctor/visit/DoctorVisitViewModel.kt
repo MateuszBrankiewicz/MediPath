@@ -7,7 +7,6 @@ import android.util.Log
 import com.medipath.core.models.CompleteVisitRequest
 import com.medipath.core.models.UserMedicalHistory
 import com.medipath.core.models.Visit
-import com.medipath.core.models.VisitDetails
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.services.MedicalHistoryService
 import com.medipath.core.services.VisitsService
@@ -50,48 +49,21 @@ class DoctorVisitViewModel(
     private val _visitCompleted = MutableStateFlow(false)
     val visitCompleted: StateFlow<Boolean> = _visitCompleted.asStateFlow()
 
-    private val _completedVisitDetails = MutableStateFlow<VisitDetails?>(null)
-    val completedVisitDetails: StateFlow<VisitDetails?> = _completedVisitDetails.asStateFlow()
-
     fun setVisit(visit: Visit, isCurrent: Boolean) {
         _visit.value = visit
         _isCurrentVisit.value = isCurrent
         fetchPatientMedicalHistory(visit.patient.userId)
         
         if (visit.status == "Completed") {
-            fetchCompletedVisitDetails(visit.id)
-        }
-    }
+            _noteText.value = visit.note
 
-    private fun fetchCompletedVisitDetails(visitId: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
-            try {
-                val response = visitsService.getVisitDetails(visitId)
-                if (response.isSuccessful) {
-                    val visitDetails = response.body()?.visit
-                    _completedVisitDetails.value = visitDetails
-                    
-                    visitDetails?.let {
-                        _noteText.value = it.note
-                        
-                        val prescriptions = it.codes.filter { code -> code.codeType == "Prescription" }
-                            .map { code -> code.code }
-                        val referrals = it.codes.filter { code -> code.codeType == "Referral" }
-                            .map { code -> code.code }
-                        
-                        _prescriptionCodes.value = prescriptions.joinToString(", ")
-                        _referralCodes.value = referrals.joinToString(", ")
-                    }
-                } else {
-                    _error.value = "Failed to load visit details: ${response.code()}"
-                }
-            } catch (e: Exception) {
-                _error.value = e.message
-            } finally {
-                _isLoading.value = false
-            }
+            val prescriptions = visit.codes.filter { it.codeType.equals("PRESCRIPTION", ignoreCase = true) }
+                .map { it.code }
+            val referrals = visit.codes.filter { it.codeType.equals("REFERRAL", ignoreCase = true) }
+                .map { it.code }
+            
+            _prescriptionCodes.value = prescriptions.joinToString(", ")
+            _referralCodes.value = referrals.joinToString(", ")
         }
     }
 

@@ -80,13 +80,11 @@ class LoginViewModel(
                 if (response.isSuccessful) {
                     _loginSuccess.value = true
                 } else {
-                    _loginError.value = "Invalid credentials"
-                }
-            } catch (e: HttpException) {
-                when (e.code()) {
-                    400 -> _loginError.value = "Please fill in all required fields."
-                    401 -> _loginError.value = "Invalid email or password."
-                    else -> _loginError.value = "An unknown error occurred. Please try again later."
+                    when (response.code()) {
+                        400 -> _loginError.value = "Please fill in all required fields."
+                        401 -> _loginError.value = "Invalid email or password."
+                        else -> _loginError.value = "An unknown error occurred. Please try again later."
+                    }
                 }
             } catch (e: Exception) {
                 _loginError.value = e.message ?: "Login failed"
