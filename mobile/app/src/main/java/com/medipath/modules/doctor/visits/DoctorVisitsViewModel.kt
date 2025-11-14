@@ -11,12 +11,9 @@ import com.medipath.core.services.VisitsService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class DoctorVisitsViewModel(
-    private val doctorService: DoctorService = RetrofitInstance.doctorService
+    private val doctorService: DoctorService = RetrofitInstance.doctorService,
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -44,6 +41,9 @@ class DoctorVisitsViewModel(
 
     private val _totalVisits = MutableStateFlow(0)
     val totalVisits: StateFlow<Int> = _totalVisits.asStateFlow()
+
+    private val _cancelSuccess = MutableStateFlow<String?>(null)
+    val cancelSuccess: StateFlow<String?> = _cancelSuccess.asStateFlow()
 
     fun fetchVisits() {
         viewModelScope.launch {

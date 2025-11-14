@@ -8,13 +8,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -32,6 +38,7 @@ import com.medipath.core.models.Visit
 import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun VisitItem(
@@ -43,15 +50,22 @@ fun VisitItem(
 ) {
     val colors = LocalCustomColors.current
 
-    val dateTime = try {
-        val parsedDateTime = LocalDateTime.parse(
-            visit.time.startTime,
-            DateTimeFormatter.ISO_LOCAL_DATE_TIME
-        )
-        parsedDateTime.format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm"))
-    } catch (e: Exception) {
-        visit.time.startTime
+    val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault())
+    val outputTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+    val startDateTime = try {
+        LocalDateTime.parse(visit.time.startTime, inputFormatter)
+    } catch (_: Exception) {
+        try {
+            LocalDateTime.parse(visit.time.startTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        } catch (_: Exception) {
+            null
+        }
     }
+
+    val dateFormatted = startDateTime?.format(outputDateFormatter) ?: "Invalid Date"
+    val timeFormatted = startDateTime?.format(outputTimeFormatter) ?: "--:--"
 
     val status = visit.status.lowercase()
 
@@ -101,7 +115,8 @@ fun VisitItem(
                     Text(
                         text = "Dr. ${visit.doctor.doctorName} ${visit.doctor.doctorSurname}",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = visit.doctor.specialisations.joinToString(", "),
@@ -124,17 +139,57 @@ fun VisitItem(
             }
             
             Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = dateTime,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                text = visit.institution.institutionName,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = dateFormatted,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    )
+                    if (timeFormatted.isNotBlank()) {
+                        Icon(
+                            imageVector = Icons.Default.AccessTime,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                        Text(
+                            text = timeFormatted,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = visit.institution.institutionName,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    )
+                }
+            }
             
             if (visit.note.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))

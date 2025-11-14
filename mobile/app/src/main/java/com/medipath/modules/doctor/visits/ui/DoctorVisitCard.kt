@@ -18,6 +18,7 @@ import com.medipath.core.models.Visit
 import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun DoctorVisitCard(
@@ -27,17 +28,24 @@ fun DoctorVisitCard(
 ) {
     val colors = LocalCustomColors.current
     var showCancelDialog by remember { mutableStateOf(false) }
-    
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
+    val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault())
+    val outputTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
     val startDateTime = try {
-        LocalDateTime.parse(visit.time.startTime, dateTimeFormatter)
-    } catch (e: Exception) {
-        null
+        LocalDateTime.parse(visit.time.startTime, inputFormatter)
+    } catch (_: Exception) {
+        try {
+            LocalDateTime.parse(visit.time.startTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        } catch (_: Exception) {
+            null
+        }
     }
-    
-    val dateFormatted = startDateTime?.format(DateTimeFormatter.ofPattern("dd MMM yyyy")) ?: visit.time.startTime
-    val timeFormatted = startDateTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: ""
-    
+
+    val dateFormatted = startDateTime?.format(outputDateFormatter) ?: "Invalid Date"
+    val timeFormatted = startDateTime?.format(outputTimeFormatter) ?: "--:--"
+
     val isUpcoming = visit.status == "Upcoming"
     
     val statusColor = when (visit.status) {

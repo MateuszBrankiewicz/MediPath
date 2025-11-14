@@ -39,6 +39,7 @@ import com.medipath.modules.shared.profile.ui.EditProfileActivity
 import com.medipath.modules.shared.profile.ProfileViewModel
 import com.medipath.modules.shared.settings.ui.SettingsActivity
 import com.google.gson.Gson
+import com.medipath.modules.patient.visits.VisitsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -79,7 +80,8 @@ class DoctorVisitsActivity : ComponentActivity() {
 @Composable
 fun DoctorVisitsScreen(
     profileViewModel: ProfileViewModel = viewModel(),
-    visitsViewModel: DoctorVisitsViewModel = viewModel(),
+    doctorViewModel: DoctorVisitsViewModel = viewModel(),
+    visitsViewModel: VisitsViewModel = viewModel(),
     onLogoutClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -88,14 +90,17 @@ fun DoctorVisitsScreen(
     val surname by profileViewModel.surname.collectAsState()
     val isProfileLoading by profileViewModel.isLoading.collectAsState()
 
-    val visits by visitsViewModel.filteredVisits.collectAsState()
-    val visitsLoading by visitsViewModel.isLoading.collectAsState()
-    val visitsError by visitsViewModel.error.collectAsState()
-    val searchQuery by visitsViewModel.searchQuery.collectAsState()
-    val statusFilter by visitsViewModel.statusFilter.collectAsState()
-    val sortOrder by visitsViewModel.sortOrder.collectAsState()
-    val totalVisits by visitsViewModel.totalVisits.collectAsState()
-    val shouldRedirectToLogin by visitsViewModel.shouldRedirectToLogin.collectAsState()
+    val visits by doctorViewModel.filteredVisits.collectAsState()
+    val visitsLoading by doctorViewModel.isLoading.collectAsState()
+    val visitsError by doctorViewModel.error.collectAsState()
+    val searchQuery by doctorViewModel.searchQuery.collectAsState()
+    val statusFilter by doctorViewModel.statusFilter.collectAsState()
+    val sortOrder by doctorViewModel.sortOrder.collectAsState()
+    val totalVisits by doctorViewModel.totalVisits.collectAsState()
+    val shouldRedirectToLogin by doctorViewModel.shouldRedirectToLogin.collectAsState()
+    
+    val cancelSuccess by visitsViewModel.cancelSuccess.collectAsState()
+    val cancelError by visitsViewModel.error.collectAsState()
 
     var showFilters by remember { mutableStateOf(false) }
 
@@ -107,7 +112,7 @@ fun DoctorVisitsScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 profileViewModel.fetchProfile()
                 notificationsViewModel.fetchNotifications()
-                visitsViewModel.fetchVisits()
+                doctorViewModel.fetchVisits()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -119,6 +124,19 @@ fun DoctorVisitsScreen(
     LaunchedEffect(visitsError) {
         if (visitsError != null) {
             Toast.makeText(context, visitsError, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(cancelSuccess) {
+        if (cancelSuccess) {
+            Toast.makeText(context, "Visit cancelled successfully", Toast.LENGTH_SHORT).show()
+            doctorViewModel.fetchVisits()
+        }
+    }
+
+    LaunchedEffect(cancelError) {
+        if (cancelError != null) {
+            Toast.makeText(context, cancelError, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -174,7 +192,7 @@ fun DoctorVisitsScreen(
                         item {
                             GenericSearchBar(
                                 searchQuery = searchQuery,
-                                onSearchQueryChange = { visitsViewModel.updateSearchQuery(it) },
+                                onSearchQueryChange = { doctorViewModel.updateSearchQuery(it) },
                                 placeholder = "Search by patient name, surname or GovID...",
                                 modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
                             )
@@ -194,9 +212,9 @@ fun DoctorVisitsScreen(
                                 GenericFilterChipsSection(
                                     sortBy = statusFilter,
                                     sortOrder = sortOrder,
-                                    onSortByChange = { visitsViewModel.updateStatusFilter(it) },
-                                    onSortOrderChange = { visitsViewModel.updateSortOrder(it) },
-                                    onClearFilters = { visitsViewModel.clearFilters() },
+                                    onSortByChange = { doctorViewModel.updateStatusFilter(it) },
+                                    onSortOrderChange = { doctorViewModel.updateSortOrder(it) },
+                                    onClearFilters = { doctorViewModel.clearFilters() },
                                     config = FilterChipsConfig(
                                         sortByOptions = listOf("All", "Upcoming", "Completed", "Cancelled"),
                                         sortOrderLabel = "Order by date"
@@ -241,7 +259,9 @@ fun DoctorVisitsScreen(
                                         intent.putExtra("IS_CURRENT", false)
                                         context.startActivity(intent)
                                     },
-                                    onCancel = {}
+                                    onCancel = { visitId ->
+                                        visitsViewModel.cancelVisit(visitId)
+                                    }
                                 )
                             }
                         }
