@@ -15,7 +15,8 @@ import com.medipath.core.theme.LocalCustomColors
 data class FilterChipsConfig(
     val sortByOptions: List<String>,
     val sortOrderOptions: List<String> = listOf("Ascending", "Descending"),
-    val showClearButton: Boolean = true
+    val showClearButton: Boolean = true,
+    val sortOrderLabel: String = "Order"
 )
 
 @Composable
@@ -83,7 +84,7 @@ fun GenericFilterChipsSection(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                "Order",
+                config.sortOrderLabel,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(2.dp)

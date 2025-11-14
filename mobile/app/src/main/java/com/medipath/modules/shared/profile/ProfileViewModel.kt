@@ -8,6 +8,7 @@ import com.medipath.core.models.UserUpdateRequest
 import com.medipath.core.models.UserProfileResponse
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.utils.ValidationUtils
+import com.medipath.core.utils.RoleManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,6 +49,18 @@ class ProfileViewModel : ViewModel() {
 
     private val _pfpImage = MutableStateFlow("")
     val pfpImage: StateFlow<String> = _pfpImage.asStateFlow()
+
+    private val _rating = MutableStateFlow(0.0)
+    val rating: StateFlow<Double> = _rating.asStateFlow()
+
+    private val _numOfRatings = MutableStateFlow(0)
+    val numOfRatings: StateFlow<Int> = _numOfRatings.asStateFlow()
+
+    private val _roleCode = MutableStateFlow(1)
+    val roleCode: StateFlow<Int> = _roleCode.asStateFlow()
+
+    private val _canSwitchRole = MutableStateFlow(false)
+    val canSwitchRole: StateFlow<Boolean> = _canSwitchRole.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -111,6 +124,10 @@ class ProfileViewModel : ViewModel() {
                         _number.value = u.address.number
                         _postalCode.value = u.address.postalCode
                         _pfpImage.value = u.pfpImage
+                        _rating.value = u.rating
+                        _numOfRatings.value = u.numOfRatings
+                        _roleCode.value = u.roleCode
+                        _canSwitchRole.value = RoleManager.canBeDoctor(u.roleCode)
                     }
                 } else if (resp.code() == 401) {
                     _error.value = "401"

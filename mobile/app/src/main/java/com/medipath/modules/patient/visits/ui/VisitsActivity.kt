@@ -116,6 +116,9 @@ fun VisitsScreen(
     val searchQuery by visitsViewModel.searchQuery.collectAsState()
     var showFilters by remember { mutableStateOf(false) }
 
+    val cancelSuccess by visitsViewModel.cancelSuccess.collectAsState()
+    val cancelError by visitsViewModel.error.collectAsState()
+
     val statisticsItems = remember(totalVisits, scheduledVisits, completedVisits) {
         listOf(
             StatisticItem(
@@ -191,6 +194,18 @@ fun VisitsScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(cancelSuccess) {
+        if (cancelSuccess) {
+            Toast.makeText(context, "Visit cancelled successfully", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(cancelError) {
+        if (cancelError != null) {
+            Toast.makeText(context, cancelError, Toast.LENGTH_SHORT).show()
         }
     }
 

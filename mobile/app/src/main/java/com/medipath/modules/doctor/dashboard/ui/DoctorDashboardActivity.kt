@@ -10,24 +10,48 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.MediPathTheme
-import com.medipath.modules.patient.home.HomeViewModel
+import com.medipath.modules.shared.profile.ProfileViewModel
+import com.medipath.modules.doctor.dashboard.DoctorDashboardViewModel
 import com.medipath.modules.shared.notifications.NotificationsViewModel
 import com.medipath.modules.shared.notifications.ui.NotificationsActivity
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.Navigation
 import com.medipath.modules.shared.profile.ui.EditProfileActivity
 import com.medipath.modules.shared.settings.ui.SettingsActivity
+import com.medipath.modules.doctor.visit.ui.DoctorVisitDetailsActivity
 import com.medipath.MediPathApplication
+import com.medipath.core.theme.LocalCustomColors
+import com.medipath.modules.doctor.dashboard.ui.components.CalendarGrid
+import com.google.gson.Gson
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,6 +67,8 @@ class DoctorDashboardActivity : ComponentActivity() {
             Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
         }
     }
+    
+    private var shouldRefreshOnResume by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +78,8 @@ class DoctorDashboardActivity : ComponentActivity() {
         setContent {
             MediPathTheme {
                 DoctorDashboardScreen(
+                    shouldRefresh = shouldRefreshOnResume,
+                    onRefreshHandled = { shouldRefreshOnResume = false },
                     onLogoutClick = {
                         lifecycleScope.launch(Dispatchers.IO) {
                             val authService = RetrofitInstance.authService
@@ -76,6 +104,11 @@ class DoctorDashboardActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        shouldRefreshOnResume = true
+    }
+
     private fun checkNotificationPermission() {
         val app = application as MediPathApplication
         if (app.shouldRequestNotificationPermission()) {
@@ -89,17 +122,45 @@ class DoctorDashboardActivity : ComponentActivity() {
 
 @Composable
 fun DoctorDashboardScreen(
-    viewModel: HomeViewModel = viewModel(),
+    shouldRefresh: Boolean = false,
+    onRefreshHandled: () -> Unit = {},
+    viewModel: ProfileViewModel = viewModel(),
+    dashboardViewModel: DoctorDashboardViewModel = viewModel(),
     notificationsViewModel: NotificationsViewModel = viewModel(),
     onLogoutClick: () -> Unit = {}
 ) {
-    val firstName by viewModel.firstName.collectAsState()
-    val lastName by viewModel.lastName.collectAsState()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val name by viewModel.name.collectAsState()
+    val surname by viewModel.surname.collectAsState()
+    val rating by viewModel.rating.collectAsState()
+    val numOfRatings by viewModel.numOfRatings.collectAsState()
+    val canSwitchRole by viewModel.canSwitchRole.collectAsState()
+    
+    val selectedDateVisits by dashboardViewModel.selectedDateVisits.collectAsState()
+    val currentVisit by dashboardViewModel.currentVisit.collectAsState()
+    val patientCount by dashboardViewModel.selectedDatePatientCount.collectAsState()
+    
+    val context = LocalContext.current
+    
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+
+    val colors = LocalCustomColors.current
 
     LaunchedEffect(Unit) {
-        viewModel.fetchUserProfile()
+        viewModel.fetchProfile()
         notificationsViewModel.fetchNotifications()
+        dashboardViewModel.fetchVisitsForDate(LocalDate.now())
+    }
+    
+    LaunchedEffect(shouldRefresh) {
+        if (shouldRefresh) {
+            dashboardViewModel.fetchVisitsForDate(selectedDate)
+            onRefreshHandled()
+        }
+    }
+    
+    LaunchedEffect(selectedDate) {
+        dashboardViewModel.fetchVisitsForDate(selectedDate)
     }
 
     Navigation(
@@ -117,23 +178,372 @@ fun DoctorDashboardScreen(
             context.startActivity(Intent(context, SettingsActivity::class.java))
         },
         content = { innerPadding ->
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.secondary)
                     .padding(innerPadding)
                     .padding(horizontal = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Top
             ) {
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Row(
+                                    verticalAlignment = Alignment.Bottom
+                                ) {
+                                    Text(
+                                        text = String.format("%.1f", rating),
+                                        fontSize = 36.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Text(
+                                        text = "/5",
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }
+                                Text(
+                                    text = if (numOfRatings > 0) 
+                                        "$numOfRatings satisfied patients"
+                                    else 
+                                        "No ratings yet",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Outlined.Star,
+                                contentDescription = "Rating",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                    }
+                }
 
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = colors.blue900
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(
+                                    text = "$patientCount",
+                                    fontSize = 36.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Text(
+                                    text = if (selectedDate.isEqual(LocalDate.now())) 
+                                        "patients for today"
+                                    else 
+                                        "patients (${selectedDate.format(DateTimeFormatter.ofPattern("dd.MM"))})",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Outlined.Person,
+                                contentDescription = "Patients",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.background
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Select a date",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                TextButton(onClick = { 
+                                    selectedDate = LocalDate.now()
+                                    currentMonth = YearMonth.now()
+                                }) {
+                                    Text("Today")
+                                }
+                            }
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(onClick = { 
+                                    currentMonth = currentMonth.minusMonths(1)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
+                                        contentDescription = "Previous month"
+                                    )
+                                }
+                                
+                                Text(
+                                    text = currentMonth.format(
+                                        DateTimeFormatter.ofPattern("LLLL yyyy", Locale("en"))
+                                    ).replaceFirstChar { it.uppercase() },
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                
+                                IconButton(onClick = { 
+                                    currentMonth = currentMonth.plusMonths(1)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                        contentDescription = "Next month"
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            CalendarGrid(
+                                yearMonth = currentMonth,
+                                selectedDate = selectedDate,
+                                onDateSelected = { date ->
+                                    selectedDate = date
+                                }
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.background
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp)
+                        ) {
+                            Text(
+                                text = "Current visit",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+                            
+                            if (currentVisit != null) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            val intent = Intent(context, DoctorVisitDetailsActivity::class.java)
+                                            intent.putExtra("VISIT_JSON", Gson().toJson(currentVisit))
+                                            intent.putExtra("IS_CURRENT", true)
+                                            context.startActivity(intent)
+                                        }
+                                ) {
+                                    Text(
+                                        text = "${currentVisit!!.patient.name} ${currentVisit!!.patient.surname}",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    
+                                    Text(
+                                        text = "Time: ${currentVisit!!.time.startTime.substring(11, 16)} - ${currentVisit!!.time.endTime.substring(11, 16)}",
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                    )
+                                    
+                                    if (!currentVisit!!.patientRemarks.isNullOrEmpty()) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = "Remarks: ${currentVisit!!.patientRemarks}",
+                                            fontSize = 14.sp,
+                                            fontStyle = FontStyle.Italic,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    text = "No appointment scheduled",
+                                    fontSize = 14.sp,
+                                    fontStyle = FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.background
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp)
+                        ) {
+                            Text(
+                                text = if (selectedDate.isEqual(LocalDate.now())) 
+                                    "Visits for today"
+                                else 
+                                    "Visits (${selectedDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))})",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+                            
+                            if (selectedDateVisits.isEmpty()) {
+                                Text(
+                                    text = "No appointments scheduled",
+                                    fontSize = 14.sp,
+                                    fontStyle = FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                            } else {
+                                selectedDateVisits.forEachIndexed { index, visit ->
+                                    if (index > 0) {
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(vertical = 12.dp),
+                                            thickness = 1.dp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                        )
+                                    }
+                                    
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                val intent = Intent(context, DoctorVisitDetailsActivity::class.java)
+                                                intent.putExtra("VISIT_JSON", Gson().toJson(visit))
+                                                intent.putExtra("IS_CURRENT", false)
+                                                context.startActivity(intent)
+                                            },
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Text(
+                                                text = "${visit.patient.name} ${visit.patient.surname}",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            
+                                            Text(
+                                                text = "${visit.time.startTime.substring(11, 16)} - ${visit.time.endTime.substring(11, 16)}",
+                                                fontSize = 13.sp,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                            )
+                                            
+                                            if (!visit.patientRemarks.isNullOrEmpty()) {
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = visit.patientRemarks!!,
+                                                    fontSize = 13.sp,
+                                                    fontStyle = FontStyle.Italic,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                )
+                                            }
+                                        }
+                                        
+                                        Surface(
+                                            color = when(visit.status) {
+                                                "Upcoming" -> colors.green800.copy(alpha = 0.2f)
+                                                "Completed" -> colors.blue800.copy(alpha = 0.2f)
+                                                else -> MaterialTheme.colorScheme.surfaceVariant
+                                            },
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Text(
+                                                text = visit.status,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = when(visit.status) {
+                                                    "Upcoming" -> colors.green800
+                                                    "Completed" -> colors.blue800
+                                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         onLogoutClick = onLogoutClick,
-        firstName = firstName,
-        lastName = lastName,
+        firstName = name,
+        lastName = surname,
         currentTab = "Dashboard",
         isDoctor = true,
-        canSwitchRole = true
+        canSwitchRole = canSwitchRole
     )
 }

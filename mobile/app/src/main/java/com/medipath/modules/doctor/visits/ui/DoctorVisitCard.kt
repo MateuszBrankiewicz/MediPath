@@ -1,34 +1,14 @@
-package com.medipath.modules.shared.components
+package com.medipath.modules.doctor.visits.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -41,14 +21,13 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun VisitItem(
+fun DoctorVisitCard(
     visit: Visit,
-    onCancelVisit: (String) -> Unit,
-    onViewDetails: ((String) -> Unit)? = null,
-    onReschedule: ((String) -> Unit)? = null,
-    elevation: CardElevation = CardDefaults.cardElevation()
+    onViewDetails: () -> Unit,
+    onCancel: (String) -> Unit
 ) {
     val colors = LocalCustomColors.current
+    var showCancelDialog by remember { mutableStateOf(false) }
 
     val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault())
@@ -67,65 +46,48 @@ fun VisitItem(
     val dateFormatted = startDateTime?.format(outputDateFormatter) ?: "Invalid Date"
     val timeFormatted = startDateTime?.format(outputTimeFormatter) ?: "--:--"
 
-    val status = visit.status.lowercase()
-
-    var showCancelDialog by remember { mutableStateOf(false) }
-
-    val isScheduled = status == "upcoming"
-    val isCancelled = status == "cancelled"
-    val isCompleted = status == "completed"
-
-    val canReschedule = isScheduled
-    val canViewDetails = isCompleted
-
-    val statusText = when {
-        isScheduled -> "Upcoming"
-        isCancelled -> "Cancelled"
-        isCompleted -> "Completed"
-        else -> visit.status
-    }
+    val isUpcoming = visit.status == "Upcoming"
     
-    val statusColor = when {
-        isScheduled -> colors.orange800
-        isCancelled -> colors.red800
-        isCompleted -> colors.green800
-        else -> MaterialTheme.colorScheme.primary.copy(0.03f)
+    val statusColor = when (visit.status) {
+        "Upcoming" -> colors.orange800
+        "Completed" -> colors.green800
+        "Cancelled" -> colors.red800
+        else -> MaterialTheme.colorScheme.onSurface
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background
         ),
-        elevation = elevation
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Dr. ${visit.doctor.doctorName} ${visit.doctor.doctorSurname}",
+                        text = "${visit.patient.name} ${visit.patient.surname}",
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = visit.doctor.specialisations.joinToString(", "),
-                        fontSize = 12.sp,
+                        text = "GovID: ${visit.patient.govID}",
+                        fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
                 Text(
-                    text = statusText,
+                    text = visit.status,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = statusColor,
@@ -138,8 +100,8 @@ fun VisitItem(
                 )
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
-
+            Spacer(modifier = Modifier.height(12.dp))
+            
             Column(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -172,7 +134,7 @@ fun VisitItem(
                         )
                     }
                 }
-
+                
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -191,16 +153,6 @@ fun VisitItem(
                 }
             }
             
-            if (visit.note.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Note: ${visit.note}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                )
-            }
-            
             Spacer(modifier = Modifier.height(12.dp))
             
             Row(
@@ -208,28 +160,29 @@ fun VisitItem(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = { onViewDetails?.invoke(visit.id) },
-                    enabled = canViewDetails && onViewDetails != null,
+                    onClick = onViewDetails,
+                    enabled = visit.status == "Completed",
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.purple800,
+                        contentColor = MaterialTheme.colorScheme.background
+                    )
+                ) {
+                    Text("DETAILS", fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = { },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.blue800,
                         contentColor = MaterialTheme.colorScheme.background
                     )
                 ) {
-                    Text("DETAILS", fontSize = 12.sp)
+                    Text("PATIENT", fontSize = 12.sp)
                 }
-                Button(
-                    onClick = { onReschedule?.invoke(visit.id) },
-                    enabled = canReschedule && onReschedule != null,
-                    modifier = Modifier.weight(1.2f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colors.purple800,
-                        contentColor = MaterialTheme.colorScheme.background
-                    )
-                ) {
-                    Text("RESCHEDULE", fontSize = 12.sp)
-                }
-                if (isScheduled) {
+                
+                if (isUpcoming) {
                     Button(
                         onClick = { showCancelDialog = true },
                         modifier = Modifier.weight(1f),
@@ -244,17 +197,17 @@ fun VisitItem(
             }
         }
     }
-
+    
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
             title = { Text("Confirm Cancellation") },
-            text = { Text("Are you sure you want to cancel the appointment with Dr. ${visit.doctor.doctorName} ${visit.doctor.doctorSurname}?") },
+            text = { Text("Are you sure you want to cancel this visit with ${visit.patient.name} ${visit.patient.surname}?") },
             confirmButton = {
                 Button(
                     onClick = {
                         showCancelDialog = false
-                        onCancelVisit(visit.id)
+                        onCancel(visit.id)
                     }
                 ) {
                     Text("Confirm")

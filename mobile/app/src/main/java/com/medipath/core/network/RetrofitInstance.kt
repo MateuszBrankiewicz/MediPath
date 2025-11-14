@@ -11,6 +11,7 @@ import com.medipath.core.services.CommentsService
 import com.medipath.core.services.CodesService
 import com.medipath.core.services.MedicalHistoryService
 import com.medipath.core.services.SettingsService
+import com.medipath.core.services.DoctorService
 import com.medipath.core.utils.SessionCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -93,6 +94,10 @@ object RetrofitInstance {
 
     val settingsService: SettingsService by lazy {
         retrofit.create(SettingsService::class.java)
+    }
+
+    val doctorService: DoctorService by lazy {
+        retrofit.create(DoctorService::class.java)
     }
 
     fun getSessionManager(): SharedPreferencesSessionManager {
