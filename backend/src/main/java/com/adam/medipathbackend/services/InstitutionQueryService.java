@@ -41,14 +41,14 @@ public class InstitutionQueryService {
         .filter(doctor -> specialisation == null || doctor.getSpecialisations().contains(specialisation))
         .map(doctor -> {
 
-                    Optional<User> doctorProfileOpt = userRepository.findActiveById(doctor.getUserId());
-                    if(doctorProfileOpt.isEmpty()) {
-                        return null;
-                    }
-                    User doctorProfile = doctorProfileOpt.get();
-                    Map<String, Object> doctorMap = new HashMap<>();
-                    doctorMap.put("doctorId", doctor.getUserId());
-                    doctorMap.put("doctorName", doctor.getName());
+          Optional<User> doctorProfileOpt = userRepository.findActiveById(doctor.getUserId());
+          if (doctorProfileOpt.isEmpty()) {
+            return null;
+          }
+          User doctorProfile = doctorProfileOpt.get();
+          Map<String, Object> doctorMap = new HashMap<>();
+          doctorMap.put("doctorId", doctor.getUserId());
+          doctorMap.put("doctorName", doctor.getName());
 
           doctorMap.put("doctorSurname", doctor.getSurname());
           doctorMap.put("doctorPfp", doctor.getPfpimage());
@@ -76,7 +76,7 @@ public class InstitutionQueryService {
           employeeMap.put("doctorName", employee.getName());
 
           employeeMap.put("doctorSurname", employee.getSurname());
-          employeeMap.put("doctorPfp", employee.getPfpimage());
+          employeeMap.put("doctorPfp", employeeProfile.getPfpimage());
           employeeMap.put("doctorSchedules", scheduleRepository.getUpcomingSchedulesByDoctorInInstitution(
               employee.getUserId(), institutionId));
 
@@ -118,14 +118,15 @@ public class InstitutionQueryService {
     return visitRepository.getUpcomingVisitsInInstitution(institutionId);
   }
 
-    public Map<String, Object> getInstitutionFields(String institutionId, String[] fields, boolean isEmployee) {
-        var institution = institutionRepository.findActiveById(institutionId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid institution id"));
+  public Map<String, Object> getInstitutionFields(String institutionId, String[] fields, boolean isEmployee) {
+    var institution = institutionRepository.findActiveById(institutionId)
+        .orElseThrow(() -> new IllegalArgumentException("Invalid institution id"));
 
-        Map<String, Object> outputFields = new HashMap<>();
-        List<String> fieldsList = (fields == null)
-                ? List.of("id", "name", "types", "isPublic", "address", "employees", "rating", "image", "description", "numofratings")
-                : List.of(fields);
+    Map<String, Object> outputFields = new HashMap<>();
+    List<String> fieldsList = (fields == null)
+        ? List.of("id", "name", "types", "isPublic", "address", "employees", "rating", "image", "description",
+            "numofratings")
+        : List.of(fields);
 
     if (fieldsList.contains("id")) {
       outputFields.put("id", institution.getId());
@@ -168,13 +169,13 @@ public class InstitutionQueryService {
       outputFields.put("image", institution.getImage());
     }
 
-        if (fieldsList.contains("description")) {
-            outputFields.put("description", institution.getDescription());
-        }
+    if (fieldsList.contains("description")) {
+      outputFields.put("description", institution.getDescription());
+    }
 
-        if (fieldsList.contains("numofratings")) {
-            outputFields.put("numofratings", institution.getNumOfRatings());
-        }
+    if (fieldsList.contains("numofratings")) {
+      outputFields.put("numofratings", institution.getNumOfRatings());
+    }
 
     return outputFields;
   }
