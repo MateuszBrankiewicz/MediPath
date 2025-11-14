@@ -144,6 +144,7 @@ export class AuthenticationService {
       case UserRoles.DOCTOR:
         return '/doctor';
       case UserRoles.ADMIN:
+      case UserRoles.STAFF:
         return '/admin';
       default:
         return '/';
@@ -263,6 +264,7 @@ export class AuthenticationService {
       street: formValue.street.trim(),
       number: formValue.number.trim(),
       postalCode: formValue.postalCode.trim(),
+      pfpImage: formValue.pfpImage || '',
     };
   }
 

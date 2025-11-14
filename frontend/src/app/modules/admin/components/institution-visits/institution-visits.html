@@ -1,26 +1,67 @@
-<h1>Visits</h1>
+<h1>{{ translationService.translate("admin.visits.title") }}</h1>
 
-<div class="visits-container">
-  <div class="visits-grid">
-    @for (visit of visits(); track visit.id) {
-      <app-appointment-card
-        [primaryActionButton]="{ icon: 'pi pi-pencil', label: 'Edit' }"
-        [appointment]="visit"
-      ></app-appointment-card>
+@if (isLoading()) {
+  <div class="spinner-container">
+    <p-progress-spinner [style]="{ width: '20%', height: '20%' }" />
+  </div>
+} @else {
+  <app-select-institution></app-select-institution>
+  <app-filter-component
+    [sortByOptionsInput]="sortByOptions()"
+    [statusOptionsInput]="statusOptions()"
+    [searchPlaceholder]="
+      translationService.translate('admin.visits.searchPlaceholder')
+    "
+    [defaults]="{
+      searchTerm: '',
+      status: 'all',
+      dateFrom: null,
+      dateTo: null,
+      sortField: 'visitDate',
+      sortOrder: 'desc',
+    }"
+    (filtersChange)="onFiltersChange($event)"
+  />
+
+  <div class="visits-container">
+    <div class="visits-grid">
+      @for (visit of paginatedVisits(); track visit.id) {
+        <app-appointment-card
+          [primaryActionButton]="{ icon: 'pi pi-pencil', label: 'Edit' }"
+          [appointment]="visit"
+          [showVisitDetails]="true"
+          (patientDetailsClick)="redirectToVisitInfo($event)"
+          [primaryActionButton]="{
+            icon: 'pi pi-list',
+            label: 'Visit Details',
+          }"
+        ></app-appointment-card>
+      }
+    </div>
+    @if (paginatedVisits().length === 0) {
+      <div class="no-visits">
+        <div class="no-visits-content">
+          <i
+            class="pi pi-calendar"
+            style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem"
+          ></i>
+          <h3>{{ translationService.translate("doctor.visits.noVisits") }}</h3>
+          <p>
+            {{ translationService.translate("doctor.visits.noVisitsMessage") }}
+          </p>
+        </div>
+      </div>
+    }
+
+    @if (totalRecords() > 0) {
+      <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="first()"
+        [rows]="rows()"
+        [totalRecords]="totalRecords()"
+        [rowsPerPageOptions]="[10, 20, 30]"
+        style="margin-top: 20px"
+      />
     }
   </div>
-  @if (visits().length === 0) {
-    <div class="no-visits">
-      <div class="no-visits-content">
-        <i
-          class="pi pi-calendar"
-          style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem"
-        ></i>
-        <h3>{{ translationService.translate("doctor.visits.noVisits") }}</h3>
-        <p>
-          {{ translationService.translate("doctor.visits.noVisitsMessage") }}
-        </p>
-      </div>
-    </div>
-  }
-</div>
+}

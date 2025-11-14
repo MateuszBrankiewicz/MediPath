@@ -94,9 +94,9 @@
                 <p-multiselect
                   inputId="specialisation"
                   formControlName="specialisation"
-                  [options]="availableTypes"
+                  [options]="availableTypes()"
                   optionLabel="name"
-                  optionValue="code"
+                  optionValue="name"
                   [placeholder]="
                     translationService.translate(
                       'admin.institution.placeholders.specialisation'
@@ -249,63 +249,6 @@
             </div>
           </div>
 
-          <!-- <div class="form-section">
-            <p-divider />
-            <h3 class="section-title">
-              {{ translationService.translate("admin.institution.doctors") }}
-            </h3>
-            <div class="search-container">
-              <label for="searchDoctor" class="field-label">
-                <i class="pi pi-search"></i>
-                {{
-                  translationService.translate(
-                    "admin.institution.searchAddDoctor"
-                  )
-                }}
-              </label>
-              <div class="search-input-group">
-                <input
-                  pInputText
-                  id="searchDoctor"
-                  [(ngModel)]="searchQuery"
-                  [ngModelOptions]="{ standalone: true }"
-                  [placeholder]="
-                    translationService.translate(
-                      'admin.institution.placeholders.searchDoctor'
-                    )
-                  "
-                  class="search-input"
-                />
-                <p-button
-                  [label]="translationService.translate('shared.add')"
-                  (onClick)="addEmployeeFromSearch()"
-                  [disabled]="!searchQuery()"
-                  icon="pi pi-plus"
-                ></p-button>
-              </div>
-
-              @if (employees().length > 0) {
-                <div class="selected-items">
-                  @for (employee of employees(); track employee.userId) {
-                    <p-chip
-                      [label]="
-                        employee.name +
-                        ' ' +
-                        employee.surname +
-                        ' (PWZ: ' +
-                        employee.userId +
-                        ')'
-                      "
-                      [removable]="true"
-                      (onRemove)="removeEmployee(employee.userId)"
-                      styleClass="custom-chip"
-                    ></p-chip>
-                  }
-                </div>
-              }
-            </div>
-          </div> -->
-
           <p-divider />
           <div class="form-section">
             <div class="field-label">
@@ -331,15 +274,6 @@
                     "
                   ></button>
                 </div>
-              } @else {
-                <!-- <div class="upload-placeholder">
-                  <p-button
-                    icon="pi pi-plus"
-                    [rounded]="true"
-                    [outlined]="true"
-                    (onClick)="fileUpload.choose()"
-                  ></p-button>
-                </div> -->
               }
               <p-fileUpload
                 #fileUpload

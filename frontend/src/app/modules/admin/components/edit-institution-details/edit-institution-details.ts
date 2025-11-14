@@ -25,6 +25,8 @@ import { AddressService } from '../../../../core/services/address/address.servic
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { SpecialisationService } from '../../../../core/services/specialisation/specialisation.service';
+import { Specialisation } from '../../../../core/models/specialisation.model';
 
 interface Employee {
   name: string;
@@ -34,11 +36,6 @@ interface Employee {
   roleName?: string;
   pfpImage?: string;
   specialisation?: string[];
-}
-
-interface InstitutionType {
-  name: string;
-  code: string;
 }
 
 @Component({
@@ -85,8 +82,8 @@ export class EditInstitutionDetails implements OnInit {
   protected selectedTypes = signal<string[]>([]);
   protected employees = signal<Employee[]>([]);
   protected searchQuery = signal<string>('');
-
-  protected availableTypes: InstitutionType[] = [];
+  private specialisationService = inject(SpecialisationService);
+  protected readonly availableTypes = signal<Specialisation[]>([]);
 
   ngOnInit(): void {
     this.initializeForm();
@@ -120,44 +117,12 @@ export class EditInstitutionDetails implements OnInit {
   }
 
   private loadAvailableTypes(): void {
-    this.availableTypes = [
-      {
-        name: this.translationService.translate(
-          'admin.institution.types.cardiology',
-        ),
-        code: 'cardiology',
-      },
-      {
-        name: this.translationService.translate(
-          'admin.institution.types.dermatology',
-        ),
-        code: 'dermatology',
-      },
-      {
-        name: this.translationService.translate(
-          'admin.institution.types.neurology',
-        ),
-        code: 'neurology',
-      },
-      {
-        name: this.translationService.translate(
-          'admin.institution.types.pediatrics',
-        ),
-        code: 'pediatrics',
-      },
-      {
-        name: this.translationService.translate(
-          'admin.institution.types.psychiatry',
-        ),
-        code: 'psychiatry',
-      },
-      {
-        name: this.translationService.translate(
-          'admin.institution.types.general',
-        ),
-        code: 'general',
-      },
-    ];
+    this.specialisationService
+      .getSpecialisations(true)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((specialisations) => {
+        this.availableTypes.set(specialisations);
+      });
   }
 
   private loadInstitution(id: string): void {
@@ -183,18 +148,6 @@ export class EditInstitutionDetails implements OnInit {
 
           this.institutionImage.set(institution.image || '');
           this.selectedTypes.set(institution.specialisation || []);
-
-          // // Employees
-          // const employeeList: Employee[] = institution.employees.map((emp) => ({
-          //   name: emp.name,
-          //   surname: emp.surname,
-          //   userId: emp.userId,
-          //   roleCode: emp.roleCode,
-          //   roleName: this.getRoleName(emp.roleCode),
-          //   pfpImage: emp.pfpImage,
-          //   specialisation: emp.specialisation,
-          // }));
-          // this.employees.set(employeeList);
 
           this.isLoading.set(false);
         },
@@ -252,29 +205,6 @@ export class EditInstitutionDetails implements OnInit {
     return roles[roleCode] || this.translationService.translate('roles.staff');
   }
 
-  // protected addEmployeeFromSearch(): void {
-  //   const query = this.searchQuery().trim();
-  //   if (!query) return;
-
-  //   // Mock: w rzeczywistości tutaj byłoby zapytanie do API
-  //   // Dla przykładu dodajemy z PWZ jako userId
-  //   const newEmp: Employee = {
-  //     name: 'Jan',
-  //     surname: 'Kowalski',
-  //     userId: query,
-  //     roleCode: 2,
-  //     roleName: this.getRoleName(2),
-  //   };
-
-  //   this.employees.update((list) => [...list, newEmp]);
-  //   this.searchQuery.set('');
-  //   this.toastService.showSuccess(
-  //     this.translationService.translate(
-  //       'admin.institution.success.employeeAdded',
-  //     ),
-  //   );
-  // }
-
   protected onImageUpload(event: { files: File[] }): void {
     const file = event.files[0];
     if (file) {
@@ -285,17 +215,6 @@ export class EditInstitutionDetails implements OnInit {
       reader.readAsDataURL(file);
     }
   }
-
-  // protected removeEmployee(userId: string): void {
-  //   this.employees.update((list) =>
-  //     list.filter((emp) => emp.userId !== userId),
-  //   );
-  //   this.toastService.showSuccess(
-  //     this.translationService.translate(
-  //       'admin.institution.success.employeeRemoved',
-  //     ),
-  //   );
-  // }
 
   protected saveInstitution(): void {
     if (this.institutionForm.invalid) {

@@ -50,7 +50,7 @@ interface DoctorOption {
             </div>
             <div class="current-doctor-value">
               <i class="pi pi-user"></i>
-              <span>{{ dialogData.currentDoctorName }}</span>
+              <span>{{ currentDoctorName() }}</span>
             </div>
           </div>
 
@@ -243,6 +243,7 @@ export class ChangeDoctorDialogComponent implements OnInit {
   protected readonly doctors = signal<DoctorOption[]>([]);
   protected readonly errorMessage = signal<string | null>(null);
   protected selectedDoctorId: string | null = null;
+  protected readonly currentDoctorName = signal<string>('');
 
   protected dialogData!: ChangeDoctorDialogData;
 
@@ -269,6 +270,12 @@ export class ChangeDoctorDialogComponent implements OnInit {
         }),
       )
       .subscribe((doctors) => {
+        const currentDoctor = doctors.find(
+          (doctor) => this.dialogData.currentDoctorId === doctor.doctorId,
+        );
+        this.currentDoctorName.set(
+          `${currentDoctor?.doctorName || ''} ${currentDoctor?.doctorSurname || ''}`,
+        );
         const filteredDoctors = doctors
           .filter(
             (doctor) => doctor.doctorId !== this.dialogData.currentDoctorId,
@@ -278,7 +285,6 @@ export class ChangeDoctorDialogComponent implements OnInit {
             label: `${doctor.doctorName} ${doctor.doctorSurname}`,
             specialisations: doctor.licenceNumber || '',
           }));
-
         this.doctors.set(filteredDoctors);
         this.isLoading.set(false);
 

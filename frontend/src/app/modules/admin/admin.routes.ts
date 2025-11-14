@@ -11,6 +11,7 @@ import { InstitutionSchedule } from './components/institution-schedule/instituti
 import { InstitutionVisits } from './components/institution-visits/institution-visits';
 import { InstitutionView } from './institution-view/institution-view';
 import { EditDoctorDetailsComponent } from './components/edit-doctor-details/edit-doctor-details';
+import { CurrentVisit } from '../doctor/components/current-visit/current-visit';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -32,4 +33,5 @@ export const ADMIN_ROUTES: Routes = [
   { path: 'institutions/:id/edit', component: EditInstitutionDetails },
   { path: 'doctors/:doctorId', component: DoctorView },
   { path: 'doctors/:doctorId/edit', component: EditDoctorDetailsComponent },
+  { path: 'visits/:id', component: CurrentVisit },
 ];

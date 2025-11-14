@@ -396,6 +396,7 @@ export class TopBarComponent implements OnInit {
         this.router.navigate(['/doctor']);
         break;
       case UserRoles.ADMIN:
+      case UserRoles.STAFF:
         this.router.navigate(['/admin']);
         break;
       case UserRoles.PATIENT:

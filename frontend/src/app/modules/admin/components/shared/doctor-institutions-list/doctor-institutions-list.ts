@@ -124,19 +124,4 @@ export class DoctorInstitutionsListComponent {
   protected removeInstitution(institutionId: string): void {
     this.institutionRemoved.emit(institutionId);
   }
-
-  protected getRoleName(roleCode: number | undefined): string {
-    if (!roleCode) return 'Doctor';
-    const role = this.roleOptions.find((r) => r.roleCode === roleCode);
-    return role?.name || 'Doctor';
-  }
-
-  protected getRoleSeverity(
-    roleCode: number | undefined,
-  ): 'success' | 'info' | 'warn' {
-    if (!roleCode) return 'success';
-    if (roleCode === 8) return 'warn'; // Admin
-    if (roleCode === 4) return 'info'; // Staff
-    return 'success'; // Doctor
-  }
 }

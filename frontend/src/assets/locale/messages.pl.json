@@ -592,7 +592,7 @@
   "admin.addDoctor.specialisations.pediatrics": "Pediatra",
   "admin.addDoctor.specialisations.psychiatry": "Psychiatra",
   "admin.addDoctor.specialisations.general": "Lekarz rodzinny",
-  "admin.addDoctor.role": "Rola w instytucji",
+
   "admin.doctorList.addDoctor": "Dodaj pracownika",
   "admin.doctorList.searchPlaceholder": "Szukaj po nazwisku lub numerze PWZ...",
   "admin.doctorList.results": "wyników",
@@ -601,10 +601,26 @@
   "admin.doctorList.schedules": "harmonogramów",
   "admin.doctorList.viewDetails": "Zobacz szczegóły",
   "admin.doctorList.edit": "Edytuj",
-  "admin.doctorList.noDoctors": "Nie znaleziono pracowników",
-  "admin.doctorList.noDoctorsMessage": "W tej instytucji nie ma jeszcze pracowników. Zacznij od dodania pierwszego pracownika.",
-  "admin.doctorList.addFirstDoctor": "Dodaj pierwszego pracownika",
-  "admin.doctorList.error.load": "Nie udało się załadować listy pracowników",
+  "admin.doctorList.noDoctors": "Nie znaleziono lekarzy",
+  "admin.doctorList.noDoctorsMessage": "W tej instytucji nie ma jeszcze lekarzy. Zacznij od dodania pierwszego lekarza.",
+  "admin.doctorList.addFirstDoctor": "Dodaj pierwszego lekarza",
+  "admin.doctorList.error.load": "Nie udało się załadować listy lekarzy",
+  "admin.doctorList.name": "Nazwa",
+  "admin.doctorList.licenseNumber": "Numer licencji",
+  "admin.doctorList.rating": "Ocena",
+
+  "admin.institutionList.name": "Nazwa",
+  "admin.institutionList.city": "Miasto",
+  "admin.institutionList.type": "Typ",
+  "admin.institutionList.public": "Publiczna",
+  "admin.institutionList.private": "Prywatna",
+  "admin.institutionList.searchPlaceholder": "Szukaj po nazwie, adresie lub specjalizacji...",
+
+  "admin.visits.title": "Wizyty instytucji",
+  "admin.visits.date": "Data",
+  "admin.visits.patient": "Nazwisko pacjenta",
+  "admin.visits.status": "Status",
+  "admin.visits.searchPlaceholder": "Szukaj po nazwisku pacjenta lub instytucji...",
 
   "admin.institution.breadcrumb.list": "Instytucje",
   "admin.institution.breadcrumb.edit": "Edytuj instytucję",
@@ -767,5 +783,7 @@
 
   "doctor.patientProfile.loadError": "Nie udało się załadować profilu pacjenta",
   "doctor.patientProfile.visitsLoadError": "Nie udało się załadować wizyt pacjenta",
-  "patient.doctor.conflict": "Pacjent oraz lekarz nie mogą być tą samą osobą"
+  "patient.doctor.conflict": "Pacjent oraz lekarz nie mogą być tą samą osobą",
+  "institutionList.add": "Dodaj instytucje",
+  "institutions.tittle": "Instytucje"
 }

@@ -98,4 +98,5 @@ export interface UpdateUserProfileRequest {
   street: string;
   number: string;
   postalCode: string;
+  pfpImage: string | null;
 }

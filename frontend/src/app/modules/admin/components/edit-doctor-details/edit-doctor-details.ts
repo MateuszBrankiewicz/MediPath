@@ -98,8 +98,8 @@ export class EditDoctorDetailsComponent implements OnInit {
       birthDate: [{ value: '', disabled: true }, Validators.required],
       phoneNumber: [{ value: '', disabled: true }, Validators.required],
       personalId: [{ value: '', disabled: true }, [Validators.required]],
-      specialisation: [[], Validators.required],
-      pwzNumber: ['', [Validators.required, Validators.pattern(/^\d{7}$/)]],
+      specialisation: [[]],
+      pwzNumber: ['', [Validators.pattern(/^\d{7}$/)]],
       residentialAddress: this.fb.group({
         province: [{ value: '', disabled: true }, Validators.required],
         postalCode: [{ value: '', disabled: true }, Validators.required],

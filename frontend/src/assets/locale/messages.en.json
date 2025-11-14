@@ -591,8 +591,8 @@
   "admin.addDoctor.specialisations.pediatrics": "Pediatrician",
   "admin.addDoctor.specialisations.psychiatry": "Psychiatrist",
   "admin.addDoctor.specialisations.general": "General Practitioner",
-  "admin.addDoctor.role": "User role in institution",
-  "admin.doctorList.addDoctor": "Add Employees",
+
+  "admin.doctorList.addDoctor": "Add Doctor",
   "admin.doctorList.searchPlaceholder": "Search by name or PWZ number...",
   "admin.doctorList.results": "results",
   "admin.doctorList.specializations": "Specializations",
@@ -600,10 +600,26 @@
   "admin.doctorList.schedules": "schedules",
   "admin.doctorList.viewDetails": "View Details",
   "admin.doctorList.edit": "Edit",
-  "admin.doctorList.noDoctors": "No employees found",
-  "admin.doctorList.noDoctorsMessage": "There are no employees in this institution yet. Start by adding your first employee.",
-  "admin.doctorList.addFirstDoctor": "Add First employee",
-  "admin.doctorList.error.load": "Failed to load employee list",
+  "admin.doctorList.noDoctors": "No doctors found",
+  "admin.doctorList.noDoctorsMessage": "There are no doctors in this institution yet. Start by adding your first doctor.",
+  "admin.doctorList.addFirstDoctor": "Add First Doctor",
+  "admin.doctorList.error.load": "Failed to load doctors list",
+  "admin.doctorList.name": "Name",
+  "admin.doctorList.licenseNumber": "License Number",
+  "admin.doctorList.rating": "Rating",
+
+  "admin.institutionList.name": "Name",
+  "admin.institutionList.city": "City",
+  "admin.institutionList.type": "Type",
+  "admin.institutionList.public": "Public",
+  "admin.institutionList.private": "Private",
+  "admin.institutionList.searchPlaceholder": "Search by name, address or specialization...",
+
+  "admin.visits.title": "Institution Visits",
+  "admin.visits.date": "Date",
+  "admin.visits.patient": "Patient Name",
+  "admin.visits.status": "Status",
+  "admin.visits.searchPlaceholder": "Search by patient name or institution...",
 
   "admin.institution.breadcrumb.list": "Institutions",
   "admin.institution.breadcrumb.edit": "Edit Institution",
@@ -766,5 +782,7 @@
 
   "doctor.patientProfile.loadError": "Failed to load patient profile",
   "doctor.patientProfile.visitsLoadError": "Failed to load patient visits",
-  "patient.doctor.conflict": "Patient and doctor cannot be the same person"
+  "patient.doctor.conflict": "Patient and doctor cannot be the same person",
+  "institutionList.add": "Add institution",
+  "institutions.tittle": "Institutions"
 }

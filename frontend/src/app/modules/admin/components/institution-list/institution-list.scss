@@ -2,4 +2,7 @@
   margin: 10px;
   display: flex;
   flex-direction: column;
+  .button {
+    align-self: flex-end;
+  }
 }
