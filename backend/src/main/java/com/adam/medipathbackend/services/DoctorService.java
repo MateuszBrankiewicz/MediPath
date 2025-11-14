@@ -123,12 +123,10 @@ public class DoctorService {
         Optional<User> doctorOpt = userRepository.findDoctorById(doctorid);
 
         if(doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
-        if(doctorUpdateForm.getLicenceNumber() == null) throw new IllegalArgumentException("Missing licence number");
-        if(doctorUpdateForm.getSpecialisations() == null) throw new IllegalArgumentException("Missing specialisations");
+        if(doctorUpdateForm.licenceNumber() == null) throw new IllegalArgumentException("Missing licence number");
 
         User doctor = doctorOpt.get();
-        doctor.setLicenceNumber(doctorUpdateForm.getLicenceNumber());
-        doctor.setSpecialisations(doctorUpdateForm.getSpecialisations());
+        doctor.setLicenceNumber(doctorUpdateForm.licenceNumber());
 
         userRepository.save(doctor);
     }

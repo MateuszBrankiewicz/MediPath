@@ -806,6 +806,9 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 #### Path Variables:
 - id - object id of the doctor
 
+#### Body:
+- licenceNumber - licence number of the doctor
+
 #### Returns:
 - 401 - User is not logged in
 - 403 - doctor not found, user is not admin, user specified in doctorid is not doctor
@@ -877,7 +880,7 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
 
 #### Body:
 ```
-"userDetails": {
+userDetails: {
     name: String,
     surname: String,
     email: Email
@@ -890,11 +893,11 @@ Connect to this websocket to receive notifications. Afterwards, subscribe to /us
     street: String
     number:  String
 },
-roleCode: int,
-doctorDetails: {
-    licenceNumber: String
+employeeDetails: {
+    roleCode: int,
     specialisations: [String]
-}
+},
+licenceNumber: String 
 ```
 #### Returns:
 - 401 - User not logged in
