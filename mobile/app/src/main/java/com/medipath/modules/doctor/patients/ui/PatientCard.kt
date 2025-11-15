@@ -1,12 +1,12 @@
 package com.medipath.modules.doctor.patients.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,13 +40,6 @@ fun PatientCard(
     }
 
     val lastVisitFormatted = lastVisitDateTime?.format(outputDateFormatter) ?: "Unknown Date"
-
-    val statusColor = when (patient.lastVisit.status) {
-        "Upcoming" -> colors.orange800
-        "Completed" -> colors.green800
-        "Cancelled" -> colors.red800
-        else -> MaterialTheme.colorScheme.onSurface
-    }
 
     Card(
         modifier = Modifier
@@ -86,7 +79,7 @@ fun PatientCard(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Patient ID: ${patient.id}",
+                        text = "GovID: ${patient.govId}",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -95,23 +88,24 @@ fun PatientCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(
-                    text = "Last Visit:",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    Text(
+                        text = "Last Visit:",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
                     Icon(
                         imageVector = Icons.Default.CalendarToday,
                         contentDescription = null,
@@ -122,19 +116,6 @@ fun PatientCard(
                         text = lastVisitFormatted,
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = patient.lastVisit.status,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = statusColor,
-                        modifier = Modifier
-                            .background(
-                                color = statusColor.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
             }
@@ -149,7 +130,7 @@ fun PatientCard(
                     contentColor = MaterialTheme.colorScheme.background
                 )
             ) {
-                Text("VIEW PROFILE", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text("VIEW PROFILE", fontSize = 14.sp)
             }
         }
     }

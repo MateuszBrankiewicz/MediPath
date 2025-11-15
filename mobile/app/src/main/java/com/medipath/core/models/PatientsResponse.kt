@@ -6,6 +6,7 @@ data class PatientsResponse(
 
 data class PatientDoc(
     val id: String,
+    val govId: String,
     val name: String,
     val surname: String,
     val lastVisit: VisitDoc

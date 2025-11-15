@@ -162,7 +162,7 @@ public class UserService {
         result.put("name", patient.getName());
         result.put("surname", patient.getSurname());
         result.put("govId", patient.getGovId());
-        result.put("birthDate", patient.getBirthDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        result.put("birthDate", patient.getBirthDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         result.put("phoneNumber", patient.getPhoneNumber());
         result.put("pfp", patient.getPfpimage());
         result.put("medicalHistory", mhRepository.getEntriesForPatient(patientid));
