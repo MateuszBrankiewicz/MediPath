@@ -39,6 +39,7 @@ import com.medipath.modules.shared.profile.ui.EditProfileActivity
 import com.medipath.modules.shared.profile.ProfileViewModel
 import com.medipath.modules.shared.settings.ui.SettingsActivity
 import com.google.gson.Gson
+import com.medipath.modules.doctor.patients.ui.PatientDetailsActivity
 import com.medipath.modules.patient.visits.VisitsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -261,6 +262,11 @@ fun DoctorVisitsScreen(
                                     },
                                     onCancel = { visitId ->
                                         visitsViewModel.cancelVisit(visitId)
+                                    },
+                                    onViewPatientDetails = {
+                                        val intent = Intent(context, PatientDetailsActivity::class.java)
+                                        intent.putExtra("PATIENT_ID", visit.patient.userId)
+                                        context.startActivity(intent)
                                     }
                                 )
                             }

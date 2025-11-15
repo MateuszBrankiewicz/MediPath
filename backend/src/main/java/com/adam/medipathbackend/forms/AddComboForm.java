@@ -2,13 +2,13 @@ package com.adam.medipathbackend.forms;
 
 public class AddComboForm {
     private RegistrationForm userDetails;
-    private DoctorUpdateForm doctorDetails;
-    private int roleCode;
+    private String licenceNumber;
+    private AddEmployeeForm employeeDetails;
 
-    public AddComboForm(RegistrationForm userDetails, DoctorUpdateForm doctorDetails, int roleCode) {
-        this.roleCode = roleCode;
+    public AddComboForm(RegistrationForm userDetails, String licenceNumber, int roleCode, AddEmployeeForm employeeForm) {
+        this.licenceNumber = licenceNumber;
         this.userDetails = userDetails;
-        this.doctorDetails = doctorDetails;
+        this.employeeDetails = employeeForm;
     }
 
     public RegistrationForm getUserDetails() {
@@ -19,20 +19,19 @@ public class AddComboForm {
         this.userDetails = userDetails;
     }
 
-
-    public DoctorUpdateForm getDoctorDetails() {
-        return doctorDetails;
+    public String getLicenceNumber() {
+        return licenceNumber;
     }
 
-    public void setDoctorDetails(DoctorUpdateForm doctorDetails) {
-        this.doctorDetails = doctorDetails;
+    public void setLicenceNumber(String licenceNumber) {
+        this.licenceNumber = licenceNumber;
     }
 
-    public int getRoleCode() {
-        return roleCode;
+    public AddEmployeeForm getEmployeeDetails() {
+        return employeeDetails;
     }
 
-    public void setRoleCode(int roleCode) {
-        this.roleCode = roleCode;
+    public void setEmployeeDetails(AddEmployeeForm employeeDetails) {
+        this.employeeDetails = employeeDetails;
     }
 }

@@ -7,6 +7,7 @@ import com.adam.medipathbackend.config.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -137,16 +138,11 @@ public class DoctorService {
 
     Optional<User> doctorOpt = userRepository.findDoctorById(doctorid);
 
-    if (doctorOpt.isEmpty())
-      throw new IllegalAccessException("Doctor not found");
-    if (doctorUpdateForm.getLicenceNumber() == null)
-      throw new IllegalArgumentException("Missing licence number");
-    if (doctorUpdateForm.getSpecialisations() == null)
-      throw new IllegalArgumentException("Missing specialisations");
+        if(doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
+        if(doctorUpdateForm.licenceNumber() == null) throw new IllegalArgumentException("Missing licence number");
 
-    User doctor = doctorOpt.get();
-    doctor.setLicenceNumber(doctorUpdateForm.getLicenceNumber());
-    doctor.setSpecialisations(doctorUpdateForm.getSpecialisations());
+        User doctor = doctorOpt.get();
+        doctor.setLicenceNumber(doctorUpdateForm.licenceNumber());
 
     userRepository.save(doctor);
   }
@@ -198,44 +194,38 @@ public class DoctorService {
     Map<String, List<Visit>> visitsByPatient = visits.stream()
         .filter(visit -> "Completed".equals(visit.getStatus()))
         .collect(Collectors.groupingBy(visit -> visit.getPatient().getUserId()));
-
+    
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    
     List<Map<String, Object>> patients = visitsByPatient.entrySet().stream()
         .map(entry -> {
-          String patientId = entry.getKey();
-          List<Visit> patientVisits = entry.getValue();
-
-          PatientDigest patientDigest = patientVisits.get(0).getPatient();
-
-          Visit lastVisit = patientVisits.stream()
-              .max(Comparator.comparing(v -> v.getTime().getStartTime()))
-              .orElse(null);
-
-          return Map.of(
-              "id", patientDigest.getUserId(),
-              "name", patientDigest.getName(),
-              "surname", patientDigest.getSurname(),
-              "lastVisit", lastVisit != null ? Map.of(
-                  "id", lastVisit.getId(),
-                  "startTime", lastVisit.getTime().getStartTime(),
-                  "endTime", lastVisit.getTime().getEndTime(),
-                  "status", lastVisit.getStatus()) : null);
+            List<Visit> patientVisits = entry.getValue();
+            PatientDigest patientDigest = patientVisits.get(0).getPatient();
+            
+            Visit lastVisit = patientVisits.stream()
+                .max(Comparator.comparing(v -> v.getTime().getStartTime()))
+                .orElse(null);
+            
+            Map<String, Object> patientMap = new HashMap<>();
+            patientMap.put("id", patientDigest.getUserId());
+            patientMap.put("govId", patientDigest.getGovID());
+            patientMap.put("name", patientDigest.getName());
+            patientMap.put("surname", patientDigest.getSurname());
+            patientMap.put("lastVisit", lastVisit != null ? Map.of(
+                "id", lastVisit.getId(),
+                "startTime", lastVisit.getTime().getStartTime().format(formatter),
+                "endTime", lastVisit.getTime().getEndTime().format(formatter),
+                "status", lastVisit.getStatus()
+            ) : null);
+            patientMap.put("_sortTime", lastVisit != null ? lastVisit.getTime().getStartTime() : null);
+            
+            return patientMap;
         })
-        .sorted((p1, p2) -> {
-          Map<String, Object> visit1 = (Map<String, Object>) p1.get("lastVisit");
-          Map<String, Object> visit2 = (Map<String, Object>) p2.get("lastVisit");
-
-          if (visit1 == null && visit2 == null)
-            return 0;
-          if (visit1 == null)
-            return 1;
-          if (visit2 == null)
-            return -1;
-
-          LocalDateTime time1 = (LocalDateTime) visit1.get("startTime");
-          LocalDateTime time2 = (LocalDateTime) visit2.get("startTime");
-
-          return time2.compareTo(time1);
-        })
+        .sorted(Comparator.comparing(
+            (Map<String, Object> p) -> (LocalDateTime) p.get("_sortTime"),
+            Comparator.nullsLast(Comparator.reverseOrder())
+        ))
+        .peek(p -> p.remove("_sortTime"))
         .toList();
 
     return Map.of("patients", patients);
@@ -264,18 +254,18 @@ public class DoctorService {
 
     List<Map<String, Object>> visitsList = visits.stream()
         .map(visit -> {
-          Map<String, Object> visitMap = new HashMap<>();
-          visitMap.put("id", visit.getId());
-          visitMap.put("startTime", visit.getTime().getStartTime());
-          visitMap.put("endTime", visit.getTime().getEndTime());
-          visitMap.put("status", visit.getStatus());
-          visitMap.put("note", visit.getNote() != null ? visit.getNote() : "");
-          visitMap.put("institution", visit.getInstitution().getInstitutionName());
-          visitMap.put("patientRemarks", visit.getPatientRemarks() != null ? visit.getPatientRemarks() : "");
-          if (visit.getCodes() != null) {
-            visitMap.put("codes", visit.getCodes());
-          }
-          return visitMap;
+            Map<String, Object> visitMap = new HashMap<>();
+            visitMap.put("id", visit.getId());
+            visitMap.put("startTime", visit.getTime().getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            visitMap.put("endTime", visit.getTime().getEndTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            visitMap.put("status", visit.getStatus());
+            visitMap.put("note", visit.getNote() != null ? visit.getNote() : "");
+            visitMap.put("institution", visit.getInstitution().getInstitutionName());
+            visitMap.put("patientRemarks", visit.getPatientRemarks() != null ? visit.getPatientRemarks() : "");
+            if(visit.getCodes() != null) {
+                visitMap.put("codes", visit.getCodes());
+            }
+            return visitMap;
         })
         .toList();
 

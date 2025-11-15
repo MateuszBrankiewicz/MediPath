@@ -75,6 +75,8 @@
             android:exported="false" />
         <activity android:name=".modules.doctor.patients.ui.DoctorPatientsActivity"
             android:exported="false" />
+        <activity android:name=".modules.doctor.patients.ui.PatientDetailsActivity"
+            android:exported="false" />
         <activity android:name=".modules.doctor.schedule.ui.DoctorScheduleActivity"
             android:exported="false" />
         <activity android:name=".modules.doctor.visits.ui.DoctorVisitsActivity"

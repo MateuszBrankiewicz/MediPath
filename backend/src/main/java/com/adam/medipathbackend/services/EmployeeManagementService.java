@@ -11,16 +11,12 @@ import com.adam.medipathbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -67,12 +63,10 @@ public class EmployeeManagementService {
 
         User newUser = createUserFromForm(registrationForm);
         newUser.addEmployer(new InstitutionDigest(institution.getId(), institution.getName()));
-        newUser.setRoleCode(1 + comboForm.getRoleCode());
 
-        if (comboForm.getDoctorDetails() != null) {
-            newUser.setSpecialisations(comboForm.getDoctorDetails().getSpecialisations());
-            newUser.setLicenceNumber(comboForm.getDoctorDetails().getLicenceNumber());
-        }
+        newUser.setRoleCode(1 + comboForm.getEmployeeDetails().getRoleCode());
+        newUser.setSpecialisations(comboForm.getEmployeeDetails().getSpecialisations());
+        newUser.setLicenceNumber(comboForm.getLicenceNumber());
 
         User savedUser = userRepository.save(newUser);
 
@@ -81,7 +75,7 @@ public class EmployeeManagementService {
                 savedUser.getName(),
                 savedUser.getSurname(),
                 savedUser.getSpecialisations(),
-                comboForm.getRoleCode(),
+                comboForm.getEmployeeDetails().getRoleCode(),
                 savedUser.getPfpimage()));
 
         institutionRepository.save(institution);
@@ -180,6 +174,11 @@ public class EmployeeManagementService {
                 institution.getId(),
                 institution.getName());
         user.addEmployer(institutionDigest);
+
+        ArrayList<String> specialisations = user.getSpecialisations();
+        specialisations.addAll(form.getSpecialisations());
+
+        user.setSpecialisations(new ArrayList<>(specialisations.stream().distinct().toList()));
         userRepository.save(user);
     }
 
@@ -340,24 +339,23 @@ public class EmployeeManagementService {
             }
         }
 
-        if (Stream.of(2, 6, 14).anyMatch(code -> code == comboForm.getRoleCode())) {
-
-            if (comboForm.getDoctorDetails() == null) {
-                missingFields.add("doctorDetails");
-            } else {
-
-                DoctorUpdateForm doctorUpdateForm = comboForm.getDoctorDetails();
-                if (doctorUpdateForm.getLicenceNumber() == null) {
-                    missingFields.add("doctorDetails.licenceNumber");
+        if(comboForm.getEmployeeDetails() == null) {
+            missingFields.add("employeeDetails");
+        } else {
+            if (Stream.of(2, 6, 14)
+                    .anyMatch(code -> code == comboForm.getEmployeeDetails().getRoleCode())) {
+                if (comboForm.getLicenceNumber() == null) {
+                    missingFields.add("licenceNumber");
                 }
-
-                if (doctorUpdateForm.getSpecialisations() == null || doctorUpdateForm.getSpecialisations().isEmpty()) {
-                    missingFields.add("doctorDetails.specialisations");
+                if(comboForm.getEmployeeDetails().getSpecialisations() == null) {
+                    missingFields.add("employeeDetails.specialisations");
                 }
+            } else if (Stream.of(4, 8, 12)
+                    .noneMatch(code -> code == comboForm.getEmployeeDetails().getRoleCode())) {
+                missingFields.add("employeeDetails.roleCode");
             }
-        } else if (Stream.of(2, 8, 12).noneMatch(code -> code == comboForm.getRoleCode())) {
-            missingFields.add("roleCode");
         }
+
 
         return missingFields;
     }

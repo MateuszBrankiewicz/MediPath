@@ -24,7 +24,8 @@ import java.util.Locale
 fun DoctorVisitCard(
     visit: Visit,
     onViewDetails: () -> Unit,
-    onCancel: (String) -> Unit
+    onCancel: (String) -> Unit,
+    onViewPatientDetails: () -> Unit
 ) {
     val colors = LocalCustomColors.current
     var showCancelDialog by remember { mutableStateOf(false) }
@@ -172,7 +173,7 @@ fun DoctorVisitCard(
                 }
 
                 Button(
-                    onClick = { },
+                    onClick = onViewPatientDetails,
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.blue800,
