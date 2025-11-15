@@ -27,6 +27,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import com.medipath.core.models.SearchResult
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.modules.patient.booking.ui.AppointmentBookingActivity
 import com.medipath.modules.patient.search.SearchViewModel
 import com.medipath.modules.shared.components.rememberBase64Image
 
@@ -211,7 +212,7 @@ fun DoctorSearchResultsScreen(
                             DoctorCard(
                                 doctor = doctor,
                                 onClick = {
-                                    val intent = Intent(context, com.medipath.modules.patient.booking.ui.AppointmentBookingActivity::class.java)
+                                    val intent = Intent(context, AppointmentBookingActivity::class.java)
                                     intent.putExtra("doctor_id", doctor.id)
                                     intent.putExtra("doctor_name", "${doctor.name} ${doctor.surname}")
                                     intent.putExtra("doctor_image", doctor.image)

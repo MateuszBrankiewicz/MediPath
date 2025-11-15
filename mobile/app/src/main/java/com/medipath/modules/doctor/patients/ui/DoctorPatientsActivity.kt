@@ -3,19 +3,27 @@ package com.medipath.modules.doctor.patients.ui
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.MediPathTheme
+import com.medipath.modules.doctor.patients.DoctorPatientsViewModel
+import com.medipath.modules.doctor.patients.ui.components.PatientCard
 import com.medipath.modules.patient.home.HomeViewModel
 import com.medipath.modules.shared.notifications.NotificationsViewModel
 import com.medipath.modules.shared.notifications.ui.NotificationsActivity
@@ -62,21 +70,32 @@ class DoctorPatientsActivity : ComponentActivity() {
 @Composable
 fun DoctorPatientsScreen(
     viewModel: HomeViewModel = viewModel(),
+    patientsViewModel: DoctorPatientsViewModel = viewModel(),
     notificationsViewModel: NotificationsViewModel = viewModel(),
     onLogoutClick: () -> Unit = {}
 ) {
     val firstName by viewModel.firstName.collectAsState()
     val lastName by viewModel.lastName.collectAsState()
+    val patients by patientsViewModel.patients.collectAsState()
+    val isLoading by patientsViewModel.isLoading.collectAsState()
+    val errorMessage by patientsViewModel.errorMessage.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.fetchUserProfile()
         notificationsViewModel.fetchNotifications()
+        patientsViewModel.fetchPatients()
+    }
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
     }
 
     Navigation(
         notificationsViewModel = notificationsViewModel,
-        screenTitle = "Patients",
+        screenTitle = "Recent Patients",
         onNotificationsClick = {
             val intent = Intent(context, NotificationsActivity::class.java)
             intent.putExtra("isDoctor", true)
@@ -89,16 +108,54 @@ fun DoctorPatientsScreen(
             context.startActivity(Intent(context, SettingsActivity::class.java))
         },
         content = { innerPadding ->
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.secondary)
                     .padding(innerPadding)
-                    .padding(horizontal = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
             ) {
-
+                when {
+                    isLoading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    patients.isEmpty() -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "No patients found",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(vertical = 12.dp)
+                        ) {
+                            items(patients) { patient ->
+                                PatientCard(
+                                    patient = patient,
+                                    onClick = {
+                                        val intent =
+                                            Intent(context, PatientDetailsActivity::class.java)
+                                        intent.putExtra("PATIENT_ID", patient.id)
+                                        context.startActivity(intent)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         },
         firstName = firstName,
