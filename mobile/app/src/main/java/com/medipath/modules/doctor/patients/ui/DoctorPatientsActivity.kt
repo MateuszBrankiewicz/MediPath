@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.doctor.patients.DoctorPatientsViewModel
+import com.medipath.modules.doctor.patients.ui.components.PatientCard
 import com.medipath.modules.patient.home.HomeViewModel
 import com.medipath.modules.shared.notifications.NotificationsViewModel
 import com.medipath.modules.shared.notifications.ui.NotificationsActivity
@@ -144,7 +145,12 @@ fun DoctorPatientsScreen(
                             items(patients) { patient ->
                                 PatientCard(
                                     patient = patient,
-                                    onClick = {}
+                                    onClick = {
+                                        val intent =
+                                            Intent(context, PatientDetailsActivity::class.java)
+                                        intent.putExtra("PATIENT_ID", patient.id)
+                                        context.startActivity(intent)
+                                    }
                                 )
                             }
                         }

@@ -1,5 +1,7 @@
 package com.medipath.core.services
 
+import com.medipath.core.models.PatientDetailsResponse
+import com.medipath.core.models.PatientVisitsResponse
 import com.medipath.core.models.PatientsResponse
 import com.medipath.core.models.VisitsResponse
 import retrofit2.Response
@@ -15,4 +17,10 @@ interface DoctorService {
 
     @GET("/api/doctors/me/patients")
     suspend fun getPatients(): Response<PatientsResponse>
+
+    @GET("/api/doctors/me/patients/{patientId}/visits")
+    suspend fun getPatientVisits(@Path("patientId") patientId: String): Response<PatientVisitsResponse>
+
+    @GET("/api/users/patients/{patientId}")
+    suspend fun getPatientDetails(@Path("patientId") patientId: String): Response<PatientDetailsResponse>
 }

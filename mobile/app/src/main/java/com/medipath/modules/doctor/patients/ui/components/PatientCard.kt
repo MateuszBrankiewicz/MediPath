@@ -1,4 +1,4 @@
-package com.medipath.modules.doctor.patients.ui
+package com.medipath.modules.doctor.patients.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -68,7 +68,7 @@ fun PatientCard(
                             imageVector = Icons.Default.Person,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
-                            tint = colors.purple800
+                            tint = colors.blue800
                         )
                         Text(
                             text = "${patient.name} ${patient.surname}",
@@ -126,7 +126,7 @@ fun PatientCard(
                 onClick = onClick,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.purple800,
+                    containerColor = colors.blue800,
                     contentColor = MaterialTheme.colorScheme.background
                 )
             ) {
