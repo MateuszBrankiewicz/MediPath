@@ -172,46 +172,44 @@ class RegisterViewModel(
     fun onCheckedChanged(value: Boolean) { _isChecked.value = value }
 
     fun registerUser() {
+        val registerRequest = RegisterRequest(
+            name = name.value,
+            surname = surname.value,
+            email = email.value,
+            govID = governmentId.value,
+            birthDate = birthDate.value,
+            province = province.value,
+            city = city.value,
+            postalCode = postalCode.value,
+            phoneNumber = phoneNumber.value,
+            street = street.value,
+            number = number.value,
+            password = password.value
+        )
+
         viewModelScope.launch {
             _registrationError.value = null
             _registrationSuccess.value = false
-
-            val registerRequest = RegisterRequest(
-                name = name.value,
-                surname = surname.value,
-                email = email.value,
-                govID = governmentId.value,
-                birthDate = birthDate.value,
-                province = province.value,
-                city = city.value,
-                postalCode = postalCode.value,
-                phoneNumber = phoneNumber.value,
-                street = street.value,
-                number = number.value,
-                password = password.value
-            )
 
             try {
                 val response = authService.registerUser(registerRequest)
                 if (response.isSuccessful) {
                     _registrationSuccess.value = true
                 } else {
-                    _registrationError.value = response.body()?.message ?: "Registration failed"
-                }
-            } catch (e: HttpException) {
-                when (e.code()) {
-                    400 -> {
-                        _registrationError.value = "Please fill in all required fields."
-                    }
-                    409 -> {
-                        _registrationError.value = "An account with this email or GovID already exists."
-                    }
-                    else -> {
-                        _registrationError.value = "An unknown error occurred. Please try again later."
+                    when (response.code()) {
+                        400 -> {
+                            _registrationError.value = "Please fill in all required fields."
+                        }
+                        409 -> {
+                            _registrationError.value = "An account with this email or GovID already exists."
+                        }
+                        else -> {
+                            _registrationError.value = "An unknown error occurred. Please try again later."
+                        }
                     }
                 }
             } catch (e: Exception) {
-                _registrationError.value = "Registration failed"
+                _registrationError.value = e.message ?: "Registration failed"
             }
         }
     }
