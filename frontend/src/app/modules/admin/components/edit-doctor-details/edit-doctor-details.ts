@@ -216,7 +216,7 @@ export class EditDoctorDetailsComponent implements OnInit {
         requests.push(
           this.institutionService.updateEmployee(inst.institutionId, {
             userID: this.doctorId(),
-            roleCode: inst.roleCode || 2, // Use institution-specific role code
+            roleCode: inst.roleCode || 2,
             specialisations: formValue.specialisation,
           }),
         );
