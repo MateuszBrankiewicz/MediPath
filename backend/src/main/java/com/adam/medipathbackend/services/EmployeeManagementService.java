@@ -40,7 +40,11 @@ public class EmployeeManagementService {
         for (AddEmployeeForm employeeForm : employees) {
             User user = userRepository.findActiveById(employeeForm.getUserID())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
+            if(institution.getEmployees().stream()
+                    .anyMatch(employee -> employee.getUserId().equals(employeeForm.getUserID())))
+            {
+                throw new IllegalArgumentException("User with id " + employeeForm.getUserID() + " is already added");
+            }
             addEmployeeToInstitution(institution, user, employeeForm);
         }
 
@@ -159,6 +163,10 @@ public class EmployeeManagementService {
     }
 
     private void addEmployeeToInstitution(Institution institution, User user, AddEmployeeForm form) {
+        verifyAddEmployeeForm(form);
+        if(form.getSpecialisations() == null) {
+            form.setSpecialisations(new ArrayList<>());
+        }
         StaffDigest digest = new StaffDigest(
                 user.getId(),
                 user.getName(),
@@ -175,11 +183,33 @@ public class EmployeeManagementService {
                 institution.getName());
         user.addEmployer(institutionDigest);
 
-        ArrayList<String> specialisations = user.getSpecialisations();
-        specialisations.addAll(form.getSpecialisations());
+        if(Stream.of(2, 6, 14).anyMatch(value -> value == form.getRoleCode())) {
+            ArrayList<String> specialisations = user.getSpecialisations();
+            specialisations.addAll(form.getSpecialisations());
 
-        user.setSpecialisations(new ArrayList<>(specialisations.stream().distinct().toList()));
+            user.setSpecialisations(new ArrayList<>(specialisations.stream().distinct().toList()));
+        }
         userRepository.save(user);
+    }
+
+    private void verifyAddEmployeeForm(AddEmployeeForm addEmployeeForm) {
+        ArrayList<String> fields = new ArrayList<>();
+        if(addEmployeeForm.getUserID() == null || addEmployeeForm.getUserID().isBlank()) {
+            fields.add("userID");
+        }
+        if(Stream.of(2, 4, 6, 12, 14).noneMatch(value -> value == addEmployeeForm.getRoleCode())) {
+            fields.add("roleCode");
+        } else if(Stream.of(2, 6, 14).anyMatch(value -> value == addEmployeeForm.getRoleCode()) &&
+                addEmployeeForm.getSpecialisations() == null)
+        {
+            fields.add("specialisations");
+        }
+        if(!fields.isEmpty()) {
+            String fieldsTotal = fields.stream().reduce("", (full, value) -> full + value + " ");
+            throw new IllegalArgumentException("missing fields in request body: " + fieldsTotal);
+        }
+
+
     }
 
     private void updateEmployeeInInstitution(Institution institution, User user, AddEmployeeForm form) {

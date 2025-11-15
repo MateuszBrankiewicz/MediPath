@@ -40,6 +40,7 @@ public class InstitutionService {
         admin.addEmployer(new InstitutionDigest(
                 savedInstitution.getId(),
                 savedInstitution.getName()));
+        admin.setRoleCode(12);
         userRepository.save(admin);
 
         return savedInstitution;
