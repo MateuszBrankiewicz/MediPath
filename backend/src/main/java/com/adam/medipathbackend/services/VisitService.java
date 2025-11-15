@@ -406,8 +406,9 @@ public class VisitService {
 
         visitRepository.save(visit);
     }
-    public boolean hasUpcomingVisits(String doctorId) {
-        return !visitRepository.getUpcomingDoctorVisits(doctorId).isEmpty();
+    public boolean hasUpcomingVisits(String userId) {
+        return !(visitRepository.getUpcomingDoctorVisits(userId).isEmpty()
+                && visitRepository.getUpcomingVisits(userId).isEmpty());
     }
 
 

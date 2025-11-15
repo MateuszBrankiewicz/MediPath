@@ -7,6 +7,7 @@ import com.adam.medipathbackend.config.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -123,12 +124,10 @@ public class DoctorService {
         Optional<User> doctorOpt = userRepository.findDoctorById(doctorid);
 
         if(doctorOpt.isEmpty()) throw new IllegalAccessException("Doctor not found");
-        if(doctorUpdateForm.getLicenceNumber() == null) throw new IllegalArgumentException("Missing licence number");
-        if(doctorUpdateForm.getSpecialisations() == null) throw new IllegalArgumentException("Missing specialisations");
+        if(doctorUpdateForm.licenceNumber() == null) throw new IllegalArgumentException("Missing licence number");
 
         User doctor = doctorOpt.get();
-        doctor.setLicenceNumber(doctorUpdateForm.getLicenceNumber());
-        doctor.setSpecialisations(doctorUpdateForm.getSpecialisations());
+        doctor.setLicenceNumber(doctorUpdateForm.licenceNumber());
 
         userRepository.save(doctor);
     }
@@ -192,8 +191,8 @@ public class DoctorService {
                 "surname", patientDigest.getSurname(),
                 "lastVisit", lastVisit != null ? Map.of(
                     "id", lastVisit.getId(),
-                    "startTime", lastVisit.getTime().getStartTime(),
-                    "endTime", lastVisit.getTime().getEndTime(),
+                    "startTime", lastVisit.getTime().getStartTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss")),
+                    "endTime", lastVisit.getTime().getEndTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss")),
                     "status", lastVisit.getStatus()
                 ) : null
             );
