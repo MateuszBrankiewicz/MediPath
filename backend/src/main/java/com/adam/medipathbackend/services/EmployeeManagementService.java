@@ -213,6 +213,10 @@ public class EmployeeManagementService {
     }
 
     private void updateEmployeeInInstitution(Institution institution, User user, AddEmployeeForm form) {
+        verifyAddEmployeeForm(form);
+        if(form.getSpecialisations() == null) {
+            form.setSpecialisations(new ArrayList<>());
+        }
         ArrayList<StaffDigest> employees = institution.getEmployees();
 
         for (int i = 0; i < employees.size(); i++) {

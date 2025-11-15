@@ -93,7 +93,7 @@ public interface InstitutionRepository extends MongoRepository<Institution, Stri
 
     @Aggregation({
             "{ \"$unwind\": \"$employees\" }",
-            "{ \"$match\": { \"employees.userId\": ?0 }, isActive: true }",
+            "{ \"$match\": { \"employees.userId\": ?0, isActive: true } }",
             "{ \"$project\": { \"_id\": 1, \"roleCode\": \"$employees.roleCode\"} }"
     })
     ArrayList<Map<String, Object>> getRoleCodes(String userId);
