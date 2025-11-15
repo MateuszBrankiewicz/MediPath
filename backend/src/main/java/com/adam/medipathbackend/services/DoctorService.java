@@ -7,6 +7,7 @@ import com.adam.medipathbackend.config.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -190,8 +191,8 @@ public class DoctorService {
                 "surname", patientDigest.getSurname(),
                 "lastVisit", lastVisit != null ? Map.of(
                     "id", lastVisit.getId(),
-                    "startTime", lastVisit.getTime().getStartTime(),
-                    "endTime", lastVisit.getTime().getEndTime(),
+                    "startTime", lastVisit.getTime().getStartTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss")),
+                    "endTime", lastVisit.getTime().getEndTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss")),
                     "status", lastVisit.getStatus()
                 ) : null
             );

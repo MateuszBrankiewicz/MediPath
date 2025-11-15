@@ -68,12 +68,10 @@ public class VisitController {
         try {
             visitService.cancelVisit(visitid, loggedUserID);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch(IllegalStateException ise) {
+        } catch(IllegalStateException | IllegalAccessException ise) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } catch (IllegalArgumentException iae) {
             return new ResponseEntity<>(Map.of("message", iae.getMessage()), HttpStatus.BAD_REQUEST);
-        } catch(IllegalAccessException iae) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
