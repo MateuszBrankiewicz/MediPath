@@ -2,7 +2,6 @@ package com.adam.medipathbackend.services;
 
 import com.adam.medipathbackend.forms.AddComboForm;
 import com.adam.medipathbackend.forms.AddEmployeeForm;
-import com.adam.medipathbackend.forms.DoctorUpdateForm;
 import com.adam.medipathbackend.forms.RegistrationForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
@@ -118,13 +117,42 @@ public class EmployeeManagementService {
             throw new IllegalStateException("You cannot remove administrator privileges from your account");
         }
 
-        updateEmployeeInInstitution(institution, user, employeeUpdate);
+        updateEmployeeInInstitution(institution, employeeUpdate);
         institutionRepository.save(institution);
 
         user.setRoleCode(recalculateRoleCode(user.getId()));
         userRepository.save(user);
     }
 
+
+
+    public void updateEmployeeCredentialsInAllInstitutions(User user) {
+
+        ArrayList<Institution> institutionsToUpdate = new ArrayList<>();
+        for(InstitutionDigest digest: user.getEmployers()) {
+            Optional<Institution> employerOpt = institutionRepository.findActiveById(digest.getInstitutionId());
+            if(employerOpt.isEmpty()) continue;
+            Institution employer = employerOpt.get();
+            ArrayList<StaffDigest> employees = employer.getEmployees();
+            for (int i = 0; i < employees.size(); i++) {
+                StaffDigest current = employees.get(i);
+                if (current.getUserId().equals(user.getId())) {
+
+                    current.setName(user.getName());
+                    current.setSurname(user.getSurname());
+                    current.setPfpimage(user.getPfpimage());
+
+                    employees.set(i, current);
+
+                    break;
+                }
+            }
+            employer.setEmployees(employees);
+            institutionsToUpdate.add(employer);
+        }
+
+        institutionRepository.saveAll(institutionsToUpdate);
+    }
      
     public void removeEmployee(String institutionId, String userId, String adminId) {
         if (userId.equals(adminId)) {
@@ -212,7 +240,7 @@ public class EmployeeManagementService {
 
     }
 
-    private void updateEmployeeInInstitution(Institution institution, User user, AddEmployeeForm form) {
+    private void updateEmployeeInInstitution(Institution institution, AddEmployeeForm form) {
         verifyAddEmployeeForm(form);
         if(form.getSpecialisations() == null) {
             form.setSpecialisations(new ArrayList<>());
@@ -222,10 +250,6 @@ public class EmployeeManagementService {
         for (int i = 0; i < employees.size(); i++) {
             StaffDigest current = employees.get(i);
             if (current.getUserId().equals(form.getUserID())) {
-
-                current.setName(user.getName());
-                current.setSurname(user.getSurname());
-                current.setPfpimage(user.getPfpimage());
 
                 current.setRoleCode(form.getRoleCode());
                 current.setSpecialisations(form.getSpecialisations());
