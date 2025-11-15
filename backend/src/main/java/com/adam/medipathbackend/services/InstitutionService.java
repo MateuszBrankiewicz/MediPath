@@ -24,18 +24,18 @@ public class InstitutionService {
 
 
     public Institution createInstitution(Institution institution, User admin) {
-        validateInstitution(institution);
-        checkForDuplicates(institution);
+        Institution validInstitution = validateInstitution(institution);
+        checkForDuplicates(validInstitution);
 
         institution.addEmployee(new StaffDigest(
                 admin.getId(),
                 admin.getName(),
                 admin.getSurname(),
                 admin.getSpecialisations(),
-                admin.getRoleCode(),
+                12,
                 admin.getPfpimage()));
 
-        Institution savedInstitution = institutionRepository.save(institution);
+        Institution savedInstitution = institutionRepository.save(validInstitution);
 
         admin.addEmployer(new InstitutionDigest(
                 savedInstitution.getId(),
@@ -51,18 +51,18 @@ public class InstitutionService {
         Institution existing = institutionRepository.findActiveById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
 
-        validateInstitution(newInstitution);
+        Institution validInstitution = validateInstitution(newInstitution);
 
-        boolean addressChanged = !newInstitution.getAddress().equals(existing.getAddress());
+        boolean addressChanged = !validInstitution.getAddress().equals(existing.getAddress());
         if (addressChanged) {
-            checkForDuplicates(newInstitution);
+            checkForDuplicates(validInstitution);
         }
 
-        existing.setName(newInstitution.getName());
-        existing.setImage(newInstitution.getImage());
-        existing.setPublic(newInstitution.isPublic());
-        existing.setTypes(newInstitution.getTypes());
-        existing.setAddress(newInstitution.getAddress());
+        existing.setName(validInstitution.getName());
+        existing.setImage(validInstitution.getImage());
+        existing.setPublic(validInstitution.isPublic());
+        existing.setTypes(validInstitution.getTypes());
+        existing.setAddress(validInstitution.getAddress());
 
         return institutionRepository.save(existing);
     }
@@ -75,7 +75,7 @@ public class InstitutionService {
         return institutionRepository.existsById(id);
     }
 
-    private void validateInstitution(Institution institution) {
+    private Institution validateInstitution(Institution institution) {
         if (institution.getAddress() == null || !institution.getAddress().isValid()) {
             throw new IllegalArgumentException("Invalid address");
         }
@@ -88,6 +88,10 @@ public class InstitutionService {
         if (institution.getDescription() == null) {
             institution.setDescription("");
         }
+        if(institution.getTypes() == null) {
+            institution.setTypes(new ArrayList<>());
+        }
+        return institution;
     }
 
     private void checkForDuplicates(Institution institution) {
