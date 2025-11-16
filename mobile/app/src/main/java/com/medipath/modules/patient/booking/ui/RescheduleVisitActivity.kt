@@ -27,8 +27,8 @@ import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.booking.RescheduleViewModel
 import com.medipath.modules.patient.booking.ToastMessage
-import com.medipath.modules.patient.booking.ui.components.CalendarView
 import com.medipath.modules.patient.booking.ui.components.TimeSlotCard
+import com.medipath.modules.shared.components.CalendarCard
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -108,6 +108,10 @@ fun RescheduleVisitScreen(
                     .toLocalDate()
             }
             .toSortedMap()
+    }
+    
+    val dateCountMap = remember(schedulesByDate) {
+        schedulesByDate.mapValues { it.value.size }
     }
     
     val availableDates = remember(schedulesByDate) {
@@ -298,17 +302,18 @@ fun RescheduleVisitScreen(
                     }
 
                     item {
-                        CalendarView(
+                        CalendarCard(
                             currentMonth = currentMonth,
                             availableDates = availableDates,
+                            dateCountMap = dateCountMap,
                             selectedDate = selectedDate,
-                            onMonthChange = { newMonth -> 
+                            onMonthChange = { newMonth ->
                                 currentMonth = newMonth
                             },
                             onDateSelected = { date ->
                                 selectedDate = date
                                 selectedSchedule = null
-                            }
+                            },
                         )
                     }
 

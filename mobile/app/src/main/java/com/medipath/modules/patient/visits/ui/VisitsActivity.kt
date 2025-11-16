@@ -308,7 +308,7 @@ fun VisitsScreen(
                                             intent.putExtra("VISIT_ID", visitId)
                                             context.startActivity(intent)
                                         },
-                                        onReschedule = { visitId ->
+                                        onReschedule = {
                                             val intent = Intent(context, RescheduleVisitActivity::class.java)
                                             intent.putExtra("visit_id", visit.id)
                                             intent.putExtra("doctor_id", visit.doctor.userId)

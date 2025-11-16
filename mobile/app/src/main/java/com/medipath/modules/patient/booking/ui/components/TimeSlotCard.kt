@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.core.models.DoctorScheduleItem
+import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -44,8 +45,8 @@ fun TimeSlotCard(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = when {
-                isBooked -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                isSelected -> MaterialTheme.colorScheme.primaryContainer
+                isBooked -> MaterialTheme.colorScheme.surface
+                isSelected -> LocalCustomColors.current.blue300
                 else -> MaterialTheme.colorScheme.background
             }
         ),

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.core.models.DoctorScheduleItem
 import com.medipath.core.models.Institution
+import com.medipath.modules.shared.components.CalendarCard
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -79,6 +80,10 @@ fun BookingTabContent(
                     .toLocalDate()
             }
             .toSortedMap()
+    }
+
+    val dateCountMap = remember(schedulesByDate) {
+        schedulesByDate.mapValues { it.value.size }
     }
 
     val availableDates = remember(schedulesByDate) {
@@ -219,9 +224,10 @@ fun BookingTabContent(
                     }
 
                     item {
-                        CalendarView(
+                        CalendarCard(
                             currentMonth = currentMonth,
                             availableDates = availableDates,
+                            dateCountMap = dateCountMap,
                             selectedDate = selectedDate,
                             onMonthChange = onMonthChanged,
                             onDateSelected = onDateSelected
@@ -241,7 +247,7 @@ fun BookingTabContent(
 
                         item {
                             Text(
-                                text = selectedDate!!.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")),
+                                text = selectedDate!!.format(DateTimeFormatter.ofPattern("EEEE, d MMMM, yyyy")),
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
@@ -269,6 +275,7 @@ fun BookingTabContent(
                                 }
                             }
                         }
+
                     } else if (selectedDate != null) {
                         item {
                             Card(
@@ -276,13 +283,12 @@ fun BookingTabContent(
                                     .fillMaxWidth()
                                     .padding(top = 16.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    containerColor = MaterialTheme.colorScheme.background
                                 )
                             ) {
                                 Text(
                                     text = "No available appointments for this date",
                                     modifier = Modifier.padding(16.dp),
-                                    textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
                             }
