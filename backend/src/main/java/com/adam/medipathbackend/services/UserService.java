@@ -442,6 +442,7 @@ public class UserService {
         User user = userOpt.get();
         boolean anyChanges = false;
         boolean addressChanged = false;
+        boolean nameChanged = false;
 
         Address userAddress = user.getAddress();
         if(updateUserForm.getCity() != null && !updateUserForm.getCity().isBlank()) {
@@ -477,11 +478,13 @@ public class UserService {
         if(updateUserForm.getName() != null && !updateUserForm.getName().isBlank()) {
             user.setName(updateUserForm.getName());
             anyChanges = true;
+            nameChanged = true;
         }
 
         if(updateUserForm.getSurname() != null && !updateUserForm.getSurname().isBlank()) {
             user.setSurname(updateUserForm.getSurname());
             anyChanges = true;
+            nameChanged = true;
         }
 
         if(updateUserForm.getPhoneNumber() != null && !updateUserForm.getPhoneNumber().isBlank()) {
@@ -493,7 +496,11 @@ public class UserService {
             user.setPfpimage(updateUserForm.getPfpImage());
         }
 
-        if(anyChanges) userRepository.save(user);
+        if(anyChanges) {
+            userRepository.save(user);
+            if(nameChanged)
+                employeeManagementService.updateEmployeeCredentialsInAllInstitutions(user);
+        }
 
     }
     public void updateSettings(UserSettings userSettings, String loggedUserID) {

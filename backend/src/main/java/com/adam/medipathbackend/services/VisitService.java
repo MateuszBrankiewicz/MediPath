@@ -54,13 +54,27 @@ public class VisitService {
         if(foundSchedule.getDoctor().getUserId().equals(foundUser.getId())){
             throw new IllegalStateException("Doctor and patient is the same person");
         }
-        
+
+        if(userRepository.findActiveById(foundSchedule.getDoctor().getUserId()).isEmpty()) {
+            throw new IllegalStateException("doctor is inactive");
+        }
+
+        if(institutionRepository.findActiveById(foundSchedule.getInstitution().getInstitutionId()).isEmpty()) {
+            throw new IllegalStateException("institution is inactive");
+        }
+
+
+        if(foundSchedule.getStartHour().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("schedule booked in the past");
+        }
+
+
 
         PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(), foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
         VisitTime time = new VisitTime(foundSchedule.getId(), foundSchedule.getStartHour(), foundSchedule.getEndHour());
         Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(), time,foundSchedule.getInstitution(), visit.getPatientRemarks());
 
-        foundSchedule.setBooked(true);
+
         ArrayList<Code> codes = new ArrayList<>();
         newVisit.setCodes(codes);
 
@@ -88,8 +102,11 @@ public class VisitService {
             foundUser.addNotification(notification);
             userRepository.save(foundUser);
         }
+
+        String savedVisitId = visitRepository.save(newVisit).getId();
+        foundSchedule.setBooked(true);
+        foundSchedule.setVisitId(savedVisitId);
         scheduleRepository.save(foundSchedule);
-        visitRepository.save(newVisit);
     }
 
 
@@ -102,7 +119,7 @@ public class VisitService {
         Visit visitToCancel = optVisit.get();
 
         authorizationService.startAuthChain(loggedUserID, visitToCancel.getInstitution().getInstitutionId()).matchAnyPermission().
-                patientInVisit(visitToCancel).employeeOfInstitution().check();
+                patientInVisit(visitToCancel).employeeOfInstitution().doctorInVisit(visitToCancel).check();
 
         if(visitToCancel.getStatus().equals("Completed")) {
             throw new IllegalArgumentException("this visit is completed");
@@ -121,6 +138,7 @@ public class VisitService {
 
         Schedule oldSchedule = scheduleOptional.get();
         oldSchedule.setBooked(false);
+        oldSchedule.setVisitId(null);
 
         User patient = userOptional.get();
         int foundIndex = 0;
@@ -184,7 +202,7 @@ public class VisitService {
             
 
         authorizationService.startAuthChain(loggedUserID, visitToReschedule.getInstitution().getInstitutionId()).matchAnyPermission().
-                patientInVisit(visitToReschedule).employeeOfInstitution().check();
+                patientInVisit(visitToReschedule).employeeOfInstitution().doctorInVisit(visitToReschedule).check();
 
         if(visitToReschedule.getStatus().equals("Completed")) {
             throw new IllegalArgumentException("this visit is completed");
@@ -203,6 +221,19 @@ public class VisitService {
         Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToReschedule.getTime().getScheduleId());
         if(scheduleOptional.isEmpty()) {
             throw new IllegalComponentStateException();
+        }
+
+        if(userRepository.findActiveById(newSchedule.getDoctor().getUserId()).isEmpty()) {
+            throw new IllegalStateException("new schedule doctor is inactive");
+        }
+
+        if(institutionRepository.findActiveById(newSchedule.getInstitution().getInstitutionId()).isEmpty()) {
+            throw new IllegalStateException("new schedule institution is inactive");
+        }
+
+
+        if(newSchedule.getStartHour().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("new schedule booked in the past");
         }
 
         Optional<User> userOptional = userRepository.findActiveById(visitToReschedule.getPatient().getUserId());
@@ -226,19 +257,31 @@ public class VisitService {
             String content, title;
 
             if(patient.getUserSettings().getLanguage().equals("PL")) {
-                content = String.format("Przypominamy o wizycie w ośrodku %s dnia %s o godzinie %s", newSchedule.getInstitution().getInstitutionName(), newSchedule.getStartHour().toLocalDate(), newSchedule.getStartHour().toLocalTime());
+                content = String.format("Przypominamy o wizycie w ośrodku %s dnia %s o godzinie %s",
+                        newSchedule.getInstitution().getInstitutionName(),
+                        newSchedule.getStartHour().toLocalDate(),
+                        newSchedule.getStartHour().toLocalTime());
+
                 title = "Przypomnienie o wizycie";
             } else {
-                content = String.format("We would like to remind you of your upcoming visit in %s on the day %s at %s", newSchedule.getInstitution().getInstitutionName(), newSchedule.getStartHour().toLocalDate(), newSchedule.getStartHour().toLocalTime());
+                content = String.format("We would like to remind you of your upcoming visit in %s on the day %s at %s",
+                        newSchedule.getInstitution().getInstitutionName(),
+                        newSchedule.getStartHour().toLocalDate(),
+                        newSchedule.getStartHour().toLocalTime());
+
                 title = "Visit reminder";
             }
 
-            Notification notification = new Notification(title,  content, newSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
+            Notification notification = new Notification(title,  content,
+                    newSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
             patient.addNotification(notification);
         }
 
         oldSchedule.setBooked(false);
         newSchedule.setBooked(true);
+
+        oldSchedule.setVisitId(null);
+        newSchedule.setVisitId(visitToReschedule.getId());
 
         visitToReschedule.setTime(new VisitTime(newSchedule.getId(), newSchedule.getStartHour(), newSchedule.getEndHour()));
         visitToReschedule.setDoctor(newSchedule.getDoctor());

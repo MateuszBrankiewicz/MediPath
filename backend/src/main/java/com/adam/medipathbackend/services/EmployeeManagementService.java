@@ -2,7 +2,6 @@ package com.adam.medipathbackend.services;
 
 import com.adam.medipathbackend.forms.AddComboForm;
 import com.adam.medipathbackend.forms.AddEmployeeForm;
-import com.adam.medipathbackend.forms.DoctorUpdateForm;
 import com.adam.medipathbackend.forms.RegistrationForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.InstitutionRepository;
@@ -40,7 +39,11 @@ public class EmployeeManagementService {
         for (AddEmployeeForm employeeForm : employees) {
             User user = userRepository.findActiveById(employeeForm.getUserID())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
+            if(institution.getEmployees().stream()
+                    .anyMatch(employee -> employee.getUserId().equals(employeeForm.getUserID())))
+            {
+                throw new IllegalArgumentException("User with id " + employeeForm.getUserID() + " is already added");
+            }
             addEmployeeToInstitution(institution, user, employeeForm);
         }
 
@@ -114,13 +117,42 @@ public class EmployeeManagementService {
             throw new IllegalStateException("You cannot remove administrator privileges from your account");
         }
 
-        updateEmployeeInInstitution(institution, user, employeeUpdate);
+        updateEmployeeInInstitution(institution, employeeUpdate);
         institutionRepository.save(institution);
 
         user.setRoleCode(recalculateRoleCode(user.getId()));
         userRepository.save(user);
     }
 
+
+
+    public void updateEmployeeCredentialsInAllInstitutions(User user) {
+
+        ArrayList<Institution> institutionsToUpdate = new ArrayList<>();
+        for(InstitutionDigest digest: user.getEmployers()) {
+            Optional<Institution> employerOpt = institutionRepository.findActiveById(digest.getInstitutionId());
+            if(employerOpt.isEmpty()) continue;
+            Institution employer = employerOpt.get();
+            ArrayList<StaffDigest> employees = employer.getEmployees();
+            for (int i = 0; i < employees.size(); i++) {
+                StaffDigest current = employees.get(i);
+                if (current.getUserId().equals(user.getId())) {
+
+                    current.setName(user.getName());
+                    current.setSurname(user.getSurname());
+                    current.setPfpimage(user.getPfpimage());
+
+                    employees.set(i, current);
+
+                    break;
+                }
+            }
+            employer.setEmployees(employees);
+            institutionsToUpdate.add(employer);
+        }
+
+        institutionRepository.saveAll(institutionsToUpdate);
+    }
      
     public void removeEmployee(String institutionId, String userId, String adminId) {
         if (userId.equals(adminId)) {
@@ -159,6 +191,10 @@ public class EmployeeManagementService {
     }
 
     private void addEmployeeToInstitution(Institution institution, User user, AddEmployeeForm form) {
+        verifyAddEmployeeForm(form);
+        if(form.getSpecialisations() == null) {
+            form.setSpecialisations(new ArrayList<>());
+        }
         StaffDigest digest = new StaffDigest(
                 user.getId(),
                 user.getName(),
@@ -175,23 +211,45 @@ public class EmployeeManagementService {
                 institution.getName());
         user.addEmployer(institutionDigest);
 
-        ArrayList<String> specialisations = user.getSpecialisations();
-        specialisations.addAll(form.getSpecialisations());
+        if(Stream.of(2, 6, 14).anyMatch(value -> value == form.getRoleCode())) {
+            ArrayList<String> specialisations = user.getSpecialisations();
+            specialisations.addAll(form.getSpecialisations());
 
-        user.setSpecialisations(new ArrayList<>(specialisations.stream().distinct().toList()));
+            user.setSpecialisations(new ArrayList<>(specialisations.stream().distinct().toList()));
+        }
         userRepository.save(user);
     }
 
-    private void updateEmployeeInInstitution(Institution institution, User user, AddEmployeeForm form) {
+    private void verifyAddEmployeeForm(AddEmployeeForm addEmployeeForm) {
+        ArrayList<String> fields = new ArrayList<>();
+        if(addEmployeeForm.getUserID() == null || addEmployeeForm.getUserID().isBlank()) {
+            fields.add("userID");
+        }
+        if(Stream.of(2, 4, 6, 12, 14).noneMatch(value -> value == addEmployeeForm.getRoleCode())) {
+            fields.add("roleCode");
+        } else if(Stream.of(2, 6, 14).anyMatch(value -> value == addEmployeeForm.getRoleCode()) &&
+                addEmployeeForm.getSpecialisations() == null)
+        {
+            fields.add("specialisations");
+        }
+        if(!fields.isEmpty()) {
+            String fieldsTotal = fields.stream().reduce("", (full, value) -> full + value + " ");
+            throw new IllegalArgumentException("missing fields in request body: " + fieldsTotal);
+        }
+
+
+    }
+
+    private void updateEmployeeInInstitution(Institution institution, AddEmployeeForm form) {
+        verifyAddEmployeeForm(form);
+        if(form.getSpecialisations() == null) {
+            form.setSpecialisations(new ArrayList<>());
+        }
         ArrayList<StaffDigest> employees = institution.getEmployees();
 
         for (int i = 0; i < employees.size(); i++) {
             StaffDigest current = employees.get(i);
             if (current.getUserId().equals(form.getUserID())) {
-
-                current.setName(user.getName());
-                current.setSurname(user.getSurname());
-                current.setPfpimage(user.getPfpimage());
 
                 current.setRoleCode(form.getRoleCode());
                 current.setSpecialisations(form.getSpecialisations());
