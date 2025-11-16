@@ -3,6 +3,7 @@ package com.medipath.modules.doctor.schedule.ui
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -24,6 +25,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.models.DoctorScheduleItem
 import com.medipath.core.network.RetrofitInstance
+import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.doctor.schedule.DoctorScheduleViewModel
 import com.medipath.modules.doctor.schedule.ui.components.ScheduleDetailsDialog
@@ -92,12 +94,14 @@ fun DoctorScheduleScreen(
     val isLoading by scheduleViewModel.isLoading.collectAsState()
     val error by scheduleViewModel.error.collectAsState()
     val cancelSuccess by visitsViewModel.cancelSuccess.collectAsState()
+    val cancelError by visitsViewModel.error.collectAsState()
 
     var currentMonth by remember { mutableStateOf(LocalDate.now()) }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedTab by remember { mutableStateOf(0) }
     var selectedSchedule by remember { mutableStateOf<DoctorScheduleItem?>(null) }
     var showDetailsDialog by remember { mutableStateOf(false) }
+    var showCancelDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchUserProfile()
@@ -106,16 +110,20 @@ fun DoctorScheduleScreen(
 
     LaunchedEffect(cancelSuccess) {
         if (cancelSuccess) {
+            Toast.makeText(context, "Appointment cancelled successfully", Toast.LENGTH_SHORT).show()
             scheduleViewModel.fetchSchedules()
             showDetailsDialog = false
+            showCancelDialog = false
+        }
+    }
+
+    LaunchedEffect(cancelError) {
+        cancelError?.let { errorMsg ->
+            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
         }
     }
 
     val schedulesByDate = remember(schedules) {
-        Log.d("DoctorSchedule", "Total schedules: ${schedules.size}")
-        schedules.forEach {
-            Log.d("DoctorSchedule", "Schedule: ${it.startHour} - ${it.endHour}, booked: ${it.booked}")
-        }
         schedules
             .groupBy {
                 LocalDateTime.parse(it.startHour, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -137,8 +145,6 @@ fun DoctorScheduleScreen(
     val schedulesForSelectedDate = remember(selectedDate, schedulesByDate) {
         selectedDate?.let { schedulesByDate[it] } ?: emptyList()
     }
-
-    var showCancelDialog by remember { mutableStateOf(false) }
 
     val filteredSchedules = remember(schedulesForSelectedDate, selectedTab) {
         when (selectedTab) {
@@ -163,17 +169,43 @@ fun DoctorScheduleScreen(
         )
     }
 
-    if (showCancelDialog) {
+    if (showCancelDialog && selectedSchedule != null) {
+        val startDateTime = LocalDateTime.parse(
+            selectedSchedule!!.startHour,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        )
+        
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
-            title = { Text("Confirm Cancellation") },
-            text = { Text("Are you sure you want to cancel the appointment with Dr. ?") },
+            title = { 
+                Text(text = "Confirm Cancellation") 
+            },
+            text = { 
+                Column {
+                    Text("Are you sure you want to cancel this appointment?")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Date: ${startDateTime.format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy"))}",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = "Time: ${startDateTime.format(DateTimeFormatter.ofPattern("HH:mm"))}",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            },
             confirmButton = {
                 Button(
                     onClick = {
-                        showCancelDialog = false
-//                        onCancelVisit(visit.id)
-                    }
+                        selectedSchedule!!.visitId?.let { visitId ->
+                            visitsViewModel.cancelVisit(visitId)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = LocalCustomColors.current.red800
+                    )
                 ) {
                     Text("Confirm")
                 }

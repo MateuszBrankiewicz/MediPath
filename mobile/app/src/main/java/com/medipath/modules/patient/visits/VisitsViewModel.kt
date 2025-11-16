@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -63,6 +64,21 @@ class VisitsViewModel : ViewModel() {
     private val _cancelSuccess = MutableStateFlow(false)
     val cancelSuccess: StateFlow<Boolean> = _cancelSuccess.asStateFlow()
 
+    private fun parseErrorMessage(errorBody: String?, statusCode: Int): String {
+        return try {
+            errorBody?.let { body ->
+                val jsonObject = JSONObject(body)
+                when {
+                    jsonObject.has("message") -> jsonObject.getString("message")
+                    jsonObject.has("error") -> jsonObject.getString("error")
+                    else -> "Request failed ($statusCode)"
+                }
+            } ?: "Request failed ($statusCode)"
+        } catch (e: Exception) {
+            errorBody ?: "Request failed ($statusCode)"
+        }
+    }
+
     fun fetchVisits(upcoming: Boolean = false) {
         viewModelScope.launch {
             try {
@@ -112,7 +128,8 @@ class VisitsViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to cancel visit: ${response.code()}"
+                    val errorBody = response.errorBody()?.string()
+                    _error.value = parseErrorMessage(errorBody, response.code())
                 }
             } catch (e: Exception) {
                 _error.value = "Failed to cancel visit: ${e.message}"

@@ -9,6 +9,7 @@ data class DoctorScheduleItem(
     val startHour: String,
     val endHour: String,
     val booked: Boolean,
+    val visitId: String?,
     val doctor: ScheduleDoctor,
     val institution: Institution
 )
