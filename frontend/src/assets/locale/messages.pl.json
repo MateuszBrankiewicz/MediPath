@@ -801,5 +801,7 @@
 
   "confirmationDialogs.disableInstitutionMessage": "Czy na pewno chcesz wyłączyć tę instytucję? Tę akcję można później cofnąć.",
   "institution.disabledSuccessfully": "Instytucja została wyłączona pomyślnie",
-  "institution.disableError": "Nie udało się wyłączyć instytucji. Spróbuj ponownie."
+  "institution.disableError": "Nie udało się wyłączyć instytucji. Spróbuj ponownie.",
+    "patient.appointment.bookSuccess": "Wizyta została pomyślnie zarezerwowana",
+  "patient.appointment.bookError": "Wystąpił błąd podczas rezerwacji wizyty."
 }
