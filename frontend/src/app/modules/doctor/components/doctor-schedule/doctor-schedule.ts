@@ -8,23 +8,23 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ButtonModule } from 'primeng/button';
+import { DialogService } from 'primeng/dynamicdialog';
 import { CalendarDay, InputSlot } from '../../../../core/models/schedule.model';
 import { DateTimeService } from '../../../../core/services/date-time/date-time.service';
 import { DoctorService } from '../../../../core/services/doctor/doctor.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
 import { mapSchedulesToCalendarDays } from '../../../../utils/calendarMapper';
+import { ScheduleVisitDialog } from '../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
 import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
 import { Calendar } from '../../../shared/components/calendar/calendar';
 import {
   FilterButtonConfig,
   FilterButtonsComponent,
 } from '../../../shared/components/filter-buttons/filter-buttons.component';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ToastService } from '../../../../core/services/toast/toast.service';
-import { DialogService } from 'primeng/dynamicdialog';
-import { Dialog } from 'primeng/dialog';
 import { AcceptActionDialogComponent } from '../../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 
 export interface Appointment {
@@ -183,10 +183,62 @@ export class DoctorSchedule
   }
 
   public rescheduleVisit(): void {
-    console.log(
-      'Reschedule visit for:',
-      this.selectedAppointment()?.patientName,
-    );
+    const selectedAppointment = this.selectedAppointment();
+    if (!selectedAppointment || selectedAppointment.status !== 'booked') {
+      this.toastService.showError(
+        'Please select a booked appointment to reschedule',
+      );
+      return;
+    }
+
+    const ref = this.dialogService.open(ScheduleVisitDialog, {
+      header: this.translationService.translate(
+        'doctor.schedule.rescheduleVisit',
+      ),
+      width: '90%',
+      height: '90%',
+      data: {
+        visitId: selectedAppointment.id,
+        isDoctor: true,
+      },
+    });
+
+    if (!ref) {
+      return;
+    }
+
+    ref.onClose
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
+        if (!result) {
+          return;
+        }
+
+        const rescheduleRequest = {
+          scheduleID: result.slotId,
+          patientRemarks: result.remarks || '',
+        };
+
+        this.visitsService
+          .rescheduleVisit(rescheduleRequest, result.visitId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.toastService.showSuccess('Visit rescheduled successfully');
+              const selected = this.selectedDate();
+              if (selected) {
+                this.onDateSelected(selected);
+              }
+              this.selectedAppointment.set(null);
+            },
+            error: (err) => {
+              console.error('Error rescheduling visit:', err);
+              this.toastService.showError(
+                'Failed to reschedule visit. Please try again later.',
+              );
+            },
+          });
+      });
   }
 
   public cancelVisit(): void {
@@ -301,7 +353,7 @@ export class DoctorSchedule
             return {
               id: slot.id,
               time: slot.startHour,
-              patientName: '', // Pusty string dla wolnych slotów
+              patientName: '',
               status: 'available' as const,
               remarks: undefined,
             };
@@ -310,7 +362,7 @@ export class DoctorSchedule
 
         this.todayAppointments.set(appointments);
       },
-      error: (error) => {
+      error: () => {
         const emptyAppointments: Appointment[] = allSlots.map((slot) => ({
           id: slot.id,
           time: slot.startHour,

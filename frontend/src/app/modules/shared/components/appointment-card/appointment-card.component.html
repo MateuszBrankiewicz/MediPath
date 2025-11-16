@@ -34,6 +34,7 @@
         [icon]="primaryActionButton().icon"
         styleClass="btn-details p-button-outlined"
         (onClick)="onPatientDetailsClick()"
+        [disabled]="isViewDetailsDisabled()"
       />
     }
     @if (showCancelButton()) {

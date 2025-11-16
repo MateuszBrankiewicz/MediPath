@@ -21,7 +21,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     @Query("{'govId': ?0, isActive: true}")
     Optional<User> findByGovID(String id);
 
-    long count();
+  long count();
 
     @Query("{_id:{ $oid: \"?0\" }, roleCode: { $in: [2, 3, 6, 7, 14, 15] }, isActive: true }")
     Optional<User> findDoctorById(String id);
@@ -38,7 +38,10 @@ public interface UserRepository extends MongoRepository<User, String> {
     })
     ArrayList<User> getUserNotificationsNow(LocalDateTime lower, LocalDateTime upper);
 
-    @Query("{}")
-    @Update("{'$pull': {'notifications': {'timestamp': { $lt: ?0 }}}}")
-    void deleteOldNotifications(LocalDateTime date);
+  @Query("{}")
+  @Update("{'$pull': {'notifications': {'timestamp': { $lt: ?0 }}}}")
+  void deleteOldNotifications(LocalDateTime date);
+
+  @Query("{_id:{ $oid: \"?0\" }, roleCode: { $gt: 1 } }")
+  Optional<User> findEmployeeById(String id);
 }

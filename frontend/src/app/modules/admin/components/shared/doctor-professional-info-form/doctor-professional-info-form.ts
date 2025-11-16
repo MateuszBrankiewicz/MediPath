@@ -49,36 +49,40 @@ interface RoleOption {
             </p-multiselect>
           </div>
         }
-        <div class="form-field">
-          <label for="specialisation" class="field-label">
-            <i class="pi pi-briefcase"></i>
-            {{
-              translationService.translate(translationKey() + '.specialisation')
-            }}
-          </label>
-          <p-multiselect
-            inputId="specialisation"
-            formControlName="specialisation"
-            [options]="specialisations()"
-            optionLabel="name"
-            optionValue="name"
-            [placeholder]="
-              translationService.translate(
-                translationKey() + '.placeholders.specialisation'
-              )
-            "
-            display="chip"
-            [showToggleAll]="false"
-            [class.invalid]="isFieldInvalid()('specialisation')"
-          />
-          @if (isFieldInvalid()('specialisation')) {
-            <small class="error-message">
-              <i class="pi pi-exclamation-circle"></i>
-              {{ getFieldError()('specialisation') }}
-            </small>
-          }
-        </div>
 
+        @if (showSpecialisations()) {
+          <div class="form-field">
+            <label for="specialisation" class="field-label">
+              <i class="pi pi-briefcase"></i>
+              {{
+                translationService.translate(
+                  translationKey() + '.specialisation'
+                )
+              }}
+            </label>
+            <p-multiselect
+              inputId="specialisation"
+              formControlName="specialisation"
+              [options]="specialisations()"
+              optionLabel="name"
+              optionValue="name"
+              [placeholder]="
+                translationService.translate(
+                  translationKey() + '.placeholders.specialisation'
+                )
+              "
+              display="chip"
+              [showToggleAll]="false"
+              [class.invalid]="isFieldInvalid()('specialisation')"
+            />
+            @if (isFieldInvalid()('specialisation')) {
+              <small class="error-message">
+                <i class="pi pi-exclamation-circle"></i>
+                {{ getFieldError()('specialisation') }}
+              </small>
+            }
+          </div>
+        }
         <div class="form-field">
           <label for="pwzNumber" class="field-label">
             <i class="pi pi-shield"></i>
@@ -115,13 +119,12 @@ export class DoctorProfessionalInfoFormComponent {
   showRoleSelect = input<boolean>(false);
   isFieldInvalid = input.required<(fieldPath: string) => boolean>();
   getFieldError = input.required<(fieldPath: string) => string>();
-
+  public showSpecialisations = input<boolean>(true);
   roleChanged = output<SelectChangeEvent>();
 
   protected translationService = inject(TranslationService);
 
   protected handleRoleChange(event: MultiSelectChangeEvent): void {
-    console.log(event);
     this.roleChanged.emit(event);
   }
 }

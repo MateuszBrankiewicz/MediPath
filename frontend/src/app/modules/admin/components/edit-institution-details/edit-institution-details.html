@@ -82,7 +82,7 @@
                 ></textarea>
               </div>
 
-              <div class="form-field full-width">
+              <div class="form-field">
                 <label for="specialisation" class="field-label">
                   <i class="pi pi-briefcase"></i>
                   {{
@@ -94,9 +94,9 @@
                 <p-multiselect
                   inputId="specialisation"
                   formControlName="specialisation"
-                  [options]="availableTypes"
+                  [options]="availableTypes()"
                   optionLabel="name"
-                  optionValue="code"
+                  optionValue="name"
                   [placeholder]="
                     translationService.translate(
                       'admin.institution.placeholders.specialisation'
@@ -112,6 +112,31 @@
                     {{ getFieldError("specialisation") }}
                   </small>
                 }
+              </div>
+
+              <div class="form-field checkbox-field">
+                <label for="isPublic" class="field-label">
+                  <i class="pi pi-eye"></i>
+                  {{
+                    translationService.translate(
+                      "admin.institution.view.visibility"
+                    )
+                  }}
+                </label>
+                <div class="checkbox-container">
+                  <p-checkbox
+                    inputId="isPublic"
+                    formControlName="isPublic"
+                    [binary]="true"
+                  />
+                  <label for="isPublic" class="checkbox-label">
+                    {{
+                      translationService.translate(
+                        "admin.institution.view.public"
+                      )
+                    }}
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -249,63 +274,6 @@
             </div>
           </div>
 
-          <!-- <div class="form-section">
-            <p-divider />
-            <h3 class="section-title">
-              {{ translationService.translate("admin.institution.doctors") }}
-            </h3>
-            <div class="search-container">
-              <label for="searchDoctor" class="field-label">
-                <i class="pi pi-search"></i>
-                {{
-                  translationService.translate(
-                    "admin.institution.searchAddDoctor"
-                  )
-                }}
-              </label>
-              <div class="search-input-group">
-                <input
-                  pInputText
-                  id="searchDoctor"
-                  [(ngModel)]="searchQuery"
-                  [ngModelOptions]="{ standalone: true }"
-                  [placeholder]="
-                    translationService.translate(
-                      'admin.institution.placeholders.searchDoctor'
-                    )
-                  "
-                  class="search-input"
-                />
-                <p-button
-                  [label]="translationService.translate('shared.add')"
-                  (onClick)="addEmployeeFromSearch()"
-                  [disabled]="!searchQuery()"
-                  icon="pi pi-plus"
-                ></p-button>
-              </div>
-
-              @if (employees().length > 0) {
-                <div class="selected-items">
-                  @for (employee of employees(); track employee.userId) {
-                    <p-chip
-                      [label]="
-                        employee.name +
-                        ' ' +
-                        employee.surname +
-                        ' (PWZ: ' +
-                        employee.userId +
-                        ')'
-                      "
-                      [removable]="true"
-                      (onRemove)="removeEmployee(employee.userId)"
-                      styleClass="custom-chip"
-                    ></p-chip>
-                  }
-                </div>
-              }
-            </div>
-          </div> -->
-
           <p-divider />
           <div class="form-section">
             <div class="field-label">
@@ -331,15 +299,6 @@
                     "
                   ></button>
                 </div>
-              } @else {
-                <!-- <div class="upload-placeholder">
-                  <p-button
-                    icon="pi pi-plus"
-                    [rounded]="true"
-                    [outlined]="true"
-                    (onClick)="fileUpload.choose()"
-                  ></p-button>
-                </div> -->
               }
               <p-fileUpload
                 #fileUpload
@@ -355,23 +314,41 @@
           </div>
 
           <div class="form-actions">
-            <p-button
-              [label]="translationService.translate('shared.cancel')"
-              (onClick)="cancel()"
-              severity="secondary"
-              [outlined]="true"
-              size="large"
-              type="button"
-              class="cancel-button"
-            />
-            <p-button
-              [label]="translationService.translate('shared.save')"
-              [loading]="isSaving()"
-              [disabled]="isSaving()"
-              type="submit"
-              size="large"
-              class="confirm-button"
-            />
+            <div class="left-actions">
+              @if (isEditMode() && isAdmin()) {
+                <p-button
+                  [label]="
+                    translationService.translate('shared.hospitalCard.disable')
+                  "
+                  (onClick)="deactivateInstitution()"
+                  severity="danger"
+                  [outlined]="true"
+                  size="large"
+                  type="button"
+                  icon="pi pi-ban"
+                  class="deactivate-button"
+                />
+              }
+            </div>
+            <div class="right-actions">
+              <p-button
+                [label]="translationService.translate('shared.cancel')"
+                (onClick)="cancel()"
+                severity="secondary"
+                [outlined]="true"
+                size="large"
+                type="button"
+                class="cancel-button"
+              />
+              <p-button
+                [label]="translationService.translate('shared.save')"
+                [loading]="isSaving()"
+                [disabled]="isSaving()"
+                type="submit"
+                size="large"
+                class="confirm-button"
+              />
+            </div>
           </div>
         </div>
       </p-card>

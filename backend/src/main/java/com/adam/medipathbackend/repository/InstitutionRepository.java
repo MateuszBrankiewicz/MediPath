@@ -18,8 +18,8 @@ public interface InstitutionRepository extends MongoRepository<Institution, Stri
     @Aggregation({"{$match: { name: { $regex: /?0/i }}}"})
     ArrayList<Institution> findInstitutionByName(String name);
 
-    @Aggregation({"{$match: { types: { $elemMatch: { $regex: /?0/i }}}}"})
-    ArrayList<Institution> findInstitutionBySpec(String name);
+  @Aggregation({ "{$match: { types: { $elemMatch: { $regex: /?0/i }}}}" })
+  ArrayList<Institution> findInstitutionBySpec(String name);
 
     @Aggregation({"{$addFields: { cityProvince: {$concat: [\"$address.city\", \",\", \"$address.province\"]} }}", "{$match: { cityProvince: { $regex: /?0/i }, name: { $regex: /?1/i }, isActive: true}}"})
     ArrayList<Institution> findInstitutionByCity(String cityProvince, String name);
@@ -85,11 +85,11 @@ public interface InstitutionRepository extends MongoRepository<Institution, Stri
     })
     ArrayList<Institution> findInstitutionsWhereAdmin(String adminid);
 
-    @Aggregation({
-            "{ \"$unwind\": \"$employees\" }",
-            "{ \"$match\": { \"employees.userId\": ?0, \"employees.roleCode\": { \"$in\": [4, 5, 6, 7, 12, 13, 14, 15] } } }",
-    })
-    ArrayList<Institution> findInstitutionsWhereStaff(String staffid);
+  @Aggregation({
+      "{ \"$unwind\": \"$employees\" }",
+      "{ \"$match\": { \"employees.userId\": ?0, \"employees.roleCode\": { \"$in\": [4, 5, 6, 7, 12, 13, 14, 15] } } }",
+  })
+  ArrayList<Institution> findInstitutionsWhereStaff(String staffid);
 
     @Aggregation({
             "{ \"$unwind\": \"$employees\" }",
@@ -97,4 +97,17 @@ public interface InstitutionRepository extends MongoRepository<Institution, Stri
             "{ \"$project\": { \"_id\": 1, \"roleCode\": \"$employees.roleCode\"} }"
     })
     ArrayList<Map<String, Object>> getRoleCodes(String userId);
+
+
+  @Aggregation({
+      "{ \"$unwind\": \"$employees\" }",
+      "{ \"$match\": { \"_id\": {$oid: ?0}, \"employees.roleCode\": { \"$gt\": 1}, \"isActive\": true } }",
+      "{ \"$project\": { \"_id\": 1, \"name\": \"$employees.name\", \"surname\": \"$employees.surname\", \"specialisations\": \"$employees.specialisations\", \"userId\": \"$employees.userId\", \"roleCode\": \"$employees.roleCode\", \"pfpimage\": \"$employees.pfpimage\"} }"
+  })
+  ArrayList<StaffDigest> findEmployeesInInstitution(String institutionid);
+
+  @Aggregation({
+      "{ \"$match\": { \"employees.userId\": ?0, \"isActive\": true } }"
+  })
+  ArrayList<Institution> findInstitutionsByEmployeeId(String userId);
 }

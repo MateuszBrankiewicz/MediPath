@@ -71,13 +71,6 @@
           }
         }
       </div>
-      <!-- <p-paginator
-        (onPageChange)="onPageChange($event)"
-        [first]="first()"
-        [rows]="rows()"
-        [totalRecords]="getCountToPaginate()"
-        style="margin-bottom: 10px"
-      /> -->
     </div>
 
     <app-calendar
@@ -99,21 +92,25 @@
       </div>
 
       <div class="appointment-actions">
-        <p-button
-          [label]="
-            translationService.translate('doctor.schedule.rescheduleVisit')
-          "
-          styleClass="reschedule-btn-fixed"
-          (onClick)="rescheduleVisit()"
-        >
-        </p-button>
+        @if (selectedAppointment()?.status === "booked") {
+          <p-button
+            [label]="
+              translationService.translate('doctor.schedule.rescheduleVisit')
+            "
+            styleClass="reschedule-btn-fixed"
+            (onClick)="rescheduleVisit()"
+          >
+          </p-button>
 
-        <p-button
-          [label]="translationService.translate('doctor.schedule.cancelVisit')"
-          styleClass="cancel-btn-fixed"
-          (onClick)="cancelVisit()"
-        >
-        </p-button>
+          <p-button
+            [label]="
+              translationService.translate('doctor.schedule.cancelVisit')
+            "
+            styleClass="cancel-btn-fixed"
+            (onClick)="cancelVisit()"
+          >
+          </p-button>
+        }
       </div>
     </div>
   </div>

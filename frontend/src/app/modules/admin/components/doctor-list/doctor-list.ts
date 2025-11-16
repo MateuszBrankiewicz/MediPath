@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
@@ -14,13 +15,24 @@ import { CardModule } from 'primeng/card';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
-import { ProgressSpinner } from 'primeng/progressspinner';
+import { PaginatorModule } from 'primeng/paginator';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { DoctorProfile } from '../../../../core/models/doctor.model';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
+import {
+  FilterFieldConfig,
+  FilteringService,
+} from '../../../../core/services/filtering/filtering.service';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
+import {
+  SortFieldConfig,
+  SortingService,
+} from '../../../../core/services/sorting/sorting.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
+import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
+import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
 import { SelectInstitution } from '../shared/select-institution/select-institution';
 
@@ -36,37 +48,119 @@ import { SelectInstitution } from '../shared/select-institution/select-instituti
     FormsModule,
     SkeletonModule,
     SelectInstitution,
-    ProgressSpinner,
+    FilterComponent,
+    PaginatorModule,
   ],
   templateUrl: './doctor-list.html',
   styleUrl: './doctor-list.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DoctorList {
+export class DoctorList extends PaginatedComponentBase<DoctorProfile> {
   private institutionService = inject(InstitutionService);
   private institutionStoreService = inject(InstitutionStoreService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private toastService = inject(ToastService);
   protected translationService = inject(TranslationService);
-
+  private sortingService = inject(SortingService);
+  private filteringService = inject(FilteringService);
+  private readonly authService = inject(AuthenticationService);
   protected doctors = signal<DoctorProfile[]>([]);
-  protected searchQuery = signal<string>('');
   protected isLoading = signal<boolean>(true);
+  protected readonly isAdmin = this.authService.getLastPanel() === 'admin';
+  protected readonly filters = signal<{
+    searchTerm: string;
+    status: string;
+    dateFrom: Date | null;
+    dateTo: Date | null;
+    sortField: string;
+    sortOrder: 'asc' | 'desc';
+  }>({
+    searchTerm: '',
+    status: 'all',
+    dateFrom: null,
+    dateTo: null,
+    sortField: 'doctorName',
+    sortOrder: 'asc',
+  });
 
-  protected filteredDoctors = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    const allDoctors = this.doctors();
+  private readonly doctorFilterConfig: FilterFieldConfig<DoctorProfile> =
+    this.filteringService.combineConfigs(
+      this.filteringService.searchConfig<DoctorProfile>(
+        (d) => `${d.doctorName} ${d.doctorSurname}`,
+        (d) => d.licenceNumber,
+        (d) => d.doctorSchedules?.[0]?.doctor?.specialisations?.join(' ') ?? '',
+      ),
+    );
 
-    if (!query) {
-      return allDoctors;
-    }
+  private readonly doctorSortConfig: SortFieldConfig<DoctorProfile>[] = [
+    this.sortingService.stringField(
+      'doctorName',
+      (d) => `${d.doctorName} ${d.doctorSurname}`,
+    ),
+    this.sortingService.stringField('licenceNumber', (d) => d.licenceNumber),
+    this.sortingService.numberField('rating', (d) => d.rating),
+    this.sortingService.numberField(
+      'schedules',
+      (d) => d.doctorSchedules?.length ?? 0,
+    ),
+  ];
 
-    return allDoctors.filter((doctor) => {
-      const fullName =
-        `${doctor.doctorName} ${doctor.doctorSurname}`.toLowerCase();
-      const licenceNumber = doctor.licenceNumber.toLowerCase();
-      return fullName.includes(query) || licenceNumber.includes(query);
-    });
+  protected readonly filteredDoctors = computed(() => {
+    const filter = this.filters();
+    return this.filteringService.filter(
+      this.doctors(),
+      {
+        searchTerm: filter.searchTerm,
+      },
+      this.doctorFilterConfig,
+    );
+  });
+
+  protected readonly sortedDoctors = computed(() => {
+    const { sortField, sortOrder } = this.filters();
+    return this.sortingService.sort(
+      this.filteredDoctors(),
+      sortField,
+      sortOrder,
+      this.doctorSortConfig,
+    );
+  });
+
+  protected override get sourceData() {
+    return this.sortedDoctors();
+  }
+
+  protected readonly paginatedDoctors = computed(() => {
+    return this.paginatedData();
+  });
+
+  protected override readonly totalRecords = computed(
+    () => this.sortedDoctors().length,
+  );
+
+  protected readonly sortByOptions = computed(() => {
+    this.translationService.language();
+    return [
+      {
+        label: this.translationService.translate('admin.doctorList.name'),
+        value: 'doctorName',
+      },
+      {
+        label: this.translationService.translate(
+          'admin.doctorList.licenseNumber',
+        ),
+        value: 'licenceNumber',
+      },
+      {
+        label: this.translationService.translate('admin.doctorList.rating'),
+        value: 'rating',
+      },
+      {
+        label: this.translationService.translate('admin.doctorList.schedules'),
+        value: 'schedules',
+      },
+    ];
   });
 
   protected readonly institutionName = computed(() => {
@@ -74,6 +168,7 @@ export class DoctorList {
   });
 
   constructor() {
+    super();
     effect(() => {
       const selectedInstitution =
         this.institutionStoreService.selectedInstitution();
@@ -89,7 +184,7 @@ export class DoctorList {
     this.isLoading.set(true);
 
     this.institutionService
-      .getDoctorsForInstitution(doctorId)
+      .getEmployeesForInstitution(doctorId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (doctors) => {
@@ -103,6 +198,18 @@ export class DoctorList {
           this.isLoading.set(false);
         },
       });
+  }
+
+  protected onFiltersChange(ev: {
+    searchTerm: string;
+    status: string;
+    dateFrom: Date | null;
+    dateTo: Date | null;
+    sortField: string;
+    sortOrder: 'asc' | 'desc';
+  }): void {
+    this.filters.set(ev);
+    this.resetPagination();
   }
 
   protected onAddDoctor(): void {

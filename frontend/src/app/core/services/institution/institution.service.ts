@@ -98,6 +98,17 @@ export class InstitutionService {
       .pipe(map((res: DoctorApiResponse): DoctorProfile[] => res.doctors));
   }
 
+  public getEmployeesForInstitution(
+    institutionId: string,
+  ): Observable<DoctorProfile[]> {
+    return this.http
+      .get<DoctorApiResponse>(
+        `${API_URL}/institution/${institutionId}/employees`,
+        { withCredentials: true },
+      )
+      .pipe(map((res: DoctorApiResponse): DoctorProfile[] => res.doctors));
+  }
+
   public getUpcomingVisitsForInstitution(
     institutionId: string,
   ): Observable<UpcomingVisitItem[]> {
@@ -219,9 +230,24 @@ export class InstitutionService {
   }
 
   public findUserByGovId(govId: string): Observable<FindedEmployee> {
-    console.log(govId);
     return this.http.get<FindedEmployee>(`${API_URL}/users/find/${govId}`, {
       withCredentials: true,
     });
+  }
+
+  public updatePwzNumber(userId: string, pwzNumber: string) {
+    return this.http.put<void>(
+      `${API_URL}/doctors/${userId}`,
+      { licenceNumber: pwzNumber },
+      { withCredentials: true },
+    );
+  }
+
+  public deactivateInstitution(institutionId: string): Observable<void> {
+    return this.http.post<void>(
+      `${API_URL}/institution/${institutionId}/deactivate`,
+      {},
+      { withCredentials: true },
+    );
   }
 }

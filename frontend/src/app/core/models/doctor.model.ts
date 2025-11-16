@@ -67,6 +67,8 @@ export interface DoctorProfile {
   rating: number;
   licenceNumber: string;
   numofratings: number;
+  specialisations?: string[];
+  roleCode?: number;
 }
 
 export interface DoctorApiResponse {
@@ -125,8 +127,7 @@ export interface FullDoctorInfo extends DoctorPageModel {
   govId: string;
   email: string;
   phoneNumber: string;
-  roleCode: number;
-  specialisations: string[];
+  institutionsEmployee: EditedEmployee[];
 }
 
 export interface FullDoctorInfoApiResponse {
@@ -139,4 +140,12 @@ export interface FindedEmployee {
   email: string;
   name: string;
   surname: string;
+}
+
+export interface EditedEmployee {
+  institutionId: string;
+  institutionName: string;
+  roleCode: number;
+  specialisations: string[];
+  image?: string | null;
 }

@@ -62,7 +62,7 @@ export class NavigationService {
               },
               {
                 label: this.translationService.translate('navigation.visits'),
-                icon: 'pi pi-file-medical',
+                icon: 'pi pi-list',
                 routerLink: '/doctor/visits',
                 visible: true,
               },
@@ -152,38 +152,46 @@ export class NavigationService {
             role: UserRoles.ADMIN,
             menuItems: [
               {
-                label: 'Dashboard',
+                label: this.translationService.translate(
+                  'navigation.dashboard',
+                ),
                 icon: 'pi pi-home',
-                routerLink: '/patient/dashboard',
+                routerLink: '/admin',
                 visible: true,
               },
               {
-                label: 'Schedule',
+                label: this.translationService.translate('navigation.schedule'),
                 icon: 'pi pi-calendar',
                 routerLink: '/admin/schedule',
                 visible: true,
               },
               {
-                label: 'Visits',
-                icon: 'pi pi-file-medical',
+                label: this.translationService.translate('navigation.visits'),
+                icon: 'pi pi-list',
                 routerLink: '/admin/visits',
                 visible: true,
               },
               {
-                label: 'Institutions',
-                icon: 'pi pi-user',
-                routerLink: 'admin/institutions',
+                label: this.translationService.translate(
+                  'navigation.institutions',
+                ),
+                icon: 'pi pi-building',
+                routerLink: '/admin/institutions',
                 visible: true,
               },
               {
-                label: 'Notifications',
-                icon: 'pi pi-user',
+                label: this.translationService.translate(
+                  'navigation.notifications',
+                ),
+                icon: 'pi pi-bell',
                 routerLink: '/admin/notifications',
                 visible: true,
               },
               {
-                label: 'Doctors',
-                icon: 'pi pi-user',
+                label: this.translationService.translate(
+                  'navigation.employees',
+                ),
+                icon: 'pi pi-users',
                 routerLink: '/admin/doctors',
                 visible: true,
               },

@@ -40,7 +40,6 @@
       </div>
     </div>
 
-    <!-- Row 2: Birth Date, Phone, Government ID -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label" for="birthDate">{{
@@ -90,7 +89,6 @@
       </div>
     </div>
 
-    <!-- Change Password Button -->
     <div class="change-password-section">
       <button
         type="button"
@@ -99,17 +97,22 @@
       >
         {{ translationService.translate("editProfile.changePassword") }}
       </button>
+
+      <button
+        type="button"
+        class="deactivate-account-btn"
+        (click)="onDeactivateAccount()"
+      >
+        {{ translationService.translate("accountSettings.deactivateAccount") }}
+      </button>
     </div>
 
-    <!-- Separator line -->
     <div class="separator"></div>
 
-    <!-- Address Section -->
     <h3 class="section-title">
       {{ translationService.translate("editProfile.addressTitle") }}
     </h3>
 
-    <!-- Row 3: Province, Postal Code, City -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label" for="province">{{
@@ -157,7 +160,6 @@
       </div>
     </div>
 
-    <!-- Row 4: Number, Street -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label" for="number">{{
@@ -188,26 +190,38 @@
           }}"
         />
       </div>
-
-      <div class="form-group"></div>
-      <!-- Empty for layout -->
     </div>
 
-    <!-- Save Button -->
-    <div class="save-section">
-      <button
-        type="submit"
-        class="save-btn"
-        [disabled]="isSubmitting() || !profileFormGroup.valid"
-      >
-        @if (isSubmitting()) {
-          <span class="loading-text">{{
-            translationService.translate("editProfile.saving")
-          }}</span>
-        } @else {
-          {{ translationService.translate("editProfile.saveChanges") }}
-        }
-      </button>
+    <div class="separator"></div>
+
+    <h3 class="section-title">
+      {{ translationService.translate("editProfile.addressTitle") }}
+    </h3>
+
+    <div class="">
+      <p-fileUpload
+        #fileUpload
+        mode="basic"
+        accept="image/*"
+        [maxFileSize]="5000000"
+        (onSelect)="onImageUpload($event)"
+        [chooseLabel]="translationService.translate('institution.upload_image')"
+      ></p-fileUpload>
+      <div class="save-section">
+        <button
+          type="submit"
+          class="save-btn"
+          [disabled]="isSubmitting() || !profileFormGroup.valid"
+        >
+          @if (isSubmitting()) {
+            <span class="loading-text">{{
+              translationService.translate("editProfile.saving")
+            }}</span>
+          } @else {
+            {{ translationService.translate("editProfile.saveChanges") }}
+          }
+        </button>
+      </div>
     </div>
   </form>
 </div>

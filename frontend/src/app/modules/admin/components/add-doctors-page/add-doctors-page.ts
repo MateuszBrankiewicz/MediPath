@@ -14,7 +14,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
-import { SelectChangeEvent } from 'primeng/select';
 import { AddDoctorRequest } from '../../../../core/models/add-docotr.model';
 import { Specialisation } from '../../../../core/models/specialisation.model';
 import { AuthenticationService } from '../../../../core/services/authentication/authentication';
@@ -29,6 +28,7 @@ import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-profession
 import { InputTextModule } from 'primeng/inputtext';
 import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { FullDoctorInfo } from '../../../../core/models/doctor.model';
+import { MultiSelectChangeEvent } from 'primeng/multiselect';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
@@ -148,11 +148,11 @@ export class AddDoctorsPage implements OnInit {
         street: formValue.residentialAddress.street,
         number: formValue.residentialAddress.number,
       },
-      doctorDetails: {
-        licenceNumber: formValue.pwzNumber,
+      employeeDetails: {
         specialisations: formValue.specialisation,
+        roleCode: role,
       },
-      roleCode: role,
+      licenceNumber: formValue.pwzNumber,
     };
 
     this.institutionService
@@ -237,8 +237,8 @@ export class AddDoctorsPage implements OnInit {
     return this.getFieldError(fieldPath);
   };
 
-  protected roleChanged(event: SelectChangeEvent) {
-    if (event.value === 2) {
+  protected roleChanged(event: MultiSelectChangeEvent) {
+    if (event.value.includes(2)) {
       this.doctorForm.controls['specialisation'].enable();
       this.doctorForm.controls['pwzNumber'].enable();
     }
@@ -312,7 +312,7 @@ export class AddDoctorsPage implements OnInit {
       birthDate: birthDate,
       phoneNumber: doctorData.phoneNumber,
       personalId: doctorData.govId,
-      specialisation: doctorData.specialisations,
+      specialisation: doctorData.specialisation,
       pwzNumber: doctorData.licenceNumber,
       residentialAddress: {
         province: doctorData.address.province,

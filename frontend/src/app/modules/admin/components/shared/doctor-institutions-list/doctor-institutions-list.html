@@ -28,15 +28,52 @@
         @for (institution of institutions(); track institution.institutionId) {
           <div class="institution-item">
             <div class="institution-info">
-              <i class="pi pi-building"></i>
-              <div class="institution-details">
-                <span class="institution-name">
-                  {{ institution.institutionName }}
-                </span>
-                <p-tag
-                  [value]="getRoleName(institution.roleCode)"
-                  [severity]="getRoleSeverity(institution.roleCode)"
+              @if (institution.image) {
+                <img
+                  [src]="institution.image"
+                  alt="{{ institution.institutionName }} Logo"
+                  class="institution-logo"
                 />
+              } @else {
+                <i class="pi pi-building"></i>
+              }
+              <div class="institution-details">
+                <div class="institution-main">
+                  <span class="institution-name">
+                    {{ institution.institutionName }}
+                  </span>
+                </div>
+                <div class="institution-meta">
+                  <div class="meta-item">
+                    <span class="meta-label"
+                      >{{
+                        translationService.translate(
+                          translationKey() + ".role"
+                        )
+                      }}:</span
+                    >
+                    <span class="meta-value">{{
+                      getRolesDisplay(institution.roleCode)
+                    }}</span>
+                  </div>
+                  @if (
+                    institution.specialisations &&
+                    institution.specialisations.length > 0
+                  ) {
+                    <div class="meta-item">
+                      <span class="meta-label"
+                        >{{
+                          translationService.translate(
+                            translationKey() + ".specialisations"
+                          )
+                        }}:</span
+                      >
+                      <span class="meta-value">{{
+                        institution.specialisations.join(", ")
+                      }}</span>
+                    </div>
+                  }
+                </div>
               </div>
             </div>
             <div class="institution-actions">
@@ -70,7 +107,7 @@
     translationService.translate(translationKey() + '.addInstitutionDialog')
   "
   [modal]="true"
-  [style]="{ width: '450px' }"
+  [style]="{ width: '50%' }"
 >
   <div class="dialog-content">
     <div class="field-group">
@@ -104,7 +141,7 @@
       <label for="role-select" class="field-label">
         {{ translationService.translate(translationKey() + ".role") }}
       </label>
-      <p-select
+      <p-multiselect
         [(ngModel)]="selectedRole"
         [options]="roleOptions"
         optionLabel="name"
@@ -114,6 +151,40 @@
         id="role-select"
         [style]="{ width: '100%' }"
         appendTo="body"
+        (onChange)="onRoleChange($event)"
+      >
+        <ng-template let-role pTemplate="item">
+          <div>{{ translationService.translate(role.name) }}</div>
+        </ng-template>
+        <ng-template let-value pTemplate="selectedItems">
+          @if (value && value.length > 0) {
+            <div class="selected-roles">
+              {{ getSelectedRolesDisplay(value) }}
+            </div>
+          }
+        </ng-template>
+      </p-multiselect>
+    </div>
+
+    <div class="field-group">
+      <label for="role-select" class="field-label">
+        {{
+          translationService.translate(translationKey() + ".specialisations")
+        }}
+      </label>
+      <p-multiselect
+        [(ngModel)]="selectedSpecialistaions"
+        [options]="specialisations()"
+        optionLabel="name"
+        [placeholder]="
+          translationService.translate(
+            translationKey() + '.selectSpecialisaion'
+          )
+        "
+        id="role-select"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+        [disabled]="shouldEnableSpecialisations()"
       />
     </div>
   </div>
@@ -138,7 +209,7 @@
   [(visible)]="displayEditDialog"
   [header]="translationService.translate(translationKey() + '.editRoleDialog')"
   [modal]="true"
-  [style]="{ width: '400px' }"
+  [style]="{ width: '50%' }"
 >
   <div class="dialog-content">
     <div class="field-group">
@@ -154,15 +225,50 @@
       <label for="edit-role-select" class="field-label">
         {{ translationService.translate(translationKey() + ".role") }}
       </label>
-      <p-select
+      <p-multiselect
         [(ngModel)]="editRole"
         [options]="roleOptions"
         optionLabel="name"
         [placeholder]="
           translationService.translate(translationKey() + '.selectRole')
         "
+        (onChange)="onEditRoleChange($event)"
         id="edit-role-select"
         [style]="{ width: '100%' }"
+        appendTo="body"
+      >
+        <ng-template let-role pTemplate="item">
+          <div>{{ translationService.translate(role.name) }}</div>
+        </ng-template>
+        <ng-template let-value pTemplate="selectedItems">
+          @if (value && value.length > 0) {
+            <div class="selected-roles">
+              {{ getSelectedRolesDisplay(value) }}
+            </div>
+          }
+        </ng-template>
+      </p-multiselect>
+    </div>
+
+    <div class="field-group">
+      <label for="role-select" class="field-label">
+        {{
+          translationService.translate(translationKey() + ".specialisations")
+        }}
+      </label>
+      <p-multiselect
+        [(ngModel)]="selectedSpecialisationsEdit"
+        [options]="specialisations()"
+        optionLabel="name"
+        [placeholder]="
+          translationService.translate(
+            translationKey() + '.selectSpecialisaion'
+          )
+        "
+        id="role-select"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+        [disabled]="shouldEnableSpecialisationsEdit()"
       />
     </div>
   </div>

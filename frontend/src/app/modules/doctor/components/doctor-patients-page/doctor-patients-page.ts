@@ -7,10 +7,11 @@ import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { Patient } from '../../models/patient.model';
 import { PatientCardComponent } from '../patient-card/patient-card';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-doctor-patients-page',
-  imports: [PatientCardComponent, ProgressSpinnerModule],
+  imports: [PatientCardComponent, ProgressSpinnerModule, DatePipe],
   templateUrl: './doctor-patients-page.html',
   styleUrl: './doctor-patients-page.scss',
 })
@@ -32,7 +33,7 @@ export class DoctorPatientsPage implements OnInit {
             id: patient.id,
             firstName: patient.name,
             lastName: patient.surname,
-            lastVisitDate: '',
+            lastVisitDate: patient.lastVisit.startTime,
           }));
         }),
       )

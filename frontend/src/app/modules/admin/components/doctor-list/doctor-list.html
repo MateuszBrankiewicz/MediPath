@@ -7,15 +7,35 @@
         </h1>
         <app-select-institution />
       </div>
-      <div class="header-actions">
-        <p-button
-          [label]="translationService.translate('admin.doctorList.addDoctor')"
-          icon="pi pi-plus"
-          (onClick)="onAddDoctor()"
-        />
-      </div>
+      @if (isAdmin) {
+        <div class="header-actions">
+          <p-button
+            [label]="translationService.translate('admin.doctorList.addDoctor')"
+            icon="pi pi-plus"
+            (onClick)="onAddDoctor()"
+          />
+        </div>
+      }
     </div>
   </div>
+
+  <app-filter-component
+    [showStatus]="false"
+    [showDates]="false"
+    [sortByOptionsInput]="sortByOptions()"
+    [searchPlaceholder]="
+      translationService.translate('admin.doctorList.searchPlaceholder')
+    "
+    [defaults]="{
+      searchTerm: '',
+      status: 'all',
+      dateFrom: null,
+      dateTo: null,
+      sortField: 'doctorName',
+      sortOrder: 'asc',
+    }"
+    (filtersChange)="onFiltersChange($event)"
+  />
 
   @if (isLoading()) {
     <div class="doctors-grid">
@@ -41,13 +61,13 @@
   }
 
   @if (!isLoading()) {
-    @if (filteredDoctors().length > 0) {
+    @if (paginatedDoctors().length > 0) {
       <div class="doctors-grid">
-        @for (doctor of filteredDoctors(); track doctor.doctorId) {
+        @for (doctor of paginatedDoctors(); track doctor.doctorId) {
           <p-card styleClass="doctor-card">
             <div class="card-header">
               <div class="doctor-avatar">
-                @if (doctor.doctorPfp) {
+                @if (doctor.doctorPfp !== "") {
                   <img [src]="doctor.doctorPfp" [alt]="doctor.doctorName" />
                 } @else {
                   <i class="pi pi-user"></i>
@@ -57,79 +77,98 @@
                 <h3 class="doctor-name">
                   {{ doctor.doctorName }} {{ doctor.doctorSurname }}
                 </h3>
-                <p class="doctor-licence">
-                  <i class="pi pi-shield"></i>
-                  {{ translationService.translate("patient.institution.pwz") }}
-                  {{ doctor.licenceNumber }}
-                </p>
-              </div>
-              <div class="rating-badge">
-                <p-tag
-                  [value]="formatRating(doctor.rating)"
-                  [severity]="getRatingColor(doctor.rating)"
-                  icon="pi pi-star-fill"
-                />
-                <span class="rating-count"> ({{ doctor.numofratings }}) </span>
-              </div>
-            </div>
-
-            <div class="card-content">
-              <div class="specializations">
-                <h4 class="section-label">
-                  <i class="pi pi-briefcase"></i>
-                  {{
-                    translationService.translate(
-                      "admin.doctorList.specializations"
-                    )
-                  }}
-                </h4>
-                @if (
-                  doctor.doctorSchedules && doctor.doctorSchedules.length > 0
-                ) {
-                  <div class="spec-tags">
-                    @for (
-                      spec of doctor.doctorSchedules[0].doctor.specialisations.slice(
-                        0,
-                        3
-                      );
-                      track spec
-                    ) {
-                      <span class="spec-tag">{{ spec }}</span>
-                    }
-                    @if (
-                      doctor.doctorSchedules[0].doctor.specialisations.length >
-                      3
-                    ) {
-                      <span class="spec-tag more">
-                        +{{
-                          doctor.doctorSchedules[0].doctor.specialisations
-                            .length - 3
-                        }}
-                      </span>
-                    }
-                  </div>
-                } @else {
-                  <p class="no-data">
+                @if (doctor.licenceNumber !== "") {
+                  <p class="doctor-licence">
+                    <i class="pi pi-shield"></i>
                     {{
-                      translationService.translate(
-                        "admin.doctorList.noSpecializations"
-                      )
+                      translationService.translate("patient.institution.pwz")
                     }}
+                    {{ doctor.licenceNumber }}
                   </p>
                 }
               </div>
 
-              <div class="appointments-info">
-                <div class="info-item">
-                  <i class="pi pi-calendar"></i>
-                  <span>
-                    {{ doctor.doctorSchedules.length || 0 }}
-                    {{
-                      translationService.translate("admin.doctorList.schedules")
-                    }}
+              @if (doctor.licenceNumber !== "") {
+                <div class="rating-badge">
+                  <p-tag
+                    [value]="formatRating(doctor.rating)"
+                    [severity]="getRatingColor(doctor.rating)"
+                    icon="pi pi-star-fill"
+                  />
+                  <span class="rating-count">
+                    ({{ doctor.numofratings }})
                   </span>
                 </div>
-              </div>
+              }
+            </div>
+
+            <div class="card-content">
+              @if (doctor.licenceNumber !== "") {
+                <div class="role-tag-wrapper">
+                  <p-tag
+                    value="Lekarz"
+                    severity="success"
+                    icon="pi pi-user-plus"
+                  />
+                </div>
+                <div class="specializations">
+                  <h4 class="section-label">
+                    <i class="pi pi-briefcase"></i>
+                    {{
+                      translationService.translate(
+                        "admin.doctorList.specializations"
+                      )
+                    }}
+                  </h4>
+                  @if (
+                    doctor.specialisations && doctor.specialisations.length > 0
+                  ) {
+                    <div class="spec-tags">
+                      @for (
+                        spec of doctor.specialisations.slice(0, 3);
+                        track spec
+                      ) {
+                        <span class="spec-tag">{{ spec }}</span>
+                      }
+                      @if (doctor.specialisations.length > 3) {
+                        <span class="spec-tag more">
+                          +{{ doctor.specialisations.length - 3 }}
+                        </span>
+                      }
+                    </div>
+                  } @else {
+                    <p class="no-data">
+                      {{
+                        translationService.translate(
+                          "admin.doctorList.noSpecializations"
+                        )
+                      }}
+                    </p>
+                  }
+                </div>
+
+                <div class="appointments-info">
+                  <div class="info-item">
+                    <i class="pi pi-calendar"></i>
+                    <span>
+                      {{ doctor.doctorSchedules.length || 0 }}
+                      {{
+                        translationService.translate(
+                          "admin.doctorList.schedules"
+                        )
+                      }}
+                    </span>
+                  </div>
+                </div>
+              } @else if (doctor.roleCode === 4) {
+                <div class="staff-info">
+                  <p-tag value="Personel" severity="info" icon="pi pi-users" />
+                </div>
+              } @else {
+                <div class="staff-info">
+                  <p-tag value="Admin" severity="danger" icon="pi pi-users" />
+                </div>
+              }
             </div>
 
             <div class="card-actions">
@@ -143,17 +182,30 @@
                 severity="secondary"
                 size="small"
               />
-              <p-button
-                [label]="translationService.translate('admin.doctorList.edit')"
-                icon="pi pi-pencil"
-                (onClick)="onEditDoctor(doctor.doctorId)"
-                severity="primary"
-                size="small"
-              />
+              @if (isAdmin) {
+                <p-button
+                  [label]="
+                    translationService.translate('admin.doctorList.edit')
+                  "
+                  icon="pi pi-pencil"
+                  (onClick)="onEditDoctor(doctor.doctorId)"
+                  severity="primary"
+                  size="small"
+                />
+              }
             </div>
           </p-card>
         }
       </div>
+
+      <p-paginator
+        (onPageChange)="onPageChange($event)"
+        [first]="first()"
+        [rows]="rows()"
+        [totalRecords]="totalRecords()"
+        [rowsPerPageOptions]="[10, 20, 30]"
+        style="margin-top: 20px"
+      />
     } @else {
       <div class="empty-state">
         <i class="pi pi-users empty-icon"></i>

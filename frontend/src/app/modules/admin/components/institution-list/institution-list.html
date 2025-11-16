@@ -4,6 +4,34 @@
   </div>
 } @else {
   <div class="insitution-container">
+    <h1>{{ translationService.translate("institutions.tittle") }}</h1>
+    @if (isAdminForThisInstitution()) {
+      <p-button
+        class="button"
+        icon="pi pi-plus"
+        [label]="translationService.translate('institutionList.add')"
+        (onClick)="redirectToAddInstitution()"
+      ></p-button>
+    }
+
+    <app-filter-component
+      [showDates]="false"
+      [sortByOptionsInput]="sortByOptions()"
+      [statusOptionsInput]="statusOptions()"
+      [searchPlaceholder]="
+        translationService.translate('admin.institutionList.searchPlaceholder')
+      "
+      [defaults]="{
+        searchTerm: '',
+        status: 'all',
+        dateFrom: null,
+        dateTo: null,
+        sortField: 'name',
+        sortOrder: 'asc',
+      }"
+      (filtersChange)="onFiltersChange($event)"
+    />
+
     @for (institution of getDataForInstitutionCard(); track institution.id) {
       <app-hospital-card
         [hospital]="institution"
@@ -11,7 +39,17 @@
         [canEdit]="isAdminForThisInstitution()"
         (editClicked)="redirectToInstitutionEdit(institution.id)"
         (institutionClicked)="redirectToInstitutionView(institution.id)"
+        (disable)="disableInstitution(institution.id)"
       ></app-hospital-card>
     }
+
+    <p-paginator
+      (onPageChange)="onPageChange($event)"
+      [first]="first()"
+      [rows]="rows()"
+      [totalRecords]="totalRecords()"
+      [rowsPerPageOptions]="[10, 20, 30]"
+      style="margin-top: 20px"
+    />
   </div>
 }
