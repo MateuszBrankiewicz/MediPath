@@ -186,16 +186,17 @@ public class InstitutionController {
     }
   }
 
-  @GetMapping(value = { "/{id}", "/{id}/" })
-  public ResponseEntity<Map<String, Object>> getInstitution(@PathVariable String id,
-      @RequestParam(value = "fields", required = false) String[] fields, HttpSession session) {
-    try {
-      String loggedUserID = (String) session.getAttribute("id");
-      boolean isEmployee = false;
-      try {
-        authorizationService.startAuthChain(loggedUserID, id).employeeOfInstitution().check();
-        isEmployee = true;
-      } catch (IllegalAccessException _) {
+    @GetMapping(value = { "/{id}", "/{id}/" })
+    public ResponseEntity<Map<String, Object>> getInstitution(@PathVariable String id,
+            @RequestParam(value = "fields", required = false) String[] fields, HttpSession session) {
+        try {
+            String loggedUserID = (String) session.getAttribute("id");
+            boolean isEmployee = false;
+            try {
+                authorizationService.startAuthChain(loggedUserID, id).matchAnyPermission().adminOfInstitution()
+                        .employeeOfInstitution().check();
+                isEmployee = true;
+            } catch (IllegalAccessException _) {
 
       }
 

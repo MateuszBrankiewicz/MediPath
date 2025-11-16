@@ -34,7 +34,7 @@ public class ScheduleController {
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (IllegalAccessException e) {
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
         }
