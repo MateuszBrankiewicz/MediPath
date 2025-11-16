@@ -54,7 +54,20 @@ public class VisitService {
         if(foundSchedule.getDoctor().getUserId().equals(foundUser.getId())){
             throw new IllegalStateException("Doctor and patient is the same person");
         }
-        
+
+        if(userRepository.findActiveById(foundSchedule.getDoctor().getUserId()).isEmpty()) {
+            throw new IllegalStateException("doctor is inactive");
+        }
+
+        if(institutionRepository.findActiveById(foundSchedule.getInstitution().getInstitutionId()).isEmpty()) {
+            throw new IllegalStateException("institution is inactive");
+        }
+
+
+        if(foundSchedule.getStartHour().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("schedule booked in the past");
+        }
+
 
         PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(), foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
         VisitTime time = new VisitTime(foundSchedule.getId(), foundSchedule.getStartHour(), foundSchedule.getEndHour());
@@ -203,6 +216,19 @@ public class VisitService {
         Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToReschedule.getTime().getScheduleId());
         if(scheduleOptional.isEmpty()) {
             throw new IllegalComponentStateException();
+        }
+
+        if(userRepository.findActiveById(newSchedule.getDoctor().getUserId()).isEmpty()) {
+            throw new IllegalStateException("new schedule doctor is inactive");
+        }
+
+        if(institutionRepository.findActiveById(newSchedule.getInstitution().getInstitutionId()).isEmpty()) {
+            throw new IllegalStateException("new schedule institution is inactive");
+        }
+
+
+        if(newSchedule.getStartHour().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("new schedule booked in the past");
         }
 
         Optional<User> userOptional = userRepository.findActiveById(visitToReschedule.getPatient().getUserId());
