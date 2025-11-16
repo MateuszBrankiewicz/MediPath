@@ -69,11 +69,12 @@ public class VisitService {
         }
 
 
+
         PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(), foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
         VisitTime time = new VisitTime(foundSchedule.getId(), foundSchedule.getStartHour(), foundSchedule.getEndHour());
         Visit newVisit = new Visit(foundUserDigest, foundSchedule.getDoctor(), time,foundSchedule.getInstitution(), visit.getPatientRemarks());
 
-        foundSchedule.setBooked(true);
+
         ArrayList<Code> codes = new ArrayList<>();
         newVisit.setCodes(codes);
 
@@ -101,8 +102,11 @@ public class VisitService {
             foundUser.addNotification(notification);
             userRepository.save(foundUser);
         }
+
+        String savedVisitId = visitRepository.save(newVisit).getId();
+        foundSchedule.setBooked(true);
+        foundSchedule.setVisitId(savedVisitId);
         scheduleRepository.save(foundSchedule);
-        visitRepository.save(newVisit);
     }
 
 
@@ -134,6 +138,7 @@ public class VisitService {
 
         Schedule oldSchedule = scheduleOptional.get();
         oldSchedule.setBooked(false);
+        oldSchedule.setVisitId(null);
 
         User patient = userOptional.get();
         int foundIndex = 0;
@@ -274,6 +279,9 @@ public class VisitService {
 
         oldSchedule.setBooked(false);
         newSchedule.setBooked(true);
+
+        oldSchedule.setVisitId(null);
+        newSchedule.setVisitId(visitToReschedule.getId());
 
         visitToReschedule.setTime(new VisitTime(newSchedule.getId(), newSchedule.getStartHour(), newSchedule.getEndHour()));
         visitToReschedule.setDoctor(newSchedule.getDoctor());

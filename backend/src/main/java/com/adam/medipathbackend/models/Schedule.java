@@ -21,6 +21,8 @@ public class Schedule {
 
     private InstitutionDigest institution;
 
+    private String visitId;
+
     public Schedule(LocalDateTime startHour, LocalDateTime endHour, DoctorDigest doctor, InstitutionDigest institution) {
         this.startHour = startHour;
         this.endHour = endHour;
@@ -71,5 +73,14 @@ public class Schedule {
 
     public void setInstitution(InstitutionDigest institution) {
         this.institution = institution;
+    }
+
+
+    public String getVisitId() {
+        return visitId;
+    }
+
+    public void setVisitId(String visitId) {
+        this.visitId = visitId;
     }
 }
