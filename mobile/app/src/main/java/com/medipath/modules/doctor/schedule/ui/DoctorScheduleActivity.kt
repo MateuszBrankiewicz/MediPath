@@ -30,6 +30,7 @@ import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.doctor.schedule.DoctorScheduleViewModel
 import com.medipath.modules.doctor.schedule.ui.components.ScheduleDetailsDialog
 import com.medipath.modules.doctor.schedule.ui.components.ScheduleItemCard
+import com.medipath.modules.patient.booking.ui.RescheduleVisitActivity
 import com.medipath.modules.patient.home.HomeViewModel
 import com.medipath.modules.patient.visits.VisitsViewModel
 import com.medipath.modules.shared.components.CalendarCard
@@ -165,6 +166,19 @@ fun DoctorScheduleScreen(
             },
             onReschedule = {
                 showDetailsDialog = false
+                selectedSchedule?.let { schedule ->
+                    if (schedule.booked && schedule.visitId != null) {
+                        val intent = Intent(context, RescheduleVisitActivity::class.java).apply {
+                            putExtra("visit_id", schedule.visitId)
+                            putExtra("doctor_id", schedule.doctor.userId)
+                            putExtra("doctor_name", "${schedule.doctor.doctorName} ${schedule.doctor.doctorSurname}")
+                            val startTime = LocalDateTime.parse(schedule.startHour, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                            putExtra("current_date", "${startTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))} at ${schedule.institution.institutionName}")
+                            putExtra("is_doctor", true)
+                        }
+                        context.startActivity(intent)
+                    }
+                }
             }
         )
     }

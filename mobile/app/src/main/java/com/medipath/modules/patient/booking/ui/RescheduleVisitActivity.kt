@@ -1,6 +1,7 @@
 package com.medipath.modules.patient.booking.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -41,6 +42,7 @@ class RescheduleVisitActivity : ComponentActivity() {
         val doctorId = intent.getStringExtra("doctor_id") ?: ""
         val doctorName = intent.getStringExtra("doctor_name") ?: ""
         val currentDate = intent.getStringExtra("current_date") ?: ""
+        val isDoctor = intent.getBooleanExtra("is_doctor", false)
 
         setContent {
             MediPathTheme {
@@ -49,6 +51,7 @@ class RescheduleVisitActivity : ComponentActivity() {
                     doctorId = doctorId,
                     doctorName = doctorName,
                     currentDate = currentDate,
+                    isDoctor = isDoctor,
                     onBackClick = { finish() },
                     onRescheduleSuccess = { finish() }
                 )
@@ -64,6 +67,7 @@ fun RescheduleVisitScreen(
     doctorId: String,
     doctorName: String,
     currentDate: String,
+    isDoctor: Boolean = false,
     onBackClick: () -> Unit,
     onRescheduleSuccess: () -> Unit
 ) {
@@ -72,6 +76,7 @@ fun RescheduleVisitScreen(
     val schedules by viewModel.schedules.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val rescheduleSuccess by viewModel.rescheduleSuccess.collectAsState()
+    val patientInfo by viewModel.patientInfo.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.toastMessage.collect { message ->
@@ -83,6 +88,12 @@ fun RescheduleVisitScreen(
                     Toast.makeText(context, message.message, Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    LaunchedEffect(visitId, isDoctor) {
+        if (isDoctor) {
+            viewModel.loadVisitDetails(visitId)
         }
     }
 
@@ -198,12 +209,27 @@ fun RescheduleVisitScreen(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.background
                 )
-                Text(
-                    text = doctorName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
-                )
+                if (isDoctor && patientInfo != null) {
+                    Text(
+                        text = "Patient: ${patientInfo!!.name} ${patientInfo!!.surname}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+                    )
+                    Text(
+                        text = "Gov ID: ${patientInfo!!.govID}",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                    )
+                } else {
+                    Text(
+                        text = doctorName,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+                    )
+                }
             }
         }
 

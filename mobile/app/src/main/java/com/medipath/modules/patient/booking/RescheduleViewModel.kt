@@ -1,9 +1,11 @@
 package com.medipath.modules.patient.booking
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.models.DoctorScheduleItem
+import com.medipath.core.models.Patient
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -27,6 +29,24 @@ class RescheduleViewModel : ViewModel() {
 
     private val _rescheduleSuccess = MutableStateFlow(false)
     val rescheduleSuccess: StateFlow<Boolean> = _rescheduleSuccess.asStateFlow()
+
+    private val _patientInfo = MutableStateFlow<Patient?>(null)
+    val patientInfo: StateFlow<Patient?> = _patientInfo.asStateFlow()
+
+    fun loadVisitDetails(visitId: String) {
+        viewModelScope.launch {
+            try {
+                val response = visitsService.getVisitDetails(visitId)
+                if (response.isSuccessful) {
+                    _patientInfo.value = response.body()?.visit?.patient
+                } else {
+                    _toastMessage.emit(ToastMessage.Error("Failed to load visit details"))
+                }
+            } catch (e: Exception) {
+                _toastMessage.emit(ToastMessage.Error("Error loading visit details: ${e.message}"))
+            }
+        }
+    }
 
     fun loadSchedules(doctorId: String, institutionId: String? = null) {
         viewModelScope.launch {
