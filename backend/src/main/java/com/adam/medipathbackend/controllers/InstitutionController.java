@@ -195,7 +195,8 @@ public class InstitutionController {
             String loggedUserID = (String) session.getAttribute("id");
             boolean isEmployee = false;
             try {
-                authorizationService.startAuthChain(loggedUserID, id).employeeOfInstitution().check();
+                authorizationService.startAuthChain(loggedUserID, id).matchAnyPermission().adminOfInstitution()
+                        .employeeOfInstitution().check();
                 isEmployee = true;
             } catch (IllegalAccessException _) {
 

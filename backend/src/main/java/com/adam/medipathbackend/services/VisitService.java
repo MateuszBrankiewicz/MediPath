@@ -54,7 +54,20 @@ public class VisitService {
         if(foundSchedule.getDoctor().getUserId().equals(foundUser.getId())){
             throw new IllegalStateException("Doctor and patient is the same person");
         }
-        
+
+        if(userRepository.findActiveById(foundSchedule.getDoctor().getUserId()).isEmpty()) {
+            throw new IllegalStateException("doctor is inactive");
+        }
+
+        if(institutionRepository.findActiveById(foundSchedule.getInstitution().getInstitutionId()).isEmpty()) {
+            throw new IllegalStateException("institution is inactive");
+        }
+
+
+        if(foundSchedule.getStartHour().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("schedule booked in the past");
+        }
+
 
         PatientDigest foundUserDigest = new PatientDigest(foundUser.getId(), foundUser.getName(), foundUser.getSurname(), foundUser.getGovId());
         VisitTime time = new VisitTime(foundSchedule.getId(), foundSchedule.getStartHour(), foundSchedule.getEndHour());
@@ -102,7 +115,7 @@ public class VisitService {
         Visit visitToCancel = optVisit.get();
 
         authorizationService.startAuthChain(loggedUserID, visitToCancel.getInstitution().getInstitutionId()).matchAnyPermission().
-                patientInVisit(visitToCancel).employeeOfInstitution().check();
+                patientInVisit(visitToCancel).employeeOfInstitution().doctorInVisit(visitToCancel).check();
 
         if(visitToCancel.getStatus().equals("Completed")) {
             throw new IllegalArgumentException("this visit is completed");
@@ -184,7 +197,7 @@ public class VisitService {
             
 
         authorizationService.startAuthChain(loggedUserID, visitToReschedule.getInstitution().getInstitutionId()).matchAnyPermission().
-                patientInVisit(visitToReschedule).employeeOfInstitution().check();
+                patientInVisit(visitToReschedule).employeeOfInstitution().doctorInVisit(visitToReschedule).check();
 
         if(visitToReschedule.getStatus().equals("Completed")) {
             throw new IllegalArgumentException("this visit is completed");
@@ -203,6 +216,19 @@ public class VisitService {
         Optional<Schedule> scheduleOptional = scheduleRepository.findById(visitToReschedule.getTime().getScheduleId());
         if(scheduleOptional.isEmpty()) {
             throw new IllegalComponentStateException();
+        }
+
+        if(userRepository.findActiveById(newSchedule.getDoctor().getUserId()).isEmpty()) {
+            throw new IllegalStateException("new schedule doctor is inactive");
+        }
+
+        if(institutionRepository.findActiveById(newSchedule.getInstitution().getInstitutionId()).isEmpty()) {
+            throw new IllegalStateException("new schedule institution is inactive");
+        }
+
+
+        if(newSchedule.getStartHour().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("new schedule booked in the past");
         }
 
         Optional<User> userOptional = userRepository.findActiveById(visitToReschedule.getPatient().getUserId());
@@ -226,14 +252,23 @@ public class VisitService {
             String content, title;
 
             if(patient.getUserSettings().getLanguage().equals("PL")) {
-                content = String.format("Przypominamy o wizycie w ośrodku %s dnia %s o godzinie %s", newSchedule.getInstitution().getInstitutionName(), newSchedule.getStartHour().toLocalDate(), newSchedule.getStartHour().toLocalTime());
+                content = String.format("Przypominamy o wizycie w ośrodku %s dnia %s o godzinie %s",
+                        newSchedule.getInstitution().getInstitutionName(),
+                        newSchedule.getStartHour().toLocalDate(),
+                        newSchedule.getStartHour().toLocalTime());
+
                 title = "Przypomnienie o wizycie";
             } else {
-                content = String.format("We would like to remind you of your upcoming visit in %s on the day %s at %s", newSchedule.getInstitution().getInstitutionName(), newSchedule.getStartHour().toLocalDate(), newSchedule.getStartHour().toLocalTime());
+                content = String.format("We would like to remind you of your upcoming visit in %s on the day %s at %s",
+                        newSchedule.getInstitution().getInstitutionName(),
+                        newSchedule.getStartHour().toLocalDate(),
+                        newSchedule.getStartHour().toLocalTime());
+
                 title = "Visit reminder";
             }
 
-            Notification notification = new Notification(title,  content, newSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
+            Notification notification = new Notification(title,  content,
+                    newSchedule.getStartHour().minusDays(1).withHour(12).withMinute(0), true, false);
             patient.addNotification(notification);
         }
 
