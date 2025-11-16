@@ -10,8 +10,10 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
 import { ChipModule } from 'primeng/chip';
 import { Divider } from 'primeng/divider';
+import { DialogService } from 'primeng/dynamicdialog';
 import { FileUploadModule } from 'primeng/fileupload';
 import { InputMaskModule } from 'primeng/inputmask';
 import { InputTextModule } from 'primeng/inputtext';
@@ -21,12 +23,14 @@ import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { map } from 'rxjs';
 import { Institution } from '../../../../core/models/institution.model';
+import { Specialisation } from '../../../../core/models/specialisation.model';
 import { AddressService } from '../../../../core/services/address/address.service';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 import { InstitutionService } from '../../../../core/services/institution/institution.service';
+import { SpecialisationService } from '../../../../core/services/specialisation/specialisation.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { SpecialisationService } from '../../../../core/services/specialisation/specialisation.service';
-import { Specialisation } from '../../../../core/models/specialisation.model';
+import { AcceptActionDialogComponent } from '../../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 
 interface Employee {
   name: string;
@@ -55,7 +59,9 @@ interface Employee {
     MultiSelectModule,
     Divider,
     SelectModule,
+    CheckboxModule,
   ],
+  providers: [DialogService],
   templateUrl: './edit-institution-details.html',
   styleUrl: './edit-institution-details.scss',
 })
@@ -67,6 +73,8 @@ export class EditInstitutionDetails implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
+  private authService = inject(AuthenticationService);
+  private dialogService = inject(DialogService);
 
   private addressService = inject(AddressService);
 
@@ -75,6 +83,7 @@ export class EditInstitutionDetails implements OnInit {
   protected institutionForm!: FormGroup;
   protected institutionId = signal<string>('');
   protected institutionImage = signal<string>('');
+  protected isEditMode = signal<boolean>(false);
 
   protected provinces = signal<string[]>([]);
   protected cities = signal<string[]>([]);
@@ -93,8 +102,11 @@ export class EditInstitutionDetails implements OnInit {
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
+      this.isEditMode.set(true);
       this.institutionId.set(id);
       this.loadInstitution(id);
+    } else {
+      this.isEditMode.set(false);
     }
   }
 
@@ -103,6 +115,7 @@ export class EditInstitutionDetails implements OnInit {
       name: ['', [Validators.required, Validators.minLength(2)]],
       description: [''],
       specialisation: [[], [Validators.required]],
+      isPublic: [false],
       address: this.fb.group({
         province: ['', [Validators.required, Validators.minLength(2)]],
         postalCode: [
@@ -137,6 +150,7 @@ export class EditInstitutionDetails implements OnInit {
             name: institution.name,
             description: '',
             specialisation: institution.specialisation || [],
+            isPublic: institution.isPublic ?? false,
             address: {
               province: institution.address.province,
               city: institution.address.city,
@@ -235,35 +249,63 @@ export class EditInstitutionDetails implements OnInit {
       );
       return;
     }
+
     const institutionObject: Partial<Institution> = {
       ...this.institutionForm.value,
       image: this.institutionImage(),
     };
     this.isSaving.set(true);
 
-    this.institutionService
-      .editInstitution(this.institutionId(), institutionObject)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.isSaving.set(false);
-          this.toastService.showSuccess(
-            this.translationService.translate(
-              'admin.institution.success.saved',
-            ),
-          );
-          this.router.navigate(['/admin/institutions']);
-        },
-        error: (error) => {
-          console.error('Error saving institution:', error);
-          this.toastService.showError(
-            this.translationService.translate(
-              'admin.institution.error.saveFailed',
-            ),
-          );
-          this.isSaving.set(false);
-        },
-      });
+    if (this.isEditMode()) {
+      // Edit existing institution
+      this.institutionService
+        .editInstitution(this.institutionId(), institutionObject)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.isSaving.set(false);
+            this.toastService.showSuccess(
+              this.translationService.translate(
+                'admin.institution.success.saved',
+              ),
+            );
+            this.router.navigate(['/admin/institutions']);
+          },
+          error: (error) => {
+            console.error('Error editing institution:', error);
+            this.toastService.showError(
+              this.translationService.translate(
+                'admin.institution.error.saveFailed',
+              ),
+            );
+            this.isSaving.set(false);
+          },
+        });
+    } else {
+      // Create new institution
+      this.institutionService
+        .addInstitution(institutionObject)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.isSaving.set(false);
+            this.toastService.showSuccess(
+              this.translationService.translate(
+                'admin.institution.success.created',
+              ),
+            );
+            this.router.navigate(['/admin/institutions']);
+          },
+          error: () => {
+            this.toastService.showError(
+              this.translationService.translate(
+                'admin.institution.error.createFailed',
+              ),
+            );
+            this.isSaving.set(false);
+          },
+        });
+    }
   }
 
   protected loadAvailableCities(): void {
@@ -285,5 +327,46 @@ export class EditInstitutionDetails implements OnInit {
 
   protected cancel(): void {
     this.router.navigate(['/admin/institutions']);
+  }
+
+  protected isAdmin(): boolean {
+    return this.authService.getLastPanel() === 'admin';
+  }
+
+  protected deactivateInstitution(): void {
+    const ref = this.dialogService.open(AcceptActionDialogComponent, {
+      data: {
+        message: this.translationService.translate(
+          'confirmationDialogs.disableInstitutionMessage',
+        ),
+      },
+      width: '400px',
+    });
+
+    ref.onClose
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((accept: boolean) => {
+        if (!accept) {
+          return;
+        }
+        this.institutionService
+          .deactivateInstitution(this.institutionId())
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.toastService.showSuccess(
+                this.translationService.translate(
+                  'institution.disabledSuccessfully',
+                ),
+              );
+              this.router.navigate(['/admin/institutions']);
+            },
+            error: () => {
+              this.toastService.showError(
+                this.translationService.translate('institution.disableError'),
+              );
+            },
+          });
+      });
   }
 }

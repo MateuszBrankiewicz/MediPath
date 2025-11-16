@@ -118,7 +118,7 @@ export class SearchResultComponent implements OnInit {
         this.patientVisitsService
           .scheduleVisit({
             scheduleID: result.slotId,
-            patientRemarks: result.patientRemarks,
+            patientRemarks: result.remarks,
           })
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({

@@ -75,6 +75,7 @@ export class DoctorInstitutionsListComponent {
   protected hideAddDialog(): void {
     this.displayAddDialog.set(false);
     this.selectedInstitution = null;
+    this.selectedSpecialistaions.set([]);
     this.selectedRole.set(null);
   }
 
@@ -101,6 +102,7 @@ export class DoctorInstitutionsListComponent {
   protected hideEditDialog(): void {
     this.displayEditDialog.set(false);
     this.editingInstitution = null;
+    this.selectedSpecialisationsEdit.set([]);
     this.editRole.set(null);
   }
 

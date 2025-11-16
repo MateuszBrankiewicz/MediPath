@@ -5,7 +5,6 @@ import {
   DestroyRef,
   effect,
   inject,
-  OnInit,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -30,6 +29,8 @@ import { FilterComponent } from '../../../shared/components/ui/filter-component/
 import { InstitutionStoreService } from '../../services/institution/institution-store.service';
 import { Router } from '@angular/router';
 import { SelectInstitution } from '../shared/select-institution/select-institution';
+import { VisitsService } from '../../../../core/services/visits/visits.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 
 @Component({
   selector: 'app-institution-visits',
@@ -54,6 +55,11 @@ export class InstitutionVisits extends PaginatedComponentBase<AppointmentCardDat
   private readonly router = inject(Router);
   protected readonly visits = signal<AppointmentCardData[]>([]);
   protected readonly isLoading = signal<boolean>(true);
+  protected readonly visitsService = inject(VisitsService);
+  protected readonly toastService = inject(ToastService);
+  protected readonly selectedInstitution = computed(() => {
+    return this.institutionStore.selectedInstitution();
+  });
 
   protected readonly filters = signal<{
     searchTerm: string;
@@ -74,7 +80,7 @@ export class InstitutionVisits extends PaginatedComponentBase<AppointmentCardDat
   constructor() {
     super();
     effect(() => {
-      const selectedInstitution = this.institutionStore.selectedInstitution();
+      const selectedInstitution = this.selectedInstitution();
       if (!selectedInstitution) {
         return;
       }
@@ -270,5 +276,18 @@ export class InstitutionVisits extends PaginatedComponentBase<AppointmentCardDat
   }
   protected redirectToVisitInfo(visitId: string): void {
     this.router.navigate(['/admin/visits', visitId]);
+  }
+  protected onCancelVisit(_visitId: string): void {
+    this.visitsService.cancelVisit(_visitId.toString()).subscribe(() => {
+      this.toastService.showSuccess('Visit cancelled successfully.');
+      this.visits.set(
+        this.visits().map((visit) => {
+          if (visit.id === _visitId) {
+            visit.status = 'canceled';
+          }
+          return visit;
+        }),
+      );
+    });
   }
 }

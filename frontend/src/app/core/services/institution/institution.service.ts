@@ -242,4 +242,12 @@ export class InstitutionService {
       { withCredentials: true },
     );
   }
+
+  public deactivateInstitution(institutionId: string): Observable<void> {
+    return this.http.post<void>(
+      `${API_URL}/institution/${institutionId}/deactivate`,
+      {},
+      { withCredentials: true },
+    );
+  }
 }

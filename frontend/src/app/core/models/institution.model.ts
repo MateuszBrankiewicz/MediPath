@@ -45,12 +45,13 @@ export interface Institution {
   name: string;
   rating: number;
   specialisation: string[];
+  types?: string[];
 }
 
 export interface InstitutionShortInfo {
   institutionId: string;
   institutionName: string;
-  roleCode?: number; // 2=Doctor, 4=Staff, 8=Admin
+  roleCode?: number;
 }
 
 export interface AdminInstitutionResponse {

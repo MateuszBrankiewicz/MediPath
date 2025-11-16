@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { DialogService } from 'primeng/dynamicdialog';
 import { PaginatorModule } from 'primeng/paginator';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Institution } from '../../../../core/models/institution.model';
@@ -23,8 +24,10 @@ import {
   SortFieldConfig,
   SortingService,
 } from '../../../../core/services/sorting/sorting.service';
+import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { PaginatedComponentBase } from '../../../shared/components/base/paginated-component.base';
+import { AcceptActionDialogComponent } from '../../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 import { FilterComponent } from '../../../shared/components/ui/filter-component/filter-component';
 import {
   Hospital,
@@ -42,6 +45,7 @@ import {
     FilterComponent,
     PaginatorModule,
   ],
+  providers: [DialogService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstitutionList
@@ -57,7 +61,8 @@ export class InstitutionList
   private router = inject(Router);
   private sortingService = inject(SortingService);
   private filteringService = inject(FilteringService);
-
+  private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
   protected readonly filters = signal<{
     searchTerm: string;
     status: string;
@@ -221,7 +226,7 @@ export class InstitutionList
       address: inst?.address
         ? `${inst.address.street ?? ''} ${inst.address.number} ${inst.address.postalCode} ${inst.address.city}, ${inst.address.province}`.trim()
         : '',
-      specialisation: inst?.specialisation ?? [],
+      specialisation: inst?.types ?? [],
       isPublic: inst?.isPublic ?? false,
       imageUrl: inst.image ?? '',
     }));
@@ -244,5 +249,33 @@ export class InstitutionList
 
   protected redirectToAddInstitution(): void {
     this.router.navigate(['/admin/institutions/add']);
+  }
+
+  protected disableInstitution(institutionId: string): void {
+    const ref = this.dialogService.open(AcceptActionDialogComponent, {
+      data: {
+        message: this.translationService.translate(
+          'confirmationDialogs.disableInstitutionMessage',
+        ),
+      },
+      width: '400px',
+    });
+
+    ref.onClose.subscribe((accept: boolean) => {
+      if (!accept) {
+        return;
+      }
+      this.institutionService.deactivateInstitution(institutionId).subscribe({
+        next: () => {
+          this.toastService.showSuccess('institution.disabledSuccessfully');
+          this.institutions.set(
+            this.institutions().filter((inst) => inst.id !== institutionId),
+          );
+        },
+        error: () => {
+          this.toastService.showError('institution.disableError');
+        },
+      });
+    });
   }
 }

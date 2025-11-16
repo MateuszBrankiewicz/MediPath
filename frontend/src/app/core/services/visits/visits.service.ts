@@ -52,6 +52,7 @@ export class VisitsService {
   }
 
   public scheduleVisit(scheduleVisit: ScheduleVisitRequest) {
+    console.log('Scheduling visit:', scheduleVisit);
     return this.http.post(`${API_URL}/visits/add`, scheduleVisit, {
       withCredentials: true,
     });
@@ -59,7 +60,7 @@ export class VisitsService {
 
   public rescheduleVisit(scheduleVisit: ScheduleVisitRequest, visitId: string) {
     return this.http.put(
-      `${API_URL}/visits/${visitId}/reschedule`,
+      `${API_URL}/visits/${visitId}/reschedule?newschedule=${scheduleVisit.scheduleID}`,
       {
         patientRemarks: scheduleVisit.patientRemarks,
         newschedule: scheduleVisit.scheduleID,

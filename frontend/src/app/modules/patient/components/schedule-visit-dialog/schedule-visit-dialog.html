@@ -29,7 +29,6 @@
 
       <p-divider />
 
-      <!-- Schedule Selection Section -->
       <div class="form-section">
         <h3 class="section-title">
           <i class="pi pi-calendar"></i>
@@ -50,7 +49,6 @@
 
       <p-divider />
 
-      <!-- Patient Remarks Section -->
       <div class="form-section">
         <h3 class="section-title">
           <i class="pi pi-comment"></i>
@@ -70,8 +68,17 @@
             rows="6"
             [ngModel]="scheduleData()?.patientRemarks"
             (ngModelChange)="onRemarksChange($event)"
+            [disabled]="isDoctor"
+            [readonly]="isDoctor"
           >
           </textarea>
+          @if (isDoctor) {
+            <small class="field-note">
+              {{
+                translationService.translate("doctor.schedule.remarksReadOnly")
+              }}
+            </small>
+          }
         </div>
       </div>
 

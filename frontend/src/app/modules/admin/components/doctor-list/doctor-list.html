@@ -7,13 +7,15 @@
         </h1>
         <app-select-institution />
       </div>
-      <div class="header-actions">
-        <p-button
-          [label]="translationService.translate('admin.doctorList.addDoctor')"
-          icon="pi pi-plus"
-          (onClick)="onAddDoctor()"
-        />
-      </div>
+      @if (isAdmin) {
+        <div class="header-actions">
+          <p-button
+            [label]="translationService.translate('admin.doctorList.addDoctor')"
+            icon="pi pi-plus"
+            (onClick)="onAddDoctor()"
+          />
+        </div>
+      }
     </div>
   </div>
 
@@ -180,13 +182,17 @@
                 severity="secondary"
                 size="small"
               />
-              <p-button
-                [label]="translationService.translate('admin.doctorList.edit')"
-                icon="pi pi-pencil"
-                (onClick)="onEditDoctor(doctor.doctorId)"
-                severity="primary"
-                size="small"
-              />
+              @if (isAdmin) {
+                <p-button
+                  [label]="
+                    translationService.translate('admin.doctorList.edit')
+                  "
+                  icon="pi pi-pencil"
+                  (onClick)="onEditDoctor(doctor.doctorId)"
+                  severity="primary"
+                  size="small"
+                />
+              }
             </div>
           </p-card>
         }

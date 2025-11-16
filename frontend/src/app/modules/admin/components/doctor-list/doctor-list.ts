@@ -19,6 +19,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { DoctorProfile } from '../../../../core/models/doctor.model';
+import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 import {
   FilterFieldConfig,
   FilteringService,
@@ -63,10 +64,10 @@ export class DoctorList extends PaginatedComponentBase<DoctorProfile> {
   protected translationService = inject(TranslationService);
   private sortingService = inject(SortingService);
   private filteringService = inject(FilteringService);
-
+  private readonly authService = inject(AuthenticationService);
   protected doctors = signal<DoctorProfile[]>([]);
   protected isLoading = signal<boolean>(true);
-
+  protected readonly isAdmin = this.authService.getLastPanel() === 'admin';
   protected readonly filters = signal<{
     searchTerm: string;
     status: string;

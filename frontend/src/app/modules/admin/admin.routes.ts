@@ -1,17 +1,19 @@
 import { Routes } from '@angular/router';
+import { roleGuard } from '../../core/guards/role.guard';
+import { UserRoles } from '../../core/services/authentication/authentication.model';
+import { CurrentVisit } from '../doctor/components/current-visit/current-visit';
 import { ReminderPage } from '../patient/components/reminder-page/reminder-page';
 import { AddDoctorsPage } from './components/add-doctors-page/add-doctors-page';
 import { AdminDashboard } from './components/admin-dashboard/admin-dashboard';
 import { CreateSchedule } from './components/create-schedule/create-schedule';
 import { DoctorList } from './components/doctor-list/doctor-list';
 import { DoctorView } from './components/doctor-view/doctor-view';
+import { EditDoctorDetailsComponent } from './components/edit-doctor-details/edit-doctor-details';
 import { EditInstitutionDetails } from './components/edit-institution-details/edit-institution-details';
 import { InstitutionList } from './components/institution-list/institution-list';
 import { InstitutionSchedule } from './components/institution-schedule/institution-schedule';
 import { InstitutionVisits } from './components/institution-visits/institution-visits';
 import { InstitutionView } from './institution-view/institution-view';
-import { EditDoctorDetailsComponent } from './components/edit-doctor-details/edit-doctor-details';
-import { CurrentVisit } from '../doctor/components/current-visit/current-visit';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -22,16 +24,32 @@ export const ADMIN_ROUTES: Routes = [
     path: 'institutions',
     component: InstitutionList,
   },
-  { path: 'doctors/:id/add', component: AddDoctorsPage },
+  {
+    path: 'doctors/:id/add',
+    component: AddDoctorsPage,
+    canActivate: [roleGuard([UserRoles.ADMIN])],
+  },
   { path: 'schedule', component: InstitutionSchedule },
   { path: 'schedule/add-schedule', component: CreateSchedule },
   { path: 'visits', component: InstitutionVisits },
-  { path: 'institutions/add', component: EditInstitutionDetails },
+  {
+    path: 'institutions/add',
+    component: EditInstitutionDetails,
+    canActivate: [roleGuard([UserRoles.ADMIN])],
+  },
   { path: 'notifications', component: ReminderPage },
   { path: 'doctors', component: DoctorList },
   { path: 'institutions/:id', component: InstitutionView },
-  { path: 'institutions/:id/edit', component: EditInstitutionDetails },
+  {
+    path: 'institutions/:id/edit',
+    component: EditInstitutionDetails,
+    canActivate: [roleGuard([UserRoles.ADMIN])],
+  },
   { path: 'doctors/:doctorId', component: DoctorView },
-  { path: 'doctors/:doctorId/edit', component: EditDoctorDetailsComponent },
+  {
+    path: 'doctors/:doctorId/edit',
+    component: EditDoctorDetailsComponent,
+    canActivate: [roleGuard([UserRoles.ADMIN])],
+  },
   { path: 'visits/:id', component: CurrentVisit },
 ];

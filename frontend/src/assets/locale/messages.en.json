@@ -294,6 +294,9 @@
   "accountSettings.systemNotifications": "System notifications",
   "accountSettings.userNotifications": "User notifications",
   "accountSettings.deactivateAccount": "DEACTIVATE ACCOUNT",
+  "accountSettings.deactivateAccountConfirm": "Are you sure you want to deactivate your account? This action can be reversed by contacting support.",
+  "accountSettings.deactivateSuccess": "Account deactivated successfully",
+  "accountSettings.deactivateError": "Failed to deactivate account. Please try again.",
   "accountSettings.setDefault": "SET DEFAULT",
   "accountSettings.saveChanges": "SAVE CHANGES",
   "accountSettings.saveSuccess": "Settings updated successfully",
@@ -379,6 +382,7 @@
   "doctor.schedule.filter.all": "All",
   "doctor.schedule.filter.booked": "Booked",
   "doctor.schedule.filter.available": "Available",
+  "doctor.schedule.remarksReadOnly": "Patient remarks cannot be edited when rescheduling as a doctor",
 
   "doctor.visits.title": "Visits History",
   "doctor.visits.allStatuses": "All Statuses",
@@ -651,9 +655,12 @@
   "admin.institution.validation.minLength": "Minimum {min} characters",
   "admin.institution.validation.invalidFormat": "Invalid format",
   "admin.institution.success.saved": "Institution saved successfully",
+  "admin.institution.success.created": "Institution created successfully",
   "admin.institution.success.employeeAdded": "Doctor added successfully",
   "admin.institution.success.employeeRemoved": "Doctor removed successfully",
   "admin.institution.error.loadFailed": "Failed to load institution data",
+  "admin.institution.error.saveFailed": "Failed to save institution",
+  "admin.institution.error.createFailed": "Failed to create institution",
   "admin.institution.error.validationFailed": "Please fill all required fields correctly",
   "admin.institution.types.cardiology": "Cardiology",
   "admin.institution.types.dermatology": "Dermatology",
@@ -786,7 +793,12 @@
   "doctor.patientProfile.visitsLoadError": "Failed to load patient visits",
   "patient.doctor.conflict": "Patient and doctor cannot be the same person",
   "institutionList.add": "Add institution",
+  "institutionList.loadError": "Failed to load institutions",
   "institutions.tittle": "Institutions",
   "schedules.institution": "Institution",
-  "navigation.employees": "Employees"
+  "navigation.employees": "Employees",
+
+  "confirmationDialogs.disableInstitutionMessage": "Are you sure you want to disable this institution? This action can be reversed later.",
+  "institution.disabledSuccessfully": "Institution disabled successfully",
+  "institution.disableError": "Failed to disable institution. Please try again."
 }

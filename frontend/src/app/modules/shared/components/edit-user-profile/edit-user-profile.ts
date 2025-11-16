@@ -14,15 +14,18 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Router } from '@angular/router';
+import { DialogService } from 'primeng/dynamicdialog';
+import { FileUploadModule } from 'primeng/fileupload';
 import { finalize } from 'rxjs';
 import { ProfileFormControls } from '../../../../core/models/user-profile.model';
 import { AuthenticationService } from '../../../../core/services/authentication/authentication';
 import { UserProfileFormValue } from '../../../../core/services/authentication/profile.model';
+import { UserSettingsService } from '../../../../core/services/authentication/user-settings.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
-import { DialogService } from 'primeng/dynamicdialog';
+import { AcceptActionDialogComponent } from '../ui/accept-action-dialog/accept-action-dialog-component';
 import { ChangePasswordDialog } from './components/change-password-dialog/change-password-dialog';
-import { FileUploadModule } from 'primeng/fileupload';
 
 @Component({
   selector: 'app-edit-user-profile',
@@ -36,9 +39,11 @@ export class EditUserProfile implements OnInit {
   public translationService = inject(TranslationService);
   private toastService = inject(ToastService);
   private authService = inject(AuthenticationService);
+  private userSettingsService = inject(UserSettingsService);
   private destroyRef = inject(DestroyRef);
-  public isSubmitting = signal(false);
   private dialogService = inject(DialogService);
+  private router = inject(Router);
+  public isSubmitting = signal(false);
   private profilePicture = signal('');
   public profileFormGroup = new FormGroup<ProfileFormControls>({
     name: new FormControl<string>('', {
@@ -159,6 +164,48 @@ export class EditUserProfile implements OnInit {
   private markFormGroupTouched() {
     Object.values(this.profileFormGroup.controls).forEach((control) => {
       control.markAsTouched({ onlySelf: true });
+    });
+  }
+
+  public onDeactivateAccount(): void {
+    const ref = this.dialogService.open(AcceptActionDialogComponent, {
+      data: {
+        message: this.translationService.translate(
+          'accountSettings.deactivateAccountConfirm',
+        ),
+      },
+      width: '500px',
+      header: this.translationService.translate(
+        'accountSettings.deactivateAccount',
+      ),
+    });
+
+    ref.onClose.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (confirmed: boolean) => {
+        if (confirmed) {
+          this.userSettingsService
+            .deactivateAccount()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: () => {
+                this.toastService.showSuccess(
+                  this.translationService.translate(
+                    'accountSettings.deactivateSuccess',
+                  ),
+                );
+                this.authService.logout();
+                this.router.navigate(['/auth/login']);
+              },
+              error: () => {
+                this.toastService.showError(
+                  this.translationService.translate(
+                    'accountSettings.deactivateError',
+                  ),
+                );
+              },
+            });
+        }
+      },
     });
   }
 }

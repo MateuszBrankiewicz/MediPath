@@ -97,6 +97,14 @@
       >
         {{ translationService.translate("editProfile.changePassword") }}
       </button>
+
+      <button
+        type="button"
+        class="deactivate-account-btn"
+        (click)="onDeactivateAccount()"
+      >
+        {{ translationService.translate("accountSettings.deactivateAccount") }}
+      </button>
     </div>
 
     <div class="separator"></div>

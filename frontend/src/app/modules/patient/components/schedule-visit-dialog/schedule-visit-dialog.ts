@@ -44,6 +44,7 @@ export class ScheduleVisitDialog implements OnInit {
   protected translationService = inject(TranslationService);
 
   protected readonly visitId = this.config.data?.visitId;
+  protected readonly isDoctor = this.config.data?.isDoctor ?? false;
 
   protected readonly availableDays = signal<AvailableDay[]>([]);
 
@@ -126,27 +127,25 @@ export class ScheduleVisitDialog implements OnInit {
     time: string;
     slotId?: string;
   }): void {
-    this.scheduleData.update((data) => ({
-      doctorName: data?.doctorName ?? '',
-      doctorId: data?.doctorId ?? '',
-      institution: data?.institution ?? '',
-      patientRemarks: data?.patientRemarks ?? '',
-      selectedDate: selection.date,
-      selectedTime: selection.time,
-      selectedSlotId: selection.slotId,
-    }));
+    this.scheduleData.update((data) => {
+      if (!data) return data;
+      return {
+        ...data,
+        selectedDate: selection.date,
+        selectedTime: selection.time,
+        selectedSlotId: selection.slotId,
+      };
+    });
   }
 
   protected onRemarksChange(remarks: string | null): void {
-    this.scheduleData.update((data) => ({
-      doctorName: data?.doctorName ?? '',
-      doctorId: data?.doctorId ?? '',
-      institution: data?.institution ?? '',
-      patientRemarks: remarks ?? '',
-      selectedDate: data?.selectedDate ?? new Date(),
-      selectedTime: data?.selectedTime ?? '',
-      selectedSlotId: data?.selectedSlotId ?? '',
-    }));
+    this.scheduleData.update((data) => {
+      if (!data) return data;
+      return {
+        ...data,
+        patientRemarks: remarks ?? '',
+      };
+    });
   }
 
   private initPlainVisitData(): void {
@@ -182,9 +181,8 @@ export class ScheduleVisitDialog implements OnInit {
       newDate: scheduleData.selectedDate,
       newTime: scheduleData.selectedTime,
       slotId: scheduleData.selectedSlotId,
-      remarks: scheduleData.patientRemarks,
+      remarks: scheduleData.patientRemarks ?? '',
     };
-
     this.ref.close(result);
   }
 

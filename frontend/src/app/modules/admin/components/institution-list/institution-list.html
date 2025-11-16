@@ -39,6 +39,7 @@
         [canEdit]="isAdminForThisInstitution()"
         (editClicked)="redirectToInstitutionEdit(institution.id)"
         (institutionClicked)="redirectToInstitutionView(institution.id)"
+        (disable)="disableInstitution(institution.id)"
       ></app-hospital-card>
     }
 

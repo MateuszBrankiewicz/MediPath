@@ -2,13 +2,13 @@ import { inject, Injectable } from '@angular/core';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Observable } from 'rxjs';
 import { TranslationService } from '../../../core/services/translation/translation.service';
+import { AcceptActionDialogComponent } from '../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 import { ReviewVisitDialog } from '../components/review-visit-dialog/review-visit-dialog';
 import { ScheduleVisitDialog } from '../components/schedule-visit-dialog/schedule-visit-dialog';
 import {
   VisitDetailsDialog,
   VisitDetailsDialogResult,
 } from '../components/visit-details-dialog/visit-details-dialog';
-import { AcceptActionDialogComponent } from '../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
 
 export interface OpenReviewDialogOptions {
   visitId: string;

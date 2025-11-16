@@ -238,11 +238,12 @@ export class VisitPage
 
     this.ref.onClose.subscribe((result) => {
       if (result) {
+        console.log('Reschedule result:', result);
         this.visitService
           .rescheduleVisit(
             {
               scheduleID: result.slotId,
-              patientRemarks: result.patientRemarks,
+              patientRemarks: result.remarks,
             },
             visitId,
           )
