@@ -230,9 +230,16 @@ export class InstitutionService {
   }
 
   public findUserByGovId(govId: string): Observable<FindedEmployee> {
-    console.log(govId);
     return this.http.get<FindedEmployee>(`${API_URL}/users/find/${govId}`, {
       withCredentials: true,
     });
+  }
+
+  public updatePwzNumber(userId: string, pwzNumber: string) {
+    return this.http.put<void>(
+      `${API_URL}/doctors/${userId}`,
+      { licenceNumber: pwzNumber },
+      { withCredentials: true },
+    );
   }
 }

@@ -66,8 +66,12 @@ export class AppointmentCardComponent {
     }
   });
 
-  isCancelDisabled = computed(() => {
+  protected readonly isCancelDisabled = computed(() => {
     return this.appointment().status !== 'scheduled';
+  });
+
+  protected readonly isViewDetailsDisabled = computed(() => {
+    return this.appointment().status !== 'completed';
   });
 
   onPatientDetailsClick() {

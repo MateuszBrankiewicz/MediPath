@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   OnInit,
   signal,
@@ -43,10 +44,7 @@ import { SelectInstitution } from '../shared/select-institution/select-instituti
   styleUrl: './institution-visits.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InstitutionVisits
-  extends PaginatedComponentBase<AppointmentCardData>
-  implements OnInit
-{
+export class InstitutionVisits extends PaginatedComponentBase<AppointmentCardData> {
   protected readonly translationService = inject(TranslationService);
   private readonly institutionService = inject(InstitutionService);
   private readonly institutionStore = inject(InstitutionStoreService);
@@ -72,6 +70,18 @@ export class InstitutionVisits
     sortField: 'visitDate',
     sortOrder: 'desc',
   });
+
+  constructor() {
+    super();
+    effect(() => {
+      const selectedInstitution = this.institutionStore.selectedInstitution();
+      if (!selectedInstitution) {
+        return;
+      }
+      const institutionId = selectedInstitution.id;
+      this.loadVisits(institutionId);
+    });
+  }
 
   private readonly visitFilterConfig: FilterFieldConfig<AppointmentCardData> =
     this.filteringService.combineConfigs(
@@ -175,10 +185,6 @@ export class InstitutionVisits
     ];
   });
 
-  ngOnInit(): void {
-    this.loadVisits();
-  }
-
   protected onFiltersChange(ev: {
     searchTerm: string;
     status: string;
@@ -202,10 +208,10 @@ export class InstitutionVisits
     return new Date(dateStr);
   }
 
-  private loadVisits(): void {
+  private loadVisits(institutionId: string): void {
     this.isLoading.set(true);
     this.institutionService
-      .getVisitsForInstitution(this.institutionStore.getInstitution().id)
+      .getVisitsForInstitution(institutionId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (visits) => {

@@ -720,6 +720,8 @@
   "admin.editDoctor.addInstitutionDialog": "Add Institution",
   "admin.editDoctor.searchInstitution": "Search Institution",
   "admin.editDoctor.searchPlaceholder": "Type institution name...",
+  "admin.editDoctor.specialisations": "Specialisations",
+  "admin.editDoctor.selectSpecialisaion": "Select specialisation",
   "admin.editDoctor.placeholders.name": "John",
   "admin.editDoctor.placeholders.surname": "Doe",
   "admin.editDoctor.placeholders.email": "johndoe@gmail.com",
@@ -784,5 +786,7 @@
   "doctor.patientProfile.visitsLoadError": "Failed to load patient visits",
   "patient.doctor.conflict": "Patient and doctor cannot be the same person",
   "institutionList.add": "Add institution",
-  "institutions.tittle": "Institutions"
+  "institutions.tittle": "Institutions",
+  "schedules.institution": "Institution",
+  "navigation.employees": "Employees"
 }

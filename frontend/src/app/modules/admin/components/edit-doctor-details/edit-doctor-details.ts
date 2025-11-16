@@ -13,8 +13,11 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
-import { forkJoin, of } from 'rxjs';
-import { FullDoctorInfo } from '../../../../core/models/doctor.model';
+import { forkJoin } from 'rxjs';
+import {
+  EditedEmployee,
+  FullDoctorInfo,
+} from '../../../../core/models/doctor.model';
 import { InstitutionShortInfo } from '../../../../core/models/institution.model';
 import { Specialisation } from '../../../../core/models/specialisation.model';
 import { AuthenticationService } from '../../../../core/services/authentication/authentication';
@@ -28,6 +31,24 @@ import { DoctorAddressFormComponent } from '../shared/doctor-address-form/doctor
 import { DoctorInstitutionsListComponent } from '../shared/doctor-institutions-list/doctor-institutions-list';
 import { DoctorPersonalInfoFormComponent } from '../shared/doctor-personal-info-form/doctor-personal-info-form';
 import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-professional-info-form/doctor-professional-info-form';
+
+interface DoctorFormValue {
+  name: string;
+  surname: string;
+  email: string;
+  birthDate: Date;
+  phoneNumber: string;
+  personalId: string;
+  specialisation: string[];
+  pwzNumber: string;
+  residentialAddress: {
+    province: string;
+    postalCode: string;
+    city: string;
+    number: string;
+    street: string;
+  };
+}
 
 @Component({
   selector: 'app-edit-doctor-details',
@@ -60,14 +81,15 @@ export class EditDoctorDetailsComponent implements OnInit {
   protected isSubmitting = signal<boolean>(false);
   private doctor = signal<FullDoctorInfo | undefined>(undefined);
   private doctorId = signal<string>('');
-  private originalInstitutions = signal<InstitutionShortInfo[]>([]);
-  protected doctorInstitutions = signal<InstitutionShortInfo[]>([]);
+  private originalInstitutions = signal<EditedEmployee[]>([]);
+  protected doctorInstitutions = signal<EditedEmployee[]>([]);
   protected availableInstitutions = signal<InstitutionShortInfo[]>([]);
   private specialisationService = inject(SpecialisationService);
   protected specialisations = signal<Specialisation[]>([]);
   private readonly authentication = inject(AuthenticationService);
   protected cities = signal<string[]>([]);
   protected provinces = signal<string[]>([]);
+  private originalPwzNumber = signal<string>('');
 
   ngOnInit(): void {
     this.initializeForm();
@@ -84,7 +106,7 @@ export class EditDoctorDetailsComponent implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((doctorData) => {
           this.doctor.set(doctorData);
-          this.originalInstitutions.set([...doctorData.institutions]);
+          this.originalInstitutions.set(doctorData.institutionsEmployee);
           this.patchForm(doctorData);
         });
     }
@@ -128,6 +150,8 @@ export class EditDoctorDetailsComponent implements OnInit {
         )
       : new Date(doctor.dateOfBirth);
 
+    this.originalPwzNumber.set(doctor.licenceNumber);
+
     this.doctorForm.patchValue({
       name: doctor.name,
       surname: doctor.surname,
@@ -135,7 +159,7 @@ export class EditDoctorDetailsComponent implements OnInit {
       birthDate: birthDate,
       phoneNumber: doctor.phoneNumber,
       personalId: doctor.govId,
-      pwzNumber: doctor.pwzNumber,
+      pwzNumber: doctor.licenceNumber,
       specialisation: doctor.specialisation,
       residentialAddress: {
         province: doctor.address.province,
@@ -145,7 +169,7 @@ export class EditDoctorDetailsComponent implements OnInit {
         number: doctor.address.number,
       },
     });
-    this.doctorInstitutions.set(doctor.institutions);
+    this.doctorInstitutions.set(doctor.institutionsEmployee);
   }
 
   protected onSubmit(): void {
@@ -161,67 +185,11 @@ export class EditDoctorDetailsComponent implements OnInit {
 
     this.isSubmitting.set(true);
     const formValue = this.doctorForm.getRawValue();
-    const currentInstitutions = this.doctorInstitutions();
-    const original = this.originalInstitutions();
-
-    const toAdd = currentInstitutions.filter(
-      (curr) =>
-        !original.some((orig) => orig.institutionId === curr.institutionId),
+    const diff = this.diffInstitutions(
+      this.doctorInstitutions(),
+      this.originalInstitutions(),
     );
-
-    const toRemove = original.filter(
-      (orig) =>
-        !currentInstitutions.some(
-          (curr) => curr.institutionId === orig.institutionId,
-        ),
-    );
-
-    const toUpdate = currentInstitutions.filter((curr) =>
-      original.some((orig) => orig.institutionId === curr.institutionId),
-    );
-
-    const requests: ReturnType<
-      | typeof this.institutionService.addEmployees
-      | typeof this.institutionService.deleteEmployee
-      | typeof this.institutionService.updateEmployee
-    >[] = [];
-
-    if (toAdd.length > 0) {
-      toAdd.forEach((inst) => {
-        requests.push(
-          this.institutionService.addEmployees(inst.institutionId, [
-            {
-              userID: this.doctorId(),
-              rolecode: inst.roleCode || 2, // Use institution-specific role code
-              specialisations: formValue.specialisation,
-            },
-          ]),
-        );
-      });
-    }
-
-    if (toRemove.length > 0) {
-      toRemove.forEach((inst) => {
-        requests.push(
-          this.institutionService.deleteEmployee(
-            inst.institutionId,
-            this.doctorId(),
-          ),
-        );
-      });
-    }
-
-    if (toUpdate.length > 0) {
-      toUpdate.forEach((inst) => {
-        requests.push(
-          this.institutionService.updateEmployee(inst.institutionId, {
-            userID: this.doctorId(),
-            roleCode: inst.roleCode || 2,
-            specialisations: formValue.specialisation,
-          }),
-        );
-      });
-    }
+    const requests = this.buildRequests(diff, formValue);
 
     if (requests.length === 0) {
       this.isSubmitting.set(false);
@@ -231,7 +199,7 @@ export class EditDoctorDetailsComponent implements OnInit {
       return;
     }
 
-    forkJoin(requests.length > 0 ? requests : [of(null)])
+    forkJoin(requests)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
@@ -260,11 +228,108 @@ export class EditDoctorDetailsComponent implements OnInit {
       });
   }
 
+  private diffInstitutions(
+    current: EditedEmployee[],
+    original: EditedEmployee[],
+  ): {
+    toAdd: EditedEmployee[];
+    toRemove: EditedEmployee[];
+    toUpdate: EditedEmployee[];
+  } {
+    const toAdd = current.filter(
+      (curr) =>
+        !original.some((orig) => orig.institutionId === curr.institutionId),
+    );
+
+    const toRemove = original.filter(
+      (orig) =>
+        !current.some((curr) => curr.institutionId === orig.institutionId),
+    );
+
+    const toUpdate = current.filter((curr) => {
+      const orig = original.find((o) => o.institutionId === curr.institutionId);
+      if (!orig) return false;
+
+      const roleChanged = curr.roleCode !== orig.roleCode;
+
+      const specialisationsChanged =
+        JSON.stringify(curr.specialisations?.sort()) !==
+        JSON.stringify(orig.specialisations?.sort());
+
+      return roleChanged || specialisationsChanged;
+    });
+
+    return { toAdd, toRemove, toUpdate };
+  }
+
+  private buildRequests(
+    diff: {
+      toAdd: EditedEmployee[];
+      toRemove: EditedEmployee[];
+      toUpdate: EditedEmployee[];
+    },
+    formValue: DoctorFormValue,
+  ): ReturnType<
+    | typeof this.institutionService.addEmployees
+    | typeof this.institutionService.deleteEmployee
+    | typeof this.institutionService.updatePwzNumber
+    | typeof this.institutionService.updateEmployee
+  >[] {
+    const requests: ReturnType<
+      | typeof this.institutionService.addEmployees
+      | typeof this.institutionService.deleteEmployee
+      | typeof this.institutionService.updatePwzNumber
+      | typeof this.institutionService.updateEmployee
+    >[] = [];
+
+    diff.toAdd.forEach((inst) => {
+      requests.push(
+        this.institutionService.addEmployees(inst.institutionId, [
+          {
+            userID: this.doctorId(),
+            rolecode: inst.roleCode || 2,
+            specialisations: inst.specialisations,
+          },
+        ]),
+      );
+    });
+
+    diff.toRemove.forEach((inst) => {
+      requests.push(
+        this.institutionService.deleteEmployee(
+          inst.institutionId,
+          this.doctorId(),
+        ),
+      );
+    });
+
+    diff.toUpdate.forEach((inst) => {
+      requests.push(
+        this.institutionService.updateEmployee(inst.institutionId, {
+          userID: this.doctorId(),
+          roleCode: inst.roleCode || 2,
+          specialisations: inst.specialisations || [],
+        }),
+      );
+    });
+
+    if (this.originalPwzNumber() !== formValue.pwzNumber) {
+      requests.push(
+        this.institutionService.updatePwzNumber(
+          this.doctorId(),
+          formValue.pwzNumber,
+        ),
+      );
+    }
+
+    return requests;
+  }
+
   protected onCancel(): void {
     this.router.navigate(['/admin/doctors']);
   }
 
-  protected onAddInstitution(institution: InstitutionShortInfo): void {
+  protected onAddInstitution(institution: EditedEmployee): void {
     this.doctorInstitutions.update((institutions) => [
       ...institutions,
       institution,
@@ -277,14 +342,15 @@ export class EditDoctorDetailsComponent implements OnInit {
     );
   }
 
-  protected onRoleChanged(event: {
-    institutionId: string;
-    roleCode: number;
-  }): void {
+  protected onRoleChanged(event: EditedEmployee): void {
     this.doctorInstitutions.update((institutions) =>
       institutions.map((inst) =>
         inst.institutionId === event.institutionId
-          ? { ...inst, roleCode: event.roleCode }
+          ? {
+              ...inst,
+              roleCode: event.roleCode,
+              specialisations: event.specialisations,
+            }
           : inst,
       ),
     );

@@ -61,8 +61,8 @@
 .institution-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
+  align-items: flex-start;
+  padding: 1.25rem;
   background-color: var(--surface-100);
   border: 1px solid var(--surface-border);
   border-radius: var(--border-radius);
@@ -74,55 +74,85 @@
   }
 
   @media (max-width: 640px) {
-    padding: 0.875rem 1rem;
+    padding: 1rem;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.75rem;
+    gap: 1rem;
   }
 }
 
 .institution-info {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  align-items: flex-start;
+  gap: 1rem;
   flex: 1;
 
   i {
     color: var(--primary-color);
-    font-size: 1.1rem;
+    font-size: 2rem;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+  }
+
+  .institution-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: var(--border-radius);
+    flex-shrink: 0;
   }
 
   .institution-details {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 0.75rem;
     flex: 1;
+    min-width: 0;
+  }
 
-    @media (max-width: 640px) {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
+  .institution-main {
+    display: flex;
+    align-items: center;
   }
 
   .institution-name {
     font-weight: 600;
     color: var(--text-color);
-    font-size: 0.9375rem;
+    font-size: 1rem;
 
     @media (max-width: 640px) {
-      font-size: 0.875rem;
+      font-size: 0.9375rem;
     }
   }
 
-  .institution-address {
-    color: var(--text-color-secondary);
-    font-size: 0.8125rem;
-    margin-top: 0.25rem;
+  .institution-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.875rem;
 
     @media (max-width: 640px) {
-      font-size: 0.75rem;
+      flex-direction: column;
+      gap: 0.25rem;
     }
+  }
+
+  .meta-label {
+    color: var(--text-color-secondary);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .meta-value {
+    color: var(--text-color);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 

@@ -383,7 +383,7 @@
   padding-top: 1rem;
   border-top: 1px solid var(--surface-border);
   margin-top: auto;
-
+  justify-self: flex-end;
   ::ng-deep {
     .p-button {
       flex: 1;

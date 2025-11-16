@@ -286,34 +286,39 @@ public class DoctorService {
 
     User doctor = doctorOpt.get();
 
-    ArrayList<InstitutionDigest> employers = doctor.getEmployers();
+    // Pobierz wszystkie instytucje, w których pracuje lekarz
+    ArrayList<Institution> institutions = institutionRepository.findInstitutionsByEmployeeId(doctorId);
     ArrayList<Map<String, Object>> institutionsList = new ArrayList<>();
-    boolean updated = false;
+    
+    // Dane lekarza z pierwszej instytucji (lub wartości domyślne)
+    ArrayList<String> specialisations = new ArrayList<>();
+    Integer roleCode = null;
 
-    for (int i = 0; i < employers.size(); i++) {
-      InstitutionDigest digest = employers.get(i);
-      Optional<Institution> institutionOpt = institutionRepository.findById(digest.getInstitutionId());
+    for (Institution institution : institutions) {
+      // Znajdź dane pracownika w tej instytucji
+      Optional<StaffDigest> staffOpt = institution.getEmployees().stream()
+          .filter(emp -> emp.getUserId().equals(doctorId))
+          .findFirst();
 
-      if (institutionOpt.isEmpty()) {
-        continue;
+      if (staffOpt.isPresent()) {
+        StaffDigest staff = staffOpt.get();
+        
+        // Ustaw specjalizacje i roleCode z pierwszej instytucji (jeśli jeszcze nie ustawione)
+        if (specialisations.isEmpty() && staff.getSpecialisations() != null) {
+          specialisations = staff.getSpecialisations();
+        }
+        if (roleCode == null) {
+          roleCode = staff.getRoleCode();
+        }
+
+        institutionsList.add(Map.of(
+            "institutionId", institution.getId(),
+            "institutionName", institution.getName(),
+            "image", institution.getImage(),
+            "address", institution.getAddress(),
+            "specialisations", staff.getSpecialisations() != null ? staff.getSpecialisations() : new ArrayList<String>(),
+            "roleCode", staff.getRoleCode()));
       }
-      Institution institution = institutionOpt.get();
-
-      if (!institution.getName().equals(digest.getInstitutionName())) {
-        employers.set(i, new InstitutionDigest(digest.getInstitutionId(), institution.getName()));
-        updated = true;
-      }
-
-      institutionsList.add(Map.of(
-          "institutionId", institution.getId(),
-          "institutionName", institution.getName(),
-          "image", institution.getImage(),
-          "address", institution.getAddress()));
-    }
-
-    if (updated) {
-      doctor.setEmployers(employers);
-      userRepository.save(doctor);
     }
 
     Map<String, Object> result = new HashMap<>();
@@ -327,12 +332,12 @@ public class DoctorService {
     result.put("govId", doctor.getGovId());
     result.put("pwzNumber", doctor.getLicenceNumber());
     result.put("licenceNumber", doctor.getLicenceNumber());
-    result.put("specialisations", doctor.getSpecialisations());
+    result.put("specialisations", specialisations);
     result.put("rating", doctor.getRating());
     result.put("numOfRatings", doctor.getNumOfRatings());
     result.put("image", doctor.getPfpimage());
-    result.put("institutions", institutionsList);
-    result.put("roleCode", doctor.getRoleCode());
+    result.put("institutionsEmployee", institutionsList);
+    result.put("roleCode", roleCode != null ? roleCode : 0);
 
     return Map.of("doctor", result);
   }

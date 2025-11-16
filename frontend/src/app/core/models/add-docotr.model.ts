@@ -12,9 +12,9 @@ export interface AddDoctorRequest {
     street: string;
     number: string;
   };
-  roleCode: number;
-  doctorDetails: {
-    licenceNumber: string;
+  licenceNumber: string;
+  employeeDetails: {
+    roleCode: number;
     specialisations: string[];
   };
 }

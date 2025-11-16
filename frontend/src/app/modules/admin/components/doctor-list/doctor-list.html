@@ -119,27 +119,18 @@
                     }}
                   </h4>
                   @if (
-                    doctor.doctorSchedules && doctor.doctorSchedules.length > 0
+                    doctor.specialisations && doctor.specialisations.length > 0
                   ) {
                     <div class="spec-tags">
                       @for (
-                        spec of doctor.doctorSchedules[0].doctor.specialisations.slice(
-                          0,
-                          3
-                        );
+                        spec of doctor.specialisations.slice(0, 3);
                         track spec
                       ) {
                         <span class="spec-tag">{{ spec }}</span>
                       }
-                      @if (
-                        doctor.doctorSchedules[0].doctor.specialisations
-                          .length > 3
-                      ) {
+                      @if (doctor.specialisations.length > 3) {
                         <span class="spec-tag more">
-                          +{{
-                            doctor.doctorSchedules[0].doctor.specialisations
-                              .length - 3
-                          }}
+                          +{{ doctor.specialisations.length - 3 }}
                         </span>
                       }
                     </div>
@@ -167,9 +158,13 @@
                     </span>
                   </div>
                 </div>
-              } @else {
+              } @else if (doctor.roleCode === 4) {
                 <div class="staff-info">
                   <p-tag value="Personel" severity="info" icon="pi pi-users" />
+                </div>
+              } @else {
+                <div class="staff-info">
+                  <p-tag value="Admin" severity="danger" icon="pi pi-users" />
                 </div>
               }
             </div>

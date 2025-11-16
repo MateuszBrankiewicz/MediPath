@@ -721,6 +721,8 @@
   "admin.editDoctor.addInstitutionDialog": "Dodaj instytucję",
   "admin.editDoctor.searchInstitution": "Wyszukaj instytucję",
   "admin.editDoctor.searchPlaceholder": "Wpisz nazwę instytucji...",
+  "admin.editDoctor.specialisations": "Specjalizacje",
+  "admin.editDoctor.selectSpecialisaion": "Wybierz specjalizację",
   "admin.editDoctor.placeholders.name": "Jan",
   "admin.editDoctor.placeholders.surname": "Kowalski",
   "admin.editDoctor.placeholders.email": "jankowalski@gmail.com",
@@ -785,5 +787,7 @@
   "doctor.patientProfile.visitsLoadError": "Nie udało się załadować wizyt pacjenta",
   "patient.doctor.conflict": "Pacjent oraz lekarz nie mogą być tą samą osobą",
   "institutionList.add": "Dodaj instytucje",
-  "institutions.tittle": "Instytucje"
+  "institutions.tittle": "Instytucje",
+  "schedules.institution": "Instytucja",
+  "navigation.employees": "Pracownicy"
 }

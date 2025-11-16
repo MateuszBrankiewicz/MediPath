@@ -105,4 +105,9 @@ public interface InstitutionRepository extends MongoRepository<Institution, Stri
       "{ \"$project\": { \"_id\": 1, \"name\": \"$employees.name\", \"surname\": \"$employees.surname\", \"specialisations\": \"$employees.specialisations\", \"userId\": \"$employees.userId\", \"roleCode\": \"$employees.roleCode\", \"pfpimage\": \"$employees.pfpimage\"} }"
   })
   ArrayList<StaffDigest> findEmployeesInInstitution(String institutionid);
+
+  @Aggregation({
+      "{ \"$match\": { \"employees.userId\": ?0, \"isActive\": true } }"
+  })
+  ArrayList<Institution> findInstitutionsByEmployeeId(String userId);
 }

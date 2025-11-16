@@ -83,7 +83,8 @@ public class InstitutionQueryService {
           employeeMap.put("rating", employeeProfile.getRating());
           employeeMap.put("numofratings", employeeProfile.getNumOfRatings());
           employeeMap.put("licenceNumber", employeeProfile.getLicenceNumber());
-
+          employeeMap.put("roleCode", employee.getRoleCode());
+          employeeMap.put("specialisations", employee.getSpecialisations());
           return employeeMap;
         })
         .toList();

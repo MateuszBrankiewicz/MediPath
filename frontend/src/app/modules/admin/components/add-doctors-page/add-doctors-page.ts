@@ -28,8 +28,8 @@ import { DoctorProfessionalInfoFormComponent } from '../shared/doctor-profession
 import { InputTextModule } from 'primeng/inputtext';
 import { DoctorService } from '../../../../core/services/doctor/doctor.service';
 import { FullDoctorInfo } from '../../../../core/models/doctor.model';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MultiSelectChangeEvent } from 'primeng/multiselect';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-add-doctors-page',
@@ -148,11 +148,11 @@ export class AddDoctorsPage implements OnInit {
         street: formValue.residentialAddress.street,
         number: formValue.residentialAddress.number,
       },
-      doctorDetails: {
-        licenceNumber: formValue.pwzNumber,
+      employeeDetails: {
         specialisations: formValue.specialisation,
+        roleCode: role,
       },
-      roleCode: role,
+      licenceNumber: formValue.pwzNumber,
     };
 
     this.institutionService
@@ -312,7 +312,7 @@ export class AddDoctorsPage implements OnInit {
       birthDate: birthDate,
       phoneNumber: doctorData.phoneNumber,
       personalId: doctorData.govId,
-      specialisation: doctorData.specialisations,
+      specialisation: doctorData.specialisation,
       pwzNumber: doctorData.licenceNumber,
       residentialAddress: {
         province: doctorData.address.province,
