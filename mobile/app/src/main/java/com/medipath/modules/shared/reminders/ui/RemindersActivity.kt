@@ -107,14 +107,12 @@ fun RemindersScreen(
     val firstName by profileViewModel.firstName.collectAsState()
     val lastName by profileViewModel.lastName.collectAsState()
     val isProfileLoading by profileViewModel.isLoading.collectAsState()
-    val profileShouldRedirect by profileViewModel.shouldRedirectToLogin.collectAsState()
     val roleCode by profileViewModel.roleCode.collectAsState()
     val canBeDoctor by profileViewModel.canBeDoctor.collectAsState()
     val colors = LocalCustomColors.current
 
     val reminders by remindersViewModel.filteredReminders.collectAsState()
     val isLoading by remindersViewModel.isLoading.collectAsState()
-    val remindersShouldRedirect by remindersViewModel.shouldRedirectToLogin.collectAsState()
     val totalReminders by remindersViewModel.totalReminders.collectAsState()
     val unreadReminders by remindersViewModel.unreadReminders.collectAsState()
     val todayReminders by remindersViewModel.todayReminders.collectAsState()
@@ -264,19 +262,7 @@ fun RemindersScreen(
         remindersViewModel.fetchReminders()
     }
 
-    val shouldRedirect = profileShouldRedirect || remindersShouldRedirect
-    if (shouldRedirect) {
-        LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
-            val sessionManager = RetrofitInstance.getSessionManager()
-            sessionManager.deleteSessionId()
-            context.startActivity(
-                Intent(context, LoginActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
-            (context as? ComponentActivity)?.finish()
-        }
-    } else if (isProfileLoading) {
+    if (isProfileLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

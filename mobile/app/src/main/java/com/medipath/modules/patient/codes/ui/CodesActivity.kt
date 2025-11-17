@@ -122,9 +122,6 @@ fun CodesScreen(
     val profileIsLoading by profileViewModel.isLoading.collectAsState()
     val canBeDoctor by profileViewModel.canBeDoctor.collectAsState()
 
-    val profileShouldRedirect by profileViewModel.shouldRedirectToLogin.collectAsState()
-    val codesShouldRedirect by codesViewModel.shouldRedirectToLogin.collectAsState()
-
     val clipboardManager = LocalClipboardManager.current
     var copiedCode by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -271,19 +268,7 @@ fun CodesScreen(
         )
     )
 
-    val shouldRedirect = profileShouldRedirect || codesShouldRedirect
-    if (shouldRedirect) {
-        LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
-            val sessionManager = RetrofitInstance.getSessionManager()
-            sessionManager.deleteSessionId()
-            context.startActivity(
-                Intent(context, LoginActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
-            (context as? ComponentActivity)?.finish()
-        }
-    } else if (isLoading || profileIsLoading) {
+    if (isLoading || profileIsLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

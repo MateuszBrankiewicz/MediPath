@@ -91,7 +91,6 @@ fun CommentsScreen(
     val firstName by viewModel.firstName.collectAsState()
     val lastName by viewModel.lastName.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
     val canBeDoctor by viewModel.canBeDoctor.collectAsState()
 
     val comments by commentsViewModel.filteredComments.collectAsState()
@@ -102,7 +101,6 @@ fun CommentsScreen(
     val sortBy by commentsViewModel.sortBy.collectAsState()
     val sortOrder by commentsViewModel.sortOrder.collectAsState()
     val totalComments by commentsViewModel.totalComments.collectAsState()
-    val commentsRedirect by commentsViewModel.shouldRedirectToLogin.collectAsState()
 
     var showFilters by remember { mutableStateOf(false) }
 
@@ -135,25 +133,7 @@ fun CommentsScreen(
         }
     }
 
-    if (shouldRedirectToLogin || commentsRedirect) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-
-        LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
-            val sessionManager = RetrofitInstance.getSessionManager()
-            sessionManager.deleteSessionId()
-            context.startActivity(
-                Intent(context, LoginActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
-            (context as? ComponentActivity)?.finish()
-        }
-    } else if (isLoading) {
+    if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

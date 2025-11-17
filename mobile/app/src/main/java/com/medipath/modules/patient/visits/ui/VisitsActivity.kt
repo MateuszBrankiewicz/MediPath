@@ -97,14 +97,12 @@ fun VisitsScreen(
     val firstName by profileViewModel.firstName.collectAsState()
     val lastName by profileViewModel.lastName.collectAsState()
     val isProfileLoading by profileViewModel.isLoading.collectAsState()
-    val profileShouldRedirect by profileViewModel.shouldRedirectToLogin.collectAsState()
     val canBeDoctor by profileViewModel.canBeDoctor.collectAsState()
 
     val colors = LocalCustomColors.current
 
     val visits by visitsViewModel.filteredVisits.collectAsState()
     val isLoading by visitsViewModel.isLoading.collectAsState()
-    val visitsShouldRedirect by visitsViewModel.shouldRedirectToLogin.collectAsState()
     val totalVisits by visitsViewModel.totalVisits.collectAsState()
     val scheduledVisits by visitsViewModel.scheduledVisits.collectAsState()
     val completedVisits by visitsViewModel.completedVisits.collectAsState()
@@ -210,19 +208,7 @@ fun VisitsScreen(
         }
     }
 
-    val shouldRedirect = profileShouldRedirect || visitsShouldRedirect
-    if (shouldRedirect) {
-        LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
-            val sessionManager = RetrofitInstance.getSessionManager()
-            sessionManager.deleteSessionId()
-            context.startActivity(
-                Intent(context, LoginActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
-            (context as? ComponentActivity)?.finish()
-        }
-    } else if (isProfileLoading) {
+    if (isProfileLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

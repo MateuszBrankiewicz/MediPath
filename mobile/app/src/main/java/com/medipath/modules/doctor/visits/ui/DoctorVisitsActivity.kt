@@ -98,7 +98,6 @@ fun DoctorVisitsScreen(
     val statusFilter by doctorViewModel.statusFilter.collectAsState()
     val sortOrder by doctorViewModel.sortOrder.collectAsState()
     val totalVisits by doctorViewModel.totalVisits.collectAsState()
-    val shouldRedirectToLogin by doctorViewModel.shouldRedirectToLogin.collectAsState()
     
     val cancelSuccess by visitsViewModel.cancelSuccess.collectAsState()
     val cancelError by visitsViewModel.error.collectAsState()
@@ -141,25 +140,7 @@ fun DoctorVisitsScreen(
         }
     }
 
-    if (shouldRedirectToLogin) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-
-        LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
-            val sessionManager = RetrofitInstance.getSessionManager()
-            sessionManager.deleteSessionId()
-            context.startActivity(
-                Intent(context, LoginActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
-            (context as? ComponentActivity)?.finish()
-        }
-    } else if (isProfileLoading || visitsLoading) {
+    if (isProfileLoading || visitsLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

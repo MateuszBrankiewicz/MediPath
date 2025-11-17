@@ -128,14 +128,12 @@ fun HomeScreen(
     ) {
     val context = LocalContext.current
 
-    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     val notificationsViewModel: NotificationsViewModel = viewModel()
 
     val visitsViewModel: VisitsViewModel = viewModel()
     val visitsError by visitsViewModel.error.collectAsState(null)
-    val visitsShouldRedirect by visitsViewModel.shouldRedirectToLogin.collectAsState()
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -166,30 +164,7 @@ fun HomeScreen(
         }
     }
 
-    if (shouldRedirectToLogin) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-
-        LaunchedEffect(shouldRedirectToLogin || visitsShouldRedirect) {
-            if (!shouldRedirectToLogin) return@LaunchedEffect
-
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
-
-            val sessionManager = RetrofitInstance.getSessionManager()
-            sessionManager.deleteSessionId()
-
-            context.startActivity(
-                Intent(context, LoginActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
-            (context as? ComponentActivity)?.finish()
-        }
-
-    } else if (isLoading) {
+    if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -330,7 +305,9 @@ fun HomeScreen(
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
                             ) {
                                 Text(
                                     "Upcoming visits",
