@@ -9,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -23,7 +22,9 @@ fun SearchableProvinceDropdown(
     onProvinceSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
     errorMessage: String = "",
-    onFocusLost: () -> Unit = {}
+    onFocusLost: () -> Unit = {},
+    shape : RoundedCornerShape = RoundedCornerShape(20.dp),
+    isEdit: Boolean = false
 ) {
     var hadFocus by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -49,7 +50,12 @@ fun SearchableProvinceDropdown(
                         onProvinceSelected("")
                     }
                 },
-                label = { Text("Province", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
+                label = {
+                    if (isEdit)
+                        Text("Province")
+                    else
+                        Text("Province", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
+                },
                 placeholder = {
                     Text(
                         "Select province or type to search",
@@ -86,7 +92,7 @@ fun SearchableProvinceDropdown(
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surface
                 ),
-                shape = RoundedCornerShape(20.dp),
+                shape = shape,
                 isError = errorMessage.isNotEmpty()
             )
             if (expanded && filteredProvinces.isNotEmpty()) {

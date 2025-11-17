@@ -35,6 +35,9 @@ class SettingsViewModel : ViewModel() {
     private val _updateSuccess = MutableStateFlow(false)
     val updateSuccess: StateFlow<Boolean> = _updateSuccess.asStateFlow()
 
+    private val _deactivateSuccess = MutableStateFlow(false)
+    val deactivateSuccess: StateFlow<Boolean> = _deactivateSuccess.asStateFlow()
+
     fun setLanguage(lang: String) {
         _language.value = lang
     }
@@ -67,6 +70,29 @@ class SettingsViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Error fetching settings", e)
                 _error.value = "${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+
+    fun deactivateAccount() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            try {
+                val response = settingsService.deactivateAccount()
+                if (response.isSuccessful) {
+                    _deactivateSuccess.value = true
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    _error.value = errorBody ?: "Failed to deactivate account: ${response.code()}"
+                    Log.e("ProfileViewModel", "Deactivate failed: ${response.code()} - $errorBody")
+                }
+            } catch (e: Exception) {
+                _error.value = e.message
+                Log.e("ProfileViewModel", "Deactivate exception", e)
             } finally {
                 _isLoading.value = false
             }

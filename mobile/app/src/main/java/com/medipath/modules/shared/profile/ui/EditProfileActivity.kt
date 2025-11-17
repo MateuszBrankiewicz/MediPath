@@ -28,6 +28,7 @@ import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.shared.components.rememberBase64Image
 import com.medipath.modules.shared.components.rememberBase64ImagePicker
 import com.medipath.modules.patient.home.HomeViewModel
+import com.medipath.modules.shared.auth.RegisterViewModel
 import com.medipath.modules.shared.auth.ui.LoginActivity
 
 class EditProfileActivity : ComponentActivity() {
@@ -81,6 +82,8 @@ fun EditProfileScreen(
     val postalCodeError by profileViewModel.postalCodeError.collectAsState()
     val currentPasswordError by profileViewModel.currentPasswordError.collectAsState()
     val newPasswordError by profileViewModel.newPasswordError.collectAsState()
+    val registerViewModel: RegisterViewModel = viewModel()
+
 
     LaunchedEffect(Unit) {
         viewModel.fetchUserProfile()
@@ -218,6 +221,7 @@ fun EditProfileScreen(
 
                             item {
                                 ContactAddressSection(
+                                    viewModel = registerViewModel,
                                     editedPhone = editedPhone,
                                     onPhoneChange = { editedPhone = it; profileViewModel.setPhoneNumber(it) },
                                     phoneError = phoneError,

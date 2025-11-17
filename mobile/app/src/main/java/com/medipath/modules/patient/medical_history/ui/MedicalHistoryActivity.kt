@@ -94,6 +94,7 @@ fun MedicalHistoryScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
     val userId by viewModel.userId.collectAsState()
+    val canBeDoctor by viewModel.canBeDoctor.collectAsState()
 
     val histories by medicalHistoryViewModel.filteredMedicalHistories.collectAsState()
     val historiesLoading by medicalHistoryViewModel.isLoading.collectAsState()
@@ -165,6 +166,7 @@ fun MedicalHistoryScreen(
         Navigation(
             notificationsViewModel = notificationsViewModel,
             screenTitle = "Medical History",
+            canSwitchRole = canBeDoctor,
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
             },

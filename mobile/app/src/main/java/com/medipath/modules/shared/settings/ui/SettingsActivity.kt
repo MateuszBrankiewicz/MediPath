@@ -60,6 +60,12 @@ fun SettingsScreen(
     val error by settingsViewModel.error.collectAsState()
     val updateSuccess by settingsViewModel.updateSuccess.collectAsState()
 
+    val deactivateSuccess by settingsViewModel.deactivateSuccess.collectAsState()
+    val deactivateError by settingsViewModel.error.collectAsState()
+    val isDeactivating by settingsViewModel.isLoading.collectAsState()
+
+    var showDeactivateDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         viewModel.fetchUserProfile()
         settingsViewModel.fetchSettings()
@@ -84,9 +90,28 @@ fun SettingsScreen(
         }
     }
 
+    LaunchedEffect(deactivateError) {
+        if (deactivateError != null) {
+            Toast.makeText(context, deactivateError, Toast.LENGTH_LONG).show()
+        }
+    }
+
     LaunchedEffect(updateSuccess) {
         if (updateSuccess) {
             Toast.makeText(context, "Settings saved", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(deactivateSuccess) {
+        if (deactivateSuccess) {
+            Toast.makeText(context, "Account deactivated successfully", Toast.LENGTH_LONG).show()
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            (context as? ComponentActivity)?.finish()
         }
     }
 
@@ -275,13 +300,21 @@ fun SettingsScreen(
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Button(
-                                        onClick = { Toast.makeText(context, "Account deactivated", Toast.LENGTH_SHORT).show() },
+                                        onClick = { showDeactivateDialog = true },
                                         modifier = Modifier.fillMaxWidth(),
+                                        enabled = !isDeactivating,
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = LocalCustomColors.current.red800
                                         )
                                     ) {
-                                        Text("DEACTIVATE ACCOUNT", color = MaterialTheme.colorScheme.background)
+                                        if (isDeactivating) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(20.dp),
+                                                color = MaterialTheme.colorScheme.background
+                                            )
+                                        } else {
+                                            Text("DEACTIVATE ACCOUNT", color = MaterialTheme.colorScheme.background)
+                                        }
                                     }
                                 }
                             }
@@ -289,6 +322,35 @@ fun SettingsScreen(
                     }
                 }
             }
+        }
+
+        if (showDeactivateDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeactivateDialog = false },
+                title = { Text("Deactivate Account") },
+                text = { 
+                    Text("Are you sure you want to deactivate your account? This action cannot be undone and you will be logged out.")
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showDeactivateDialog = false
+                            settingsViewModel.deactivateAccount()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = LocalCustomColors.current.red800
+                        )
+                    ) {
+                        Text("Deactivate")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { showDeactivateDialog = false }) {
+                        Text("Cancel")
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.background
+            )
         }
     }
 }

@@ -22,7 +22,9 @@ fun SearchableCityDropdown(
     onCitySelected: (String) -> Unit,
     modifier: Modifier = Modifier,
     errorMessage: String = "",
-    onFocusLost: () -> Unit = {}
+    onFocusLost: () -> Unit = {},
+    shape : RoundedCornerShape = RoundedCornerShape(20.dp),
+    isEdit: Boolean = false
 ) {
     var hadFocus by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -48,7 +50,12 @@ fun SearchableCityDropdown(
                     onCitySelected("")
                 }
             },
-            label = { Text("City", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
+            label = {
+                if (isEdit)
+                    Text("City")
+                else
+                    Text("City", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
+            },
             placeholder = {
                 Text(
                     "Select city or type to search",
@@ -72,7 +79,6 @@ fun SearchableCityDropdown(
             modifier = Modifier
                 .fillMaxWidth()
                 .onFocusChanged { focusState ->
-//                    Log.d("debug", "Focus changed: ${focusState.isFocused}")
                     if (focusState.isFocused) {
                         hadFocus = true
                         expanded = true
@@ -86,7 +92,7 @@ fun SearchableCityDropdown(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
-            shape = RoundedCornerShape(20.dp),
+            shape = shape,
             isError = errorMessage.isNotEmpty()
         )
         if (expanded && filteredCities.isNotEmpty()) {

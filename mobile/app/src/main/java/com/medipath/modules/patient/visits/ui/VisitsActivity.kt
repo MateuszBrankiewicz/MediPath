@@ -98,6 +98,7 @@ fun VisitsScreen(
     val lastName by profileViewModel.lastName.collectAsState()
     val isProfileLoading by profileViewModel.isLoading.collectAsState()
     val profileShouldRedirect by profileViewModel.shouldRedirectToLogin.collectAsState()
+    val canBeDoctor by profileViewModel.canBeDoctor.collectAsState()
 
     val colors = LocalCustomColors.current
 
@@ -232,6 +233,7 @@ fun VisitsScreen(
         Navigation(
             notificationsViewModel = notificationsViewModel,
             screenTitle = "Visits",
+            canSwitchRole = canBeDoctor,
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
             },

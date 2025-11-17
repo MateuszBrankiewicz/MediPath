@@ -120,6 +120,7 @@ fun CodesScreen(
     val firstName by profileViewModel.firstName.collectAsState()
     val lastName by profileViewModel.lastName.collectAsState()
     val profileIsLoading by profileViewModel.isLoading.collectAsState()
+    val canBeDoctor by profileViewModel.canBeDoctor.collectAsState()
 
     val profileShouldRedirect by profileViewModel.shouldRedirectToLogin.collectAsState()
     val codesShouldRedirect by codesViewModel.shouldRedirectToLogin.collectAsState()
@@ -293,6 +294,7 @@ fun CodesScreen(
         Navigation(
             notificationsViewModel = notificationsViewModel,
             screenTitle = if (codeType == "PRESCRIPTION") "Prescriptions" else "Referrals",
+            canSwitchRole = canBeDoctor,
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
             },

@@ -92,6 +92,7 @@ fun CommentsScreen(
     val lastName by viewModel.lastName.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
+    val canBeDoctor by viewModel.canBeDoctor.collectAsState()
 
     val comments by commentsViewModel.filteredComments.collectAsState()
     val commentsLoading by commentsViewModel.isLoading.collectAsState()
@@ -163,6 +164,7 @@ fun CommentsScreen(
         Navigation(
             notificationsViewModel = notificationsViewModel,
             screenTitle = "My Comments",
+            canSwitchRole = canBeDoctor,
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
             },

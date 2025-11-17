@@ -1,5 +1,6 @@
 package com.medipath.modules.shared.auth.ui
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,10 +12,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,13 +31,13 @@ import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.shared.components.AuthTextField
 import com.medipath.modules.shared.auth.RegisterViewModel
 import androidx.compose.runtime.getValue
-import com.medipath.core.models.RegisterRequest
 import com.medipath.modules.shared.components.SearchableCityDropdown
 import com.medipath.modules.shared.components.SearchableProvinceDropdown
-import com.medipath.core.utils.ValidationUtils
 import android.widget.Toast
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.util.Calendar
 
 
 class RegisterActivity : ComponentActivity() {
@@ -58,13 +62,13 @@ class RegisterActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel(),
     onSignInClick: () -> Unit = {},
     onRegistrationSuccess: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val registrationError by viewModel.registrationError
     val registrationSuccess by viewModel.registrationSuccess
 
@@ -105,7 +109,7 @@ fun RegisterScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(WindowInsets.navigationBars.asPaddingValues()).background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()).padding(horizontal = 30.dp, vertical = 20.dp),
+        modifier = Modifier.fillMaxSize().padding(WindowInsets.systemBars.asPaddingValues()).background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()).padding(horizontal = 30.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(90.dp).padding(top = 40.dp))
@@ -146,14 +150,65 @@ fun RegisterScreen(
                 onFocusLost = { viewModel.validateGovernmentId() }
             )
 
-            AuthTextField(
-                value = birthDate,
-                onValueChange = { viewModel.onBirthDateChanged(it) },
-                fieldText = "Birth Date",
-                hintText = "DD-MM-YYYY format",
-                errorMessage = birthDateError ?: "",
-                onFocusLost = { viewModel.validateBirthDate() }
-            )
+            Column {
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = birthDate,
+                    onValueChange = { },
+                    placeholder = { Text("Birth Date", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    isError = birthDateError != null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val cal = Calendar.getInstance()
+                            if (birthDate.isNotEmpty()) {
+                                val parts = birthDate.split("-")
+                                if (parts.size == 3) {
+                                    cal.set(parts[2].toInt(), parts[1].toInt() - 1, parts[0].toInt())
+                                }
+                            }
+                            
+                            val dpd = DatePickerDialog(
+                                context,
+                                { _, year, month, dayOfMonth ->
+                                    val formatted = String.format("%02d-%02d-%04d", dayOfMonth, month + 1, year)
+                                    viewModel.onBirthDateChanged(formatted)
+                                },
+                                cal.get(Calendar.YEAR),
+                                cal.get(Calendar.MONTH),
+                                cal.get(Calendar.DAY_OF_MONTH)
+                            )
+                            dpd.show()
+                        },
+                    shape = RoundedCornerShape(20.dp),
+                    singleLine = true,
+                    readOnly = true,
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledBorderColor = if (birthDateError != null) MaterialTheme.colorScheme.error else Color.Transparent,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        disabledContainerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+                if (birthDateError != null) {
+                    Text(
+                        text = birthDateError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
+                }
+            }
 
             SearchableProvinceDropdown(
                 viewModel = viewModel,
@@ -165,9 +220,20 @@ fun RegisterScreen(
 
             AuthTextField(
                 value = postalCode,
-                onValueChange = { viewModel.onPostalCodeChanged(it) },
+                onValueChange = { input ->
+                    val filtered = input.filter { it.isDigit() || it == '-' }.take(6)
+                    
+                    val formatted = if (filtered.length == 2 && !filtered.contains('-')) {
+                        "$filtered-"
+                    } else {
+                        filtered
+                    }
+                    
+                    viewModel.onPostalCodeChanged(formatted)
+                },
                 fieldText = "Postal Code",
                 hintText = "XX-XXX format",
+                keyboardType = KeyboardType.Number,
                 errorMessage = postalCodeError ?: "",
                 onFocusLost = { viewModel.validatePostalCode() }
             )
