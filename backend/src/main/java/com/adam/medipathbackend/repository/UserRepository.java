@@ -33,8 +33,10 @@ public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findAdminById(String id);
 
     @Aggregation({
+            "{ '$match': { 'notifications.timestamp': { $gte: ?0, $lt: ?1 }, isActive: true } }",
             "{ '$unwind': '$notifications' }",
-            "{ '$match': { 'notifications.timestamp': { $gte: ?0, $lt: ?1 }, isActive: true } }"
+            "{ '$match': { 'notifications.timestamp': { $gte: ?0, $lt: ?1 } } }",
+            "{ '$group': { '_id': '$_id', 'notifications': { $push: '$notifications' }, 'email': { $first: '$email' }, 'firstName': { $first: '$firstName' }, 'lastName': { $first: '$lastName' }, 'roleCode': { $first: '$roleCode' }, 'isActive': { $first: '$isActive' } } }"
     })
     ArrayList<User> getUserNotificationsNow(LocalDateTime lower, LocalDateTime upper);
 

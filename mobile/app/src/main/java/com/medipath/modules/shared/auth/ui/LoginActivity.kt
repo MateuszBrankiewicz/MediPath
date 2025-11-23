@@ -31,6 +31,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import com.medipath.SplashActivity
 import com.medipath.modules.shared.auth.LoginViewModel
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 
@@ -48,7 +50,8 @@ class LoginActivity : ComponentActivity() {
                         finish()
                     },
                     onLoginSuccess = {
-                        Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@LoginActivity,
+                            getString(R.string.login_successful), Toast.LENGTH_LONG).show()
                         val intent = Intent(this@LoginActivity, SplashActivity::class.java)
                         startActivity(intent)
                         finish()
@@ -67,19 +70,28 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel(),
     onSignUpClick: () -> Unit = {},
     onForgotClick: () -> Unit = {},
-    onLoginSuccess: () -> Unit = {}
+    onLoginSuccess: () -> Unit = {},
+    viewModel: LoginViewModel = viewModel()
 ) {
-    val loginError by viewModel.loginError
-    val loginSuccess by viewModel.loginSuccess
-    val isLoading by viewModel.isLoading
-    val email by viewModel.email
-    val password by viewModel.password
-    val emailError by viewModel.emailError
-    val passwordError by viewModel.passwordError
-    val isFormValid by viewModel.isFormValid
+
+    val loginError by viewModel.loginError.collectAsState()
+    val loginSuccess by viewModel.loginSuccess.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val email by viewModel.email.collectAsState()
+    val password by viewModel.password.collectAsState()
+    val emailError by viewModel.emailError.collectAsState()
+    val passwordError by viewModel.passwordError.collectAsState()
+
+    val isFormValid by remember(email, password, emailError, passwordError) {
+        derivedStateOf {
+            email.isNotBlank() &&
+                    password.isNotBlank() &&
+                    emailError == null &&
+                    passwordError == null
+        }
+    }
 
     LaunchedEffect(loginSuccess) {
         if (loginSuccess) {
@@ -98,12 +110,17 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(120.dp))
+            Image(painter = painterResource(id = R.drawable.logo), contentDescription = stringResource(
+                R.string.logo
+            ), modifier = Modifier.size(120.dp))
             Spacer(modifier = Modifier.height(60.dp))
 
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-                Text("Welcome Back.", fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(250.dp).padding(vertical = 10.dp))
-                Text("Login to your account", fontSize = 17.sp, fontWeight = FontWeight.W500, color = MaterialTheme.colorScheme.onBackground)
+                Text(
+                    stringResource(R.string.welcome_back), fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier
+                        .width(250.dp)
+                        .padding(vertical = 10.dp))
+                Text(stringResource(R.string.login_to_your_account), fontSize = 17.sp, fontWeight = FontWeight.W500, color = MaterialTheme.colorScheme.onBackground)
             }
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -112,8 +129,8 @@ fun LoginScreen(
                 AuthTextField(
                     value = email,
                     onValueChange = { viewModel.onEmailChanged(it) },
-                    fieldText = "Email Address",
-                    hintText = "Enter your email address",
+                    fieldText = stringResource(R.string.email_address),
+                    hintText = stringResource(R.string.enter_your_email_address),
                     keyboardType = KeyboardType.Email,
                     errorMessage = emailError ?: "",
                     modifier = Modifier.testTag("email_field"),
@@ -123,8 +140,8 @@ fun LoginScreen(
                 AuthTextField(
                     value = password,
                     onValueChange = { viewModel.onPasswordChanged(it) },
-                    fieldText = "Password",
-                    hintText = "Enter your password",
+                    fieldText = stringResource(R.string.password),
+                    hintText = stringResource(R.string.enter_your_password),
                     isPassword = true,
                     errorMessage = passwordError ?: "",
                     modifier = Modifier.testTag("password_field"),
@@ -132,7 +149,7 @@ fun LoginScreen(
                     onFocusLost = { viewModel.validatePassword() }
                 )
 
-                Text("Forgot password?", fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.ExtraBold, modifier = Modifier.clickable {
+                Text(stringResource(R.string.forgot_password), fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.ExtraBold, modifier = Modifier.clickable {
                     onForgotClick()
                 })
             }
@@ -167,7 +184,7 @@ fun LoginScreen(
                     .padding(vertical = 14.dp)
             ) {
                 Text(
-                    text = if (isLoading) "Signing in..." else "SIGN IN",
+                    text = if (isLoading) stringResource(R.string.signing_in) else stringResource(R.string.sign_in),
                     fontSize = 14.sp,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
@@ -176,8 +193,8 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Row {
-                Text("Don’t have an account? ", fontWeight = FontWeight.W400, fontSize = 14.sp)
-                Text("Sign up", fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.clickable {
+                Text(stringResource(R.string.don_t_have_an_account), fontWeight = FontWeight.W400, fontSize = 14.sp)
+                Text(stringResource(R.string.sign_up), fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.clickable {
                     onSignUpClick()
                 })
             }

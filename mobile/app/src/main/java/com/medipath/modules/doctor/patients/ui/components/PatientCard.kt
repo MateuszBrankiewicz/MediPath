@@ -10,24 +10,29 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.PatientDoc
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.core.utils.LocaleHelper
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @Composable
 fun PatientCard(
     patient: PatientDoc,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val locale = LocaleHelper.getLocale(context)
     val colors = LocalCustomColors.current
 
     val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault())
+    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", locale)
 
     val lastVisitDateTime = try {
         LocalDateTime.parse(patient.lastVisit.startTime, inputFormatter)
@@ -39,7 +44,7 @@ fun PatientCard(
         }
     }
 
-    val lastVisitFormatted = lastVisitDateTime?.format(outputDateFormatter) ?: "Unknown Date"
+    val lastVisitFormatted = lastVisitDateTime?.format(outputDateFormatter) ?: stringResource(R.string.unknown_date)
 
     Card(
         modifier = Modifier
@@ -79,7 +84,7 @@ fun PatientCard(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "GovID: ${patient.govId}",
+                        text = stringResource(R.string.gov_id) + patient.govId,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -100,7 +105,7 @@ fun PatientCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Last Visit:",
+                        text = stringResource(R.string.last_visit),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -130,7 +135,7 @@ fun PatientCard(
                     contentColor = MaterialTheme.colorScheme.background
                 )
             ) {
-                Text("VIEW PROFILE", fontSize = 14.sp)
+                Text(stringResource(R.string.view_profile), fontSize = 14.sp)
             }
         }
     }

@@ -7,16 +7,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.theme.LocalCustomColors
 
+data class FilterOption(
+    val key: String,
+    val label: String
+)
+
 data class FilterChipsConfig(
-    val sortByOptions: List<String>,
-    val sortOrderOptions: List<String> = listOf("Ascending", "Descending"),
+    val sortByOptions: List<FilterOption>,
+    val sortOrderOptions: List<FilterOption>,
     val showClearButton: Boolean = true,
-    val sortOrderLabel: String = "Order"
+    var sortOrderLabel: String? = null
 )
 
 @Composable
@@ -30,6 +37,10 @@ fun GenericFilterChipsSection(
     modifier: Modifier = Modifier
 ) {
     val colors = LocalCustomColors.current
+
+    if(config.sortOrderLabel.isNullOrEmpty()) {
+        config.sortOrderLabel = stringResource(R.string.order)
+    }
 
     Card(
         modifier = modifier
@@ -46,7 +57,7 @@ fun GenericFilterChipsSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Filters",
+                text = stringResource(R.string.filters),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -57,7 +68,7 @@ fun GenericFilterChipsSection(
             )
 
             Text(
-                "Sort by",
+                stringResource(R.string.sort_by),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(2.dp)
@@ -70,9 +81,9 @@ fun GenericFilterChipsSection(
             ) {
                 config.sortByOptions.forEach { option ->
                     FilterChip(
-                        selected = sortBy == option,
-                        onClick = { onSortByChange(option) },
-                        label = { Text(option) },
+                        selected = sortBy == option.key,
+                        onClick = { onSortByChange(option.key) },
+                        label = { Text(option.label) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = colors.blue900,
                             selectedLabelColor = MaterialTheme.colorScheme.background
@@ -84,7 +95,7 @@ fun GenericFilterChipsSection(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                config.sortOrderLabel,
+                config.sortOrderLabel!!,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(2.dp)
@@ -95,9 +106,9 @@ fun GenericFilterChipsSection(
             ) {
                 config.sortOrderOptions.forEach { order ->
                     FilterChip(
-                        selected = sortOrder == order,
-                        onClick = { onSortOrderChange(order) },
-                        label = { Text(order) },
+                        selected = sortOrder == order.key,
+                        onClick = { onSortOrderChange(order.key) },
+                        label = { Text(order.label) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = colors.blue900,
                             selectedLabelColor = MaterialTheme.colorScheme.background
@@ -115,7 +126,7 @@ fun GenericFilterChipsSection(
                     ),
                     shape = RoundedCornerShape(30.dp)
                 ) {
-                    Text("CLEAR FILTERS")
+                    Text(stringResource(R.string.clear_filters))
                 }
             }
         }

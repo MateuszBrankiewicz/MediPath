@@ -15,14 +15,16 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 
 @Composable
 fun GenericSearchBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    placeholder: String = "Search...",
+    placeholder: String = stringResource(R.string.search),
     modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
@@ -44,7 +46,7 @@ fun GenericSearchBar(
                 IconButton(onClick = { onSearchQueryChange("") }) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Clear search",
+                        contentDescription = stringResource(R.string.clear_search),
                         modifier = Modifier.size(20.dp)
                     )
                 }

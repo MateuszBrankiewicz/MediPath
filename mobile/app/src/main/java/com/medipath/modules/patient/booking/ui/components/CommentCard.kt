@@ -19,13 +19,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.Comment
 import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @Composable
 fun CommentCard(
@@ -63,13 +66,13 @@ fun CommentCard(
 
                     if (isDoctorContext) {
                         Text(
-                            text = "dla: ${comment.institution}",
+                            text = stringResource(R.string.for_institution, comment.institution),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                     } else {
                         Text(
-                            text = "dla: ${comment.doctor}",
+                            text = stringResource(R.string.for_doctor, comment.doctor),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -88,13 +91,13 @@ fun CommentCard(
                         ) {
                             Icon(
                                 Icons.Default.Person,
-                                contentDescription = "Doctor Rating",
+                                contentDescription = stringResource(R.string.doctor_rating),
                                 tint = colors.blue900,
                                 modifier = Modifier.size(16.dp)
                             )
                             Icon(
                                 Icons.Default.Star,
-                                contentDescription = "Rating",
+                                contentDescription = stringResource(R.string.rating),
                                 tint = colors.yellow,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -114,13 +117,13 @@ fun CommentCard(
                         ) {
                             Icon(
                                 Icons.Default.Business,
-                                contentDescription = "Institution Rating",
+                                contentDescription = stringResource(R.string.institution_rating),
                                 tint = colors.blue900,
                                 modifier = Modifier.size(16.dp)
                             )
                             Icon(
                                 Icons.Default.Star,
-                                contentDescription = "Rating",
+                                contentDescription = stringResource(R.string.rating),
                                 tint = colors.yellow,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -137,9 +140,9 @@ fun CommentCard(
                         try {
                             val dateTime = LocalDateTime.parse(comment.createdAt)
                             dateTime.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
-                        } catch (e: java.time.format.DateTimeParseException) {
+                        } catch (_: DateTimeParseException) {
                             comment.createdAt.split("T").firstOrNull() ?: comment.createdAt
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                             comment.createdAt
                         }
                     }

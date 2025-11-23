@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,6 +36,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
@@ -45,6 +47,7 @@ import com.medipath.modules.shared.notifications.ui.NotificationsActivity
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.ActionButton
 import com.medipath.modules.shared.components.FilterConfig
+import com.medipath.modules.shared.components.FilterOption
 import com.medipath.modules.shared.components.GenericActionButtonsRow
 import com.medipath.modules.shared.components.GenericFiltersSection
 import com.medipath.modules.shared.components.GenericSearchBar
@@ -125,7 +128,6 @@ fun CodesScreen(
     val clipboardManager = LocalClipboardManager.current
     var copiedCode by remember { mutableStateOf("") }
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val colors = LocalCustomColors.current
 
     var searchQuery by remember { mutableStateOf("") }
@@ -135,8 +137,36 @@ fun CodesScreen(
     var sortBy by remember { mutableStateOf("Date") }
     var sortOrder by remember { mutableStateOf("Descending") }
     var showFilters by remember { mutableStateOf(false) }
-    val label = if (codeType == "PRESCRIPTION") "prescriptions" else "referrals"
+    val labelText = if (codeType == "PRESCRIPTION")
+        stringResource(R.string.prescriptions).lowercase()
+    else
+        stringResource(R.string.referrals).lowercase()
 
+    val statusOptions = listOf(
+        FilterOption("All", stringResource(R.string.all)),
+        FilterOption("Unused", stringResource(R.string.unused)),
+        FilterOption("Used", stringResource(R.string.used))
+    )
+
+    val sortByOptions = listOf(
+        FilterOption("Date", stringResource(R.string.date)),
+        FilterOption("Doctor", stringResource(R.string.doctor)),
+        FilterOption("Code", stringResource(R.string.code))
+    )
+
+    val sortOrderOptions = listOf(
+        FilterOption("Descending", stringResource(R.string.descending)),
+        FilterOption("Ascending", stringResource(R.string.ascending))
+    )
+
+    val filterConfig = remember(statusOptions, sortByOptions, sortOrderOptions) {
+        FilterConfig(
+            statusOptions = statusOptions,
+            sortByOptions = sortByOptions,
+            sortOrderOptions = sortOrderOptions,
+            showSortOrder = true
+        )
+    }
 
     val notificationsViewModel: NotificationsViewModel = viewModel()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -233,7 +263,7 @@ fun CodesScreen(
     val actionButtons = listOf(
         ActionButton(
             icon = Icons.Default.Refresh,
-            label = "REFRESH",
+            label = stringResource(R.string.refresh),
             onClick = {
                 val apiCodeType = when (codeType) {
                     "PRESCRIPTION" -> "prescriptions"
@@ -247,14 +277,14 @@ fun CodesScreen(
         ),
         ActionButton(
             icon = Icons.Default.FilterList,
-            label = "FILTERS",
+            label = stringResource(R.string.filters_capitals),
             onClick = { showFilters = !showFilters },
             color = colors.blue800,
             isOutlined = true
         ),
         ActionButton(
             icon = Icons.Default.Clear,
-            label = "CLEAR FILTERS",
+            label = stringResource(R.string.clear_filters),
             onClick = {
                 searchQuery = ""
                 statusFilter = "All"
@@ -278,7 +308,7 @@ fun CodesScreen(
     } else {
         Navigation(
             notificationsViewModel = notificationsViewModel,
-            screenTitle = if (codeType == "PRESCRIPTION") "Prescriptions" else "Referrals",
+            screenTitle = if (codeType == "PRESCRIPTION") stringResource(R.string.prescriptions) else stringResource(R.string.referrals),
             canSwitchRole = canBeDoctor,
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
@@ -303,21 +333,21 @@ fun CodesScreen(
                             StatisticItem(
                                 icon = if (codeType == "PRESCRIPTION") Icons.Default.Receipt else Icons.Default.MedicalServices,
                                 iconTint = colors.blue800,
-                                label = "Total\n$label",
+                                label = stringResource(R.string.total, labelText),
                                 value = totalCodes.toString(),
                                 valueTint = colors.blue800
                             ),
                             StatisticItem(
                                 icon = Icons.Default.CheckCircle,
                                 iconTint = colors.orange800,
-                                label = "Used\n$label",
+                                label = stringResource(R.string.used_label, labelText),
                                 value = usedCodes.toString(),
                                 valueTint = colors.orange800
                             ),
                             StatisticItem(
                                 icon = Icons.Default.Circle,
                                 iconTint = colors.green800,
-                                label = "Unused\n$label",
+                                label = stringResource(R.string.unused_label, labelText),
                                 value = unusedCodes.toString(),
                                 valueTint = colors.green800
                             )
@@ -336,7 +366,7 @@ fun CodesScreen(
                     GenericSearchBar(
                         searchQuery = searchQuery,
                         onSearchQueryChange = { searchQuery = it },
-                        placeholder = "Search by code, doctor..."
+                        placeholder = stringResource(R.string.search_by_code_doctor)
                     )
                     
                     Spacer(modifier = Modifier.height(8.dp))
@@ -353,11 +383,7 @@ fun CodesScreen(
                             onDateToChange = { dateToFilter = it },
                             onSortByChange = { sortBy = it },
                             onSortOrderChange = { sortOrder = it },
-                            filterConfig = FilterConfig(
-                                statusOptions = listOf("All", "Unused", "Used"),
-                                sortByOptions = listOf("Date", "Doctor", "Code"),
-                                showSortOrder = true
-                            )
+                            filterConfig = filterConfig
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
@@ -377,7 +403,9 @@ fun CodesScreen(
                         )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = if (codeType == "PRESCRIPTION") "No prescriptions found" else "No referrals found",
+                                text = if (codeType == "PRESCRIPTION") stringResource(R.string.no_prescriptions_found) else stringResource(
+                                    R.string.no_referrals_found
+                                ),
                                 fontSize = 18.sp,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium

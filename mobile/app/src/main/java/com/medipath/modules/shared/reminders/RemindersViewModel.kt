@@ -1,8 +1,9 @@
 package com.medipath.modules.shared.reminders
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.DeleteNotificationsRequest
 import com.medipath.core.models.MarkNotificationReadRequest
 import com.medipath.core.models.Notification
@@ -11,11 +12,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class RemindersViewModel : ViewModel() {
+class RemindersViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val notificationsService = RetrofitInstance.notificationsService
 
     private val _reminders = MutableStateFlow<List<Notification>>(emptyList())
@@ -62,6 +66,8 @@ class RemindersViewModel : ViewModel() {
 
     private val _shouldRedirectToLogin = MutableStateFlow(false)
     val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
+    
+    private val context = getApplication<Application>()
 
     fun fetchReminders() {
         viewModelScope.launch {
@@ -79,10 +85,12 @@ class RemindersViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to load reminders: ${response.code()}"
+                    _error.value = context.getString(R.string.error_load_reminders)
                 }
-            } catch (e: Exception) {
-                _error.value = "Failed to load reminders: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -108,11 +116,13 @@ class RemindersViewModel : ViewModel() {
                 } else {
                     when (response.code()) {
                         401 -> _shouldRedirectToLogin.value = true
-                        else -> _error.value = "Failed to mark as read: ${response.code()}"
+                        else -> _error.value = context.getString(R.string.error_mark_as_read)
                     }
                 }
-            } catch (e: Exception) {
-                _error.value = "Failed to mark as read: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -132,14 +142,16 @@ class RemindersViewModel : ViewModel() {
                     onSuccess()
                 } else {
                     when (response.code()) {
-                        401 -> _error.value = "Unauthorized"
-                        else -> _error.value = "Failed to mark all as read: ${response.code()}"
+                        401 -> _error.value = context.getString(R.string.error_unauthorized)
+                        else -> _error.value = context.getString(R.string.error_mark_all_as_read)
                     }
                     _isLoading.value = false
                 }
-            } catch (e: Exception) {
-                Log.e("RemindersViewModel", "Error marking all as read", e)
-                _error.value = "Failed to mark all as read: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+                _isLoading.value = false
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
                 _isLoading.value = false
             }
         }
@@ -163,14 +175,15 @@ class RemindersViewModel : ViewModel() {
                     fetchReminders()
                 } else {
                     when (response.code()) {
-                        401 -> _error.value = "Unauthorized"
-                        400 -> _error.value = "Bad request: missing field or no notification matches criteria"
-                        else -> _error.value = "Failed to delete reminder: ${response.code()}"
+                        401 -> _error.value = context.getString(R.string.error_unauthorized)
+                        400 -> _error.value = context.getString(R.string.error_bad_request)
+                        else -> _error.value = context.getString(R.string.error_delete_reminder)
                     }
                 }
-            } catch (e: Exception) {
-                Log.e("RemindersViewModel", "Error deleting reminder", e)
-                _error.value = "Failed to delete reminder: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             }
         }
     }
@@ -211,11 +224,11 @@ class RemindersViewModel : ViewModel() {
     }
 
     fun clearFilters() {
-        _statusFilter.value = "All"
+        _statusFilter.value = context.getString(R.string.all)
         _dateFromFilter.value = ""
         _dateToFilter.value = ""
-        _sortBy.value = "Date"
-        _sortOrder.value = "Descending"
+        _sortBy.value = context.getString(R.string.date)
+        _sortOrder.value = context.getString(R.string.descending)
         _searchQuery.value = ""
         applyFilters()
     }
@@ -232,7 +245,7 @@ class RemindersViewModel : ViewModel() {
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                 ).toLocalDate()
                 notificationDate.isEqual(today)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 false
             }
         }
@@ -257,11 +270,12 @@ class RemindersViewModel : ViewModel() {
                             DateTimeFormatter.ISO_LOCAL_DATE_TIME
                         ).toLocalDate()
                         !notificationDate.isBefore(fromDate)
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         true
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
+                false
             }
         }
 
@@ -275,11 +289,12 @@ class RemindersViewModel : ViewModel() {
                             DateTimeFormatter.ISO_LOCAL_DATE_TIME
                         ).toLocalDate()
                         !notificationDate.isAfter(toDate)
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         true
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
+                false
             }
         }
 

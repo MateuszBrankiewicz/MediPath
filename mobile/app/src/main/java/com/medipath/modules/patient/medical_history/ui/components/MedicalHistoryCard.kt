@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -15,6 +16,7 @@ import com.medipath.core.models.UserMedicalHistory
 import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import com.medipath.R
 
 @Composable
 fun MedicalHistoryCard(
@@ -65,12 +67,12 @@ fun MedicalHistoryCard(
                         ) {
                             Icon(
                                 Icons.Default.Person,
-                                contentDescription = "Doctor",
+                                contentDescription = stringResource(R.string.doctor),
                                 tint = colors.blue900,
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = "${history.doctor!!.doctorName} ${history.doctor.doctorSurname}",
+                                text = "${history.doctor.doctorName} ${history.doctor.doctorSurname}",
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                             )
@@ -94,7 +96,7 @@ fun MedicalHistoryCard(
                         try {
                             val date = LocalDate.parse(history.date)
                             date.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                             history.date
                         }
                     }
@@ -112,7 +114,7 @@ fun MedicalHistoryCard(
                             color = colors.blue900.copy(alpha = 0.1f)
                         ) {
                             Text(
-                                text = "By Doctor",
+                                text = stringResource(R.string.by_doctor),
                                 fontSize = 11.sp,
                                 color = colors.blue900,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -151,7 +153,7 @@ fun MedicalHistoryCard(
                             containerColor = colors.blue800
                         )
                     ) {
-                        Text("VIEW")
+                        Text(stringResource(R.string.view))
                     }
                 } else {
                     Button(
@@ -162,7 +164,7 @@ fun MedicalHistoryCard(
                             containerColor = colors.blue800
                         )
                     ) {
-                        Text("EDIT")
+                        Text(stringResource(R.string.edit))
                     }
                 }
 
@@ -174,7 +176,7 @@ fun MedicalHistoryCard(
                         containerColor = colors.red800
                     )
                 ) {
-                    Text("DELETE")
+                    Text(stringResource(R.string.delete))
                 }
             }
         }
@@ -183,8 +185,8 @@ fun MedicalHistoryCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Confirm Deletion") },
-            text = { Text("Are you sure you want to delete this medical history entry? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.confirm_deletion)) },
+            text = { Text(stringResource(R.string.confirm_medical_history_deletion)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -195,12 +197,12 @@ fun MedicalHistoryCard(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete_capital))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background

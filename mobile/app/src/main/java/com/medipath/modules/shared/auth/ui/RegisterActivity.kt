@@ -36,6 +36,8 @@ import com.medipath.modules.shared.components.SearchableProvinceDropdown
 import android.widget.Toast
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.util.Calendar
 
@@ -52,7 +54,8 @@ class RegisterActivity : ComponentActivity() {
                     finish()
                 },
                 onRegistrationSuccess = {
-                    Toast.makeText(this, "Registration successful! Please log in.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this,
+                        getString(R.string.registration_successful_please_log_in), Toast.LENGTH_LONG).show()
                     val intent = Intent(this, LoginActivity::class.java)
                     startActivity(intent)
                     finish()
@@ -64,43 +67,66 @@ class RegisterActivity : ComponentActivity() {
 
 @Composable
 fun RegisterScreen(
-    viewModel: RegisterViewModel = viewModel(),
     onSignInClick: () -> Unit = {},
-    onRegistrationSuccess: () -> Unit = {}
+    onRegistrationSuccess: () -> Unit = {},
+    viewModel: RegisterViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val registrationError by viewModel.registrationError
-    val registrationSuccess by viewModel.registrationSuccess
 
-    val name by viewModel.name
-    val surname by viewModel.surname
-    val governmentId by viewModel.governmentId
-    val birthDate by viewModel.birthDate
-    val number by viewModel.number
-    val street by viewModel.street
-    val postalCode by viewModel.postalCode
-    val phoneNumber by viewModel.phoneNumber
-    val email by viewModel.email
-    val password by viewModel.password
-    val confirmPassword by viewModel.confirmPassword
-    val city by viewModel.city
-    val province by viewModel.province
-    val isChecked by viewModel.isChecked
-    val isFormValid by viewModel.isFormValid
+    val registrationError by viewModel.registrationError.collectAsState()
+    val registrationSuccess by viewModel.registrationSuccess.collectAsState()
 
-    val nameError by viewModel.nameError
-    val surnameError by viewModel.surnameError
-    val governmentIdError by viewModel.governmentIdError
-    val birthDateError by viewModel.birthDateError
-    val numberError by viewModel.numberError
-    val streetError by viewModel.streetError
-    val postalCodeError by viewModel.postalCodeError
-    val phoneNumberError by viewModel.phoneNumberError
-    val emailError by viewModel.emailError
-    val passwordError by viewModel.passwordError
-    val confirmPasswordError by viewModel.confirmPasswordError
-    val cityError by viewModel.cityError
-    val provinceError by viewModel.provinceError
+    val name by viewModel.name.collectAsState()
+    val surname by viewModel.surname.collectAsState()
+    val governmentId by viewModel.governmentId.collectAsState()
+    val birthDate by viewModel.birthDate.collectAsState()
+    val number by viewModel.number.collectAsState()
+    val street by viewModel.street.collectAsState()
+    val postalCode by viewModel.postalCode.collectAsState()
+    val phoneNumber by viewModel.phoneNumber.collectAsState()
+    val email by viewModel.email.collectAsState()
+    val password by viewModel.password.collectAsState()
+    val confirmPassword by viewModel.confirmPassword.collectAsState()
+    val city by viewModel.city.collectAsState()
+    val province by viewModel.province.collectAsState()
+    val isChecked by viewModel.isChecked.collectAsState()
+
+    val nameError by viewModel.nameError.collectAsState()
+    val surnameError by viewModel.surnameError.collectAsState()
+    val governmentIdError by viewModel.governmentIdError.collectAsState()
+    val birthDateError by viewModel.birthDateError.collectAsState()
+    val numberError by viewModel.numberError.collectAsState()
+    val streetError by viewModel.streetError.collectAsState()
+    val postalCodeError by viewModel.postalCodeError.collectAsState()
+    val phoneNumberError by viewModel.phoneNumberError.collectAsState()
+    val emailError by viewModel.emailError.collectAsState()
+    val passwordError by viewModel.passwordError.collectAsState()
+    val confirmPasswordError by viewModel.confirmPasswordError.collectAsState()
+    val cityError by viewModel.cityError.collectAsState()
+    val provinceError by viewModel.provinceError.collectAsState()
+
+    val isFormValid by remember(
+        name, surname, governmentId, birthDate, number, street,
+        postalCode, phoneNumber, email, password, confirmPassword,
+        city, province, isChecked
+    ) {
+        derivedStateOf {
+            name.isNotBlank() && surname.isNotBlank() &&
+                    governmentId.isNotBlank() && birthDate.isNotBlank() &&
+                    number.isNotBlank() && street.isNotBlank() &&
+                    postalCode.isNotBlank() && phoneNumber.isNotBlank() &&
+                    email.isNotBlank() && password.isNotBlank() &&
+                    confirmPassword.isNotBlank() && city.isNotBlank() &&
+                    province.isNotBlank() && isChecked &&
+                    nameError == null && surnameError == null &&
+                    governmentIdError == null && birthDateError == null &&
+                    numberError == null && streetError == null &&
+                    postalCodeError == null && phoneNumberError == null &&
+                    emailError == null && passwordError == null &&
+                    confirmPasswordError == null && cityError == null &&
+                    provinceError == null
+        }
+    }
 
     LaunchedEffect(registrationSuccess) {
         if (registrationSuccess) {
@@ -109,15 +135,22 @@ fun RegisterScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(WindowInsets.systemBars.asPaddingValues()).background(MaterialTheme.colorScheme.background).verticalScroll(rememberScrollState()).padding(horizontal = 30.dp, vertical = 20.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(WindowInsets.systemBars.asPaddingValues())
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 30.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(90.dp).padding(top = 40.dp))
+        Image(painter = painterResource(id = R.drawable.logo), contentDescription = stringResource(R.string.logo), modifier = Modifier
+            .size(90.dp)
+            .padding(top = 40.dp))
         Spacer(modifier = Modifier.height(60.dp))
 
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-            Text("Take care of your health.", fontSize = 26.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(250.dp))
-            Text("Create an account", fontSize = 16.sp, fontWeight = FontWeight.W500, color = MaterialTheme.colorScheme.onBackground)
+            Text(stringResource(R.string.take_care_of_your_health), fontSize = 26.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(250.dp))
+            Text(stringResource(R.string.create_an_account), fontSize = 16.sp, fontWeight = FontWeight.W500, color = MaterialTheme.colorScheme.onBackground)
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -126,8 +159,8 @@ fun RegisterScreen(
             AuthTextField(
                 value = name,
                 onValueChange = { viewModel.onNameChanged(it) },
-                fieldText = "Name",
-                hintText = "Enter your first name",
+                fieldText = stringResource(R.string.name),
+                hintText = stringResource(R.string.enter_your_first_name),
                 errorMessage = nameError ?: "",
                 onFocusLost = { viewModel.validateName() }
             )
@@ -135,8 +168,8 @@ fun RegisterScreen(
             AuthTextField(
                 value = surname,
                 onValueChange = { viewModel.onSurnameChanged(it) },
-                fieldText = "Surname",
-                hintText = "Enter your last name",
+                fieldText = stringResource(R.string.surname),
+                hintText = stringResource(R.string.enter_your_last_name),
                 errorMessage = surnameError ?: "",
                 onFocusLost = { viewModel.validateSurname() }
             )
@@ -144,8 +177,8 @@ fun RegisterScreen(
             AuthTextField(
                 value = governmentId,
                 onValueChange = { viewModel.onGovernmentIdChanged(it) },
-                fieldText = "Government ID",
-                hintText = "Enter your PESEL number",
+                fieldText = stringResource(R.string.government_id),
+                hintText = stringResource(R.string.enter_your_government_id),
                 errorMessage = governmentIdError ?: "",
                 onFocusLost = { viewModel.validateGovernmentId() }
             )
@@ -155,7 +188,7 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = birthDate,
                     onValueChange = { },
-                    placeholder = { Text("Birth Date", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
+                    placeholder = { Text(stringResource(R.string.birth_date), color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.CalendarToday,
@@ -171,14 +204,19 @@ fun RegisterScreen(
                             if (birthDate.isNotEmpty()) {
                                 val parts = birthDate.split("-")
                                 if (parts.size == 3) {
-                                    cal.set(parts[2].toInt(), parts[1].toInt() - 1, parts[0].toInt())
+                                    cal.set(
+                                        parts[2].toInt(),
+                                        parts[1].toInt() - 1,
+                                        parts[0].toInt()
+                                    )
                                 }
                             }
-                            
+
                             val dpd = DatePickerDialog(
                                 context,
                                 { _, year, month, dayOfMonth ->
-                                    val formatted = String.format("%02d-%02d-%04d", dayOfMonth, month + 1, year)
+                                    val formatted =
+                                        String.format("%02d-%02d-%04d", dayOfMonth, month + 1, year)
                                     viewModel.onBirthDateChanged(formatted)
                                 },
                                 cal.get(Calendar.YEAR),
@@ -231,8 +269,8 @@ fun RegisterScreen(
                     
                     viewModel.onPostalCodeChanged(formatted)
                 },
-                fieldText = "Postal Code",
-                hintText = "XX-XXX format",
+                fieldText = stringResource(R.string.postal_code),
+                hintText = stringResource(R.string.xx_xxx_format),
                 keyboardType = KeyboardType.Number,
                 errorMessage = postalCodeError ?: "",
                 onFocusLost = { viewModel.validatePostalCode() }
@@ -250,8 +288,8 @@ fun RegisterScreen(
                 AuthTextField(
                     value = number,
                     onValueChange = { viewModel.onNumberChanged(it) },
-                    fieldText = "Number",
-                    hintText = "Enter number",
+                    fieldText = stringResource(R.string.number),
+                    hintText = stringResource(R.string.enter_number),
                     modifier = Modifier.width(130.dp),
                     errorMessage = numberError ?: "",
                     onFocusLost = { viewModel.validateNumber() }
@@ -260,8 +298,8 @@ fun RegisterScreen(
                 AuthTextField(
                     value = street,
                     onValueChange = { viewModel.onStreetChanged(it) },
-                    fieldText = "Street",
-                    hintText = "Enter street",
+                    fieldText = stringResource(R.string.street),
+                    hintText = stringResource(R.string.enter_street),
                     errorMessage = streetError ?: "",
                     onFocusLost = { viewModel.validateStreet() }
                 )
@@ -270,8 +308,8 @@ fun RegisterScreen(
             AuthTextField(
                 value = phoneNumber,
                 onValueChange = { viewModel.onPhoneNumberChanged(it) },
-                fieldText = "Phone Number",
-                hintText = "Enter your phone number",
+                fieldText = stringResource(R.string.phone_number),
+                hintText = stringResource(R.string.enter_your_phone_number),
                 keyboardType = KeyboardType.Phone,
                 errorMessage = phoneNumberError ?: "",
                 modifier = Modifier.testTag("phone_number"),
@@ -281,8 +319,8 @@ fun RegisterScreen(
             AuthTextField(
                 value = email,
                 onValueChange = { viewModel.onEmailChanged(it) },
-                fieldText = "Email Address",
-                hintText = "Enter your email address",
+                fieldText = stringResource(R.string.email_address),
+                hintText = stringResource(R.string.enter_your_email_address),
                 keyboardType = KeyboardType.Email,
                 errorMessage = emailError ?: "",
                 modifier = Modifier.testTag("email_field"),
@@ -292,8 +330,8 @@ fun RegisterScreen(
             AuthTextField(
                 value = password,
                 onValueChange = { viewModel.onPasswordChanged(it) },
-                fieldText = "Password",
-                hintText = "Enter your password",
+                fieldText = stringResource(R.string.password),
+                hintText = stringResource(R.string.enter_your_password),
                 isPassword = true,
                 errorMessage = passwordError ?: "",
                 modifier = Modifier.testTag("password_field"),
@@ -303,8 +341,8 @@ fun RegisterScreen(
             AuthTextField(
                 value = confirmPassword,
                 onValueChange = { viewModel.onConfirmPasswordChanged(it) },
-                fieldText = "Confirm Password",
-                hintText = "Re-enter your password",
+                fieldText = stringResource(R.string.confirm_password),
+                hintText = stringResource(R.string.re_enter_your_password),
                 isPassword = true,
                 errorMessage = confirmPasswordError ?: "",
                 modifier = Modifier.testTag("confirm_password_field"),
@@ -320,7 +358,7 @@ fun RegisterScreen(
                 onCheckedChange = { viewModel.onCheckedChanged(it) },
                 modifier = Modifier.testTag("conditions_checkbox")
             )
-            Text("Accept Terms & Conditions", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.accept_terms_conditions), fontSize = 13.sp, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -347,10 +385,12 @@ fun RegisterScreen(
                 disabledContentColor = MaterialTheme.colorScheme.background
             ),
             shape = RoundedCornerShape(30.dp),
-            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 14.dp)
         ) {
             Text(
-                text = "SIGN UP",
+                text = stringResource(R.string.sign_up_capitals),
                 fontSize = 16.sp,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
@@ -359,8 +399,8 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Row {
-            Text("Already have an account? ", fontWeight = FontWeight.W400, fontSize = 14.sp)
-            Text("Sign in", fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.clickable {
+            Text(stringResource(R.string.already_have_an_account), fontWeight = FontWeight.W400, fontSize = 14.sp)
+            Text(stringResource(R.string.sign_in_capital), fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.clickable {
                 onSignInClick()
             })
         }

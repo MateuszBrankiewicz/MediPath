@@ -44,6 +44,9 @@ import com.medipath.modules.patient.visits.VisitsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.res.stringResource
+import com.medipath.R
+import com.medipath.modules.shared.components.FilterOption
 
 class DoctorVisitsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,12 +83,12 @@ class DoctorVisitsActivity : ComponentActivity() {
 
 @Composable
 fun DoctorVisitsScreen(
-    profileViewModel: ProfileViewModel = viewModel(),
     doctorViewModel: DoctorVisitsViewModel = viewModel(),
     visitsViewModel: VisitsViewModel = viewModel(),
     onLogoutClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val profileViewModel : ProfileViewModel = viewModel()
     
     val name by profileViewModel.name.collectAsState()
     val surname by profileViewModel.surname.collectAsState()
@@ -129,7 +132,7 @@ fun DoctorVisitsScreen(
 
     LaunchedEffect(cancelSuccess) {
         if (cancelSuccess) {
-            Toast.makeText(context, "Visit cancelled successfully", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.visit_cancelled_success), Toast.LENGTH_SHORT).show()
             doctorViewModel.fetchVisits()
         }
     }
@@ -138,6 +141,26 @@ fun DoctorVisitsScreen(
         if (cancelError != null) {
             Toast.makeText(context, cancelError, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    val statusOptions = listOf(
+        FilterOption("All", stringResource(R.string.all)),
+        FilterOption("Upcoming", stringResource(R.string.upcoming)),
+        FilterOption("Completed", stringResource(R.string.completed)),
+        FilterOption("Cancelled", stringResource(R.string.cancelled))
+    )
+
+    val sortOrderOptions = listOf(
+        FilterOption("Ascending", stringResource(R.string.ascending)),
+        FilterOption("Descending", stringResource(R.string.descending))
+    )
+
+    val visitsFilterConfig = remember(statusOptions, sortOrderOptions) {
+        FilterChipsConfig(
+            sortByOptions = statusOptions,
+            sortOrderOptions = sortOrderOptions,
+            sortOrderLabel = context.getString(R.string.order_by_date)
+        )
     }
 
     if (isProfileLoading || visitsLoading) {
@@ -150,7 +173,7 @@ fun DoctorVisitsScreen(
     } else {
         Navigation(
             notificationsViewModel = notificationsViewModel,
-            screenTitle = "Visits",
+            screenTitle = stringResource(R.string.visits),
             onNotificationsClick = {
                 val intent = Intent(context, NotificationsActivity::class.java)
                 intent.putExtra("isDoctor", true)
@@ -164,7 +187,8 @@ fun DoctorVisitsScreen(
             },
             content = { innerPadding ->
                 Box(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
                         .background(MaterialTheme.colorScheme.secondary)
                         .padding(innerPadding)
                 ) {
@@ -175,7 +199,7 @@ fun DoctorVisitsScreen(
                             GenericSearchBar(
                                 searchQuery = searchQuery,
                                 onSearchQueryChange = { doctorViewModel.updateSearchQuery(it) },
-                                placeholder = "Search by patient name, surname or GovID...",
+                                placeholder = stringResource(R.string.genericseachbar_placeholder),
                                 modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
                             )
                         }
@@ -197,10 +221,7 @@ fun DoctorVisitsScreen(
                                     onSortByChange = { doctorViewModel.updateStatusFilter(it) },
                                     onSortOrderChange = { doctorViewModel.updateSortOrder(it) },
                                     onClearFilters = { doctorViewModel.clearFilters() },
-                                    config = FilterChipsConfig(
-                                        sortByOptions = listOf("All", "Upcoming", "Completed", "Cancelled"),
-                                        sortOrderLabel = "Order by date"
-                                    )
+                                    config = visitsFilterConfig
                                 )
                             }
                         }
@@ -225,7 +246,7 @@ fun DoctorVisitsScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = if (totalVisits == 0) "No visits yet" else "No visits match your filters",
+                                        text = if (totalVisits == 0) stringResource(R.string.no_visits_yet) else stringResource(R.string.no_visits_match_filters),
                                         fontSize = 16.sp,
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                     )

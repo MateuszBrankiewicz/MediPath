@@ -16,10 +16,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.modules.shared.profile.ProfileViewModel
 import com.medipath.modules.shared.profile.ui.components.*
 import com.medipath.core.network.RetrofitInstance
@@ -46,6 +47,7 @@ class EditProfileActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
     onBackClick: () -> Unit,
@@ -98,19 +100,19 @@ fun EditProfileScreen(
 
     LaunchedEffect(updateSuccess) {
         if (updateSuccess) {
-            Toast.makeText(context, "Profile saved", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.profile_saved), Toast.LENGTH_SHORT).show()
         }
     }
 
     LaunchedEffect(resetSuccess) {
         if (resetSuccess) {
-            Toast.makeText(context, "Password changed", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.password_changed), Toast.LENGTH_SHORT).show()
         }
     }
 
     if (shouldRedirectToLogin) {
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG)
+            Toast.makeText(context, context.getString(R.string.error_session), Toast.LENGTH_LONG)
                 .show()
             val sessionManager = RetrofitInstance.getSessionManager()
             sessionManager.deleteSessionId()
@@ -122,165 +124,206 @@ fun EditProfileScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(WindowInsets.navigationBars.asPaddingValues())
-            .background(MaterialTheme.colorScheme.secondary)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(LocalCustomColors.current.blue900)
-                .padding(top = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Return",
-                    tint = MaterialTheme.colorScheme.background
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.edit_profile),
+                        color = MaterialTheme.colorScheme.background,
+                        fontSize = 23.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = MaterialTheme.colorScheme.background
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = LocalCustomColors.current.blue900
                 )
-            }
-            Text(
-                text = "Edit Profile",
-                fontSize = 23.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.background,
-                modifier = Modifier.padding(start = 8.dp).padding(vertical = 24.dp)
             )
         }
-
-        when {
-            !shouldRedirectToLogin -> {
-                when {
-                    isLoading || isLoadingAuth -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                    else -> {
-                        var editedName by remember { mutableStateOf(name) }
-                        var editedSurname by remember { mutableStateOf(surname) }
-                        var editedPhone by remember { mutableStateOf(phoneNumber) }
-                        var editedCity by remember { mutableStateOf(city) }
-                        var editedProvince by remember { mutableStateOf(province) }
-                        var editedStreet by remember { mutableStateOf(street) }
-                        var editedNumber by remember { mutableStateOf(number) }
-                        var editedPostal by remember { mutableStateOf(postalCode) }
-
-                        LaunchedEffect(name, surname, phoneNumber, city, province, street, number, postalCode) {
-                            editedName = name
-                            editedSurname = surname
-                            editedPhone = phoneNumber
-                            editedCity = city
-                            editedProvince = province
-                            editedStreet = street
-                            editedNumber = number
-                            editedPostal = postalCode
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.secondary)
+        ) {
+            when {
+                !shouldRedirectToLogin -> {
+                    when {
+                        isLoading || isLoadingAuth -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            }
                         }
 
-                        var currentPassword by remember { mutableStateOf("") }
-                        var newPassword by remember { mutableStateOf("") }
+                        else -> {
+                            var editedName by remember { mutableStateOf(name) }
+                            var editedSurname by remember { mutableStateOf(surname) }
+                            var editedPhone by remember { mutableStateOf(phoneNumber) }
+                            var editedCity by remember { mutableStateOf(city) }
+                            var editedProvince by remember { mutableStateOf(province) }
+                            var editedStreet by remember { mutableStateOf(street) }
+                            var editedNumber by remember { mutableStateOf(number) }
+                            var editedPostal by remember { mutableStateOf(postalCode) }
 
-                        val imagePickerLauncher = rememberBase64ImagePicker { base64Image ->
-                            profileViewModel.setPfpImage(base64Image)
-                        }
-
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 20.dp),
-                            verticalArrangement = Arrangement.Top
-                        ) {
-                            item { Spacer(modifier = Modifier.height(20.dp)) }
-
-                            item {
-                                val profileImage = rememberBase64Image(pfpImage)
-                                ProfilePictureSection(
-                                    profileImage = profileImage,
-                                    imagePickerLauncher = imagePickerLauncher
-                                )
+                            LaunchedEffect(
+                                name,
+                                surname,
+                                phoneNumber,
+                                city,
+                                province,
+                                street,
+                                number,
+                                postalCode
+                            ) {
+                                editedName = name
+                                editedSurname = surname
+                                editedPhone = phoneNumber
+                                editedCity = city
+                                editedProvince = province
+                                editedStreet = street
+                                editedNumber = number
+                                editedPostal = postalCode
                             }
 
-                            item {
-                                PersonalInformationSection(
-                                    editedName = editedName,
-                                    onNameChange = { editedName = it; profileViewModel.setName(it) },
-                                    nameError = nameError,
-                                    editedSurname = editedSurname,
-                                    onSurnameChange = { editedSurname = it; profileViewModel.setSurname(it) },
-                                    surnameError = surnameError,
-                                    birthDate = birthDate,
-                                    govId = govId
-                                )
+                            var currentPassword by remember { mutableStateOf("") }
+                            var newPassword by remember { mutableStateOf("") }
+
+                            val imagePickerLauncher = rememberBase64ImagePicker { base64Image ->
+                                profileViewModel.setPfpImage(base64Image)
                             }
 
-                            item {
-                                ContactAddressSection(
-                                    viewModel = registerViewModel,
-                                    editedPhone = editedPhone,
-                                    onPhoneChange = { editedPhone = it; profileViewModel.setPhoneNumber(it) },
-                                    phoneError = phoneError,
-                                    editedCity = editedCity,
-                                    onCityChange = { editedCity = it; profileViewModel.setCity(it) },
-                                    cityError = cityError,
-                                    editedProvince = editedProvince,
-                                    onProvinceChange = { editedProvince = it; profileViewModel.setProvince(it) },
-                                    provinceError = provinceError,
-                                    editedPostal = editedPostal,
-                                    onPostalChange = { editedPostal = it; profileViewModel.setPostalCode(it) },
-                                    postalCodeError = postalCodeError,
-                                    editedNumber = editedNumber,
-                                    onNumberChange = { editedNumber = it; profileViewModel.setNumber(it) },
-                                    numberError = numberError,
-                                    editedStreet = editedStreet,
-                                    onStreetChange = { editedStreet = it; profileViewModel.setStreet(it) },
-                                    streetError = streetError
-                                )
-                            }
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 20.dp),
+                                verticalArrangement = Arrangement.Top
+                            ) {
+                                item { Spacer(modifier = Modifier.height(20.dp)) }
 
-                            item {
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Button(
-                                    onClick = { profileViewModel.updateProfile() },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
-                                    shape = RoundedCornerShape(30.dp),
-                                    enabled = true,
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                                ) {
-                                    Text(text = "SAVE CHANGES", color = MaterialTheme.colorScheme.background)
+                                item {
+                                    val profileImage = rememberBase64Image(pfpImage)
+                                    ProfilePictureSection(
+                                        profileImage = profileImage,
+                                        imagePickerLauncher = imagePickerLauncher
+                                    )
                                 }
-                            }
 
-                            item {
-                                Spacer(modifier = Modifier.height(12.dp))
-                                HorizontalDivider()
-                            }
+                                item {
+                                    PersonalInformationSection(
+                                        editedName = editedName,
+                                        onNameChange = {
+                                            editedName = it; profileViewModel.setName(
+                                            it
+                                        )
+                                        },
+                                        nameError = nameError,
+                                        editedSurname = editedSurname,
+                                        onSurnameChange = {
+                                            editedSurname = it; profileViewModel.setSurname(it)
+                                        },
+                                        surnameError = surnameError,
+                                        birthDate = birthDate,
+                                        govId = govId
+                                    )
+                                }
 
-                            item {
-                                Spacer(modifier = Modifier.height(12.dp))
-                                ChangePasswordSection(
-                                    currentPassword = currentPassword,
-                                    onCurrentPasswordChange = { 
-                                        currentPassword = it
-                                        profileViewModel.validateCurrentPassword(it)
-                                    },
-                                    currentPasswordError = currentPasswordError,
-                                    newPassword = newPassword,
-                                    onNewPasswordChange = { 
-                                        newPassword = it
-                                        profileViewModel.validateNewPassword(it)
-                                    },
-                                    newPasswordError = newPasswordError,
-                                    onResetPassword = { profileViewModel.resetPassword(currentPassword, newPassword) },
-                                    enabled = currentPassword.isNotBlank() && newPassword.isNotBlank()
-                                )
+                                item {
+                                    ContactAddressSection(
+                                        viewModel = registerViewModel,
+                                        editedPhone = editedPhone,
+                                        onPhoneChange = {
+                                            editedPhone = it; profileViewModel.setPhoneNumber(it)
+                                        },
+                                        phoneError = phoneError,
+                                        editedCity = editedCity,
+                                        onCityChange = {
+                                            editedCity = it; profileViewModel.setCity(
+                                            it
+                                        )
+                                        },
+                                        cityError = cityError,
+                                        editedProvince = editedProvince,
+                                        onProvinceChange = {
+                                            editedProvince = it; profileViewModel.setProvince(it)
+                                        },
+                                        provinceError = provinceError,
+                                        editedPostal = editedPostal,
+                                        onPostalChange = {
+                                            editedPostal = it; profileViewModel.setPostalCode(it)
+                                        },
+                                        postalCodeError = postalCodeError,
+                                        editedNumber = editedNumber,
+                                        onNumberChange = {
+                                            editedNumber = it; profileViewModel.setNumber(it)
+                                        },
+                                        numberError = numberError,
+                                        editedStreet = editedStreet,
+                                        onStreetChange = {
+                                            editedStreet = it; profileViewModel.setStreet(it)
+                                        },
+                                        streetError = streetError
+                                    )
+                                }
+
+                                item {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Button(
+                                        onClick = { profileViewModel.updateProfile() },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        shape = RoundedCornerShape(30.dp),
+                                        enabled = true,
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.save_changes),
+                                            color = MaterialTheme.colorScheme.background
+                                        )
+                                    }
+                                }
+
+                                item {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    HorizontalDivider()
+                                }
+
+                                item {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    ChangePasswordSection(
+                                        currentPassword = currentPassword,
+                                        onCurrentPasswordChange = {
+                                            currentPassword = it
+                                            profileViewModel.validateCurrentPassword(it)
+                                        },
+                                        currentPasswordError = currentPasswordError,
+                                        newPassword = newPassword,
+                                        onNewPasswordChange = {
+                                            newPassword = it
+                                            profileViewModel.validateNewPassword(it)
+                                        },
+                                        newPasswordError = newPasswordError,
+                                        onResetPassword = {
+                                            profileViewModel.resetPassword(
+                                                currentPassword,
+                                                newPassword
+                                            )
+                                        },
+                                        enabled = currentPassword.isNotBlank() && newPassword.isNotBlank()
+                                    )
+                                }
                             }
                         }
                     }

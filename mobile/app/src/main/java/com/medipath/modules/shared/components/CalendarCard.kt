@@ -16,14 +16,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.core.utils.LocaleHelper
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.time.format.TextStyle
 
 @Composable
 fun CalendarCard(
@@ -42,6 +45,9 @@ fun CalendarCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            val context = LocalContext.current
+            val locale = LocaleHelper.getLocale(context)
+            
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -51,7 +57,7 @@ fun CalendarCard(
                     Icon(Icons.Default.ChevronLeft, null, tint = MaterialTheme.colorScheme.primary)
                 }
                 Text(
-                    text = currentMonth.format(DateTimeFormatter.ofPattern("LLLL yyyy", Locale("en"))),
+                    text = currentMonth.format(DateTimeFormatter.ofPattern("LLLL yyyy", locale)),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -64,9 +70,19 @@ fun CalendarCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun").forEach { day ->
+                val daysOfWeek = listOf(
+                    DayOfWeek.MONDAY,
+                    DayOfWeek.TUESDAY,
+                    DayOfWeek.WEDNESDAY,
+                    DayOfWeek.THURSDAY,
+                    DayOfWeek.FRIDAY,
+                    DayOfWeek.SATURDAY,
+                    DayOfWeek.SUNDAY
+                )
+                
+                daysOfWeek.forEach { dayOfWeek ->
                     Text(
-                        text = day,
+                        text = dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
                         modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center,
                         fontSize = 12.sp,

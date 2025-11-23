@@ -30,12 +30,13 @@ class UserNotificationsService(private val authToken: String? = null) {
         }
 
         isConnecting = true
-        val wsUrl = baseUrl.replace("http", "ws") + "/websocket"
+        val wsUrl = baseUrl.replace("https", "ws").replace("http", "ws") + "/ws/websocket"
 
         try {
             val headers = mutableMapOf<String, String>()
-            authToken?.let { headers["Cookie"] = "SESSION=$it" }
-            
+            authToken?.let {
+                headers["Cookie"] = "SESSION=$it"
+            }
             stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, wsUrl, headers).apply {
                 withClientHeartbeat(10000).withServerHeartbeat(10000)
             }
@@ -56,20 +57,17 @@ class UserNotificationsService(private val authToken: String? = null) {
                             isConnecting = false
                         }
                         LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT -> {
-                            Log.w("UserNotificationsService", "Server heartbeat failed, connection might be unstable.")
                         }
                     }
                 }, { throwable ->
                     isConnecting = false
-                    Log.e("UserNotificationsService", "Lifecycle error: ${throwable.message}", throwable)
                 })
 
             compositeDisposable.add(lifecycleDisposable)
 
             stompClient!!.connect()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             isConnecting = false
-            Log.e("UserNotificationsService", "Error during connection setup", e)
         }
     }
 
@@ -84,10 +82,10 @@ class UserNotificationsService(private val authToken: String? = null) {
                             val notification = gson.fromJson(stompMessage.payload, NotificationMessage::class.java)
                             _notifications.onNext(notification)
                         } catch (e: Exception) {
-                            Log.e("UserNotificationsService", "Error parsing notification message: ${e.message}", e)
+                            Log.e("UserNotificationsService", "Error parsing notification: ${e.message}", e)
                         }
                     }, { throwable ->
-                        Log.e("UserNotificationsService", "Error on subscribing to /user/notifications: ${throwable.message}", throwable)
+                        Log.e("UserNotificationsService", "Error subscribing to notifications: ${throwable.message}", throwable)
                     })
 
                 compositeDisposable.add(notificationsDisposable)

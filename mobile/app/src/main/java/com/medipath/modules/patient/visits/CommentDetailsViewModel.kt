@@ -1,17 +1,20 @@
 package com.medipath.modules.patient.visits
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.Comment
 import com.medipath.core.network.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
+import okio.IOException
 
-class CommentDetailsViewModel : ViewModel() {
+class CommentDetailsViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val commentsService = RetrofitInstance.commentsService
 
     private val _comment = MutableStateFlow<Comment?>(null)
@@ -34,6 +37,8 @@ class CommentDetailsViewModel : ViewModel() {
     
     private val _deleteSuccess = MutableStateFlow(false)
     val deleteSuccess: StateFlow<Boolean> = _deleteSuccess.asStateFlow()
+    
+    private val context = getApplication<Application>()
 
     fun fetchComment(commentId: String) {
         viewModelScope.launch {
@@ -46,19 +51,12 @@ class CommentDetailsViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     _comment.value = response.body()?.comment
                 } else {
-                    _error.value = "Failed to load comment: ${response.code()}"
-                    if (response.code() == 401) {
-                        _shouldRedirectToLogin.value = true
-                    }
+                    _error.value = context.getString(R.string.error_load_comment)
                 }
-            } catch (e: Exception) {
-                Log.e("CommentDetailsVM", "Error fetching comment", e)
-                if (e is HttpException && e.code() == 401) {
-                    _shouldRedirectToLogin.value = true
-                    _error.value = "User is not logged in"
-                } else {
-                    _error.value = "Failed to load comment: ${e.message}"
-                }
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -77,15 +75,13 @@ class CommentDetailsViewModel : ViewModel() {
 
                 if (response.isSuccessful) {
                     _deleteSuccess.value = true
-                } else if (response.code() == 401) {
-                    _shouldRedirectToLogin.value = true
-                    _deleteError.value = "Session expired"
                 } else {
-                    _deleteError.value = "Failed to delete comment: ${response.code()}"
+                    _deleteError.value = context.getString(R.string.error_delete_comment)
                 }
-            } catch (e: Exception) {
-                Log.e("CommentDetailsVM", "Error deleting comment", e)
-                _deleteError.value = "Error deleting comment: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _deleteLoading.value = false
             }

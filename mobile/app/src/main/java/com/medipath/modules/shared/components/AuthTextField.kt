@@ -20,11 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 
 @Composable
 fun AuthTextField(
@@ -64,12 +66,15 @@ fun AuthTextField(
                 {
                     IconButton(onClick = { passwordHidden = !passwordHidden }) {
                         val visibilityIcon = if (passwordHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                        val description = if (passwordHidden) "Show password" else "Hide password"
+                        val description = if (passwordHidden) stringResource(R.string.show_password) else stringResource(
+                            R.string.hide_password
+                        )
                         Icon(imageVector = visibilityIcon, contentDescription = description)
                     }
                 }
             } else null,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier
+                .fillMaxWidth()
                 .onFocusChanged { focusState ->
                     if (focusState.isFocused) {
                         hadFocus = true

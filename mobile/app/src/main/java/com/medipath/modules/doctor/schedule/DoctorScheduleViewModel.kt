@@ -1,16 +1,20 @@
 package com.medipath.modules.doctor.schedule
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.DoctorScheduleItem
 import com.medipath.core.network.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
-class DoctorScheduleViewModel : ViewModel() {
+class DoctorScheduleViewModel(
+    application: Application
+) : AndroidViewModel(application){
     private val doctorService = RetrofitInstance.doctorService
 
     private val _schedules = MutableStateFlow<List<DoctorScheduleItem>>(emptyList())
@@ -24,6 +28,8 @@ class DoctorScheduleViewModel : ViewModel() {
 
     private val _shouldRedirectToLogin = MutableStateFlow(false)
     val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
+    
+    private val context = getApplication<Application>()
 
     init {
         fetchSchedules()
@@ -40,24 +46,19 @@ class DoctorScheduleViewModel : ViewModel() {
 
                 if (response.isSuccessful) {
                     _schedules.value = response.body()?.schedules ?: emptyList()
-                    Log.d("DoctorScheduleViewModel", "Loaded ${_schedules.value.size} schedules")
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
-                    _error.value = "Session expired. Please log in again."
+                    _error.value = context.getString(R.string.error_session)
                 } else {
-                    _error.value = "Failed to load schedules: ${response.code()}"
-                    Log.e("DoctorScheduleViewModel", "Error loading schedules: ${response.code()}")
+                    _error.value = context.getString(R.string.failed_to_load_schedules)
                 }
-            } catch (e: Exception) {
-                _error.value = "Error loading schedules: ${e.message}"
-                Log.e("DoctorScheduleViewModel", "Exception loading schedules", e)
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
         }
-    }
-
-    fun clearError() {
-        _error.value = null
     }
 }

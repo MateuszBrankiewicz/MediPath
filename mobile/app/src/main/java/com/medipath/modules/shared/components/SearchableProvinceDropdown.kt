@@ -11,8 +11,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.modules.shared.auth.RegisterViewModel
 
 @Composable
@@ -29,7 +31,7 @@ fun SearchableProvinceDropdown(
     var hadFocus by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-    val provinces by viewModel.provinces
+    val provinces by viewModel.provinces.collectAsState()
 
     val filteredProvinces = remember(provinces, query) {
         if (query.isEmpty()) {
@@ -52,13 +54,13 @@ fun SearchableProvinceDropdown(
                 },
                 label = {
                     if (isEdit)
-                        Text("Province")
+                        Text(stringResource(R.string.province))
                     else
-                        Text("Province", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
+                        Text(stringResource(R.string.province), color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
                 },
                 placeholder = {
                     Text(
-                        "Select province or type to search",
+                        stringResource(R.string.select_province_or_type_to_search),
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp
                     )
@@ -82,7 +84,7 @@ fun SearchableProvinceDropdown(
                         if (focusState.isFocused) {
                             hadFocus = true
                             expanded = true
-                        } else if (hadFocus){
+                        } else if (hadFocus) {
                             onFocusLost()
                         }
                     },

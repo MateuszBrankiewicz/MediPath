@@ -1,5 +1,20 @@
 package com.medipath.modules.doctor.schedule.ui.components
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.medipath.R
+import com.medipath.core.models.DoctorScheduleItem
+import com.medipath.core.theme.LocalCustomColors
+import com.medipath.core.utils.LocaleHelper
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,16 +34,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.medipath.core.models.DoctorScheduleItem
-import com.medipath.core.theme.LocalCustomColors
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun ScheduleDetailsDialog(
@@ -39,17 +44,20 @@ fun ScheduleDetailsDialog(
 ) {
     if (schedule == null) return
 
+    val context = LocalContext.current
+    val locale = LocaleHelper.getLocale(context)
+    
     val startDateTime = LocalDateTime.parse(schedule.startHour, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     val endDateTime = LocalDateTime.parse(schedule.endHour, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     
-    val dateFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy")
+    val dateFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", locale)
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = if (schedule.booked) "Visit Details" else "Time Slot Details",
+                text = if (schedule.booked) stringResource(R.string.visit_details) else stringResource(R.string.time_slot_details),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (schedule.booked)
@@ -75,7 +83,7 @@ fun ScheduleDetailsDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = "Date",
+                            text = stringResource(R.string.date),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -99,7 +107,7 @@ fun ScheduleDetailsDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = "Time",
+                            text = stringResource(R.string.time),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -123,7 +131,7 @@ fun ScheduleDetailsDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = "Institution",
+                            text = stringResource(R.string.institution),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -147,7 +155,7 @@ fun ScheduleDetailsDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = "Doctor",
+                            text = stringResource(R.string.doctor),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -165,13 +173,13 @@ fun ScheduleDetailsDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Status:",
+                        text = stringResource(R.string.status),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (schedule.booked) "Scheduled" else "Available",
+                        text = if (schedule.booked) stringResource(R.string.scheduled) else stringResource(R.string.available),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (schedule.booked)
@@ -195,7 +203,7 @@ fun ScheduleDetailsDialog(
                             containerColor = LocalCustomColors.current.blue800
                         )
                     ) {
-                        Text("Reschedule")
+                        Text(stringResource(R.string.reschedule))
                     }
                     Button(
                         onClick = onCancel,
@@ -204,7 +212,7 @@ fun ScheduleDetailsDialog(
                             containerColor = LocalCustomColors.current.red800
                         )
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
 
                 }
@@ -215,7 +223,7 @@ fun ScheduleDetailsDialog(
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Close")
+                Text(stringResource(R.string.close))
             }
         },
         containerColor = MaterialTheme.colorScheme.background

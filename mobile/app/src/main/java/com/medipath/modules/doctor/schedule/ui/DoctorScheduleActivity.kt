@@ -22,14 +22,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.models.DoctorScheduleItem
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
+import com.medipath.core.utils.LocaleHelper
 import com.medipath.modules.doctor.schedule.DoctorScheduleViewModel
 import com.medipath.modules.doctor.schedule.ui.components.ScheduleDetailsDialog
 import com.medipath.modules.doctor.schedule.ui.components.ScheduleItemCard
@@ -93,10 +96,10 @@ fun DoctorScheduleScreen(
     val firstName by viewModel.firstName.collectAsState()
     val lastName by viewModel.lastName.collectAsState()
     val context = LocalContext.current
+    val locale = LocaleHelper.getLocale(context)
 
     val schedules by scheduleViewModel.schedules.collectAsState()
     val isLoading by scheduleViewModel.isLoading.collectAsState()
-    val error by scheduleViewModel.error.collectAsState()
     val cancelSuccess by visitsViewModel.cancelSuccess.collectAsState()
     val cancelError by visitsViewModel.error.collectAsState()
 
@@ -125,7 +128,8 @@ fun DoctorScheduleScreen(
 
     LaunchedEffect(cancelSuccess) {
         if (cancelSuccess) {
-            Toast.makeText(context, "Appointment cancelled successfully", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,
+                context.getString(R.string.appointment_cancelled_successfully), Toast.LENGTH_SHORT).show()
             scheduleViewModel.fetchSchedules()
             showDetailsDialog = false
             showCancelDialog = false
@@ -153,7 +157,6 @@ fun DoctorScheduleScreen(
 
     val availableDates = remember(schedulesByDate) {
         val dates = schedulesByDate.keys.toSet()
-        Log.d("DoctorSchedule", "Available dates: ${dates.size} - $dates")
         dates
     }
 
@@ -198,6 +201,9 @@ fun DoctorScheduleScreen(
     }
 
     if (showCancelDialog && selectedSchedule != null) {
+        val context = LocalContext.current
+        val locale = LocaleHelper.getLocale(context)
+        
         val startDateTime = LocalDateTime.parse(
             selectedSchedule!!.startHour,
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -206,19 +212,19 @@ fun DoctorScheduleScreen(
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
             title = { 
-                Text(text = "Confirm Cancellation") 
+                Text(text = stringResource(R.string.confirm_cancellation))
             },
             text = { 
                 Column {
-                    Text("Are you sure you want to cancel this appointment?")
+                    Text(stringResource(R.string.confirm_cancellation_message))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Date: ${startDateTime.format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy"))}",
+                        text = stringResource(R.string.date_title) + startDateTime.format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", locale)),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                     Text(
-                        text = "Time: ${startDateTime.format(DateTimeFormatter.ofPattern("HH:mm"))}",
+                        text = stringResource(R.string.time_title) + startDateTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -235,12 +241,12 @@ fun DoctorScheduleScreen(
                         containerColor = LocalCustomColors.current.red800
                     )
                 ) {
-                    Text("Confirm")
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showCancelDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -249,7 +255,7 @@ fun DoctorScheduleScreen(
 
     Navigation(
         notificationsViewModel = notificationsViewModel,
-        screenTitle = "Schedule",
+        screenTitle = stringResource(R.string.schedule),
         onNotificationsClick = {
             val intent = Intent(context, NotificationsActivity::class.java)
             intent.putExtra("isDoctor", true)
@@ -286,7 +292,7 @@ fun DoctorScheduleScreen(
                         ) {
                             item {
                                 Text(
-                                    text = "Select a date",
+                                    text = stringResource(R.string.select_date),
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
@@ -308,7 +314,7 @@ fun DoctorScheduleScreen(
                             if (selectedDate != null) {
                                 item {
                                     Text(
-                                        text = selectedDate!!.format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy")),
+                                        text = selectedDate!!.format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", locale)),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary,
@@ -327,7 +333,7 @@ fun DoctorScheduleScreen(
                                             onClick = { selectedTab = 0 },
                                             text = {
                                                 Text(
-                                                    text = "All",
+                                                    text = stringResource(R.string.all),
                                                     fontSize = 14.sp,
                                                     fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal
                                                 )
@@ -338,7 +344,7 @@ fun DoctorScheduleScreen(
                                             onClick = { selectedTab = 1 },
                                             text = {
                                                 Text(
-                                                    text = "Scheduled",
+                                                    text = stringResource(R.string.scheduled),
                                                     fontSize = 14.sp,
                                                     fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal
                                                 )
@@ -349,7 +355,7 @@ fun DoctorScheduleScreen(
                                             onClick = { selectedTab = 2 },
                                             text = {
                                                 Text(
-                                                    text = "Available",
+                                                    text = stringResource(R.string.available),
                                                     fontSize = 14.sp,
                                                     fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Normal
                                                 )
@@ -392,7 +398,7 @@ fun DoctorScheduleScreen(
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(
-                                                    text = "No appointments",
+                                                    text = stringResource(R.string.no_appointments),
                                                     fontSize = 16.sp,
                                                     fontWeight = FontWeight.Medium,
                                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)

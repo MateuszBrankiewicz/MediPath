@@ -11,8 +11,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.modules.shared.auth.RegisterViewModel
 
 @Composable
@@ -29,7 +31,7 @@ fun SearchableCityDropdown(
     var hadFocus by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-    val cities by viewModel.cities
+    val cities by viewModel.cities.collectAsState()
 
     val filteredCities = remember(cities, query) {
         if (query.isEmpty()) {
@@ -52,13 +54,13 @@ fun SearchableCityDropdown(
             },
             label = {
                 if (isEdit)
-                    Text("City")
+                    Text(stringResource(R.string.city))
                 else
-                    Text("City", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
+                    Text(stringResource(R.string.city), color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
             },
             placeholder = {
                 Text(
-                    "Select city or type to search",
+                    stringResource(R.string.select_city_or_type_to_search),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp
                 )
@@ -82,7 +84,7 @@ fun SearchableCityDropdown(
                     if (focusState.isFocused) {
                         hadFocus = true
                         expanded = true
-                    } else if (hadFocus){
+                    } else if (hadFocus) {
                         onFocusLost()
                     }
                 },

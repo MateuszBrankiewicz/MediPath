@@ -20,13 +20,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medipath.core.models.VisitDetails
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.modules.shared.components.getTranslatedStatus
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import com.medipath.R
 
 @Composable
 fun VisitDetailsContent(
@@ -44,7 +47,7 @@ fun VisitDetailsContent(
             DateTimeFormatter.ISO_LOCAL_DATE_TIME
         )
         parsedDateTime.format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm"))
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         visitDetails.time.startTime
     }
 
@@ -54,7 +57,7 @@ fun VisitDetailsContent(
             DateTimeFormatter.ISO_LOCAL_DATE_TIME
         )
         parsedDateTime.format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm"))
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         visitDetails.time.endTime
     }
 
@@ -88,12 +91,12 @@ fun VisitDetailsContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Status:",
+                        text = stringResource(R.string.status_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = visitDetails.status,
+                        text = getTranslatedStatus(visitDetails.status),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = statusColor,
@@ -107,27 +110,27 @@ fun VisitDetailsContent(
                 }
             }
 
-            InfoCard(title = "Doctor") {
-                InfoRow("Name", "Dr. ${visitDetails.doctor.doctorName} ${visitDetails.doctor.doctorSurname}")
-                InfoRow("Specializations", visitDetails.doctor.specialisations.joinToString(", "))
+            InfoCard(title = stringResource(R.string.doctor)) {
+                InfoRow(stringResource(R.string.name), "Dr. ${visitDetails.doctor.doctorName} ${visitDetails.doctor.doctorSurname}")
+                InfoRow(stringResource(R.string.specialisations), visitDetails.doctor.specialisations.joinToString(", "))
             }
 
-            InfoCard(title = "Patient") {
-                InfoRow("Name", "${visitDetails.patient.name} ${visitDetails.patient.surname}")
-                InfoRow("Government ID", visitDetails.patient.govID)
+            InfoCard(title = stringResource(R.string.patient)) {
+                InfoRow(stringResource(R.string.name), "${visitDetails.patient.name} ${visitDetails.patient.surname}")
+                InfoRow(stringResource(R.string.government_id), visitDetails.patient.govID)
             }
 
-            InfoCard(title = "Visit Time") {
-                InfoRow("Start", startDateTime)
-                InfoRow("End", endDateTime)
+            InfoCard(title = stringResource(R.string.visit_time)) {
+                InfoRow(stringResource(R.string.start), startDateTime)
+                InfoRow(stringResource(R.string.end), endDateTime)
             }
 
-            InfoCard(title = "Institution") {
-                InfoRow("Name", visitDetails.institution.institutionName)
+            InfoCard(title = stringResource(R.string.institution)) {
+                InfoRow(stringResource(R.string.name), visitDetails.institution.institutionName)
             }
 
             if (visitDetails.note.isNotEmpty()) {
-                InfoCard(title = "Doctor's Note") {
+                InfoCard(title = stringResource(R.string.doctor_notes)) {
                     Text(
                         text = visitDetails.note,
                         fontSize = 14.sp,
@@ -137,7 +140,7 @@ fun VisitDetailsContent(
             }
 
             if (visitDetails.patientRemarks.isNotEmpty()) {
-                InfoCard(title = "Patient Remarks") {
+                InfoCard(title = stringResource(R.string.patient_remarks)) {
                     Text(
                         text = visitDetails.patientRemarks,
                         fontSize = 14.sp,
@@ -148,12 +151,12 @@ fun VisitDetailsContent(
 
             val prescriptions = visitDetails.codes.filter { it.codeType == "PRESCRIPTION" }
             if (prescriptions.isNotEmpty()) {
-                CodesCard(title = "Prescriptions", codes = prescriptions, color = colors.blue800)
+                CodesCard(title = stringResource(R.string.prescriptions), codes = prescriptions, color = colors.blue800)
             }
 
             val referrals = visitDetails.codes.filter { it.codeType == "REFERRAL" }
             if (referrals.isNotEmpty()) {
-                CodesCard(title = "Referrals", codes = referrals, color = colors.orange800)
+                CodesCard(title = stringResource(R.string.referrals), codes = referrals, color = colors.orange800)
             }
         }
 
@@ -172,7 +175,7 @@ fun VisitDetailsContent(
                 shape = RoundedCornerShape(30.dp)
             ) {
                 Text(
-                    text = if (hasReview) "SEE REVIEW" else "ADD REVIEW",
+                    text = if (hasReview) stringResource(R.string.see_review) else stringResource(R.string.add_review),
                     fontSize = 16.sp,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )

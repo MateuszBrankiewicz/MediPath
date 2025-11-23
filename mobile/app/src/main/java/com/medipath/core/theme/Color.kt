@@ -3,13 +3,13 @@ package com.medipath.core.theme
 import androidx.compose.ui.graphics.Color
 
 sealed class ThemeColors(
-    val primary: Color, // primary color for app bars, buttons
-    val disabledBtn: Color, // color for disabled buttons
-    val background: Color, // background color for screens
-    val subtitle: Color, // color for subtitles and secondary text
-    val inputBgPrimary: Color, // background color for input fields
-    val placeholder: Color, // color for placeholder text in input fields
-    val error: Color, // color for error messages
+    val primary: Color,
+    val disabledBtn: Color,
+    val background: Color,
+    val subtitle: Color,
+    val inputBgPrimary: Color,
+    val placeholder: Color,
+    val error: Color,
     val secondBackground: Color,
 ) {
     object Light : ThemeColors(

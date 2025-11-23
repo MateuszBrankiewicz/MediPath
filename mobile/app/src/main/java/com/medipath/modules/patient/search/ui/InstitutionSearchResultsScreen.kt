@@ -1,6 +1,6 @@
 package com.medipath.modules.patient.search.ui
 
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
@@ -25,18 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.medipath.R
 import com.medipath.core.models.SearchResult
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.patient.search.SearchViewModel
 import com.medipath.modules.shared.components.rememberBase64Image
 
-enum class InstitutionSortOption(val displayName: String) {
-    DEFAULT("Default"),
-    RATING_DESC("Rating (Descending)"),
-    RATING_ASC("Rating (Ascending)"),
-    NUM_RATINGS_DESC("Reviews (Descending)"),
-    NUM_RATINGS_ASC("Reviews (Ascending)")
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,8 +46,17 @@ fun InstitutionSearchResultsScreen(
     val searchResults by viewModel.searchResults.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    var selectedSortOption by remember { mutableStateOf(InstitutionSortOption.DEFAULT) }
+    var selectedSortOption by remember { mutableStateOf(SortOption.DEFAULT) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(error) {
+        error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.search(searchQuery, "institution", city, specialisation)
@@ -60,161 +64,170 @@ fun InstitutionSearchResultsScreen(
 
     val sortedResults = remember(searchResults, selectedSortOption) {
         when (selectedSortOption) {
-            InstitutionSortOption.DEFAULT -> searchResults
-            InstitutionSortOption.RATING_DESC -> searchResults.sortedByDescending { it.rating }
-            InstitutionSortOption.RATING_ASC -> searchResults.sortedBy { it.rating }
-            InstitutionSortOption.NUM_RATINGS_DESC -> searchResults.sortedByDescending { it.numOfRatings }
-            InstitutionSortOption.NUM_RATINGS_ASC -> searchResults.sortedBy { it.numOfRatings }
+            SortOption.DEFAULT -> searchResults
+            SortOption.RATING_DESC -> searchResults.sortedByDescending { it.rating }
+            SortOption.RATING_ASC -> searchResults.sortedBy { it.rating }
+            SortOption.NUM_RATINGS_DESC -> searchResults.sortedByDescending { it.numOfRatings }
+            SortOption.NUM_RATINGS_ASC -> searchResults.sortedBy { it.numOfRatings }
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(WindowInsets.navigationBars.asPaddingValues())
-            .background(MaterialTheme.colorScheme.secondary)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(LocalCustomColors.current.blue900)
-                .padding(top = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Return",
-                    tint = MaterialTheme.colorScheme.background
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.institution_results),
+                        color = MaterialTheme.colorScheme.background,
+                        fontSize = 23.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = MaterialTheme.colorScheme.background
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = LocalCustomColors.current.blue900
                 )
-            }
-            Text(
-                text = "Institution Results",
-                fontSize = 23.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.background,
-                modifier = Modifier.padding(start = 8.dp).padding(vertical = 24.dp)
             )
         }
-
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.secondary)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
 
-            val searchCriteria = buildList {
-                if (searchQuery.isNotBlank()) add("\"$searchQuery\"")
-                if (city.isNotBlank()) add("City: $city")
-                if (specialisation.isNotBlank()) add("Services: $specialisation")
-            }.joinToString(" • ")
-
-            if (searchCriteria.isNotEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.Search,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                val searchCriteria = buildList {
+                    if (searchQuery.isNotBlank()) add("\"$searchQuery\"")
+                    if (city.isNotBlank()) add(stringResource(R.string.city_label, city))
+                    if (specialisation.isNotBlank()) add(
+                        stringResource(
+                            R.string.services_label,
+                            specialisation
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Searching for: $searchCriteria",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
+                    )
+                }.joinToString(" • ")
 
-            if (!isLoading && searchResults.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-
-                SortHeader(
-                    count = searchResults.size,
-                    selectedDisplayName = selectedSortOption.displayName,
-                    isExpanded = isDropdownExpanded,
-                    onExpandedChange = { isDropdownExpanded = it },
-                    options = InstitutionSortOption.entries.map { it.displayName },
-                    onOptionSelected = { selected ->
-                        InstitutionSortOption.entries.firstOrNull { it.displayName == selected }?.let {
-                            selectedSortOption = it
-                        }
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            when {
-                isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-
-                searchResults.isEmpty() -> {
+                if (searchCriteria.isNotEmpty()) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                         shape = RoundedCornerShape(12.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Business,
+                                Icons.Default.Search,
                                 contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "No institutions found",
-                                fontSize = 18.sp,
+                                text = stringResource(R.string.searching_for, searchCriteria),
+                                fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Try adjusting your search criteria",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                fontWeight = FontWeight.Normal
                             )
                         }
                     }
                 }
 
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(sortedResults.size) { index ->
-                            val institution = sortedResults[index]
-                            InstitutionCard(
-                                institution = institution,
-                                onClick = { onInstitutionClick(institution) }
-                            )
+                if (!isLoading && searchResults.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    val optionsMap = SortOption.entries.associateWith { stringResource(it.labelId) }
+
+                    SortHeader(
+                        count = searchResults.size,
+                        selectedDisplayName = stringResource(selectedSortOption.labelId),
+                        isExpanded = isDropdownExpanded,
+                        onExpandedChange = { isDropdownExpanded = it },
+                        options = optionsMap.values.toList(),
+                        onOptionSelected = { selectedLabel ->
+                            val option = optionsMap.entries.find { it.value == selectedLabel }?.key
+                            if (option != null) selectedSortOption = option
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                when {
+                    isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+
+                    searchResults.isEmpty() -> {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Business,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(48.dp),
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = stringResource(R.string.no_institutions_found),
+                                    fontSize = 18.sp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = stringResource(R.string.try_adjusting_criteria),
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    fontWeight = FontWeight.Normal
+                                )
+                            }
+                        }
+                    }
+
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(sortedResults.size) { index ->
+                                val institution = sortedResults[index]
+                                InstitutionCard(
+                                    institution = institution,
+                                    onClick = { onInstitutionClick(institution) }
+                                )
+                            }
                         }
                     }
                 }
@@ -262,7 +275,7 @@ fun InstitutionCard(
                     if (imageBitmap != null) {
                         Image(
                             bitmap = imageBitmap,
-                            contentDescription = "Institution photo",
+                            contentDescription = stringResource(R.string.institution_photo),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
@@ -300,7 +313,7 @@ fun InstitutionCard(
                         modifier = Modifier.padding(top = 6.dp)
                     ) {
                         Text(
-                            text = if (institution.isPublic == true) "Public Institution" else "Private Institution",
+                            text = if (institution.isPublic == true) stringResource(R.string.public_institution) else stringResource(R.string.private_institution),
                             fontSize = 12.sp,
                             color = if (institution.isPublic == true) colors.green800 else colors.blue800,
                             fontWeight = FontWeight.Medium,
@@ -340,9 +353,11 @@ fun InstitutionCard(
                     ) {
                         Icon(
                             Icons.Default.LocationOn,
-                            contentDescription = "Location",
+                            contentDescription = stringResource(R.string.location),
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp).padding(top = 2.dp)
+                            modifier = Modifier
+                                .size(18.dp)
+                                .padding(top = 2.dp)
                         )
                         Column {
                             val line1 = listOfNotNull(province, city).joinToString(", ")

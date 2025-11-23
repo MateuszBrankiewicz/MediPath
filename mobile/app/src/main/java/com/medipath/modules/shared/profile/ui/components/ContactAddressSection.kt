@@ -5,9 +5,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.modules.shared.auth.RegisterViewModel
 import com.medipath.modules.shared.components.SearchableCityDropdown
 import com.medipath.modules.shared.components.SearchableProvinceDropdown
@@ -45,7 +47,7 @@ fun ContactAddressSection(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Contact & Address",
+                text = stringResource(R.string.contact_address),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -55,7 +57,7 @@ fun ContactAddressSection(
             OutlinedTextField(
                 value = editedPhone,
                 onValueChange = onPhoneChange,
-                label = { Text("Phone number") },
+                label = { Text(stringResource(R.string.phone_number)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = phoneError != null,
                 supportingText = phoneError?.let { { Text(it) } },
@@ -87,7 +89,7 @@ fun ContactAddressSection(
                     }
                     onPostalChange(formatted)
                 },
-                label = { Text("Postal code") },
+                label = { Text(stringResource(R.string.postal_code)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = postalCodeError != null,
                 supportingText = postalCodeError?.let { { Text(it) } },
@@ -112,7 +114,7 @@ fun ContactAddressSection(
                 OutlinedTextField(
                     value = editedNumber,
                     onValueChange = onNumberChange,
-                    label = { Text("Number") },
+                    label = { Text(stringResource(R.string.number)) },
                     modifier = Modifier.weight(1f),
                     isError = numberError != null,
                     supportingText = numberError?.let { { Text(it) } },
@@ -121,7 +123,7 @@ fun ContactAddressSection(
                 OutlinedTextField(
                     value = editedStreet,
                     onValueChange = onStreetChange,
-                    label = { Text("Street") },
+                    label = { Text(stringResource(R.string.street)) },
                     modifier = Modifier.weight(1f),
                     isError = streetError != null,
                     supportingText = streetError?.let { { Text(it) } },

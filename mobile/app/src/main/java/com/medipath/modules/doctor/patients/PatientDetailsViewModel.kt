@@ -1,8 +1,9 @@
 package com.medipath.modules.doctor.patients
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.PatientDetailsResponse
 import com.medipath.core.models.PatientVisit
 import com.medipath.core.network.RetrofitInstance
@@ -10,8 +11,11 @@ import com.medipath.core.services.DoctorService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
-class PatientDetailsViewModel : ViewModel() {
+class PatientDetailsViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val doctorService: DoctorService = RetrofitInstance.doctorService
 
     private val _patientDetails = MutableStateFlow<PatientDetailsResponse?>(null)
@@ -26,6 +30,8 @@ class PatientDetailsViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+    private val context = getApplication<Application>()
+    
     fun fetchPatientData(patientId: String) {
         fetchPatientDetails(patientId)
         fetchPatientVisits(patientId)
@@ -39,14 +45,13 @@ class PatientDetailsViewModel : ViewModel() {
                 val response = doctorService.getPatientDetails(patientId)
                 if (response.isSuccessful) {
                     _patientDetails.value = response.body()
-                    Log.d("PatientDetailsViewModel", "Fetched patient details successfully")
                 } else {
-                    _errorMessage.value = "Error loading patient details: ${response.code()}"
-                    Log.e("PatientDetailsViewModel", "Failed to fetch patient details: ${response.code()}")
+                    _errorMessage.value = context.getString(R.string.failed_to_load_patient_details)
                 }
-            } catch (e: Exception) {
-                _errorMessage.value = "Error: ${e.localizedMessage}"
-                Log.e("PatientDetailsViewModel", "Exception fetching patient details", e)
+            } catch (_: IOException) {
+                _errorMessage.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _errorMessage.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -61,17 +66,15 @@ class PatientDetailsViewModel : ViewModel() {
                 val response = doctorService.getPatientVisits(patientId)
                 if (response.isSuccessful) {
                     val visitsResponse = response.body()
-                    // Sort visits by start time (most recent first)
                     _patientVisits.value = visitsResponse?.visits
                         ?.sortedByDescending { it.startTime } ?: emptyList()
-                    Log.d("PatientDetailsViewModel", "Fetched ${_patientVisits.value.size} visits for patient")
                 } else {
-                    _errorMessage.value = "Error loading visits: ${response.code()}"
-                    Log.e("PatientDetailsViewModel", "Failed to fetch visits: ${response.code()}")
+                    _errorMessage.value = context.getString(R.string.failed_to_load_patient_visits)
                 }
-            } catch (e: Exception) {
-                _errorMessage.value = "Error: ${e.localizedMessage}"
-                Log.e("PatientDetailsViewModel", "Exception fetching visits", e)
+            } catch (_: IOException) {
+                _errorMessage.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _errorMessage.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }

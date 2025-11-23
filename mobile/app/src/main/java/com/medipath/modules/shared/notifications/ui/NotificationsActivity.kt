@@ -8,24 +8,26 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.shared.notifications.NotificationsViewModel
@@ -52,6 +54,7 @@ class NotificationsActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsScreen(
     isDoctor: Boolean = false,
@@ -81,7 +84,7 @@ fun NotificationsScreen(
         LaunchedEffect(shouldRedirectToLogin) {
             if (!shouldRedirectToLogin) return@LaunchedEffect
 
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG)
+            Toast.makeText(context, context.getString(R.string.error_session), Toast.LENGTH_LONG)
                 .show()
 
             val sessionManager = RetrofitInstance.getSessionManager()
@@ -94,188 +97,191 @@ fun NotificationsScreen(
             (context as? ComponentActivity)?.finish()
         }
     } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(WindowInsets.navigationBars.asPaddingValues())
-                .background(MaterialTheme.colorScheme.secondary)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(LocalCustomColors.current.blue900)
-                    .padding(top = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Return",
-                        tint = MaterialTheme.colorScheme.background
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.notifications),
+                            color = MaterialTheme.colorScheme.background,
+                            fontSize = 23.sp
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.back),
+                                tint = MaterialTheme.colorScheme.background
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = LocalCustomColors.current.blue900
                     )
-                }
-                Text(
-                    text = "Notifications",
-                    fontSize = 23.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.background,
-                    modifier = Modifier.padding(start = 8.dp).padding(vertical = 24.dp)
                 )
             }
-
-            when {
-                isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-
-                error.isNotEmpty() -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = error,
-                            color = colors.red800,
-                            fontSize = 16.sp
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { viewModel.fetchNotifications() },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .background(MaterialTheme.colorScheme.secondary)
+            ) {
+                when {
+                    isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text("Try again")
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         }
                     }
-                }
 
-                notifications.isEmpty() -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(32.dp)
-                            .background(MaterialTheme.colorScheme.secondary),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "No notifications yet",
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-
-                else -> {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Button(
-                                onClick = {
-                                    viewModel.markAllAsRead()
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                                shape = RoundedCornerShape(30.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = colors.blue900
-                                )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.NotificationsActive,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "MARK ALL AS READ",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.background.copy(
-                                    alpha = 0.15f
-                                )
+                    error.isNotEmpty() -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = error,
+                                color = colors.red800,
+                                fontSize = 16.sp
                             )
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 10.dp)
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(12.dp)),
-                                contentPadding = PaddingValues(bottom = 80.dp)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { viewModel.fetchNotifications() },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             ) {
-                                items(notifications) { notification ->
-                                    NotificationItem(notification = notification)
-                                    HorizontalDivider(
-                                        color = MaterialTheme.colorScheme.background.copy(
-                                            alpha = 0.15f
-                                        )
+                                Text(stringResource(R.string.try_again))
+                            }
+                        }
+                    }
+
+                    notifications.isEmpty() -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp)
+                                .background(MaterialTheme.colorScheme.secondary),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = stringResource(R.string.no_notifications_yet),
+                                fontSize = 18.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+
+                    else -> {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                Button(
+                                    onClick = {
+                                        viewModel.markAllAsRead()
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                                    shape = RoundedCornerShape(30.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colors.blue900
+                                    )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.NotificationsActive,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = stringResource(R.string.mark_all_as_read),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                 }
-                            }
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.background.copy(
-                                    alpha = 0.15f
-                                )
-                            )
-                        }
 
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.BottomCenter),
-                            shadowElevation = 8.dp,
-                            tonalElevation = 2.dp,
-                            color = colors.blue900
-                        ) {
-                            TextButton(
-                                onClick = {
-                                    NavigationRouter.navigateToTab(
-                                        context,
-                                        "Reminders",
-                                        "Notifications",
-                                        isDoctor
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.background.copy(
+                                        alpha = 0.15f
                                     )
-                                },
+                                )
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 10.dp)
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(12.dp)),
+                                    contentPadding = PaddingValues(bottom = 80.dp)
+                                ) {
+                                    items(notifications) { notification ->
+                                        NotificationItem(notification = notification)
+                                        HorizontalDivider(
+                                            color = MaterialTheme.colorScheme.background.copy(
+                                                alpha = 0.15f
+                                            )
+                                        )
+                                    }
+                                }
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.background.copy(
+                                        alpha = 0.15f
+                                    )
+                                )
+                            }
+
+                            Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 20.dp, vertical = 16.dp),
-                                shape = RoundedCornerShape(0.dp)
+                                    .align(Alignment.BottomCenter),
+                                shadowElevation = 8.dp,
+                                tonalElevation = 2.dp,
+                                color = colors.blue900
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                TextButton(
+                                    onClick = {
+                                        NavigationRouter.navigateToTab(
+                                            context,
+                                            "Reminders",
+                                            "Notifications",
+                                            isDoctor
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                                    shape = RoundedCornerShape(0.dp)
                                 ) {
-                                    Text(
-                                        text = "SEE ALL REMINDERS",
-                                        fontSize = 15.sp,
-                                        color = MaterialTheme.colorScheme.background
-                                    )
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.background
-                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.see_all_reminders),
+                                            fontSize = 15.sp,
+                                            color = MaterialTheme.colorScheme.background
+                                        )
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.background
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -297,7 +303,7 @@ fun NotificationItem(notification: Notification) {
         val dateParts = parts[0].split("-")
         val timeParts = parts[1].split(":")
         "${dateParts[2]}.${dateParts[1]}.${dateParts[0]} ${timeParts[0]}:${timeParts[1]}"
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         notification.timestamp
     }
 

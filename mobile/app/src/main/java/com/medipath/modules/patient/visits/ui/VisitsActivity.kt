@@ -23,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -30,6 +31,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
@@ -41,6 +43,7 @@ import com.medipath.modules.shared.notifications.NotificationsViewModel
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.ActionButton
 import com.medipath.modules.shared.components.FilterConfig
+import com.medipath.modules.shared.components.FilterOption
 import com.medipath.modules.shared.components.GenericActionButtonsRow
 import com.medipath.modules.shared.components.GenericFiltersSection
 import com.medipath.modules.shared.components.GenericSearchBar
@@ -123,21 +126,21 @@ fun VisitsScreen(
             StatisticItem(
                 icon = Icons.Default.Event,
                 iconTint = colors.blue800,
-                label = "Total\nvisits",
+                label = context.getString(R.string.total_visits),
                 value = totalVisits.toString(),
                 valueTint = colors.blue800
             ),
             StatisticItem(
                 icon = Icons.Default.Schedule,
                 iconTint = colors.orange800,
-                label = "Scheduled\nvisits",
+                label = context.getString(R.string.scheduled_visits),
                 value = scheduledVisits.toString(),
                 valueTint = colors.orange800
             ),
             StatisticItem(
                 icon = Icons.Default.CheckCircle,
                 iconTint = colors.green800,
-                label = "Completed\nvisits",
+                label = context.getString(R.string.completed_visits),
                 value = completedVisits.toString(),
                 valueTint = colors.green800
             )
@@ -148,21 +151,21 @@ fun VisitsScreen(
         listOf(
             ActionButton(
                 icon = Icons.Default.FilterList,
-                label = "FILTERS",
+                label = context.getString(R.string.filters_capitals),
                 onClick = { showFilters = !showFilters },
                 color = colors.blue800,
                 isOutlined = true
             ),
             ActionButton(
                 icon = Icons.Default.Clear,
-                label = "CLEAR",
+                label = context.getString(R.string.clear_capitals),
                 onClick = { visitsViewModel.clearFilters() },
                 color = colors.error,
                 isOutlined = true
             ),
             ActionButton(
                 icon = Icons.Default.Refresh,
-                label = "REFRESH",
+                label = context.getString(R.string.refresh),
                 onClick = { visitsViewModel.fetchVisits(upcoming = false) },
                 color = colors.blue800,
                 isOutlined = true
@@ -170,11 +173,27 @@ fun VisitsScreen(
         )
     }
 
-    val visitsFilterConfig = remember {
+    val statusOptions = listOf(
+        FilterOption("All", stringResource(R.string.all)),
+        FilterOption("Scheduled", stringResource(R.string.scheduled)),
+        FilterOption("Completed", stringResource(R.string.completed)),
+        FilterOption("Cancelled", stringResource(R.string.cancelled))
+    )
+    val sortByOptions = listOf(
+        FilterOption("Date", stringResource(R.string.date)),
+        FilterOption("Doctor", stringResource(R.string.doctor)),
+        FilterOption("Institution", stringResource(R.string.institution))
+    )
+    val sortOrderOptions = listOf(
+        FilterOption("Ascending", stringResource(R.string.ascending)),
+        FilterOption("Descending", stringResource(R.string.descending))
+    )
+
+    val visitsFilterConfig = remember(statusOptions, sortByOptions, sortOrderOptions) {
         FilterConfig(
-            statusOptions = listOf("All", "Scheduled", "Completed", "Cancelled"),
-            sortByOptions = listOf("Date", "Doctor", "Institution"),
-            sortOrderOptions = listOf("Ascending", "Descending"),
+            statusOptions = statusOptions,
+            sortByOptions = sortByOptions,
+            sortOrderOptions = sortOrderOptions,
             showSortOrder = true
         )
     }
@@ -198,7 +217,8 @@ fun VisitsScreen(
 
     LaunchedEffect(cancelSuccess) {
         if (cancelSuccess) {
-            Toast.makeText(context, "Visit cancelled successfully", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,
+                context.getString(R.string.visit_cancelled_successfully), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -218,7 +238,7 @@ fun VisitsScreen(
     } else {
         Navigation(
             notificationsViewModel = notificationsViewModel,
-            screenTitle = "Visits",
+            screenTitle = stringResource(R.string.visits),
             canSwitchRole = canBeDoctor,
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
@@ -243,7 +263,7 @@ fun VisitsScreen(
                     GenericSearchBar(
                         searchQuery = searchQuery,
                         onSearchQueryChange = { visitsViewModel.updateSearchQuery(it) },
-                        placeholder = "Search by doctor, institution..."
+                        placeholder = stringResource(R.string.search_by_doctor_institution)
                     )
                     
                     if (showFilters) {
@@ -274,7 +294,7 @@ fun VisitsScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No visits",
+                                text = stringResource(R.string.no_visits_found),
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -283,7 +303,9 @@ fun VisitsScreen(
                         LazyColumn(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Top,
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 15.dp)
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 20.dp, vertical = 15.dp)
                         ) {
                             items(visits) { visit ->
                                     VisitItem(

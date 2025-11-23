@@ -31,9 +31,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.Notification
 import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDateTime
@@ -55,7 +57,7 @@ fun ReminderCard(
             DateTimeFormatter.ISO_LOCAL_DATE_TIME
         )
         parsedDateTime.format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm"))
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         reminder.timestamp
     }
 
@@ -145,7 +147,7 @@ fun ReminderCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("DELETE", fontSize = 12.sp)
+                    Text(stringResource(R.string.delete), fontSize = 12.sp)
                 }
 
                 if (showMark) {
@@ -165,7 +167,7 @@ fun ReminderCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = if (reminder.read) "READ" else "MARK",
+                            text = if (reminder.read) stringResource(R.string.read) else stringResource(R.string.mark),
                             fontSize = 12.sp
                         )
                     }

@@ -5,10 +5,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 
 @Composable
 fun ChangePasswordSection(
@@ -32,7 +34,7 @@ fun ChangePasswordSection(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Change password",
+                text = stringResource(R.string.change_password),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -42,7 +44,7 @@ fun ChangePasswordSection(
             OutlinedTextField(
                 value = currentPassword,
                 onValueChange = onCurrentPasswordChange,
-                label = { Text("Current password") },
+                label = { Text(stringResource(R.string.current_password)) },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
                 isError = currentPasswordError != null,
@@ -55,7 +57,7 @@ fun ChangePasswordSection(
             OutlinedTextField(
                 value = newPassword,
                 onValueChange = onNewPasswordChange,
-                label = { Text("New password") },
+                label = { Text(stringResource(R.string.new_password)) },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
                 isError = newPasswordError != null,
@@ -72,7 +74,7 @@ fun ChangePasswordSection(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(30.dp)
             ) {
-                Text(text = "RESET PASSWORD", color = MaterialTheme.colorScheme.background)
+                Text(text = stringResource(R.string.reset_password), color = MaterialTheme.colorScheme.background)
             }
         }
     }

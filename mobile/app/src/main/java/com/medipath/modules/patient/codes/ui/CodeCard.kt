@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.CheckCircle
@@ -16,10 +15,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medipath.core.models.CodeData
+import com.medipath.R
 import com.medipath.core.models.CodeItem
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.shared.components.formatDate
@@ -97,7 +97,7 @@ fun CodeCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = if (codeItem.codes.isActive) "Active" else "Used",
+                                text = if (codeItem.codes.isActive) stringResource(R.string.active) else stringResource(R.string.used),
                                 fontSize = 14.sp,
                                 color = if (codeItem.codes.isActive) 
                                     customColors.green800 
@@ -113,7 +113,7 @@ fun CodeCard(
                 ) {
                     Icon(
                         Icons.Default.ContentCopy,
-                        contentDescription = "Copy Code",
+                        contentDescription = stringResource(R.string.copy_code),
                         tint = if (isCopied) 
                             customColors.green800 
                         else 
@@ -130,7 +130,7 @@ fun CodeCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Doctor:",
+                    text = stringResource(R.string.doctor_title),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -149,7 +149,7 @@ fun CodeCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Date:",
+                    text = stringResource(R.string.date_title),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -179,7 +179,7 @@ fun CodeCard(
                             containerColor = customColors.blue800
                         )
                     ) {
-                        Text("MARK AS USED")
+                        Text(stringResource(R.string.mark_as_used))
                     }
 
                     Button(
@@ -189,7 +189,7 @@ fun CodeCard(
                             containerColor = LocalCustomColors.current.red800
                         )
                     ) {
-                        Text("DELETE")
+                        Text(stringResource(R.string.delete))
                     }
                 }
         }
@@ -198,9 +198,14 @@ fun CodeCard(
     if (showMarkAsUsedDialog) {
         AlertDialog(
             onDismissRequest = { showMarkAsUsedDialog = false },
-            title = { Text("Confirm Mark as Used") },
+            title = { Text(stringResource(R.string.confirm_mark_as_used)) },
             text = { 
-                Text("Are you sure you want to mark this ${if (codeItem.codes.codeType == "PRESCRIPTION") "prescription" else "referral"} (${codeItem.codes.code}) as used?") 
+                Text(
+                    stringResource(
+                        R.string.mark_as_used_confirmation,
+                        if (codeItem.codes.codeType == "PRESCRIPTION") "prescription" else "referral",
+                        codeItem.codes.code
+                    ))
             },
             confirmButton = {
                 Button(
@@ -209,12 +214,12 @@ fun CodeCard(
                         onMarkAsUsedClick()
                     }
                 ) {
-                    Text("Confirm")
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showMarkAsUsedDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -224,9 +229,14 @@ fun CodeCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Confirm Deletion") },
+            title = { Text(stringResource(R.string.confirm_deletion)) },
             text = { 
-                Text("Are you sure you want to delete this ${if (codeItem.codes.codeType == "PRESCRIPTION") "prescription" else "referral"} (${codeItem.codes.code})? This action cannot be undone.") 
+                Text(
+                    stringResource(
+                        R.string.confirm_deletion_message,
+                        if (codeItem.codes.codeType == "PRESCRIPTION") "prescription" else "referral",
+                        codeItem.codes.code
+                    ))
             },
             confirmButton = {
                 Button(
@@ -238,12 +248,12 @@ fun CodeCard(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete_capital))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background

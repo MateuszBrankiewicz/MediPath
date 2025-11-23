@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import com.medipath.R
 
 @Composable
 fun rememberBase64Image(base64String: String?): ImageBitmap? {
@@ -29,7 +30,7 @@ fun rememberBase64Image(base64String: String?): ImageBitmap? {
             val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
 
             bitmap?.asImageBitmap()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -54,8 +55,9 @@ fun rememberBase64ImagePicker(
                     val base64String = Base64.encodeToString(imageBytes, Base64.NO_WRAP)
                     onImageSelected("data:image/jpeg;base64,$base64String")
                 }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Error loading image: ${e.message}", Toast.LENGTH_SHORT).show()
+            } catch (_: Exception) {
+                Toast.makeText(context,
+                    context.getString(R.string.error_loading_image), Toast.LENGTH_SHORT).show()
             }
         }
     }

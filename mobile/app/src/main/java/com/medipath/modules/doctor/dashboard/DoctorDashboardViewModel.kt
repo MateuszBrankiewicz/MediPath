@@ -1,22 +1,25 @@
 package com.medipath.modules.doctor.dashboard
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import com.medipath.R
 import com.medipath.core.models.Visit
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.DoctorService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import okio.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class DoctorDashboardViewModel(
-    private val doctorService: DoctorService = RetrofitInstance.doctorService
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
+    private val doctorService = RetrofitInstance.doctorService
+
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -32,6 +35,8 @@ class DoctorDashboardViewModel(
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+
+    private val context = getApplication<Application>()
 
     fun fetchVisitsForDate(date: LocalDate) {
         viewModelScope.launch {
@@ -59,12 +64,12 @@ class DoctorDashboardViewModel(
                         _currentVisit.value = null
                     }
                 } else {
-                    _error.value = "Failed to load visits: ${response.code()}"
-                    Log.e("DoctorDashboardViewModel", "Error: ${response.code()}")
+                    _error.value = context.getString(R.string.error_load_visits)
                 }
-            } catch (e: Exception) {
-                _error.value = e.message
-                Log.e("DoctorDashboardViewModel", "Error fetching visits: $e")
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -83,8 +88,8 @@ class DoctorDashboardViewModel(
                 val endTime = LocalDateTime.parse(visit.time.endTime, formatter)
                 
                 now.isAfter(startTime) && now.isBefore(endTime)
-            } catch (e: Exception) {
-                Log.e("DoctorDashboardViewModel", "Error parsing visit time: $e")
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.error_data_format)
                 false
             }
         }

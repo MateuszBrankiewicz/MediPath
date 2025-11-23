@@ -20,14 +20,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 
 data class FilterConfig(
-    val statusOptions: List<String>,
-    val sortByOptions: List<String>,
-    val sortOrderOptions: List<String> = listOf("Ascending", "Descending"),
+    val statusOptions: List<FilterOption>,
+    val sortByOptions: List<FilterOption>,
+    val sortOrderOptions: List<FilterOption> = emptyList(),
     val showSortOrder: Boolean = true
 )
 
@@ -62,7 +64,7 @@ fun GenericFiltersSection(
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             Text(
-                text = "Filters",
+                text = stringResource(R.string.filters),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -73,11 +75,14 @@ fun GenericFiltersSection(
                 expanded = statusExpanded,
                 onExpandedChange = { statusExpanded = it }
             ) {
+                val currentStatusLabel = filterConfig.statusOptions
+                    .find { it.key == statusFilter }?.label ?: statusFilter
+
                 OutlinedTextField(
-                    value = statusFilter,
+                    value = currentStatusLabel,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Status", fontSize = 12.sp) },
+                    label = { Text(stringResource(R.string.status), fontSize = 12.sp) },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded)
                     },
@@ -93,9 +98,9 @@ fun GenericFiltersSection(
                 ) {
                     filterConfig.statusOptions.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option, color = MaterialTheme.colorScheme.onSurface) },
+                            text = { Text(option.label, color = MaterialTheme.colorScheme.onSurface) },
                             onClick = {
-                                onStatusFilterChange(option)
+                                onStatusFilterChange(option.key)
                                 statusExpanded = false
                             }
                         )
@@ -106,8 +111,8 @@ fun GenericFiltersSection(
             OutlinedTextField(
                 value = dateFromFilter,
                 onValueChange = onDateFromChange,
-                label = { Text("Date from", fontSize = 12.sp) },
-                placeholder = { Text("YYYY-MM-DD", fontSize = 12.sp) },
+                label = { Text(stringResource(R.string.date_from), fontSize = 12.sp) },
+                placeholder = { Text(stringResource(R.string.yyyy_mm_dd), fontSize = 12.sp) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 singleLine = true
@@ -116,8 +121,8 @@ fun GenericFiltersSection(
             OutlinedTextField(
                 value = dateToFilter,
                 onValueChange = onDateToChange,
-                label = { Text("Date to", fontSize = 12.sp) },
-                placeholder = { Text("YYYY-MM-DD", fontSize = 12.sp) },
+                label = { Text(stringResource(R.string.date_to), fontSize = 12.sp) },
+                placeholder = { Text(stringResource(R.string.yyyy_mm_dd), fontSize = 12.sp) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 singleLine = true
@@ -128,11 +133,14 @@ fun GenericFiltersSection(
                 expanded = sortExpanded,
                 onExpandedChange = { sortExpanded = it }
             ) {
+                val currentSortByLabel = filterConfig.sortByOptions
+                    .find { it.key == sortBy }?.label ?: sortBy
+
                 OutlinedTextField(
-                    value = sortBy,
+                    value = currentSortByLabel,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Sort by", fontSize = 12.sp) },
+                    label = { Text(stringResource(R.string.sort_by), fontSize = 12.sp) },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = sortExpanded)
                     },
@@ -148,9 +156,9 @@ fun GenericFiltersSection(
                 ) {
                     filterConfig.sortByOptions.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option, color = MaterialTheme.colorScheme.onSurface) },
+                            text = { Text(option.label, color = MaterialTheme.colorScheme.onSurface) },
                             onClick = {
-                                onSortByChange(option)
+                                onSortByChange(option.key)
                                 sortExpanded = false
                             }
                         )
@@ -164,11 +172,14 @@ fun GenericFiltersSection(
                     expanded = orderExpanded,
                     onExpandedChange = { orderExpanded = it }
                 ) {
+                    val currentOrderLabel = filterConfig.sortOrderOptions
+                        .find { it.key == sortOrder }?.label ?: sortOrder
+
                     OutlinedTextField(
-                        value = sortOrder,
+                        value = currentOrderLabel,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Order", fontSize = 12.sp) },
+                        label = { Text(stringResource(R.string.order), fontSize = 12.sp) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = orderExpanded)
                         },
@@ -184,9 +195,9 @@ fun GenericFiltersSection(
                     ) {
                         filterConfig.sortOrderOptions.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(option, color = MaterialTheme.colorScheme.onSurface) },
+                                text = { Text(option.label, color = MaterialTheme.colorScheme.onSurface) },
                                 onClick = {
-                                    onSortOrderChange(option)
+                                    onSortOrderChange(option.key)
                                     orderExpanded = false
                                 }
                             )

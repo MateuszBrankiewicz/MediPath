@@ -22,9 +22,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.DoctorScheduleItem
 import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDateTime
@@ -64,7 +66,7 @@ fun ScheduleItemCard(
         ) {
             Icon(
                 imageVector = Icons.Default.Circle,
-                contentDescription = if (schedule.booked) "Scheduled" else "Available",
+                contentDescription = if (schedule.booked) stringResource(R.string.scheduled) else stringResource(R.string.available),
                 tint = if (schedule.booked)
                     MaterialTheme.colorScheme.primary
                 else
@@ -116,7 +118,7 @@ fun ScheduleItemCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = if (schedule.booked) "Scheduled" else "Available",
+                    text = if (schedule.booked) stringResource(R.string.scheduled) else stringResource(R.string.available),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = if (schedule.booked)

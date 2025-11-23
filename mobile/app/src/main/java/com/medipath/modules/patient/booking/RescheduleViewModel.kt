@@ -1,8 +1,9 @@
 package com.medipath.modules.patient.booking
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.models.DoctorScheduleItem
 import com.medipath.core.models.Patient
@@ -13,8 +14,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
-class RescheduleViewModel : ViewModel() {
+class RescheduleViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val searchService = RetrofitInstance.searchService
     private val visitsService = RetrofitInstance.visitsService
 
@@ -24,14 +28,19 @@ class RescheduleViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _toastMessage = MutableSharedFlow<ToastMessage>()
-    val toastMessage: SharedFlow<ToastMessage> = _toastMessage.asSharedFlow()
+    private val _errorMessage = MutableSharedFlow<String>()
+    val errorMessage: SharedFlow<String> = _errorMessage.asSharedFlow()
+
+    private val _successMessage = MutableSharedFlow<String>()
+    val successMessage: SharedFlow<String> = _successMessage.asSharedFlow()
 
     private val _rescheduleSuccess = MutableStateFlow(false)
     val rescheduleSuccess: StateFlow<Boolean> = _rescheduleSuccess.asStateFlow()
 
     private val _patientInfo = MutableStateFlow<Patient?>(null)
     val patientInfo: StateFlow<Patient?> = _patientInfo.asStateFlow()
+
+    private val context = getApplication<Application>()
 
     fun loadVisitDetails(visitId: String) {
         viewModelScope.launch {
@@ -40,10 +49,12 @@ class RescheduleViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     _patientInfo.value = response.body()?.visit?.patient
                 } else {
-                    _toastMessage.emit(ToastMessage.Error("Failed to load visit details"))
+                    _errorMessage.emit(context.getString(R.string.failed_to_load_visit_details))
                 }
-            } catch (e: Exception) {
-                _toastMessage.emit(ToastMessage.Error("Error loading visit details: ${e.message}"))
+            } catch (_: IOException) {
+                _errorMessage.emit(context.getString(R.string.error_connection))
+            } catch (_: Exception) {
+                _errorMessage.emit(context.getString(R.string.unknown_error))
             }
         }
     }
@@ -57,10 +68,12 @@ class RescheduleViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     _schedules.value = response.body()?.schedules ?: emptyList()
                 } else {
-                    _toastMessage.emit(ToastMessage.Error("Failed to load schedules: ${response.code()}"))
+                    _errorMessage.emit(context.getString(R.string.failed_to_load_schedules))
                 }
-            } catch (e: Exception) {
-                _toastMessage.emit(ToastMessage.Error("Error loading schedules: ${e.message}"))
+            } catch (_: IOException) {
+                _errorMessage.emit(context.getString(R.string.error_connection))
+            } catch (_: Exception) {
+                _errorMessage.emit(context.getString(R.string.unknown_error))
             } finally {
                 _isLoading.value = false
             }
@@ -76,29 +89,25 @@ class RescheduleViewModel : ViewModel() {
                     visitId = visitId,
                     newScheduleId = newScheduleId
                 )
-
                 if (response.isSuccessful) {
                     _rescheduleSuccess.value = true
-                    _toastMessage.emit(ToastMessage.Success("Visit rescheduled successfully!"))
+                    _successMessage.emit(context.getString(R.string.visit_rescheduled_successfully))
                 } else {
-                    val errorMessage = when (response.code()) {
-                        400 -> "This time slot is already booked or visit cannot be rescheduled"
-                        403 -> "You don't have permission to reschedule this visit"
-                        404 -> "Visit or schedule not found"
-                        500 -> "Server error - invalid schedule data"
-                        else -> "Failed to reschedule visit: ${response.code()}"
+                    val errorMsg = when (response.code()) {
+                        400 -> context.getString(R.string.error_bad_request)
+                        403 -> context.getString(R.string.no_permission_visit)
+                        404 -> context.getString(R.string.no_visits_found)
+                        else -> context.getString(R.string.an_unknown_error_occurred_please_try_again_later)
                     }
-                    _toastMessage.emit(ToastMessage.Error(errorMessage))
+                    _errorMessage.emit(errorMsg)
                 }
-            } catch (e: Exception) {
-                _toastMessage.emit(ToastMessage.Error("Error rescheduling visit: ${e.message}"))
+            } catch (_: IOException) {
+                _errorMessage.emit(context.getString(R.string.error_connection))
+            } catch (_: Exception) {
+                _errorMessage.emit(context.getString(R.string.unknown_error))
             } finally {
                 _isLoading.value = false
             }
         }
-    }
-
-    fun resetRescheduleSuccess() {
-        _rescheduleSuccess.value = false
     }
 }

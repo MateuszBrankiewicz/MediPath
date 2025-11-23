@@ -1,49 +1,54 @@
 package com.medipath.modules.shared.auth
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.AndroidViewModel
+import com.medipath.R
 import com.medipath.core.models.LoginRequest
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.AuthService
 import com.medipath.core.utils.ValidationUtils
-import retrofit2.HttpException
+import com.medipath.core.utils.LocaleHelper
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import okio.IOException
 
 
 class LoginViewModel(
-    private val authService: AuthService = RetrofitInstance.authService
-): ViewModel() {
+    application: Application
+): AndroidViewModel(application) {
+    private val authService = RetrofitInstance.authService
+    private val settingsService = RetrofitInstance.settingsService
 
-    private val _email = mutableStateOf("")
-    val email: State<String> = _email
+    private val _email = MutableStateFlow("")
+    val email: StateFlow<String> = _email.asStateFlow()
 
-    private val _password = mutableStateOf("")
-    val password: State<String> = _password
+    private val _password = MutableStateFlow("")
+    val password: StateFlow<String> = _password.asStateFlow()
 
-    private val _emailError = mutableStateOf<String?>(null)
-    val emailError: State<String?> = _emailError
+    private val _emailError = MutableStateFlow<String?>(null)
+    val emailError: StateFlow<String?> = _emailError.asStateFlow()
 
-    private val _passwordError = mutableStateOf<String?>(null)
-    val passwordError: State<String?> = _passwordError
+    private val _passwordError = MutableStateFlow<String?>(null)
+    val passwordError: StateFlow<String?> = _passwordError.asStateFlow()
 
-    private val _loginError = mutableStateOf<String?>(null)
-    val loginError: State<String?> = _loginError
+    private val _loginError = MutableStateFlow<String?>(null)
+    val loginError: StateFlow<String?> = _loginError.asStateFlow()
 
-    private val _loginSuccess = mutableStateOf(false)
-    val loginSuccess: State<Boolean> = _loginSuccess
+    private val _loginSuccess = MutableStateFlow(false)
+    val loginSuccess: StateFlow<Boolean> = _loginSuccess.asStateFlow()
 
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    val isFormValid: State<Boolean> = derivedStateOf {
-        email.value.isNotBlank() &&
-                password.value.isNotBlank() &&
-                emailError.value == null &&
-                passwordError.value == null
+    private val context = getApplication<Application>()
+
+    private fun validateAndGetString(validationFunc: () -> Int?): String? {
+        return validationFunc()?.let { context.getString(it) }
     }
+
     fun onEmailChanged(newEmail: String) {
         _email.value = newEmail
         if (_emailError.value != null) {
@@ -59,11 +64,11 @@ class LoginViewModel(
     }
 
     fun validateEmail() {
-        _emailError.value = ValidationUtils.validateEmail(email.value).ifEmpty { null }
+        _emailError.value = validateAndGetString { ValidationUtils.validateEmail(_email.value) }
     }
 
     fun validatePassword() {
-        _passwordError.value = ValidationUtils.validatePassword(password.value).ifEmpty { null }
+        _passwordError.value = validateAndGetString { ValidationUtils.validatePassword(_password.value) }
     }
     fun loginUser() {
         val request = LoginRequest(
@@ -78,16 +83,32 @@ class LoginViewModel(
             try {
                 val response = authService.loginUser(request)
                 if (response.isSuccessful) {
+                    try {
+                        val settingsResponse = settingsService.getSettings()
+                        if (settingsResponse.isSuccessful) {
+                            val language = settingsResponse.body()?.settings?.language
+                            if (language != null) {
+                                LocaleHelper.setLocale(context, language)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("LoginViewModel", "Failed to fetch settings", e)
+                    }
                     _loginSuccess.value = true
                 } else {
                     when (response.code()) {
-                        400 -> _loginError.value = "Please fill in all required fields."
-                        401 -> _loginError.value = "Invalid email or password."
-                        else -> _loginError.value = "An unknown error occurred. Please try again later."
+                        400 -> _loginError.value =
+                            context.getString(R.string.please_fill_in_all_required_fields)
+                        401 -> _loginError.value =
+                            context.getString(R.string.invalid_email_or_password)
+                        else -> _loginError.value =
+                            context.getString(R.string.an_unknown_error_occurred_please_try_again_later)
                     }
                 }
-            } catch (e: Exception) {
-                _loginError.value = e.message ?: "Login failed"
+            } catch (_: IOException) {
+                _loginError.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _loginError.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }

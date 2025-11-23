@@ -1,16 +1,20 @@
 package com.medipath.modules.patient.comments
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.UserComment
 import com.medipath.core.network.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
-class CommentsViewModel : ViewModel() {
+class CommentsViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val commentsService = RetrofitInstance.commentsService
 
     private val _comments = MutableStateFlow<List<UserComment>>(emptyList())
@@ -42,6 +46,8 @@ class CommentsViewModel : ViewModel() {
 
     private val _shouldRedirectToLogin = MutableStateFlow(false)
     val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
+    
+    private val context = getApplication<Application>()
 
     fun fetchComments() {
         viewModelScope.launch {
@@ -59,11 +65,12 @@ class CommentsViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to load comments: ${response.code()}"
+                    _error.value = context.getString(R.string.error_load_comments)
                 }
-            } catch (e: Exception) {
-                Log.e("CommentsViewModel", "Error fetching comments", e)
-                _error.value = "Failed to load comments: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -86,10 +93,12 @@ class CommentsViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to delete comment: ${response.code()}"
+                    _error.value = context.getString(R.string.error_delete_comment)
                 }
-            } catch (e: Exception) {
-                _error.value = "Failed to delete comment: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             }
         }
     }

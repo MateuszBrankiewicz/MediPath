@@ -36,6 +36,9 @@ import com.medipath.modules.doctor.patients.ui.components.MedicalHistoryCard
 import com.medipath.modules.doctor.patients.ui.components.PatientVisitCard
 import com.medipath.modules.shared.components.rememberBase64Image
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.res.stringResource
+import com.medipath.R
+import androidx.compose.ui.platform.LocalContext
 
 class PatientDetailsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,10 +68,13 @@ fun PatientDetailsScreen(
     val patientVisits by viewModel.patientVisits.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("Medical History", "Visits")
+    val tabs = listOf(
+        stringResource(R.string.medical_history),
+        stringResource(R.string.visits)
+    )
 
     LaunchedEffect(patientId) {
         viewModel.fetchPatientData(patientId)
@@ -85,7 +91,7 @@ fun PatientDetailsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Patient Details",
+                        stringResource(R.string.patient_details),
                     )
                 },
                 navigationIcon = {
@@ -214,7 +220,7 @@ fun PatientHeaderCard(
                     if (imageBitmap != null) {
                         Image(
                             bitmap = imageBitmap,
-                            contentDescription = "Doctor photo",
+                            contentDescription = stringResource(R.string.doctor_photo),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
@@ -248,7 +254,7 @@ fun PatientHeaderCard(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "PESEL: $govId",
+                        text = stringResource(R.string.gov_id) + govId,
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -268,7 +274,7 @@ fun PatientHeaderCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Birth date",
+                        text = stringResource(R.string.birth_date),
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -276,7 +282,7 @@ fun PatientHeaderCard(
                     Text(
                         text = buildString {
                             append(birthDateFormatted)
-                            age?.let { append(" ($it years old)") }
+                            age?.let { append(" (" + it + stringResource(R.string.years_old) + ")") }
                         },
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
@@ -289,7 +295,7 @@ fun PatientHeaderCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Phone",
+                        text = stringResource(R.string.phone),
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -337,7 +343,7 @@ fun MedicalHistoryTab(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No medical history found",
+                        text = stringResource(R.string.no_medical_history),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
@@ -390,7 +396,7 @@ fun VisitsTab(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No visits found",
+                        text = stringResource(R.string.no_visits_found),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
