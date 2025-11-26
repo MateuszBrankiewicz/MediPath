@@ -31,6 +31,7 @@ import { SpecialisationService } from '../../../../core/services/specialisation/
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { AcceptActionDialogComponent } from '../../../shared/components/ui/accept-action-dialog/accept-action-dialog-component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 interface Employee {
   name: string;
@@ -232,16 +233,7 @@ export class EditInstitutionDetails implements OnInit {
 
   protected saveInstitution(): void {
     if (this.institutionForm.invalid) {
-      Object.keys(this.institutionForm.controls).forEach((key) => {
-        const control = this.institutionForm.get(key);
-        control?.markAsTouched();
-        if (control && 'controls' in control) {
-          const formGroup = control as { controls: Record<string, unknown> };
-          Object.keys(formGroup.controls).forEach((nestedKey) => {
-            control.get(nestedKey)?.markAsTouched();
-          });
-        }
-      });
+      this.markAllFieldsTouched();
       this.toastService.showError(
         this.translationService.translate(
           'admin.institution.error.validationFailed',
@@ -250,62 +242,100 @@ export class EditInstitutionDetails implements OnInit {
       return;
     }
 
-    const institutionObject: Partial<Institution> = {
+    const institutionObject = this.buildInstitutionObject();
+    this.isSaving.set(true);
+    this.submitInstitution(institutionObject);
+  }
+
+  private markAllFieldsTouched(): void {
+    Object.keys(this.institutionForm.controls).forEach((key) => {
+      const control = this.institutionForm.get(key);
+      control?.markAsTouched();
+      if (control && 'controls' in control) {
+        const formGroup = control as { controls: Record<string, unknown> };
+        Object.keys(formGroup.controls).forEach((nestedKey) => {
+          control.get(nestedKey)?.markAsTouched();
+        });
+      }
+    });
+  }
+
+  private buildInstitutionObject(): Partial<Institution> {
+    return {
       ...this.institutionForm.value,
       image: this.institutionImage(),
     };
-    this.isSaving.set(true);
+  }
 
+  private submitInstitution(institutionObject: Partial<Institution>): void {
     if (this.isEditMode()) {
-      // Edit existing institution
       this.institutionService
         .editInstitution(this.institutionId(), institutionObject)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: () => {
-            this.isSaving.set(false);
-            this.toastService.showSuccess(
-              this.translationService.translate(
-                'admin.institution.success.saved',
-              ),
-            );
-            this.router.navigate(['/admin/institutions']);
-          },
-          error: (error) => {
-            console.error('Error editing institution:', error);
-            this.toastService.showError(
-              this.translationService.translate(
-                'admin.institution.error.saveFailed',
-              ),
-            );
-            this.isSaving.set(false);
-          },
+          next: () => this.handleSaveSuccess(true),
+          error: (error) => this.handleSaveError(true, error),
         });
     } else {
-      // Create new institution
       this.institutionService
         .addInstitution(institutionObject)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: () => {
-            this.isSaving.set(false);
-            this.toastService.showSuccess(
-              this.translationService.translate(
-                'admin.institution.success.created',
-              ),
-            );
-            this.router.navigate(['/admin/institutions']);
-          },
-          error: () => {
-            this.toastService.showError(
-              this.translationService.translate(
-                'admin.institution.error.createFailed',
-              ),
-            );
-            this.isSaving.set(false);
-          },
+          next: () => this.handleSaveSuccess(false),
+          error: (error) => this.handleSaveError(false, error),
         });
     }
+  }
+
+  private handleSaveSuccess(edited: boolean): void {
+    this.isSaving.set(false);
+    this.toastService.showSuccess(
+      this.translationService.translate(
+        edited
+          ? 'admin.institution.success.saved'
+          : 'admin.institution.success.created',
+      ),
+    );
+    this.router.navigate(['/admin/institutions']);
+  }
+
+  private handleSaveError(edited: boolean, error?: HttpErrorResponse): void {
+    this.isSaving.set(false);
+
+    const status = error?.status || error?.error?.status;
+    let errorMessage: string;
+
+    switch (status) {
+      case 403:
+        errorMessage = this.translationService.translate('errors.notAdmin');
+        break;
+
+      case 400:
+        errorMessage = this.translationService.translate(
+          'errors.missingFields',
+        );
+        break;
+
+      case 409:
+        errorMessage = this.translationService.translate(
+          'errors.institutionDuplicate',
+        );
+        break;
+
+      default:
+        errorMessage = this.translationService.translate(
+          edited
+            ? 'admin.institution.error.saveFailed'
+            : 'admin.institution.error.createFailed',
+        );
+    }
+
+    console.error(
+      edited ? 'Error editing institution:' : 'Error creating institution:',
+      error,
+    );
+
+    this.toastService.showError(errorMessage);
   }
 
   protected loadAvailableCities(): void {

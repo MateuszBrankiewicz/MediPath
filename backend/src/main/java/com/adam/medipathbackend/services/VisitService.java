@@ -308,8 +308,6 @@ public class VisitService {
             throw new IllegalAccessException();
         }
         Visit visit = optVisit.get();
-
-            
         authorizationService.startAuthChain(loggedUserID, null).doctorInVisit(visit).check();
 
         if(visit.getStatus().equals("Completed")) {
@@ -333,9 +331,6 @@ public class VisitService {
                 visit.getDoctor().getDoctorName() + " " + visit.getDoctor().getDoctorSurname() +
                 " " + visit.getTime().getStartTime(), visit.getNote(), visit.getTime().getStartTime().toLocalDate(),
                 visit.getDoctor());
-
-
-
         visit.setCodes(codes);
         visit.setNote(completionForm.getNote());
         visitRepository.save(visit);

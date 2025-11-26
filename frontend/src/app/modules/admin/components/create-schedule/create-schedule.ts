@@ -166,17 +166,17 @@ export class CreateSchedule implements OnInit {
       return;
     }
 
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const formatDateTime = (date: Date, time: string) => {
-      const [h, m] = time.split(':');
-      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(Number(h))}:${pad(Number(m))}:00`;
-    };
-    const startTimeFormatted = formatDateTime(
+    const startTimeFormatted = this.formatDateTime(
       dateTime.date,
       dateTime.startTime,
     );
-    const endTimeFormatted = formatDateTime(dateTime.date, dateTime.endTime);
 
+    const endTimeFormatted = this.formatDateTime(
+      dateTime.date,
+      dateTime.endTime,
+    );
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
     const intervalFormatted = `${pad(Math.floor(interval / 60))}:${pad(interval % 60)}:00`;
 
     this.scheduleService
@@ -282,4 +282,10 @@ export class CreateSchedule implements OnInit {
         this.isLoading.set(false);
       });
   }
+  private formatDateTime = (date: Date, time: string) => {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    const [h, m] = time.split(':');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(Number(h))}:${pad(Number(m))}:00`;
+  };
 }

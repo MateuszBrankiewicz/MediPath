@@ -48,7 +48,7 @@ public class ScheduleService {
     public void addManySchedules(AddScheduleForm schedule, String loggedUserID) throws IllegalArgumentException, IllegalAccessException, IllegalStateException {
 
         ArrayList<String> missingFields = getMissingFields(schedule);
-        
+
         if (schedule.getInterval() == null) missingFields.add("interval");
         if (!missingFields.isEmpty()) throw new IllegalArgumentException("Missing fields: " + missingFields);
 
@@ -69,7 +69,9 @@ public class ScheduleService {
             throw new IllegalStateException("Doctor is booked in this time frame");
 
         while (start.plusSeconds(schedule.getInterval().toSecondOfDay()).isBefore(schedule.getEndHour()) || start.plusSeconds(schedule.getInterval().toSecondOfDay()).isEqual(schedule.getEndHour())) {
-            newSchedules.add(new Schedule(start, start.plusSeconds(schedule.getInterval().toSecondOfDay()), new DoctorDigest(schedule.getDoctorID(), doctor.getName(), doctor.getSurname(), doctor.getSpecialisations()), new InstitutionDigest(schedule.getInstitutionID(), optInst.get().getName())));
+            newSchedules.add(new Schedule(start, start.plusSeconds(schedule.getInterval().toSecondOfDay()),
+            new DoctorDigest(schedule.getDoctorID(), doctor.getName(), doctor.getSurname(), doctor.getSpecialisations()),
+            new InstitutionDigest(schedule.getInstitutionID(), optInst.get().getName())));
             start = start.plusSeconds(schedule.getInterval().toSecondOfDay());
         }
 

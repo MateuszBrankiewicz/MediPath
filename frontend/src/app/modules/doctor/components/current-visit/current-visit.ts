@@ -106,7 +106,7 @@ export class CurrentVisit implements OnInit {
     this.pinDraft.set(target.value);
   }
 
-  addPin() {
+  protected addPin() {
     const value = this.pinDraft().trim();
     if (!value) return;
     if (this.editSidebar() === 'prescriptions') {
@@ -123,7 +123,7 @@ export class CurrentVisit implements OnInit {
     this.pinDraft.set('');
   }
 
-  removePin(index: number) {
+  protected removePin(index: number) {
     if (this.editSidebar() === 'prescriptions') {
       this.prescriptions.update((arr) => arr.filter((_, i) => i !== index));
     } else if (this.editSidebar() === 'referrals') {
@@ -131,11 +131,11 @@ export class CurrentVisit implements OnInit {
     }
   }
 
-  saveEditor() {
+  protected saveEditor() {
     this.closeEditor();
   }
 
-  finishVisit() {
+  protected finishVisit() {
     this.visitService
       .finishVisit(
         {

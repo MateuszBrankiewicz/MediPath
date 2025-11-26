@@ -47,7 +47,6 @@ public class ScheduleController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         try {
-                    System.out.println("DEBUG: Starting addManySchedules for user: " + loggedUserID);
 
             scheduleService.addManySchedules(schedule, loggedUserID);
             return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.CREATED);

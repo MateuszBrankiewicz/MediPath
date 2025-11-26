@@ -800,5 +800,9 @@
 
   "confirmationDialogs.disableInstitutionMessage": "Are you sure you want to disable this institution? This action can be reversed later.",
   "institution.disabledSuccessfully": "Institution disabled successfully",
-  "institution.disableError": "Failed to disable institution. Please try again."
+  "institution.disableError": "Failed to disable institution. Please try again.",
+  "errors.notAdminin": "You do not have administrator privileges.",
+  "errors.missingFields": "Some required fields are missing or invalid.",
+  "errors.institutionDuplicate": "An institution with this name already exists."
+
 }
