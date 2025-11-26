@@ -3,6 +3,7 @@ package com.medipath.modules.patient.booking
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.BookingRequest
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.models.DoctorScheduleItem
@@ -13,11 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
-sealed class ToastMessage {
-    data class Error(val message: String) : ToastMessage()
-    data class Success(val message: String) : ToastMessage()
-}
+import okio.IOException
 
 class BookingViewModel(application: Application) : AndroidViewModel(application) {
     private val searchService = RetrofitInstance.searchService
@@ -29,11 +26,16 @@ class BookingViewModel(application: Application) : AndroidViewModel(application)
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _toastMessage = MutableSharedFlow<ToastMessage>()
-    val toastMessage: SharedFlow<ToastMessage> = _toastMessage.asSharedFlow()
+    private val _errorMessage = MutableSharedFlow<String>()
+    val errorMessage: SharedFlow<String> = _errorMessage.asSharedFlow()
+
+    private val _successMessage = MutableSharedFlow<String>()
+    val successMessage: SharedFlow<String> = _successMessage.asSharedFlow()
 
     private val _bookingSuccess = MutableStateFlow(false)
     val bookingSuccess: StateFlow<Boolean> = _bookingSuccess.asStateFlow()
+
+    private val context = getApplication<Application>()
 
     fun loadSchedules(doctorId: String, institutionId: String? = null) {
         viewModelScope.launch {
@@ -45,10 +47,12 @@ class BookingViewModel(application: Application) : AndroidViewModel(application)
                 if (response.isSuccessful) {
                     _schedules.value = response.body()?.schedules ?: emptyList()
                 } else {
-                    _toastMessage.emit(ToastMessage.Error("Failed to load schedules: ${response.code()}"))
+                    _errorMessage.emit(context.getString(R.string.failed_to_load_schedules))
                 }
-            } catch (e: Exception) {
-                _toastMessage.emit(ToastMessage.Error("Error loading schedules: ${e.message}"))
+            } catch (_: IOException) {
+                _errorMessage.emit(context.getString(R.string.error_connection))
+            } catch (_: Exception) {
+                _errorMessage.emit(context.getString(R.string.unknown_error))
             } finally {
                 _isLoading.value = false
             }
@@ -69,25 +73,23 @@ class BookingViewModel(application: Application) : AndroidViewModel(application)
                 
                 if (response.isSuccessful) {
                     _bookingSuccess.value = true
-                    _toastMessage.emit(ToastMessage.Success("Appointment booked successfully!"))
+                    _successMessage.emit(context.getString(R.string.appointment_booked_successfully))
                 } else {
-                    val errorMessage = when (response.code()) {
-                        400 -> "This time slot is already booked"
-                        404 -> "Schedule not found"
-                        409 -> "You cannot book an appointment with yourself"
-                        else -> "Failed to book appointment: ${response.code()}"
+                    val errorMsg = when (response.code()) {
+                        400 -> context.getString(R.string.this_time_slot_is_already_booked)
+                        404 -> context.getString(R.string.schedule_not_found)
+                        409 -> context.getString(R.string.you_cannot_book_an_appointment_with_yourself)
+                        else -> context.getString(R.string.failed_to_book_appointment)
                     }
-                    _toastMessage.emit(ToastMessage.Error(errorMessage))
+                    _errorMessage.emit(errorMsg)
                 }
-            } catch (e: Exception) {
-                _toastMessage.emit(ToastMessage.Error("Error booking appointment: ${e.message}"))
+            } catch (_: IOException) {
+                _errorMessage.emit(context.getString(R.string.error_connection))
+            } catch (_: Exception) {
+                _errorMessage.emit(context.getString(R.string.unknown_error))
             } finally {
                 _isLoading.value = false
             }
         }
-    }
-
-    fun resetBookingSuccess() {
-        _bookingSuccess.value = false
     }
 }

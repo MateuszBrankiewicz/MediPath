@@ -5,9 +5,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 
 @Composable
 fun PersonalInformationSection(
@@ -31,7 +33,7 @@ fun PersonalInformationSection(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Personal Information",
+                text = stringResource(R.string.personal_information),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -41,7 +43,7 @@ fun PersonalInformationSection(
             OutlinedTextField(
                 value = editedName,
                 onValueChange = onNameChange,
-                label = { Text("First Name") },
+                label = { Text(stringResource(R.string.first_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = nameError != null,
                 supportingText = nameError?.let { { Text(it) } },
@@ -53,7 +55,7 @@ fun PersonalInformationSection(
             OutlinedTextField(
                 value = editedSurname,
                 onValueChange = onSurnameChange,
-                label = { Text("Last Name") },
+                label = { Text(stringResource(R.string.last_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 isError = surnameError != null,
                 supportingText = surnameError?.let { { Text(it) } },
@@ -66,7 +68,7 @@ fun PersonalInformationSection(
                 value = birthDate,
                 onValueChange = {},
                 enabled = false,
-                label = { Text("Birth date") },
+                label = { Text(stringResource(R.string.birth_date)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -77,7 +79,7 @@ fun PersonalInformationSection(
                 value = govId,
                 onValueChange = {},
                 enabled = false,
-                label = { Text("GOV ID") },
+                label = { Text(stringResource(R.string.government_id)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )

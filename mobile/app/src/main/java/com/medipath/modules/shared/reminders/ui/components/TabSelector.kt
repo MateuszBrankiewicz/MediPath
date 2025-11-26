@@ -18,9 +18,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.theme.LocalCustomColors
 
 @Composable
@@ -56,7 +58,7 @@ fun TabSelector(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "RECEIVED",
+                text = stringResource(R.string.received),
                 fontSize = 12.sp,
                 fontWeight = if (selectedTab == "Received") FontWeight.Bold else FontWeight.Normal
             )
@@ -81,7 +83,7 @@ fun TabSelector(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "SCHEDULED",
+                text = stringResource(R.string.scheduled_capitals),
                 fontSize = 12.sp,
                 fontWeight = if (selectedTab == "Scheduled") FontWeight.Bold else FontWeight.Normal
             )

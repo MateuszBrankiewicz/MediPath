@@ -30,9 +30,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.Comment
 import com.medipath.core.models.Institution
 import com.medipath.core.theme.LocalCustomColors
@@ -57,7 +59,9 @@ fun InformationTab(
     ) {
         item {
             Card(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -79,7 +83,7 @@ fun InformationTab(
                         if (imageBitmap != null) {
                             Image(
                                 bitmap = imageBitmap,
-                                contentDescription = "Doctor photo",
+                                contentDescription = stringResource(R.string.doctor_photo),
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
@@ -118,7 +122,7 @@ fun InformationTab(
                         ) {
                             Icon(
                                 Icons.Default.Star,
-                                contentDescription = "Rating",
+                                contentDescription = stringResource(R.string.rating),
                                 tint = LocalCustomColors.current.yellow,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -129,7 +133,7 @@ fun InformationTab(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "($numOfRatings reviews)",
+                                text = stringResource(R.string.reviews_number, numOfRatings),
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
@@ -144,7 +148,7 @@ fun InformationTab(
                         Spacer(modifier = Modifier.height(12.dp))
                         
                         Text(
-                            text = "Specialisations",
+                            text = stringResource(R.string.specialisations),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -165,7 +169,7 @@ fun InformationTab(
                         Spacer(modifier = Modifier.height(12.dp))
                         
                         Text(
-                            text = "Works at",
+                            text = stringResource(R.string.works_at),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -190,7 +194,7 @@ fun InformationTab(
 
         item{
             Text(
-                text = "Reviews",
+                text = stringResource(R.string.reviews),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -217,7 +221,7 @@ fun InformationTab(
                         )
                     ) {
                         Text(
-                            text = "No reviews yet",
+                            text = stringResource(R.string.no_reviews_yet),
                             modifier = Modifier.padding(16.dp),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )

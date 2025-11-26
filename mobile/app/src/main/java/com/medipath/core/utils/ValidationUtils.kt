@@ -1,136 +1,139 @@
 package com.medipath.core.utils
 
+import android.content.Context
 import android.util.Patterns
+import com.medipath.R
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.regex.Pattern
 
 object ValidationUtils {
 
-    fun validateName(name: String): String {
+    fun validateName(name: String): Int? {
         return when {
-            name.isBlank() -> "Name is required"
-            name.length < 2 -> "Name must be at least 2 characters long"
-            name.first().isLowerCase() -> "Name must start with a capital letter"
-            !name.all { it.isLetter() || it.isWhitespace() } -> "Name can only contain letters"
-            else -> ""
+            name.isBlank() -> R.string.error_name_required
+            name.length < 2 -> R.string.error_name_too_short
+            name.first().isLowerCase() -> R.string.error_name_must_start_capital
+            !name.all { it.isLetter() || it.isWhitespace() } -> R.string.error_name_only_letters
+            else -> null
         }
     }
 
-    fun validateSurname(surname: String): String {
+    fun validateSurname(surname: String): Int? {
         return when {
-            surname.isBlank() -> "Surname is required"
-            surname.length < 2 -> "Surname must be at least 2 characters long"
-            surname.first().isLowerCase() -> "Surname must start with a capital letter"
-            !surname.all { it.isLetter() || it.isWhitespace() } -> "Surname can only contain letters"
-            else -> ""
+            surname.isBlank() -> R.string.error_surname_required
+            surname.length < 2 -> R.string.error_surname_too_short
+            surname.first().isLowerCase() -> R.string.error_surname_must_start_capital
+            !surname.all { it.isLetter() || it.isWhitespace() } -> R.string.error_surname_only_letters
+            else -> null
         }
     }
 
-    fun validateGovernmentId(id: String): String {
+    fun validateGovernmentId(id: String): Int? {
         return when {
-            id.isBlank() -> "PESEL is required"
-            id.length != 11 -> "PESEL must be exactly 11 digits long"
-            !id.all { it.isDigit() } -> "PESEL can only contain digits"
-            else -> ""
+            id.isBlank() -> R.string.error_govid_required
+            id.length != 11 -> R.string.error_govid_length
+            !id.all { it.isDigit() } -> R.string.error_govid_only_digits
+            else -> null
         }
     }
 
-    fun validateBirthDate(date: String): String {
-        if (date.isBlank()) return "Birth date is required"
+    fun validateBirthDate(date: String, context: Context? = null): Int? {
+        if (date.isBlank()) return R.string.error_birth_date_required
 
         val pattern = Pattern.compile("^\\d{2}-\\d{2}-\\d{4}$")
         if (!pattern.matcher(date).matches()) {
-            return "Date must be in DD-MM-YYYY format"
+            return R.string.error_birth_date_format
         }
 
         try {
-            val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            val locale = context?.let { LocaleHelper.getLocale(it) } ?: Locale.getDefault()
+            val sdf = SimpleDateFormat("dd-MM-yyyy", locale)
             sdf.isLenient = false
             val parsedDate = sdf.parse(date)
             val currentDate = System.currentTimeMillis()
 
             if (parsedDate == null || parsedDate.time > currentDate) {
-                return "Invalid date"
+                return R.string.error_birth_date_invalid
             }
-        } catch (e: Exception) {
-            return "Invalid date"
+        } catch (_: Exception) {
+            return R.string.error_birth_date_invalid
         }
 
-        return ""
+        return null
     }
 
-    fun validatePostalCode(code: String): String {
+    fun validatePostalCode(code: String): Int? {
         return when {
-            code.isBlank() -> "Postal code is required"
+            code.isBlank() -> R.string.error_postal_code_required
             !Pattern.compile("^\\d{2}-\\d{3}$").matcher(code).matches() ->
-                "Postal code must be in XX-XXX format"
-            else -> ""
+                R.string.error_postal_code_format
+            else -> null
         }
     }
 
-    fun validatePhoneNumber(phone: String): String {
+    fun validatePhoneNumber(phone: String): Int? {
         return when {
-            phone.isBlank() -> "Phone number is required"
-            phone.length < 9 -> "Phone number is too short"
+            phone.isBlank() -> R.string.error_phone_required
+            phone.length < 9 -> R.string.error_phone_too_short
             !phone.all { it.isDigit() || it == '+' || it == ' ' || it == '-' } ->
-                "Invalid phone number format"
-            else -> ""
+                R.string.error_phone_invalid
+            else -> null
         }
     }
 
-    fun validateEmail(email: String): String {
+    fun validateEmail(email: String): Int? {
         return when {
-            email.isBlank() -> "Email is required"
+            email.isBlank() -> R.string.error_email_required
             !Patterns.EMAIL_ADDRESS.matcher(email).matches() ->
-                "Invalid email format"
-            else -> ""
+                R.string.error_email_invalid
+            else -> null
         }
     }
 
-    fun validatePassword(password: String): String {
+    fun validatePassword(password: String): Int? {
         return when {
-            password.isBlank() -> "Password is required"
-            password.length < 6 -> "Password must be at least 6 characters long"
-            else -> ""
+            password.isBlank() -> R.string.error_password_required
+            password.length < 6 -> R.string.error_password_too_short
+            else -> null
         }
     }
 
-    fun validateConfirmPassword(password: String, confirmPassword: String): String {
+    fun validateConfirmPassword(password: String, confirmPassword: String): Int? {
         return when {
-            confirmPassword.isBlank() -> "Password confirmation is required"
-            password != confirmPassword -> "Passwords do not match"
-            else -> ""
+            confirmPassword.isBlank() -> R.string.error_confirm_password_required
+            password != confirmPassword -> R.string.error_passwords_not_match
+            else -> null
         }
     }
 
-    fun validateCity(city: String): String {
+    fun validateCity(city: String): Int? {
         return when {
-            city.isBlank() -> "City is required"
-            else -> ""
+            city.isBlank() -> R.string.error_city_required
+            else -> null
         }
     }
 
-    fun validateProvince(province: String): String {
+    fun validateProvince(province: String): Int? {
         return when {
-            province.isBlank() -> "Province is required"
-            else -> ""
+            province.isBlank() -> R.string.error_province_required
+            else -> null
         }
     }
 
-    fun validateStreet(street: String): String {
+    fun validateStreet(street: String): Int? {
         return when {
-            street.isBlank() -> "Street is required"
-            !street.all { it.isLetter() } -> "Street can only contain letters"
-            else -> ""
+            street.isBlank() -> R.string.error_street_required
+            !street.all { it.isLetter() } -> R.string.error_street_only_letters
+            else -> null
         }
     }
 
-    fun validateNumber(number: String): String {
+    fun validateNumber(number: String): Int? {
         return when {
-            number.isBlank() -> "Number is required"
-            !number.all { it.isDigit() } -> "Number can only contain digits"
-            else -> ""
+            number.isBlank() -> R.string.error_number_required
+            !number.all { it.isDigit() } -> R.string.error_number_only_digits
+            else -> null
         }
     }
 }

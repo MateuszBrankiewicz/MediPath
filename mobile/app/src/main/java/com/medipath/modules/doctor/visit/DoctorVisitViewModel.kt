@@ -1,23 +1,24 @@
 package com.medipath.modules.doctor.visit
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import com.medipath.R
 import com.medipath.core.models.CompleteVisitRequest
 import com.medipath.core.models.UserMedicalHistory
 import com.medipath.core.models.Visit
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.MedicalHistoryService
-import com.medipath.core.services.VisitsService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import okio.IOException
 
 class DoctorVisitViewModel(
-    private val medicalHistoryService: MedicalHistoryService = RetrofitInstance.medicalHistoryService,
-    private val visitsService: VisitsService = RetrofitInstance.visitsService
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application){
+    private val medicalHistoryService = RetrofitInstance.medicalHistoryService
+    private val visitsService = RetrofitInstance.visitsService
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -49,6 +50,8 @@ class DoctorVisitViewModel(
     private val _visitCompleted = MutableStateFlow(false)
     val visitCompleted: StateFlow<Boolean> = _visitCompleted.asStateFlow()
 
+    private val context = getApplication<Application>()
+
     fun setVisit(visit: Visit, isCurrent: Boolean) {
         _visit.value = visit
         _isCurrentVisit.value = isCurrent
@@ -76,10 +79,12 @@ class DoctorVisitViewModel(
                 if (response.isSuccessful) {
                     _medicalHistory.value = response.body()?.medicalhistories ?: emptyList()
                 } else {
-                    _error.value = "Failed to load medical history: ${response.code()}"
+                    _error.value = context.getString(R.string.failed_to_load_medical_history)
                 }
-            } catch (e: Exception) {
-                _error.value = e.message
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoadingHistory.value = false
             }
@@ -127,14 +132,16 @@ class DoctorVisitViewModel(
                     _visitCompleted.value = true
                 } else {
                     _error.value = when (response.code()) {
-                        400 -> "Visit is already completed or cancelled"
-                        403 -> "You don't have access to complete this visit"
-                        401 -> "Please log in again"
-                        else -> "Failed to complete visit: ${response.code()}"
+                        400 -> context.getString(R.string.visit_is_already_completed_or_cancelled)
+                        403 -> context.getString(R.string.no_permission_visit)
+                        401 -> context.getString(R.string.please_log_in_again)
+                        else -> context.getString(R.string.failed_to_complete_visit)
                     }
                 }
-            } catch (e: Exception) {
-                _error.value = e.message
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }

@@ -21,14 +21,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.widget.Toast
+import androidx.compose.ui.res.stringResource
+import com.medipath.R
 import com.medipath.core.models.DoctorScheduleItem
 import com.medipath.core.models.Institution
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
+import com.medipath.core.utils.LocaleHelper
 import com.medipath.modules.patient.booking.RescheduleViewModel
-import com.medipath.modules.patient.booking.ToastMessage
-import com.medipath.modules.patient.booking.ui.components.CalendarView
 import com.medipath.modules.patient.booking.ui.components.TimeSlotCard
+import com.medipath.modules.shared.components.CalendarCard
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -41,6 +43,7 @@ class RescheduleVisitActivity : ComponentActivity() {
         val doctorId = intent.getStringExtra("doctor_id") ?: ""
         val doctorName = intent.getStringExtra("doctor_name") ?: ""
         val currentDate = intent.getStringExtra("current_date") ?: ""
+        val isDoctor = intent.getBooleanExtra("is_doctor", false)
 
         setContent {
             MediPathTheme {
@@ -49,6 +52,7 @@ class RescheduleVisitActivity : ComponentActivity() {
                     doctorId = doctorId,
                     doctorName = doctorName,
                     currentDate = currentDate,
+                    isDoctor = isDoctor,
                     onBackClick = { finish() },
                     onRescheduleSuccess = { finish() }
                 )
@@ -64,25 +68,33 @@ fun RescheduleVisitScreen(
     doctorId: String,
     doctorName: String,
     currentDate: String,
+    isDoctor: Boolean = false,
     onBackClick: () -> Unit,
     onRescheduleSuccess: () -> Unit
 ) {
     val context = LocalContext.current
+    val locale = LocaleHelper.getLocale(context)
     val viewModel: RescheduleViewModel = viewModel()
     val schedules by viewModel.schedules.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val rescheduleSuccess by viewModel.rescheduleSuccess.collectAsState()
+    val patientInfo by viewModel.patientInfo.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.toastMessage.collect { message ->
-            when (message) {
-                is ToastMessage.Error -> {
-                    Toast.makeText(context, message.message, Toast.LENGTH_LONG).show()
-                }
-                is ToastMessage.Success -> {
-                    Toast.makeText(context, message.message, Toast.LENGTH_SHORT).show()
-                }
-            }
+        viewModel.errorMessage.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.successMessage.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(visitId, isDoctor) {
+        if (isDoctor) {
+            viewModel.loadVisitDetails(visitId)
         }
     }
 
@@ -110,6 +122,10 @@ fun RescheduleVisitScreen(
             .toSortedMap()
     }
     
+    val dateCountMap = remember(schedulesByDate) {
+        schedulesByDate.mapValues { it.value.size }
+    }
+    
     val availableDates = remember(schedulesByDate) {
         schedulesByDate.keys.toSet()
     }
@@ -129,22 +145,23 @@ fun RescheduleVisitScreen(
     }
 
     if (showConfirmDialog && selectedSchedule != null) {
+
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
-            title = { Text("Confirm Reschedule") },
+            title = { Text(stringResource(R.string.confirm_reschedule)) },
             text = {
                 Column {
                     val schedule = selectedSchedule!!
                     val newDateTime = LocalDateTime.parse(schedule.startHour, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                     
-                    Text("Current appointment:", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.current_appointment), fontWeight = FontWeight.Bold)
                     Text(currentDate)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("New appointment:", fontWeight = FontWeight.Bold)
-                    Text("Doctor: $doctorName")
-                    Text("Institution: ${schedule.institution.institutionName}")
-                    Text("Date: ${newDateTime.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy"))}")
-                    Text("Time: ${newDateTime.format(DateTimeFormatter.ofPattern("HH:mm"))}")
+                    Text(stringResource(R.string.new_appointment), fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.doctor_label,doctorName))
+                    Text(stringResource(R.string.institution_label,schedule.institution.institutionName))
+                    Text(stringResource(R.string.date_label,newDateTime.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", locale))))
+                    Text(stringResource(R.string.time,newDateTime.format(DateTimeFormatter.ofPattern("HH:mm"))))
                 }
             },
             confirmButton = {
@@ -155,55 +172,77 @@ fun RescheduleVisitScreen(
                     },
                     enabled = !isLoading
                 ) {
-                    Text("Confirm")
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showConfirmDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(LocalCustomColors.current.blue900)
-                .statusBarsPadding()
-                .padding(horizontal = 8.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.background
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.reschedule_visit),
+                            color = MaterialTheme.colorScheme.background,
+                            fontSize = 23.sp
+                        )
+                        if (isDoctor && patientInfo != null) {
+                            Text(
+                                text = stringResource(
+                                    R.string.patient_info,
+                                    patientInfo!!.name,
+                                    patientInfo!!.surname
+                                ),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+                            )
+                            Text(
+                                text = stringResource(R.string.gov_id) + patientInfo!!.govID,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                            )
+                        } else {
+                            Text(
+                                text = doctorName,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+                            )
+                        }
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = MaterialTheme.colorScheme.background
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = LocalCustomColors.current.blue900
                 )
-            }
-            Column(modifier = Modifier.padding(start = 8.dp)) {
-                Text(
-                    text = "Reschedule Visit",
-                    fontSize = 23.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.background
-                )
-                Text(
-                    text = doctorName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
-                )
-            }
+            )
         }
-
-        when {
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.secondary)
+        ) {
+            when {
             isLoading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -229,13 +268,13 @@ fun RescheduleVisitScreen(
                             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                         )
                         Text(
-                            text = "No available appointments",
+                            text = stringResource(R.string.no_available_appointments),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Please check back later",
+                            text = stringResource(R.string.please_check_back_later),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -253,7 +292,7 @@ fun RescheduleVisitScreen(
                     if (institutions.size > 1) {
                         item {
                             Text(
-                                text = "Select Institution",
+                                text = stringResource(R.string.select_institution),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -289,7 +328,7 @@ fun RescheduleVisitScreen(
 
                     item {
                         Text(
-                            text = "Select New Date",
+                            text = stringResource(R.string.select_new_date),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -298,24 +337,25 @@ fun RescheduleVisitScreen(
                     }
 
                     item {
-                        CalendarView(
+                        CalendarCard(
                             currentMonth = currentMonth,
                             availableDates = availableDates,
+                            dateCountMap = dateCountMap,
                             selectedDate = selectedDate,
-                            onMonthChange = { newMonth -> 
+                            onMonthChange = { newMonth ->
                                 currentMonth = newMonth
                             },
                             onDateSelected = { date ->
                                 selectedDate = date
                                 selectedSchedule = null
-                            }
+                            },
                         )
                     }
 
                     if (selectedDate != null && schedulesForSelectedDate.isNotEmpty()) {
                         item {
                             Text(
-                                text = "Available Times",
+                                text = stringResource(R.string.available_times),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -325,7 +365,7 @@ fun RescheduleVisitScreen(
 
                         item {
                             Text(
-                                text = selectedDate!!.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")),
+                                text = selectedDate!!.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", locale)),
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
@@ -366,7 +406,7 @@ fun RescheduleVisitScreen(
                                 )
                             ) {
                                 Text(
-                                    text = "No available appointments for this date",
+                                    text = stringResource(R.string.no_available_appointments_for_this_date),
                                     modifier = Modifier.padding(16.dp),
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -383,7 +423,7 @@ fun RescheduleVisitScreen(
                                 shape = RoundedCornerShape(30.dp),
                                 enabled = !isLoading
                             ) {
-                                Text("RESCHEDULE VISIT", fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
+                                Text(stringResource(R.string.reschedule_visit_capitals), fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
                             }
                         }
                     }
@@ -393,6 +433,7 @@ fun RescheduleVisitScreen(
                     }
                 }
             }
+        }
         }
     }
 }

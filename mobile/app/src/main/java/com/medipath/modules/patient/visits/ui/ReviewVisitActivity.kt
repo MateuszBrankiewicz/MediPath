@@ -18,9 +18,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
@@ -50,7 +53,7 @@ class ReviewVisitActivity : ComponentActivity() {
                     commentId = commentId,
                     initialDoctorRating = if (preDoctorRating > 0.0) preDoctorRating else null,
                     initialInstitutionRating = if (preInstitutionRating > 0.0) preInstitutionRating else null,
-                    initialComments = if (preComments.isNotEmpty()) preComments else null,
+                    initialComments = preComments.ifEmpty { null },
                     onBackClick = { finish() },
                     onSubmitSuccess = { finish() }
                 )
@@ -65,7 +68,7 @@ fun ReviewVisitScreen(
     visitId: String,
     doctorName: String,
     institutionName: String,
-    viewModel: ReviewVisitViewModel = remember { ReviewVisitViewModel() },
+    viewModel: ReviewVisitViewModel = viewModel(),
     commentId: String? = null,
     initialDoctorRating: Double? = null,
     initialInstitutionRating: Double? = null,
@@ -88,9 +91,9 @@ fun ReviewVisitScreen(
     LaunchedEffect(submitSuccess) {
         if (submitSuccess) {
             val message = if (commentId.isNullOrEmpty()) {
-                "Review added successfully"
+                context.getString(R.string.review_added_successfully)
             } else {
-                "Review updated successfully"
+                context.getString(R.string.review_updated_successfully)
             }
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             onSubmitSuccess()
@@ -99,7 +102,7 @@ fun ReviewVisitScreen(
 
     if (shouldRedirectToLogin) {
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.error_session), Toast.LENGTH_LONG).show()
             val sessionManager = RetrofitInstance.getSessionManager()
             sessionManager.deleteSessionId()
             context.startActivity(
@@ -115,7 +118,9 @@ fun ReviewVisitScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        if (commentId.isNullOrEmpty()) "Add Review" else "Edit Review",
+                        if (commentId.isNullOrEmpty()) stringResource(R.string.add_review_label) else stringResource(
+                            R.string.edit_review_label
+                        ),
                         color = Color.White
                     ) 
                 },
@@ -123,7 +128,7 @@ fun ReviewVisitScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Return",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color.White
                         )
                     }
@@ -161,7 +166,7 @@ fun ReviewVisitScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Share your thoughts about your recent visit",
+                            text = stringResource(R.string.share_your_thoughts),
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -169,7 +174,7 @@ fun ReviewVisitScreen(
                 }
 
                 RatingCard(
-                    title = "Doctor's rating*",
+                    title = stringResource(R.string.doctor_s_rating),
                     subtitle = doctorName,
                     rating = doctorRating,
                     onRatingChange = { doctorRating = it },
@@ -177,7 +182,7 @@ fun ReviewVisitScreen(
                 )
 
                 RatingCard(
-                    title = "Institution's rating*",
+                    title = stringResource(R.string.institution_s_rating),
                     subtitle = institutionName,
                     rating = institutionRating,
                     onRatingChange = { institutionRating = it },
@@ -198,7 +203,7 @@ fun ReviewVisitScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Your feedback on the visit",
+                            text = stringResource(R.string.your_feedback_on_the_visit),
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = MaterialTheme.colorScheme.primary
@@ -211,7 +216,7 @@ fun ReviewVisitScreen(
                                 .fillMaxWidth()
                                 .height(150.dp),
                             placeholder = { 
-                                Text("Share your experience...")
+                                Text(stringResource(R.string.share_your_experience))
                             },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = colors.blue900,
@@ -230,7 +235,7 @@ fun ReviewVisitScreen(
                         )
                     ) {
                         Text(
-                            text = error ?: "Unknown error",
+                            text = error ?: stringResource(R.string.unknown_error),
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(16.dp)
                         )
@@ -265,7 +270,9 @@ fun ReviewVisitScreen(
                         )
                     } else {
                         Text(
-                            text = if (commentId.isNullOrEmpty()) "SAVE REVIEW" else "UPDATE REVIEW",
+                            text = if (commentId.isNullOrEmpty()) stringResource(R.string.save_review) else stringResource(
+                                R.string.update_review
+                            ),
                             fontSize = 16.sp,
                             modifier = Modifier.padding(vertical = 8.dp)
                         )

@@ -33,12 +33,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.DoctorScheduleItem
 import com.medipath.core.models.Institution
+import com.medipath.core.utils.LocaleHelper
+import com.medipath.modules.shared.components.CalendarCard
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -81,6 +85,10 @@ fun BookingTabContent(
             .toSortedMap()
     }
 
+    val dateCountMap = remember(schedulesByDate) {
+        schedulesByDate.mapValues { it.value.size }
+    }
+
     val availableDates = remember(schedulesByDate) {
         schedulesByDate.keys.toSet()
     }
@@ -90,30 +98,45 @@ fun BookingTabContent(
     }
 
     if (showConfirmDialog && selectedSchedule != null) {
+        val context = LocalContext.current
+        val locale = LocaleHelper.getLocale(context)
+        
         AlertDialog(
             onDismissRequest = { onShowDialog(false) },
-            title = { Text("Confirm Appointment") },
+            title = { Text(stringResource(R.string.confirm_appointment)) },
             text = {
                 Column {
                     val dateTime = LocalDateTime.parse(selectedSchedule.startHour, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
-                    Text("Doctor: $doctorName")
-                    Text("Institution: ${selectedSchedule.institution.institutionName}")
-                    Text("Date: ${dateTime.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy"))}")
-                    Text("Time: ${dateTime.format(DateTimeFormatter.ofPattern("HH:mm"))}")
+                    Text(stringResource(R.string.doctor_label, doctorName))
+                    Text(
+                        stringResource(
+                            R.string.institution_label,
+                            selectedSchedule.institution.institutionName
+                        ))
+                    Text(
+                        stringResource(
+                            R.string.date_label,
+                            dateTime.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", locale))
+                        ))
+                    Text(
+                        stringResource(
+                            R.string.time_label,
+                            dateTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+                        ))
                     if (patientNotes.isNotEmpty()) {
-                        Text("Notes: $patientNotes")
+                        Text(stringResource(R.string.notes_label, patientNotes))
                     }
                 }
             },
             confirmButton = {
                 Button(onClick = onConfirmBooking) {
-                    Text("Confirm")
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { onShowDialog(false) }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -125,6 +148,9 @@ fun BookingTabContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary)
     ) {
+        val context = LocalContext.current
+        val locale = LocaleHelper.getLocale(context)
+        
         when {
             isLoading -> {
                 Box(
@@ -151,13 +177,13 @@ fun BookingTabContent(
                             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                         )
                         Text(
-                            text = "No available appointments",
+                            text = stringResource(R.string.no_available_appointments),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Please check back later",
+                            text = stringResource(R.string.please_check_back_later),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -175,7 +201,7 @@ fun BookingTabContent(
                     if (institutions.size > 1) {
                         item {
                             Text(
-                                text = "Select Institution",
+                                text = stringResource(R.string.select_institution),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -210,7 +236,7 @@ fun BookingTabContent(
 
                     item {
                         Text(
-                            text = "Select Date",
+                            text = stringResource(R.string.select_date),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -219,9 +245,10 @@ fun BookingTabContent(
                     }
 
                     item {
-                        CalendarView(
+                        CalendarCard(
                             currentMonth = currentMonth,
                             availableDates = availableDates,
+                            dateCountMap = dateCountMap,
                             selectedDate = selectedDate,
                             onMonthChange = onMonthChanged,
                             onDateSelected = onDateSelected
@@ -231,7 +258,7 @@ fun BookingTabContent(
                     if (selectedDate != null && schedulesForSelectedDate.isNotEmpty()) {
                         item {
                             Text(
-                                text = "Available Times",
+                                text = stringResource(R.string.available_times),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -241,7 +268,7 @@ fun BookingTabContent(
 
                         item {
                             Text(
-                                text = selectedDate!!.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")),
+                                text = selectedDate.format(DateTimeFormatter.ofPattern("EEEE, d MMMM, yyyy", locale)),
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
@@ -269,6 +296,7 @@ fun BookingTabContent(
                                 }
                             }
                         }
+
                     } else if (selectedDate != null) {
                         item {
                             Card(
@@ -276,13 +304,12 @@ fun BookingTabContent(
                                     .fillMaxWidth()
                                     .padding(top = 16.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    containerColor = MaterialTheme.colorScheme.background
                                 )
                             ) {
                                 Text(
-                                    text = "No available appointments for this date",
+                                    text = stringResource(R.string.no_available_appointments_for_this_date),
                                     modifier = Modifier.padding(16.dp),
-                                    textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
                             }
@@ -294,7 +321,7 @@ fun BookingTabContent(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = "Patient Notes (Optional)",
+                                text = stringResource(R.string.patient_notes_optional),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -305,7 +332,7 @@ fun BookingTabContent(
                             OutlinedTextField(
                                 value = patientNotes,
                                 onValueChange = onNotesChanged,
-                                placeholder = { Text("Add any notes for the doctor...") },
+                                placeholder = { Text(stringResource(R.string.add_any_notes_for_the_doctor)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 minLines = 3,
                                 maxLines = 5,
@@ -324,7 +351,7 @@ fun BookingTabContent(
                                 shape = RoundedCornerShape(30.dp),
                                 enabled = !isLoading
                             ) {
-                                Text("BOOK APPOINTMENT", fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
+                                Text(stringResource(R.string.book_appointment), fontSize = 16.sp, modifier = Modifier.padding(vertical = 8.dp))
                             }
                         }
                     }

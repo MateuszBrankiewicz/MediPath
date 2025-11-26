@@ -37,6 +37,8 @@ import android.content.Intent
 import com.medipath.modules.patient.search.ui.SearchResultsActivity
 import kotlinx.coroutines.launch
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.ui.res.stringResource
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,10 +68,10 @@ fun SearchBar() {
             onExpandedChange = { expanded = !expanded }
         ) {
             OutlinedTextField(
-                value = if (selectedType == "doctor") "Doctor" else "Institution",
+                value = if (selectedType == "doctor") stringResource(R.string.doctor) else stringResource(R.string.institution),
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Search type") },
+                label = { Text(stringResource(R.string.search_type)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -80,7 +82,8 @@ fun SearchBar() {
                 shape = RoundedCornerShape(25.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)            )
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+            )
 
             ExposedDropdownMenu(
                 expanded = expanded,
@@ -90,7 +93,7 @@ fun SearchBar() {
                 types.forEach { type ->
                     DropdownMenuItem(
                         text = { Text(
-                            if (type == "doctor") "Doctor" else "Institution",
+                            if (type == "doctor") stringResource(R.string.doctor) else stringResource(R.string.institution),
                             color = MaterialTheme.colorScheme.onSurface
                         ) },
                         onClick = {
@@ -107,7 +110,7 @@ fun SearchBar() {
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
-            label = { Text("Search...") },
+            label = { Text(stringResource(R.string.search)) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -123,15 +126,17 @@ fun SearchBar() {
             onClick = { showAdvanced = !showAdvanced },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (showAdvanced) "Hide advanced options" else "Advanced options")
+            Text(if (showAdvanced) stringResource(R.string.hide_advanced_options) else stringResource(
+                R.string.advanced_options
+            ))
         }
 
         if (showAdvanced) {
             OutlinedTextField(
                 value = city,
                 onValueChange = { city = it },
-                label = { Text("City (optional)") },
-                placeholder = { Text("e.g. Lublin, Kraków") },
+                label = { Text(stringResource(R.string.city_optional)) },
+                placeholder = { Text(stringResource(R.string.e_g_lublin_krak_w)) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -148,8 +153,8 @@ fun SearchBar() {
             OutlinedTextField(
                 value = specialisation,
                 onValueChange = { specialisation = it },
-                label = { Text("Specialisation (optional)") },
-                placeholder = { Text("e.g. cardiologist,neurology") },
+                label = { Text(stringResource(R.string.specialisation_optional)) },
+                placeholder = { Text(stringResource(R.string.e_g_cardiologist_neurology)) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -219,7 +224,7 @@ fun SearchBar() {
                 Spacer(modifier = Modifier.width(8.dp))
             }
             Text(
-                text = if (isSearching) "SEARCHING..." else "SEARCH",
+                text = if (isSearching) stringResource(R.string.searching) else stringResource(R.string.search_capitals),
                 fontSize = 16.sp,
                 modifier = Modifier.padding(vertical = 8.dp)
             )

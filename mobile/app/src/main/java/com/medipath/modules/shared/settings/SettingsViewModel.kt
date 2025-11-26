@@ -1,21 +1,33 @@
 package com.medipath.modules.shared.settings
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.content.Intent
+import android.os.Process.killProcess
+import android.os.Process.myPid
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
+import com.medipath.SplashActivity
 import com.medipath.core.models.UserSettingsRequest
 import com.medipath.core.models.UserSettingsResponse
 import com.medipath.core.network.RetrofitInstance
+import com.medipath.core.utils.LocaleHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import okio.IOException
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val settingsService = RetrofitInstance.settingsService
 
     private val _language = MutableStateFlow("PL")
     val language: StateFlow<String> = _language.asStateFlow()
+    
+    private var initialLanguage: String = "PL"
 
     private val _systemNotifications = MutableStateFlow(true)
     val systemNotifications: StateFlow<Boolean> = _systemNotifications.asStateFlow()
@@ -34,6 +46,11 @@ class SettingsViewModel : ViewModel() {
 
     private val _updateSuccess = MutableStateFlow(false)
     val updateSuccess: StateFlow<Boolean> = _updateSuccess.asStateFlow()
+
+    private val _deactivateSuccess = MutableStateFlow(false)
+    val deactivateSuccess: StateFlow<Boolean> = _deactivateSuccess.asStateFlow()
+
+    private val context = getApplication<Application>()
 
     fun setLanguage(lang: String) {
         _language.value = lang
@@ -57,16 +74,41 @@ class SettingsViewModel : ViewModel() {
                     val body: UserSettingsResponse? = resp.body()
                     body?.settings?.let { s ->
                         _language.value = s.language
+                        initialLanguage = s.language
                         _systemNotifications.value = s.systemNotifications
                         _userNotifications.value = s.userNotifications
                         _lastPanel.value = s.lastPanel
                     }
                 } else {
-                    _error.value = "Failed to load settings: ${resp.code()}"
+                    _error.value = context.getString(R.string.error_load_settings)
                 }
-            } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Error fetching settings", e)
-                _error.value = "${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+
+    fun deactivateAccount() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            try {
+                val response = settingsService.deactivateAccount()
+                if (response.isSuccessful) {
+                    _deactivateSuccess.value = true
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    _error.value = errorBody ?: context.getString(R.string.error_deactivate)
+                }
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -86,16 +128,29 @@ class SettingsViewModel : ViewModel() {
                 )
                 val resp = settingsService.updateSettings(request)
                 if (resp.isSuccessful) {
+                    LocaleHelper.setLocale(context, _language.value)
                     _updateSuccess.value = true
+                    if (_language.value != initialLanguage) {
+                        delay(500)
+                        restartApp()
+                    }
                 } else {
-                    _error.value = "Failed to update settings: ${resp.code()}"
+                    _error.value = context.getString(R.string.error_update_settings)
                 }
-            } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Error updating settings", e)
-                _error.value = "${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+    
+    private fun restartApp() {
+        val intent = Intent(context, SplashActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        context.startActivity(intent)
+        killProcess(myPid())
     }
 }

@@ -1,20 +1,21 @@
 package com.medipath.modules.doctor.visits
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import com.medipath.R
 import com.medipath.core.models.Visit
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.DoctorService
-import com.medipath.core.services.VisitsService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import okio.IOException
 
 class DoctorVisitsViewModel(
-    private val doctorService: DoctorService = RetrofitInstance.doctorService,
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
+    private val doctorService = RetrofitInstance.doctorService
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -42,8 +43,7 @@ class DoctorVisitsViewModel(
     private val _totalVisits = MutableStateFlow(0)
     val totalVisits: StateFlow<Int> = _totalVisits.asStateFlow()
 
-    private val _cancelSuccess = MutableStateFlow<String?>(null)
-    val cancelSuccess: StateFlow<String?> = _cancelSuccess.asStateFlow()
+    private val context = getApplication<Application>()
 
     fun fetchVisits() {
         viewModelScope.launch {
@@ -60,12 +60,12 @@ class DoctorVisitsViewModel(
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to load visits: ${response.code()}"
-                    Log.e("DoctorVisitsViewModel", "Error: ${response.code()}")
+                    _error.value = context.getString(R.string.error_load_visits)
                 }
-            } catch (e: Exception) {
-                _error.value = e.message
-                Log.e("DoctorVisitsViewModel", "Error fetching visits: $e")
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }

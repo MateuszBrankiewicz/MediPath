@@ -1,22 +1,23 @@
 package com.medipath.modules.patient.codes
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.CodeItem
 import com.medipath.core.models.CodeRequest
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.CodesService
-import com.medipath.core.services.UserService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
 class CodesViewModel(
-    private val codesService: CodesService = RetrofitInstance.codesService,
-    private val userService: UserService = RetrofitInstance.userService
-) : ViewModel() {
-
+    application: Application
+) : AndroidViewModel(application) {
+    private val codesService = RetrofitInstance.codesService
+    private val userService  = RetrofitInstance.userService
     private val _codes = MutableStateFlow<List<CodeItem>>(emptyList())
     val codes: StateFlow<List<CodeItem>> = _codes.asStateFlow()
 
@@ -31,6 +32,8 @@ class CodesViewModel(
 
     private val _shouldRedirectToLogin = MutableStateFlow(false)
     val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
+    
+    private val context = getApplication<Application>()
 
     fun fetchCodes(codeType: String? = null) {
         viewModelScope.launch {
@@ -48,13 +51,15 @@ class CodesViewModel(
                     _codes.value = response.body()?.codes ?: emptyList()
                 } else {
                     _error.value = when (response.code()) {
-                        400 -> "Invalid code type"
-                        401 -> "Session expired, please log in again"
-                        else -> "Error fetching codes (${response.code()})"
+                        400 -> context.getString(R.string.invalid_code_type)
+                        401 -> context.getString(R.string.error_session)
+                        else -> context.getString(R.string.error_fetching_codes)
                     }
                 }
-            } catch (e: Exception) {
-                _error.value = "Network error: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -79,17 +84,19 @@ class CodesViewModel(
                             codeItem
                         }
                     }
-                    _successMessage.value = "Code marked as used"
+                    _successMessage.value = context.getString(R.string.code_marked_as_used)
                     onSuccess()
                 } else {
                     _error.value = when (response.code()) {
-                        401 -> "Session expired, please log in again"
-                        404 -> "Code not found"
-                        else -> "Error marking code as used (${response.code()})"
+                        401 -> context.getString(R.string.error_session)
+                        404 -> context.getString(R.string.code_not_found)
+                        else -> context.getString(R.string.error_mark_code_as_used)
                     }
                 }
-            } catch (e: Exception) {
-                _error.value = "Network error: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             }
         }
     }
@@ -110,13 +117,15 @@ class CodesViewModel(
                     onSuccess()
                 } else {
                     _error.value = when (response.code()) {
-                        401 -> "Session expired, please log in again"
-                        404 -> "Code not found"
-                        else -> "Error deleting code (${response.code()})"
+                        401 -> context.getString(R.string.error_session)
+                        404 -> context.getString(R.string.code_not_found)
+                        else -> context.getString(R.string.error_delete_code)
                     }
                 }
-            } catch (e: Exception) {
-                _error.value = "Network error: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             }
         }
     }

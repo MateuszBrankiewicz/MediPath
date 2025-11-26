@@ -67,6 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -150,6 +151,7 @@ object NavigationRouter {
 @Composable
 fun Navigation(
     notificationsViewModel: NotificationsViewModel,
+    externalRedirectRequest: Boolean = false,
     content: @Composable (PaddingValues) -> Unit,
     screenTitle: String? = null,
     onNotificationsClick: () -> Unit = {},
@@ -170,10 +172,13 @@ fun Navigation(
     var showRoleMenu by remember { mutableStateOf(false) }
     var isNavigating by remember { mutableStateOf(false) }
 
-    val shouldRedirect by notificationsViewModel.shouldRedirectToLogin.collectAsState()
-    if (shouldRedirect) {
+    val internalRedirect by notificationsViewModel.shouldRedirectToLogin.collectAsState()
+    val shouldLogOut = externalRedirectRequest || internalRedirect
+
+    if (shouldLogOut) {
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context,
+                context.getString(R.string.error_session), Toast.LENGTH_LONG).show()
             val sessionManager = RetrofitInstance.getSessionManager()
             sessionManager.deleteSessionId()
             context.startActivity(
@@ -191,21 +196,21 @@ fun Navigation(
 
     val tabs = if (isDoctor) {
         listOf(
-            NavTab("Dashboard", Icons.Outlined.Home, colors.dashboardIcon),
-            NavTab("Schedule", Icons.Outlined.CalendarMonth, colors.visitsIcon),
-            NavTab("Visits", Icons.Outlined.Event, colors.prescriptionsIcon),
-            NavTab("Patients", Icons.Outlined.People, colors.referralsIcon),
-            NavTab("Reminders", Icons.Outlined.Notifications, colors.remindersIcon)
+            NavTab("Dashboard", stringResource(R.string.dashboard), Icons.Outlined.Home, colors.dashboardIcon),
+            NavTab("Schedule", stringResource(R.string.schedule),  Icons.Outlined.CalendarMonth, colors.visitsIcon),
+            NavTab("Visits", stringResource(R.string.visits), Icons.Outlined.Event, colors.prescriptionsIcon),
+            NavTab("Patients", stringResource(R.string.patients), Icons.Outlined.People, colors.referralsIcon),
+            NavTab("Reminders", stringResource(R.string.reminders), Icons.Outlined.Notifications, colors.remindersIcon)
         )
     } else {
         listOf(
-            NavTab("Dashboard", Icons.Outlined.Home, colors.dashboardIcon),
-            NavTab("Visits", Icons.Outlined.Event, colors.visitsIcon),
-            NavTab("Prescriptions", Icons.Outlined.Receipt, colors.prescriptionsIcon),
-            NavTab("Referrals", Icons.AutoMirrored.Outlined.Send, colors.referralsIcon),
-            NavTab("Medical history", Icons.Outlined.MedicalServices, colors.medicalHistoryIcon),
-            NavTab("Comments", Icons.AutoMirrored.Outlined.Comment, colors.commentsIcon),
-            NavTab("Reminders", Icons.Outlined.Notifications, colors.remindersIcon)
+            NavTab("Dashboard", stringResource(R.string.dashboard), Icons.Outlined.Home, colors.dashboardIcon),
+            NavTab("Visits", stringResource(R.string.visits), Icons.Outlined.Event, colors.visitsIcon),
+            NavTab("Prescriptions", stringResource(R.string.prescriptions), Icons.Outlined.Receipt, colors.prescriptionsIcon),
+            NavTab("Referrals", stringResource(R.string.referrals), Icons.AutoMirrored.Outlined.Send, colors.referralsIcon),
+            NavTab("Medical history", stringResource(R.string.medical_history), Icons.Outlined.MedicalServices, colors.medicalHistoryIcon),
+            NavTab("Comments", stringResource(R.string.comments), Icons.AutoMirrored.Outlined.Comment, colors.commentsIcon),
+            NavTab("Reminders", stringResource(R.string.reminders), Icons.Outlined.Notifications, colors.remindersIcon)
         )
     }
 
@@ -227,12 +232,12 @@ fun Navigation(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.logo),
-                        contentDescription = "MediPath logo",
+                        contentDescription = stringResource(R.string.app_name),
                         modifier = Modifier.size(50.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "MediPath",
+                        text = stringResource(R.string.app_name),
                         fontSize = 35.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.background
@@ -252,11 +257,16 @@ fun Navigation(
                             .clickable(enabled = !isNavigating) {
                                 if (isNavigating) return@clickable
                                 isNavigating = true
-                                
-                                scope.launch { 
+
+                                scope.launch {
                                     drawerState.close()
                                     kotlinx.coroutines.delay(300)
-                                    NavigationRouter.navigateToTab(context, tab.name, currentTab, isDoctor)
+                                    NavigationRouter.navigateToTab(
+                                        context,
+                                        tab.name,
+                                        currentTab,
+                                        isDoctor
+                                    )
                                     kotlinx.coroutines.delay(200)
                                     isNavigating = false
                                 }
@@ -273,7 +283,7 @@ fun Navigation(
                         )
                         Spacer(modifier = Modifier.width(20.dp))
                         Text(
-                            text = tab.name,
+                            text = tab.label,
                             color = MaterialTheme.colorScheme.background,
                             fontSize = 18.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Thin
@@ -302,7 +312,7 @@ fun Navigation(
                 TopAppBar(
                     title = { 
                         Text(
-                            screenTitle ?: "Hello, $firstName",
+                            screenTitle ?: stringResource(R.string.hello) + firstName,
                             fontWeight = FontWeight.Bold, 
                             color = MaterialTheme.colorScheme.primary, 
                             fontSize = 28.sp, 
@@ -319,12 +329,15 @@ fun Navigation(
                             Box(
                                 modifier = Modifier
                                     .size(50.dp)
-                                    .background(color = MaterialTheme.colorScheme.background, shape = CircleShape),
+                                    .background(
+                                        color = MaterialTheme.colorScheme.background,
+                                        shape = CircleShape
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Menu,
-                                    contentDescription = "Menu",
+                                    contentDescription = stringResource(R.string.menu),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -338,7 +351,10 @@ fun Navigation(
                             Box(
                                 modifier = Modifier
                                     .size(50.dp)
-                                    .background(color = MaterialTheme.colorScheme.background, shape = CircleShape),
+                                    .background(
+                                        color = MaterialTheme.colorScheme.background,
+                                        shape = CircleShape
+                                    ),
                                 contentAlignment = Alignment.Center
                             ){
                                 BadgedBox(
@@ -359,7 +375,7 @@ fun Navigation(
                                 ) {
                                     Icon(
                                         Icons.Default.Notifications,
-                                        contentDescription = "Notifications",
+                                        contentDescription = stringResource(R.string.notifications),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -371,12 +387,15 @@ fun Navigation(
                                 Box(
                                     modifier = Modifier
                                         .size(50.dp)
-                                        .background(color = MaterialTheme.colorScheme.background, shape = CircleShape),
+                                        .background(
+                                            color = MaterialTheme.colorScheme.background,
+                                            shape = CircleShape
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ){
                                     Icon(
                                         Icons.Default.Person,
-                                        contentDescription = "User menu",
+                                        contentDescription = stringResource(R.string.user_menu),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -401,19 +420,19 @@ fun Navigation(
                                             ) {
                                                 Icon(
                                                     Icons.Outlined.SwapHoriz,
-                                                    contentDescription = "Select role",
+                                                    contentDescription = stringResource(R.string.select_role),
                                                     tint = MaterialTheme.colorScheme.onSurface,
                                                     modifier = Modifier.size(20.dp)
                                                 )
                                                 Spacer(modifier = Modifier.width(12.dp))
                                                 Text(
-                                                    "Select role",
+                                                    stringResource(R.string.select_role),
                                                     color = MaterialTheme.colorScheme.onSurface
                                                 )
                                                 Spacer(modifier = Modifier.weight(1f))
                                                 Icon(
                                                     if (showRoleMenu) Icons.Outlined.ArrowDropUp else Icons.Outlined.ArrowDropDown,
-                                                    contentDescription = "Expand",
+                                                    contentDescription = stringResource(R.string.expand),
                                                     tint = MaterialTheme.colorScheme.onSurface
                                                 )
                                             }
@@ -424,7 +443,7 @@ fun Navigation(
 
                                     if (showRoleMenu) {
                                         DropdownMenuItem(
-                                            text = { Text("Patient") },
+                                            text = { Text(stringResource(R.string.patient_title)) },
                                             onClick = {
                                                 showRoleMenu = false
                                                 showUserMenu = false
@@ -435,8 +454,9 @@ fun Navigation(
                                                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                                         }
                                                         context.startActivity(intent)
-                                                    } catch (e: Exception) {
-                                                        Toast.makeText(context, "Error switching to patient: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                    } catch (_: Exception) {
+                                                        Toast.makeText(context,
+                                                            context.getString(R.string.error_switching_to_patient), Toast.LENGTH_SHORT).show()
                                                     }
                                                 }
                                             },
@@ -444,7 +464,7 @@ fun Navigation(
                                         )
                                         if(canSwitchRole) {
                                             DropdownMenuItem(
-                                                text = { Text("Doctor") },
+                                                text = { Text(stringResource(R.string.doctor)) },
                                                 onClick = {
                                                     showRoleMenu = false
                                                     showUserMenu = false
@@ -461,10 +481,10 @@ fun Navigation(
                                                                     Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                                             }
                                                             context.startActivity(intent)
-                                                        } catch (e: Exception) {
+                                                        } catch (_: Exception) {
                                                             Toast.makeText(
                                                                 context,
-                                                                "Error switching to doctor: ${e.message}",
+                                                                context.getString(R.string.error_switching_to_doctor),
                                                                 Toast.LENGTH_SHORT
                                                             ).show()
                                                         }
@@ -487,12 +507,12 @@ fun Navigation(
                                         ) {
                                             Icon(
                                                 Icons.Outlined.Edit,
-                                                contentDescription = "Edit profile",
+                                                contentDescription = stringResource(R.string.edit_profile),
                                                 tint = MaterialTheme.colorScheme.onSurface,
                                                 modifier = Modifier.size(20.dp)
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
-                                            Text("Edit profile", color = MaterialTheme.colorScheme.onSurface)
+                                            Text(stringResource(R.string.edit_profile), color = MaterialTheme.colorScheme.onSurface)
                                         }
                                     },
                                     onClick = {
@@ -509,12 +529,12 @@ fun Navigation(
                                         ) {
                                             Icon(
                                                 Icons.Outlined.Settings,
-                                                contentDescription = "Settings",
+                                                contentDescription = stringResource(R.string.settings),
                                                 tint = MaterialTheme.colorScheme.onSurface,
                                                 modifier = Modifier.size(20.dp)
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
-                                            Text("Settings", color = MaterialTheme.colorScheme.onSurface)
+                                            Text(stringResource(R.string.settings), color = MaterialTheme.colorScheme.onSurface)
                                         }
                                     },
                                     onClick = {
@@ -536,12 +556,12 @@ fun Navigation(
                                         ) {
                                             Icon(
                                                 Icons.AutoMirrored.Outlined.Logout,
-                                                contentDescription = "Logout",
+                                                contentDescription = stringResource(R.string.logout),
                                                 tint = MaterialTheme.colorScheme.error,
                                                 modifier = Modifier.size(20.dp)
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
-                                            Text("Logout", color = MaterialTheme.colorScheme.error)
+                                            Text(stringResource(R.string.logout), color = MaterialTheme.colorScheme.error)
                                         }
                                     },
                                     onClick = {

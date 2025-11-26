@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonSearch
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,21 +22,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.res.stringResource
 import com.medipath.core.models.SearchResult
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.modules.patient.booking.ui.AppointmentBookingActivity
 import com.medipath.modules.patient.search.SearchViewModel
 import com.medipath.modules.shared.components.rememberBase64Image
-
-enum class SortOption(val displayName: String) {
-    DEFAULT("Default"),
-    RATING_DESC("Rating (Descending)"),
-    RATING_ASC("Rating (Ascending)"),
-    NUM_RATINGS_DESC("Reviews (Descending)"),
-    NUM_RATINGS_ASC("Reviews (Ascending)")
-}
+import com.medipath.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +50,14 @@ fun DoctorSearchResultsScreen(
     var selectedSortOption by remember { mutableStateOf(SortOption.DEFAULT) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
 
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(error) {
+        error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.search(searchQuery, "doctor", city, specialisation)
     }
@@ -69,46 +72,48 @@ fun DoctorSearchResultsScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(WindowInsets.navigationBars.asPaddingValues())
-            .background(MaterialTheme.colorScheme.secondary)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(LocalCustomColors.current.blue900)
-                .padding(top = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Return",
-                    tint = MaterialTheme.colorScheme.background
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.doctor_results),
+                        color = MaterialTheme.colorScheme.background,
+                        fontSize = 23.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = MaterialTheme.colorScheme.background
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = LocalCustomColors.current.blue900
                 )
-            }
-            Text(
-                text = "Doctor Results",
-                fontSize = 23.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.background,
-                modifier = Modifier.padding(start = 8.dp).padding(vertical = 24.dp)
             )
         }
-
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.secondary)
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
             Spacer(modifier = Modifier.height(16.dp))
 
             val searchCriteria = buildList {
                 if (searchQuery.isNotBlank()) add("\"$searchQuery\"")
-                if (city.isNotBlank()) add("City: $city")
-                if (specialisation.isNotBlank()) add("Specialisation: $specialisation")
+                if (city.isNotBlank()) add(stringResource(R.string.city_label, city))
+                if (specialisation.isNotBlank()) add(stringResource(R.string.specialisation_optional) + ": $specialisation")
             }.joinToString(" • ")
 
             if (searchCriteria.isNotEmpty()) {
@@ -128,7 +133,7 @@ fun DoctorSearchResultsScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Searching for: $searchCriteria",
+                            text = stringResource(R.string.searching_for, searchCriteria),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Medium
@@ -140,16 +145,17 @@ fun DoctorSearchResultsScreen(
             if (!isLoading && searchResults.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
 
+                val optionsMap = SortOption.entries.associateWith { stringResource(it.labelId) }
+
                 SortHeader(
                     count = searchResults.size,
-                    selectedDisplayName = selectedSortOption.displayName,
+                    selectedDisplayName = stringResource(selectedSortOption.labelId),
                     isExpanded = isDropdownExpanded,
                     onExpandedChange = { isDropdownExpanded = it },
-                    options = SortOption.entries.map { it.displayName },
-                    onOptionSelected = { selected ->
-                        SortOption.entries.firstOrNull { it.displayName == selected }?.let {
-                            selectedSortOption = it
-                        }
+                    options = optionsMap.values.toList(),
+                    onOptionSelected = { selectedLabel ->
+                        val option = optionsMap.entries.find { it.value == selectedLabel }?.key
+                        if (option != null) selectedSortOption = option
                     }
                 )
             }
@@ -186,14 +192,14 @@ fun DoctorSearchResultsScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "No doctors found",
+                                text = stringResource(R.string.no_doctors_found),
                                 fontSize = 18.sp,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Try adjusting your search criteria",
+                                text = stringResource(R.string.try_adjusting_criteria),
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 fontWeight = FontWeight.Normal
@@ -226,6 +232,7 @@ fun DoctorSearchResultsScreen(
                     }
                 }
             }
+        }
         }
     }
 }
@@ -262,7 +269,7 @@ fun DoctorCard(
                 if (imageBitmap != null) {
                     Image(
                         bitmap = imageBitmap,
-                        contentDescription = "Doctor photo",
+                        contentDescription = stringResource(R.string.doctor_photo),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
@@ -314,9 +321,9 @@ fun DoctorCard(
                 }
 
                 if (!doctor.addresses.isNullOrEmpty()) {
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.padding(vertical = 4.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                        thickness = DividerDefaults.Thickness, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                     )
 
                     doctor.addresses.take(2).forEach { address ->
@@ -326,9 +333,11 @@ fun DoctorCard(
                         ) {
                             Icon(
                                 Icons.Default.LocationOn,
-                                contentDescription = "Location",
+                                contentDescription = stringResource(R.string.location),
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp).padding(top = 2.dp)
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .padding(top = 2.dp)
                             )
                             Column {
                                 Text(
@@ -348,7 +357,10 @@ fun DoctorCard(
 
                     if (doctor.addresses.size > 2) {
                         Text(
-                            text = "+ ${doctor.addresses.size - 2} more locations",
+                            text = stringResource(
+                                R.string.more_locations,
+                                doctor.addresses.size - 2
+                            ),
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Medium,

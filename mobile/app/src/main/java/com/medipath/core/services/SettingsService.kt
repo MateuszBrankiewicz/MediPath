@@ -5,6 +5,7 @@ import com.medipath.core.models.UserSettingsResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.PUT
 
 interface SettingsService {
@@ -13,4 +14,7 @@ interface SettingsService {
 
     @PUT("/api/users/me/settings")
     suspend fun updateSettings(@Body settings: UserSettingsRequest): Response<Unit>
+
+    @POST("/api/users/me/deactivate")
+    suspend fun deactivateAccount(): Response<Unit>
 }

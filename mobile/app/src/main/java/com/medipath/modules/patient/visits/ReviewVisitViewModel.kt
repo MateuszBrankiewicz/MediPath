@@ -1,8 +1,9 @@
 package com.medipath.modules.patient.visits
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.AddCommentRequest
 import com.medipath.core.models.UpdateCommentRequest
 import com.medipath.core.network.RetrofitInstance
@@ -10,8 +11,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
-class ReviewVisitViewModel : ViewModel() {
+class ReviewVisitViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     
@@ -23,6 +27,8 @@ class ReviewVisitViewModel : ViewModel() {
     
     private val _shouldRedirectToLogin = MutableStateFlow(false)
     val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
+    
+    private val context = getApplication<Application>()
 
     fun submitReview(
         visitId: String,
@@ -38,10 +44,7 @@ class ReviewVisitViewModel : ViewModel() {
                 _shouldRedirectToLogin.value = false
                 _submitSuccess.value = false
 
-                Log.d("ReviewVisitViewModel", "Submitting review - visitId: $visitId, commentId: $commentId")
-
                 val response = if (commentId != null && commentId.isNotEmpty()) {
-                    Log.d("ReviewVisitViewModel", "Updating comment: $commentId")
                     val updateRequest = UpdateCommentRequest(
                         institutionRating = institutionRating,
                         doctorRating = doctorRating,
@@ -49,7 +52,6 @@ class ReviewVisitViewModel : ViewModel() {
                     )
                     RetrofitInstance.commentsService.updateComment(commentId, updateRequest)
                 } else {
-                    Log.d("ReviewVisitViewModel", "Adding new comment")
                     val addRequest = AddCommentRequest(
                         visitID = visitId,
                         institutionRating = institutionRating,
@@ -58,44 +60,43 @@ class ReviewVisitViewModel : ViewModel() {
                     )
                     RetrofitInstance.commentsService.addComment(addRequest)
                 }
-
-                Log.d("ReviewVisitViewModel", "Response code: ${response.code()}")
-
+                
                 when (response.code()) {
                     200, 201 -> {
                         _submitSuccess.value = true
                     }
                     400 -> {
-                        _error.value = "Invalid rating. Rating must be between 1-5 in 0.5 increments"
+                        _error.value = context.getString(R.string.error_invalid_rating)
                     }
                     401 -> {
                         _shouldRedirectToLogin.value = true
                     }
                     403 -> {
                         _error.value = if (commentId != null) {
-                            "Comment does not exist or does not belong to you"
+                            context.getString(R.string.error_comment_does_not_exist)
                         } else {
-                            "You do not have permission to add a review for this visit"
+                            context.getString(R.string.error_no_permission)
                         }
                     }
                     404 -> {
                         _error.value = if (commentId != null) {
-                            "Comment not found"
+                            context.getString(R.string.error_comment_not_found)
                         } else {
-                            "Visit not found or already has a review"
+                            context.getString(R.string.error_visit_not_found)
                         }
                     }
                     500 -> {
-                        _error.value = "Server error. Please try again later"
+                        _error.value = context.getString(R.string.error_server)
                     }
                     else -> {
-                        val errorBody = response.errorBody()?.string()
-                        _error.value = "Error ${response.code()}: ${errorBody ?: "Unknown error"}"
+                        _error.value = context.getString(R.string.error_submit_review)
                     }
                 }
                 
-            } catch (e: Exception) {
-                _error.value = "Error sending review: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }

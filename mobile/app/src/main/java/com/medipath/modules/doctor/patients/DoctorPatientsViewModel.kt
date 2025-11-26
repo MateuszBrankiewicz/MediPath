@@ -1,16 +1,20 @@
 package com.medipath.modules.doctor.patients
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.PatientDoc
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.services.DoctorService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
-class DoctorPatientsViewModel : ViewModel() {
+class DoctorPatientsViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val doctorService: DoctorService = RetrofitInstance.doctorService
 
     private val _patients = MutableStateFlow<List<PatientDoc>>(emptyList())
@@ -22,6 +26,8 @@ class DoctorPatientsViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+    private val context = getApplication<Application>()
+
     fun fetchPatients() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -32,21 +38,19 @@ class DoctorPatientsViewModel : ViewModel() {
                     val patientsResponse = response.body()
                     if (patientsResponse != null) {
                         val sortedPatients = patientsResponse.patients.sortedByDescending {
-                            it.lastVisit.startTime 
+                            it.lastVisit.startTime
                         }
                         _patients.value = sortedPatients
-                        Log.d("DoctorPatientsViewModel", "Fetched ${sortedPatients.size} patients")
                     } else {
-                        _errorMessage.value = "No data received"
-                        Log.e("DoctorPatientsViewModel", "Response body is null")
+                        _errorMessage.value = context.getString(R.string.error_no_data)
                     }
                 } else {
-                    _errorMessage.value = "Error: ${response.code()}"
-                    Log.e("DoctorPatientsViewModel", "Failed to fetch patients: ${response.code()}")
+                    _errorMessage.value = context.getString(R.string.failed_to_load_patients)
                 }
-            } catch (e: Exception) {
-                _errorMessage.value = "Error: ${e.localizedMessage}"
-                Log.e("DoctorPatientsViewModel", "Exception fetching patients", e)
+            } catch (_: IOException) {
+                _errorMessage.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _errorMessage.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }

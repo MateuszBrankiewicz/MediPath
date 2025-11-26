@@ -22,6 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.net.Uri
+import androidx.compose.ui.res.stringResource
+import com.medipath.R
 
 @Composable
 fun ProfilePictureSection(
@@ -44,7 +46,7 @@ fun ProfilePictureSection(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Profile Picture",
+                text = stringResource(R.string.profile_picture),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -65,7 +67,7 @@ fun ProfilePictureSection(
                 if (profileImage != null) {
                     Image(
                         bitmap = profileImage,
-                        contentDescription = "Profile Picture",
+                        contentDescription = stringResource(R.string.profile_picture),
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape),
@@ -74,7 +76,7 @@ fun ProfilePictureSection(
                 } else {
                     Icon(
                         imageVector = Icons.Default.CameraAlt,
-                        contentDescription = "Add Photo",
+                        contentDescription = stringResource(R.string.add_photo),
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -84,7 +86,7 @@ fun ProfilePictureSection(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Tap to change photo",
+                text = stringResource(R.string.tap_to_change_photo),
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

@@ -11,10 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 
 @Composable
 fun MenuCard(
@@ -45,7 +47,7 @@ fun MenuCard(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = "Show $title",
+                contentDescription = stringResource(R.string.show, title),
                 tint = MaterialTheme.colorScheme.background
             )
         }
@@ -55,7 +57,7 @@ fun MenuCard(
             text = title,
             color = MaterialTheme.colorScheme.background,
             fontWeight = FontWeight.W400,
-            fontSize = 16.sp,
+            fontSize = 14.sp,
             letterSpacing = (-1.12).sp,
             textAlign = TextAlign.Center,
             lineHeight = 11.2.sp

@@ -7,9 +7,11 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,7 +23,7 @@ fun SortHeader(
     options: List<String>,
     onOptionSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
-    title: String = "Sort by:"
+    title: String = stringResource(R.string.sort_by) + ":"
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -43,7 +45,7 @@ fun SortHeader(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = " ($count results)",
+                    text = stringResource(R.string.results, count),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
@@ -60,11 +62,14 @@ fun SortHeader(
                     trailingIcon = {
                         Icon(
                             Icons.Default.ArrowDropDown,
-                            contentDescription = "Dropdown",
+                            contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary
                         )
                     },
-                    modifier = Modifier.width(150.dp).height(45.dp).menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                    modifier = Modifier
+                        .width(150.dp)
+                        .height(45.dp)
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable),
                     textStyle = TextStyle(fontSize = 12.sp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,

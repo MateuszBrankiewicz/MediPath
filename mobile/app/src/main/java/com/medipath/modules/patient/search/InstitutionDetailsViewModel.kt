@@ -1,23 +1,25 @@
 package com.medipath.modules.patient.search
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.medipath.core.models.InstitutionDoctor
 import com.medipath.core.models.InstitutionDetail
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.models.Comment
-import com.medipath.core.services.SearchService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import com.medipath.R
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.asStateFlow
+import okio.IOException
 
 class InstitutionDetailsViewModel(
-    private val searchService: SearchService = RetrofitInstance.searchService
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
+    private val searchService = RetrofitInstance.searchService
 
     private val _doctors = MutableStateFlow<List<InstitutionDoctor>>(emptyList())
     val doctors: StateFlow<List<InstitutionDoctor>> = _doctors
@@ -34,14 +36,12 @@ class InstitutionDetailsViewModel(
     private val _shouldRedirectToLogin = MutableStateFlow(false)
     val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin
 
-    private fun handleAuthError(e: Exception) {
-        if (e is HttpException && e.code() == 401) {
-            _shouldRedirectToLogin.value = true
-        }
-    }
+    private val context = getApplication<Application>()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
     fun loadInstitutionData(institutionId: String) {
-        Log.d("InstitutionDetailsVM", "=== loadInstitutionData START for institutionId=$institutionId ===")
         viewModelScope.launch {
             _isLoading.value = true
             _shouldRedirectToLogin.value = false
@@ -53,12 +53,12 @@ class InstitutionDetailsViewModel(
 
                 awaitAll(institutionJob, doctorsJob, commentsJob)
 
-            } catch (e: Exception) {
-                Log.e("InstitutionDetailsVM", "Main exception in loadInstitutionData: ${e.message}", e)
-                handleAuthError(e)
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
-                Log.d("InstitutionDetailsVM", "=== loadData END - doctors=${_doctors.value.size}, institution=${_institution.value?.name}, comments=${_comments.value.size} ===")
             }
         }
     }
@@ -69,15 +69,15 @@ class InstitutionDetailsViewModel(
 
             if (response.isSuccessful) {
                 _institution.value = response.body()?.institution
-                Log.d("InstitutionDetailsVM", "fetchInstitution OK: ${response.body()?.institution?.name}")
             } else if (response.code() == 401) {
                 _shouldRedirectToLogin.value = true
             } else {
-                Log.e("InstitutionDetailsVM", "fetchInstitution failed: ${response.code()}")
+                _error.value = context.getString(R.string.error_load_institutions)
             }
-        } catch (e: Exception) {
-            Log.e("InstitutionDetailsVM", "fetchInstitution exception", e)
-            handleAuthError(e)
+        } catch (_: IOException) {
+            _error.value = context.getString(R.string.error_connection)
+        } catch (_: Exception) {
+            _error.value = context.getString(R.string.unknown_error)
         }
     }
 
@@ -87,15 +87,15 @@ class InstitutionDetailsViewModel(
 
             if (response.isSuccessful) {
                 _doctors.value = response.body()?.doctors ?: emptyList()
-                Log.d("InstitutionDetailsVM", "fetchDoctors OK: ${_doctors.value.size} doctors")
             } else if (response.code() == 401) {
                 _shouldRedirectToLogin.value = true
             } else {
-                Log.e("InstitutionDetailsVM", "fetchDoctors failed: ${response.code()}")
+                _error.value = context.getString(R.string.error_load_doctors)
             }
-        } catch (e: Exception) {
-            Log.e("InstitutionDetailsVM", "fetchDoctors exception", e)
-            handleAuthError(e)
+        } catch (_: IOException) {
+            _error.value = context.getString(R.string.error_connection)
+        } catch (_: Exception) {
+            _error.value = context.getString(R.string.unknown_error)
         }
     }
 
@@ -105,15 +105,15 @@ class InstitutionDetailsViewModel(
 
             if (response.isSuccessful) {
                 _comments.value = response.body()?.comments ?: emptyList()
-                Log.d("InstitutionDetailsVM", "fetchComments OK: ${_comments.value.size} comments")
             } else if (response.code() == 401) {
                 _shouldRedirectToLogin.value = true
             } else {
-                Log.e("InstitutionDetailsVM", "fetchComments failed: ${response.code()}")
+                _error.value = context.getString(R.string.error_load_comments)
             }
-        } catch (e: Exception) {
-            Log.e("InstitutionDetailsVM", "fetchComments exception", e)
-            handleAuthError(e)
+        } catch (_: IOException) {
+            _error.value = context.getString(R.string.error_connection)
+        } catch (_: Exception) {
+            _error.value = context.getString(R.string.unknown_error)
         }
     }
 }

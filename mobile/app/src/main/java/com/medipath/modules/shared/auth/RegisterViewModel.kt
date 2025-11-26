@@ -1,106 +1,96 @@
 package com.medipath.modules.shared.auth
 
-import androidx.compose.runtime.State
-import androidx.lifecycle.ViewModel
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import android.util.Log
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.AndroidViewModel
+import com.medipath.R
 import com.medipath.core.models.City
 import com.medipath.core.models.RegisterRequest
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.AuthService
-import com.medipath.core.services.LocationService
 import com.medipath.core.utils.ValidationUtils
-import retrofit2.HttpException
+import com.medipath.core.utils.LocaleHelper
+import com.medipath.core.models.UserSettingsRequest
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import okio.IOException
+import java.util.Locale
 
 class RegisterViewModel(
-    private val authService: AuthService = RetrofitInstance.authService,
-    private val locationService: LocationService = RetrofitInstance.locationService
-): ViewModel() {
-    private val _cities = mutableStateOf<List<City>>(emptyList())
-    val cities: State<List<City>> = _cities
+    application: Application
+): AndroidViewModel(application) {
+    private val authService = RetrofitInstance.authService
+    private val locationService = RetrofitInstance.locationService
+    private val settingsService = RetrofitInstance.settingsService
+    private val _cities = MutableStateFlow<List<City>>(emptyList())
+    val cities: StateFlow<List<City>> = _cities.asStateFlow()
+    private val _provinces = MutableStateFlow<List<String>>(emptyList())
+    val provinces: StateFlow<List<String>> = _provinces.asStateFlow()
+    private val _name = MutableStateFlow("")
+    val name: StateFlow<String> = _name.asStateFlow()
+    private val _surname = MutableStateFlow("")
+    val surname: StateFlow<String> = _surname.asStateFlow()
+    private val _governmentId = MutableStateFlow("")
+    val governmentId: StateFlow<String> = _governmentId.asStateFlow()
+    private val _birthDate = MutableStateFlow("")
+    val birthDate: StateFlow<String> = _birthDate.asStateFlow()
+    private val _number = MutableStateFlow("")
+    val number: StateFlow<String> = _number.asStateFlow()
+    private val _street = MutableStateFlow("")
+    val street: StateFlow<String> = _street.asStateFlow()
+    private val _postalCode = MutableStateFlow("")
+    val postalCode: StateFlow<String> = _postalCode.asStateFlow()
+    private val _phoneNumber = MutableStateFlow("")
+    val phoneNumber: StateFlow<String> = _phoneNumber.asStateFlow()
+    private val _email = MutableStateFlow("")
+    val email: StateFlow<String> = _email.asStateFlow()
+    private val _password = MutableStateFlow("")
+    val password: StateFlow<String> = _password.asStateFlow()
+    private val _confirmPassword = MutableStateFlow("")
+    val confirmPassword: StateFlow<String> = _confirmPassword.asStateFlow()
+    private val _city = MutableStateFlow("")
+    val city: StateFlow<String> = _city.asStateFlow()
+    private val _province = MutableStateFlow("")
+    val province: StateFlow<String> = _province.asStateFlow()
+    private val _isChecked = MutableStateFlow(false)
+    val isChecked: StateFlow<Boolean> = _isChecked.asStateFlow()
+    private val _nameError = MutableStateFlow<String?>(null)
+    val nameError: StateFlow<String?> = _nameError.asStateFlow()
+    private val _surnameError = MutableStateFlow<String?>(null)
+    val surnameError: StateFlow<String?> = _surnameError.asStateFlow()
+    private val _governmentIdError = MutableStateFlow<String?>(null)
+    val governmentIdError: StateFlow<String?> = _governmentIdError.asStateFlow()
+    private val _birthDateError = MutableStateFlow<String?>(null)
+    val birthDateError: StateFlow<String?> = _birthDateError.asStateFlow()
+    private val _numberError = MutableStateFlow<String?>(null)
+    val numberError: StateFlow<String?> = _numberError.asStateFlow()
+    private val _streetError = MutableStateFlow<String?>(null)
+    val streetError: StateFlow<String?> = _streetError.asStateFlow()
+    private val _postalCodeError = MutableStateFlow<String?>(null)
+    val postalCodeError: StateFlow<String?> = _postalCodeError.asStateFlow()
+    private val _phoneNumberError = MutableStateFlow<String?>(null)
+    val phoneNumberError: StateFlow<String?> = _phoneNumberError.asStateFlow()
+    private val _emailError = MutableStateFlow<String?>(null)
+    val emailError: StateFlow<String?> = _emailError.asStateFlow()
+    private val _passwordError = MutableStateFlow<String?>(null)
+    val passwordError: StateFlow<String?> = _passwordError.asStateFlow()
+    private val _confirmPasswordError = MutableStateFlow<String?>(null)
+    val confirmPasswordError: StateFlow<String?> = _confirmPasswordError.asStateFlow()
+    private val _cityError = MutableStateFlow<String?>(null)
+    val cityError: StateFlow<String?> = _cityError.asStateFlow()
+    private val _provinceError = MutableStateFlow<String?>(null)
+    val provinceError: StateFlow<String?> = _provinceError.asStateFlow()
+    private val _registrationError = MutableStateFlow<String?>(null)
+    val registrationError: StateFlow<String?> = _registrationError.asStateFlow()
+    private val _registrationSuccess = MutableStateFlow(false)
+    val registrationSuccess: StateFlow<Boolean> = _registrationSuccess.asStateFlow()
 
-    private val _provinces = mutableStateOf<List<String>>(emptyList())
-    val provinces: State<List<String>> = _provinces
+    private val context = getApplication<Application>()
 
-    private val _name = mutableStateOf("")
-    val name: State<String> = _name
-    private val _surname = mutableStateOf("")
-    val surname: State<String> = _surname
-    private val _governmentId = mutableStateOf("")
-    val governmentId: State<String> = _governmentId
-    private val _birthDate = mutableStateOf("")
-    val birthDate: State<String> = _birthDate
-    private val _number = mutableStateOf("")
-    val number: State<String> = _number
-    private val _street = mutableStateOf("")
-    val street: State<String> = _street
-    private val _postalCode = mutableStateOf("")
-    val postalCode: State<String> = _postalCode
-    private val _phoneNumber = mutableStateOf("")
-    val phoneNumber: State<String> = _phoneNumber
-    private val _email = mutableStateOf("")
-    val email: State<String> = _email
-    private val _password = mutableStateOf("")
-    val password: State<String> = _password
-    private val _confirmPassword = mutableStateOf("")
-    val confirmPassword: State<String> = _confirmPassword
-    private val _city = mutableStateOf("")
-    val city: State<String> = _city
-    private val _province = mutableStateOf("")
-    val province: State<String> = _province
-    private val _isChecked = mutableStateOf(false)
-    val isChecked: State<Boolean> = _isChecked
-
-    private val _nameError = mutableStateOf<String?>(null)
-    val nameError: State<String?> = _nameError
-    private val _surnameError = mutableStateOf<String?>(null)
-    val surnameError: State<String?> = _surnameError
-    private val _governmentIdError = mutableStateOf<String?>(null)
-    val governmentIdError: State<String?> = _governmentIdError
-    private val _birthDateError = mutableStateOf<String?>(null)
-    val birthDateError: State<String?> = _birthDateError
-    private val _numberError = mutableStateOf<String?>(null)
-    val numberError: State<String?> = _numberError
-    private val _streetError = mutableStateOf<String?>(null)
-    val streetError: State<String?> = _streetError
-    private val _postalCodeError = mutableStateOf<String?>(null)
-    val postalCodeError: State<String?> = _postalCodeError
-    private val _phoneNumberError = mutableStateOf<String?>(null)
-    val phoneNumberError: State<String?> = _phoneNumberError
-    private val _emailError = mutableStateOf<String?>(null)
-    val emailError: State<String?> = _emailError
-    private val _passwordError = mutableStateOf<String?>(null)
-    val passwordError: State<String?> = _passwordError
-    private val _confirmPasswordError = mutableStateOf<String?>(null)
-    val confirmPasswordError: State<String?> = _confirmPasswordError
-    private val _cityError = mutableStateOf<String?>(null)
-    val cityError: State<String?> = _cityError
-    private val _provinceError = mutableStateOf<String?>(null)
-    val provinceError: State<String?> = _provinceError
-
-    private val _registrationError = mutableStateOf<String?>(null)
-    val registrationError: State<String?> = _registrationError
-    private val _registrationSuccess = mutableStateOf(false)
-    val registrationSuccess: State<Boolean> = _registrationSuccess
-
-    val isFormValid: State<Boolean> = derivedStateOf {
-        name.value.isNotBlank() && surname.value.isNotBlank() &&
-                governmentId.value.isNotBlank() && birthDate.value.isNotBlank() &&
-                number.value.isNotBlank() && street.value.isNotBlank() &&
-                postalCode.value.isNotBlank() && phoneNumber.value.isNotBlank() &&
-                email.value.isNotBlank() && password.value.isNotBlank() &&
-                confirmPassword.value.isNotBlank() && city.value.isNotBlank() &&
-                province.value.isNotBlank() && isChecked.value &&
-                nameError.value == null && surnameError.value == null &&
-                governmentIdError.value == null && birthDateError.value == null &&
-                numberError.value == null && streetError.value == null &&
-                postalCodeError.value == null && phoneNumberError.value == null &&
-                emailError.value == null && passwordError.value == null &&
-                confirmPasswordError.value == null && cityError.value == null &&
-                provinceError.value == null
+    private fun validateAndGetString(validationFunc: () -> Int?): String? {
+        return validationFunc()?.let { context.getString(it) }
     }
 
     init {
@@ -115,11 +105,9 @@ class RegisterViewModel(
                 if (response.isSuccessful) {
                     _cities.value = response.body() ?: emptyList()
                 } else {
-                    Log.e("RegisterViewModel", "Error fetching cities: ${response.code()}")
                     _cities.value = emptyList()
                 }
-            } catch (e: Exception) {
-                Log.e("RegisterViewModel", "Error fetching cities", e)
+            } catch (_: Exception) {
                 _cities.value = emptyList()
             }
         }
@@ -132,29 +120,27 @@ class RegisterViewModel(
                 if (response.isSuccessful) {
                     _provinces.value = response.body() ?: emptyList()
                 } else {
-                    Log.e("RegisterViewModel", "Error fetching provinces: ${response.code()}")
                     _provinces.value = emptyList()
                 }
-            } catch (e: Exception) {
-                Log.e("RegisterViewModel", "Error fetching provinces", e)
+            } catch (_: Exception) {
                 _provinces.value = emptyList()
             }
         }
     }
 
-    fun validateName() { _nameError.value = ValidationUtils.validateName(name.value).ifEmpty { null } }
-    fun validateSurname() { _surnameError.value = ValidationUtils.validateSurname(surname.value).ifEmpty { null } }
-    fun validateGovernmentId() { _governmentIdError.value = ValidationUtils.validateGovernmentId(governmentId.value).ifEmpty { null } }
-    fun validateBirthDate() { _birthDateError.value = ValidationUtils.validateBirthDate(birthDate.value).ifEmpty { null } }
-    fun validateNumber() { _numberError.value = ValidationUtils.validateNumber(number.value).ifEmpty { null } }
-    fun validateStreet() { _streetError.value = ValidationUtils.validateStreet(street.value).ifEmpty { null } }
-    fun validatePostalCode() { _postalCodeError.value = ValidationUtils.validatePostalCode(postalCode.value).ifEmpty { null } }
-    fun validatePhoneNumber() { _phoneNumberError.value = ValidationUtils.validatePhoneNumber(phoneNumber.value).ifEmpty { null } }
-    fun validateEmail() { _emailError.value = ValidationUtils.validateEmail(email.value).ifEmpty { null } }
-    fun validatePassword() { _passwordError.value = ValidationUtils.validatePassword(password.value).ifEmpty { null } }
-    fun validateConfirmPassword() { _confirmPasswordError.value = ValidationUtils.validateConfirmPassword(password.value, confirmPassword.value).ifEmpty { null } }
-    fun validateCity() { _cityError.value = ValidationUtils.validateCity(city.value).ifEmpty { null } }
-    fun validateProvince() { _provinceError.value = ValidationUtils.validateProvince(province.value).ifEmpty { null } }
+    fun validateName() { _nameError.value = validateAndGetString { ValidationUtils.validateName(_name.value) } }
+    fun validateSurname() { _surnameError.value = validateAndGetString { ValidationUtils.validateSurname(_surname.value) } }
+    fun validateGovernmentId() { _governmentIdError.value = validateAndGetString { ValidationUtils.validateGovernmentId(_governmentId.value) } }
+    fun validateBirthDate() { _birthDateError.value = validateAndGetString { ValidationUtils.validateBirthDate(_birthDate.value) } }
+    fun validateNumber() { _numberError.value = validateAndGetString { ValidationUtils.validateNumber(_number.value) } }
+    fun validateStreet() { _streetError.value = validateAndGetString { ValidationUtils.validateStreet(_street.value) } }
+    fun validatePostalCode() { _postalCodeError.value = validateAndGetString { ValidationUtils.validatePostalCode(_postalCode.value) } }
+    fun validatePhoneNumber() { _phoneNumberError.value = validateAndGetString { ValidationUtils.validatePhoneNumber(_phoneNumber.value) } }
+    fun validateEmail() { _emailError.value = validateAndGetString { ValidationUtils.validateEmail(_email.value) } }
+    fun validatePassword() { _passwordError.value = validateAndGetString { ValidationUtils.validatePassword(_password.value) } }
+    fun validateConfirmPassword() { _confirmPasswordError.value = validateAndGetString { ValidationUtils.validateConfirmPassword(_password.value, _confirmPassword.value) } }
+    fun validateCity() { _cityError.value = validateAndGetString { ValidationUtils.validateCity(_city.value) } }
+    fun validateProvince() { _provinceError.value = validateAndGetString { ValidationUtils.validateProvince(_province.value) } }
 
     fun onNameChanged(value: String) { _name.value = value; if (_nameError.value != null) validateName() }
     fun onSurnameChanged(value: String) { _surname.value = value; if (_surnameError.value != null) validateSurname() }
@@ -165,13 +151,35 @@ class RegisterViewModel(
     fun onPostalCodeChanged(value: String) { _postalCode.value = value; if (_postalCodeError.value != null) validatePostalCode() }
     fun onPhoneNumberChanged(value: String) { _phoneNumber.value = value; if (_phoneNumberError.value != null) validatePhoneNumber() }
     fun onEmailChanged(value: String) { _email.value = value; if (_emailError.value != null) validateEmail() }
-    fun onPasswordChanged(value: String) { _password.value = value; if (_passwordError.value != null) validatePassword(); if (confirmPassword.value.isNotEmpty()) validateConfirmPassword() }
-    fun onConfirmPasswordChanged(value: String) { _confirmPassword.value = value; if (_confirmPasswordError.value != null) validateConfirmPassword() }
+
+    fun onPasswordChanged(value: String) {
+        _password.value = value
+        if (_passwordError.value != null) validatePassword()
+        if (_confirmPassword.value.isNotEmpty()) validateConfirmPassword()
+    }
+
+    fun onConfirmPasswordChanged(value: String) {
+        _confirmPassword.value = value
+        if (_confirmPasswordError.value != null) validateConfirmPassword()
+    }
+
     fun onCityChanged(value: String) { _city.value = value; if (_cityError.value != null) validateCity() }
     fun onProvinceChanged(value: String) { _province.value = value; if (_provinceError.value != null) validateProvince() }
     fun onCheckedChanged(value: Boolean) { _isChecked.value = value }
 
     fun registerUser() {
+        if (listOf(_nameError.value, _surnameError.value, _governmentIdError.value, _birthDateError.value,
+                _numberError.value, _streetError.value, _postalCodeError.value, _phoneNumberError.value,
+                _emailError.value, _passwordError.value, _confirmPasswordError.value, _cityError.value, _provinceError.value)
+                .any { it != null } || !_isChecked.value) {
+            _registrationError.value =
+                context.getString(R.string.please_fix_validation_errors_and_accept_terms)
+            return
+        }
+
+        val systemLanguage = Locale.getDefault().language
+        val langToSend = if (systemLanguage.equals("pl", ignoreCase = true)) "PL" else "EN"
+
         val registerRequest = RegisterRequest(
             name = name.value,
             surname = surname.value,
@@ -194,22 +202,38 @@ class RegisterViewModel(
             try {
                 val response = authService.registerUser(registerRequest)
                 if (response.isSuccessful) {
+                    try {
+                        val settingsRequest = UserSettingsRequest(
+                            language = langToSend,
+                            systemNotifications = true,
+                            userNotifications = true
+                        )
+                        val settingsResponse = settingsService.updateSettings(settingsRequest)
+                        if (settingsResponse.isSuccessful) {
+                            LocaleHelper.setLocale(context, langToSend)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("RegisterViewModel", "Failed to set initial language", e)
+                    }
                     _registrationSuccess.value = true
                 } else {
                     when (response.code()) {
                         400 -> {
-                            _registrationError.value = "Please fill in all required fields."
+                            _registrationError.value = context.getString(R.string.please_fill_in_all_required_fields)
                         }
                         409 -> {
-                            _registrationError.value = "An account with this email or GovID already exists."
+                            _registrationError.value =
+                                context.getString(R.string.an_account_with_this_email_or_govid_already_exists)
                         }
                         else -> {
-                            _registrationError.value = "An unknown error occurred. Please try again later."
+                            _registrationError.value = context.getString(R.string.an_unknown_error_occurred_please_try_again_later)
                         }
                     }
                 }
-            } catch (e: Exception) {
-                _registrationError.value = e.message ?: "Registration failed"
+            } catch (_: IOException) {
+                _registrationError.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _registrationError.value = context.getString(R.string.unknown_error)
             }
         }
     }

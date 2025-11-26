@@ -10,8 +10,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.theme.LocalCustomColors
 
 @Composable
@@ -32,7 +34,7 @@ fun GenericFilterToggleRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Total: $totalItems | Showing: $showingItems",
+            text = stringResource(R.string.total_showing, totalItems, showingItems),
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
@@ -41,7 +43,7 @@ fun GenericFilterToggleRow(
         ) {
             Icon(
                 Icons.Outlined.FilterList,
-                contentDescription = "Toggle filters",
+                contentDescription = stringResource(R.string.toggle_filters),
                 tint = if (showFilters) colors.blue900 else MaterialTheme.colorScheme.onSurface
             )
         }

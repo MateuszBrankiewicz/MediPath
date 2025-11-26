@@ -1,8 +1,9 @@
 package com.medipath.modules.patient.medical_history
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.MedicalHistoryRequest
 import com.medipath.core.models.UserMedicalHistory
 import com.medipath.core.network.RetrofitInstance
@@ -10,10 +11,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
-class MedicalHistoryViewModel : ViewModel() {
+class MedicalHistoryViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val medicalHistoryService = RetrofitInstance.medicalHistoryService
-    private val userService = RetrofitInstance.userService
 
     private val _medicalHistories = MutableStateFlow<List<UserMedicalHistory>>(emptyList())
     val medicalHistories: StateFlow<List<UserMedicalHistory>> = _medicalHistories.asStateFlow()
@@ -47,6 +50,8 @@ class MedicalHistoryViewModel : ViewModel() {
 
     private val _addUpdateSuccess = MutableStateFlow(false)
     val addUpdateSuccess: StateFlow<Boolean> = _addUpdateSuccess.asStateFlow()
+    
+    private val context = getApplication<Application>()
 
     fun fetchMedicalHistories() {
         viewModelScope.launch {
@@ -64,11 +69,12 @@ class MedicalHistoryViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to load medical history: ${response.code()}"
+                    _error.value = context.getString(R.string.failed_to_load_medical_history)
                 }
-            } catch (e: Exception) {
-                Log.e("MedicalHistoryViewModel", "Error fetching medical histories", e)
-                _error.value = "Failed to load medical history: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -91,10 +97,12 @@ class MedicalHistoryViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to delete medical history: ${response.code()}"
+                    _error.value = context.getString(R.string.error_delete_medical_history)
                 }
-            } catch (e: Exception) {
-                _error.value = "Failed to delete medical history: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             }
         }
     }
@@ -134,7 +142,6 @@ class MedicalHistoryViewModel : ViewModel() {
                     date = date
                 )
 
-                Log.d("MedicalHistoryViewModel", "Adding medical history with request: $request")
                 val response = medicalHistoryService.addMedicalHistory(request)
 
                 if (response.isSuccessful) {
@@ -143,11 +150,12 @@ class MedicalHistoryViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to add medical history: ${response.code()}"
+                    _error.value = context.getString(R.string.error_add_medical_history)
                 }
-            } catch (e: Exception) {
-                Log.e("MedicalHistoryViewModel", "Error adding medical history", e)
-                _error.value = "Failed to add medical history: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -167,7 +175,6 @@ class MedicalHistoryViewModel : ViewModel() {
                     date = date
                 )
 
-                Log.d("MedicalHistoryViewModel", "Updating medical history with request: $request")
                 val response = medicalHistoryService.updateMedicalHistory(historyId, request)
 
                 if (response.isSuccessful) {
@@ -176,11 +183,12 @@ class MedicalHistoryViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to update medical history: ${response.code()}"
+                    _error.value = context.getString(R.string.error_update_medical_history)
                 }
-            } catch (e: Exception) {
-                Log.e("MedicalHistoryViewModel", "Error updating medical history", e)
-                _error.value = "Failed to update medical history: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }

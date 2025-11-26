@@ -21,27 +21,32 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.UserMedicalHistory
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.core.utils.LocaleHelper
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @Composable
 fun MedicalHistoryCard(history: UserMedicalHistory) {
+    val context = LocalContext.current
+    val locale = LocaleHelper.getLocale(context)
     val colors = LocalCustomColors.current
 
     val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault())
+    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", locale)
 
     val dateTime = try {
         java.time.LocalDate.parse(history.date, inputFormatter)
     } catch (_: Exception) {
         null
     }
-    val dateFormatted = dateTime?.format(outputDateFormatter) ?: "Unknown Date"
+    val dateFormatted = dateTime?.format(outputDateFormatter) ?: stringResource(R.string.unknown_date)
 
     Card(
         modifier = Modifier
@@ -91,7 +96,7 @@ fun MedicalHistoryCard(history: UserMedicalHistory) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Column {
                     Text(
-                        text = "Note",
+                        text = stringResource(R.string.note),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary
@@ -112,7 +117,7 @@ fun MedicalHistoryCard(history: UserMedicalHistory) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Column {
                     Text(
-                        text = "Doctor",
+                        text = stringResource(R.string.doctor),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary

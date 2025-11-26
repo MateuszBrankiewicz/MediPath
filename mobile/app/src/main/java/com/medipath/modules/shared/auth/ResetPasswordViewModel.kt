@@ -1,34 +1,38 @@
 package com.medipath.modules.shared.auth
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.lifecycle.ViewModel
-import androidx.compose.runtime.mutableStateOf
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.services.AuthService
 import com.medipath.core.utils.ValidationUtils
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
+import okio.IOException
 
 class ResetPasswordViewModel(
-    private val authService: AuthService = RetrofitInstance.authService
-): ViewModel() {
+    application: Application
+): AndroidViewModel(application){
+    private val authService = RetrofitInstance.authService
 
-    private val _email = mutableStateOf("")
-    val email: State<String> = _email
+    private val _email = MutableStateFlow("")
+    val email: StateFlow<String> = _email.asStateFlow()
 
-    private val _emailError = mutableStateOf<String?>(null)
-    val emailError: State<String?> = _emailError
+    private val _emailError = MutableStateFlow<String?>(null)
+    val emailError: StateFlow<String?> = _emailError.asStateFlow()
 
-    private val _resetError = mutableStateOf<String?>(null)
-    val resetError: State<String?> = _resetError
+    private val _resetError = MutableStateFlow<String?>(null)
+    val resetError: StateFlow<String?> = _resetError.asStateFlow()
 
-    private val _resetSuccess = mutableStateOf(false)
-    val resetSuccess: State<Boolean> = _resetSuccess
+    private val _resetSuccess = MutableStateFlow(false)
+    val resetSuccess: StateFlow<Boolean> = _resetSuccess.asStateFlow()
 
-    val isFormValid: State<Boolean> = derivedStateOf {
-        email.value.isNotBlank() && emailError.value == null
+    private val context = getApplication<Application>()
+
+    private fun validateAndGetString(validationFunc: () -> Int?): String? {
+        return validationFunc()?.let { context.getString(it) }
     }
 
     fun onEmailChanged(value: String) {
@@ -39,7 +43,7 @@ class ResetPasswordViewModel(
     }
 
     fun validateEmail() {
-        _emailError.value = ValidationUtils.validateEmail(email.value).ifEmpty { null }
+        _emailError.value = validateAndGetString { ValidationUtils.validateEmail(_email.value) }
     }
 
     fun resetPassword() {
@@ -47,26 +51,20 @@ class ResetPasswordViewModel(
             _resetError.value = ""
             _resetSuccess.value = false
             try {
-                val response = authService.resetPassword(email.value)
+                val response = authService.resetPassword(_email.value)
                 if (response.isSuccessful) {
                     _resetSuccess.value = true
                 } else {
-                    _resetError.value = response.body()?.message ?: "An unknown error occurred"
-                }
-            } catch (e: HttpException) {
-                when (e.code()) {
-                    400 -> {
-                        _resetError.value = "Please fill email field."
-                    }
-                    500 -> {
-                        _resetError.value = "The email service threw an error."
-                    }
-                    else -> {
-                        _resetError.value = "An unknown error occurred. Please try again later."
+                    _resetError.value = when (response.code()) {
+                        400 -> context.getString(R.string.please_fill_email_field)
+                        503 -> context.getString(R.string.the_email_service_threw_an_error)
+                        else -> context.getString(R.string.an_unknown_error_occurred_please_try_again_later)
                     }
                 }
-            } catch (e: Exception) {
-                _resetError.value = "Reset failed"
+            } catch (_: IOException) {
+                _resetError.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _resetError.value = context.getString(R.string.unknown_error)
             }
         }
     }

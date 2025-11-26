@@ -1,5 +1,6 @@
 package com.medipath.core.services
 
+import com.medipath.core.models.DoctorScheduleResponse
 import com.medipath.core.models.PatientDetailsResponse
 import com.medipath.core.models.PatientVisitsResponse
 import com.medipath.core.models.PatientsResponse
@@ -23,4 +24,7 @@ interface DoctorService {
 
     @GET("/api/users/patients/{patientId}")
     suspend fun getPatientDetails(@Path("patientId") patientId: String): Response<PatientDetailsResponse>
+
+    @GET("/api/doctors/me/schedules")
+    suspend fun getDoctorSchedules(): Response<DoctorScheduleResponse>
 }
