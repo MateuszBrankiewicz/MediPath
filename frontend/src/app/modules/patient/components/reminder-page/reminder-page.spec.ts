@@ -37,6 +37,7 @@ describe('ReminderPage', () => {
             notifications$: of([]),
             getAllNotifications: vi.fn(),
             notificationsArray$: of([]),
+            getNotifications: vi.fn().mockReturnValue(of([])),
           },
         },
         {

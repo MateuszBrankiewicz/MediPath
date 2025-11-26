@@ -52,15 +52,10 @@ public class ScheduleController {
             scheduleService.addManySchedules(schedule, loggedUserID);
             return new ResponseEntity<>(Map.of("message", "success"), HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-                    System.out.println("DEBUG: IllegalArgumentException - " + e.getMessage());
-
-            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
+         return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (IllegalAccessException e) {
-                    System.out.println("DEBUG: IllegalAccessException - " + e.getMessage());
-
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.FORBIDDEN);
         } catch (IllegalStateException e) {
-                    System.out.println("DEBUG: IllegalStateException - " + e.getMessage());
 
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
         }

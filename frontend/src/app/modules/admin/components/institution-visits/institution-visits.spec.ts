@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MessageService } from 'primeng/api';
 import { InstitutionVisits } from './institution-visits';
 
 describe('InstitutionVisits', () => {
@@ -10,7 +11,7 @@ describe('InstitutionVisits', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [InstitutionVisits],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), MessageService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InstitutionVisits);
