@@ -10,9 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.UserComment
 import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDateTime
@@ -74,13 +76,13 @@ fun CommentCard(
                         ) {
                             Icon(
                                 Icons.Default.Person,
-                                contentDescription = "Doctor Rating",
+                                contentDescription = stringResource(R.string.doctor_rating),
                                 tint = colors.blue900,
                                 modifier = Modifier.size(16.dp)
                             )
                             Icon(
                                 Icons.Default.Star,
-                                contentDescription = "Rating",
+                                contentDescription = stringResource(R.string.rating),
                                 tint = colors.yellow,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -100,13 +102,13 @@ fun CommentCard(
                         ) {
                             Icon(
                                 Icons.Default.Business,
-                                contentDescription = "Institution Rating",
+                                contentDescription = stringResource(R.string.institution_rating),
                                 tint = colors.blue900,
                                 modifier = Modifier.size(16.dp)
                             )
                             Icon(
                                 Icons.Default.Star,
-                                contentDescription = "Rating",
+                                contentDescription = stringResource(R.string.rating),
                                 tint = colors.yellow,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -123,7 +125,7 @@ fun CommentCard(
                         try {
                             val dateTime = LocalDateTime.parse(comment.createdAt)
                             dateTime.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                             null
                         }
                     }
@@ -167,7 +169,7 @@ fun CommentCard(
                         containerColor = colors.blue800
                     )
                 ) {
-                    Text("SEE REVIEW")
+                    Text(stringResource(R.string.see_review))
                 }
 
                 Button(
@@ -178,7 +180,7 @@ fun CommentCard(
                         containerColor = colors.red800
                     )
                 ) {
-                    Text("DELETE")
+                    Text(stringResource(R.string.delete))
                 }
             }
         }
@@ -187,8 +189,8 @@ fun CommentCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Confirm Deletion") },
-            text = { Text("Are you sure you want to delete this comment? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.confirm_deletion)) },
+            text = { Text(stringResource(R.string.confirm_delete_comment)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -199,12 +201,12 @@ fun CommentCard(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete_capital))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background

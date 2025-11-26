@@ -34,6 +34,7 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.MedicalInformation
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -61,6 +62,7 @@ import com.medipath.MediPathApplication
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.medipath.R
 
 class HomeActivity : ComponentActivity() {
 
@@ -68,9 +70,9 @@ class HomeActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.notification_permission_granted), Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.notification_permission_denied), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -81,6 +83,10 @@ class HomeActivity : ComponentActivity() {
         val sessionManager = RetrofitInstance.getSessionManager()
         val authService = RetrofitInstance.authService
 
+        if (sessionManager.isLoggedIn()) {
+            (application as MediPathApplication).initializeWebSocket()
+        }
+        
         checkNotificationPermission()
 
         setContent {
@@ -110,13 +116,20 @@ class HomeActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val sessionManager = RetrofitInstance.getSessionManager()
+        if (sessionManager.isLoggedIn()) {
+            (application as MediPathApplication).reconnectWebSocketIfNeeded()
+        }
+    }
+
     private fun checkNotificationPermission() {
         val app = application as MediPathApplication
         if (app.shouldRequestNotificationPermission()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
-            app.markPermissionRequested()
         }
     }
 }
@@ -124,20 +137,19 @@ class HomeActivity : ComponentActivity() {
 @Composable
 fun HomeScreen(
     onLogoutClick: () -> Unit = {},
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    notificationsViewModel: NotificationsViewModel = viewModel()
     ) {
     val context = LocalContext.current
 
-    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
-    val notificationsViewModel: NotificationsViewModel = viewModel()
 
     val visitsViewModel: VisitsViewModel = viewModel()
     val visitsError by visitsViewModel.error.collectAsState(null)
-    val visitsShouldRedirect by visitsViewModel.shouldRedirectToLogin.collectAsState()
 
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    val homeError by viewModel.error.collectAsState()
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -150,6 +162,13 @@ fun HomeScreen(
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(homeError) {
+        homeError?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
         }
     }
 
@@ -166,30 +185,7 @@ fun HomeScreen(
         }
     }
 
-    if (shouldRedirectToLogin) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-
-        LaunchedEffect(shouldRedirectToLogin || visitsShouldRedirect) {
-            if (!shouldRedirectToLogin) return@LaunchedEffect
-
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
-
-            val sessionManager = RetrofitInstance.getSessionManager()
-            sessionManager.deleteSessionId()
-
-            context.startActivity(
-                Intent(context, LoginActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
-            (context as? ComponentActivity)?.finish()
-        }
-
-    } else if (isLoading) {
+    if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -241,7 +237,7 @@ fun HomeScreen(
                                 .padding(vertical = 20.dp, horizontal = 30.dp)
                         ) {
                             Text(
-                                text = "Dashboard",
+                                text = stringResource(R.string.dashboard),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -249,9 +245,9 @@ fun HomeScreen(
                             )
 
                             InfoCard(
-                                title = "Prescriptions",
-                                label = "Code:",
-                                code = prescriptionCode.ifEmpty { "No active prescriptions" },
+                                title = stringResource(R.string.prescriptions),
+                                label = stringResource(R.string.code_label),
+                                code = prescriptionCode.ifEmpty { stringResource(R.string.no_active_prescriptions) },
                                 onClick = {
                                     NavigationRouter.navigateToTab(context, "Prescriptions", "Dashboard")
                                 }
@@ -260,9 +256,9 @@ fun HomeScreen(
                             Spacer(modifier = Modifier.height(10.dp))
 
                             InfoCard(
-                                title = "Referrals",
-                                label = "Code:",
-                                code = referralCode.ifEmpty { "No active referrals" },
+                                title = stringResource(R.string.referrals),
+                                label = stringResource(R.string.code_label),
+                                code = referralCode.ifEmpty { stringResource(R.string.no_active_referrals) },
                                 onClick = {
                                     NavigationRouter.navigateToTab(context, "Referrals", "Dashboard")
                                 }
@@ -276,7 +272,7 @@ fun HomeScreen(
                             ) {
                                 MenuCard(
                                     icon = Icons.AutoMirrored.Outlined.List,
-                                    title = "Visits",
+                                    title = stringResource(R.string.visits),
                                     onClick = { 
                                         NavigationRouter.navigateToTab(context, "Visits", "Dashboard")
                                     },
@@ -286,7 +282,7 @@ fun HomeScreen(
 
                                 MenuCard(
                                     icon = Icons.Outlined.MedicalInformation,
-                                    title = "Medical history",
+                                    title = stringResource(R.string.medical_history),
                                     onClick = { 
                                         NavigationRouter.navigateToTab(context, "Medical history", "Dashboard")
                                     },
@@ -296,7 +292,7 @@ fun HomeScreen(
 
                                 MenuCard(
                                     icon = Icons.AutoMirrored.Outlined.Comment,
-                                    title = "Comments",
+                                    title = stringResource(R.string.comments),
                                     onClick = { 
                                         NavigationRouter.navigateToTab(context, "Comments", "Dashboard")
                                     },
@@ -306,7 +302,7 @@ fun HomeScreen(
 
                                 MenuCard(
                                     icon = Icons.Outlined.Notifications,
-                                    title = "Reminders",
+                                    title = stringResource(R.string.reminders),
                                     onClick = { 
                                         NavigationRouter.navigateToTab(context, "Reminders", "Dashboard")
                                     },
@@ -330,17 +326,19 @@ fun HomeScreen(
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
                             ) {
                                 Text(
-                                    "Upcoming visits",
+                                    stringResource(R.string.upcoming_visits),
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Icon(
                                     imageVector = Icons.Outlined.CalendarMonth,
-                                    contentDescription = "Visit",
+                                    contentDescription = stringResource(R.string.visit),
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(30.dp)
                                 )
@@ -360,7 +358,7 @@ fun HomeScreen(
                             ) {
                                 Spacer(modifier = Modifier.height(20.dp))
                                 Text(
-                                    "No upcoming visits",
+                                    stringResource(R.string.no_upcoming_visits),
                                     fontSize = 16.sp,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )

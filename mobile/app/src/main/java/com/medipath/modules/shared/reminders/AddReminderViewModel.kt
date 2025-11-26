@@ -1,15 +1,19 @@
 package com.medipath.modules.shared.reminders
 
-import android.util.Log
+import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.AddNotificationRequest
 import com.medipath.core.network.RetrofitInstance
 import kotlinx.coroutines.launch
+import okio.IOException
 
-class AddReminderViewModel : ViewModel() {
+class AddReminderViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val notificationsService = RetrofitInstance.notificationsService
 
     private val _title = mutableStateOf("")
@@ -35,6 +39,8 @@ class AddReminderViewModel : ViewModel() {
 
     private val _shouldRedirectToLogin = mutableStateOf(false)
     val shouldRedirectToLogin: State<Boolean> = _shouldRedirectToLogin
+    
+    private val context = getApplication<Application>()
 
     fun updateTitle(value: String) {
         _title.value = value
@@ -56,7 +62,7 @@ class AddReminderViewModel : ViewModel() {
         _reminderTime.value = value
     }
 
-    fun addReminder(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun addReminder(onSuccess: () -> Unit) {
 
         viewModelScope.launch {
             try {
@@ -66,10 +72,10 @@ class AddReminderViewModel : ViewModel() {
 
                 val request = AddNotificationRequest(
                     userId = null,
-                    content = if (_content.value.isBlank()) null else _content.value,
+                    content = _content.value.ifBlank { null },
                     title = _title.value,
                     startDate = _startDate.value,
-                    endDate = if (_endDate.value.isBlank()) null else _endDate.value,
+                    endDate = _endDate.value.ifBlank { null },
                     reminderTime = _reminderTime.value
                 )
 
@@ -80,12 +86,12 @@ class AddReminderViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    onError("Failed to add reminder: ${response.code()}")
+                    _error.value = context.getString(R.string.error_add_reminder)
                 }
-
-            } catch (e: Exception) {
-                Log.e("AddReminderViewModel", "Error adding reminder", e)
-                onError("Network error: ${e.message}")
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }

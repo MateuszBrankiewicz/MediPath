@@ -15,9 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.theme.LocalCustomColors
 
 @Composable
@@ -35,7 +37,7 @@ fun StarRating(
         ) {
             Icon(
                 Icons.Default.Star,
-                contentDescription = "Rating",
+                contentDescription = stringResource(R.string.rating),
                 tint = LocalCustomColors.current.yellow,
                 modifier = Modifier.size(16.dp)
             )

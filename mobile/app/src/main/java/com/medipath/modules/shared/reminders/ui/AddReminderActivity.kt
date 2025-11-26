@@ -21,12 +21,13 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
 import java.util.Calendar
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
@@ -43,7 +44,8 @@ class AddReminderActivity : ComponentActivity() {
                 AddReminderScreen(
                     onBackClick = { finish() },
                     onSuccess = {
-                        Toast.makeText(this, "Reminder added successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this,
+                            getString(R.string.reminder_added_successfully), Toast.LENGTH_SHORT).show()
                         finish()
                     }
                 )
@@ -76,7 +78,7 @@ fun AddReminderScreen(
 
     if (shouldRedirectToLogin) {
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.error_session), Toast.LENGTH_LONG).show()
             val sessionManager = RetrofitInstance.getSessionManager()
             sessionManager.deleteSessionId()
             context.startActivity(
@@ -93,37 +95,39 @@ fun AddReminderScreen(
             .padding(WindowInsets.navigationBars.asPaddingValues())
             .background(MaterialTheme.colorScheme.secondary)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(colors.blue900)
-                .padding(top = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Return",
-                    tint = MaterialTheme.colorScheme.background
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.add_reminder),
+                            color = MaterialTheme.colorScheme.background,
+                            fontSize = 23.sp
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.back),
+                                tint = MaterialTheme.colorScheme.background
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = colors.blue900
+                    )
                 )
             }
-            Text(
-                text = "Add reminder",
-                fontSize = 23.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.background,
-                modifier = Modifier.padding(start = 8.dp).padding(vertical = 24.dp)
-            )
-        }
-
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -145,14 +149,14 @@ fun AddReminderScreen(
                     )
                     Column {
                         Text(
-                            text = "Create a new reminder",
+                            text = stringResource(R.string.create_a_new_reminder),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = colors.blue800
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Fill in the fields below to add a reminder. Fields marked with * are required.",
+                            text = stringResource(R.string.fill_in_the_fields_below_to_add_a_reminder_fields_marked_with_are_required),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.primary,
                             lineHeight = 16.sp
@@ -176,7 +180,7 @@ fun AddReminderScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "Reminder details",
+                        text = stringResource(R.string.reminder_details),
                         fontSize = 19.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -185,8 +189,8 @@ fun AddReminderScreen(
                     OutlinedTextField(
                         value = title,
                         onValueChange = { viewModel.updateTitle(it) },
-                        label = { Text("Title *") },
-                        placeholder = { Text("e.g. Doctor appointment") },
+                        label = { Text(stringResource(R.string.title_required)) },
+                        placeholder = { Text(stringResource(R.string.e_g_doctor_appointment)) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Title,
@@ -202,8 +206,8 @@ fun AddReminderScreen(
                     OutlinedTextField(
                         value = content,
                         onValueChange = { viewModel.updateContent(it) },
-                        label = { Text("Content") },
-                        placeholder = { Text("Additional information about the reminder") },
+                        label = { Text(stringResource(R.string.content)) },
+                        placeholder = { Text(stringResource(R.string.additional_information_about_the_reminder)) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Description,
@@ -220,7 +224,7 @@ fun AddReminderScreen(
                     OutlinedTextField(
                         value = startDate,
                         onValueChange = { },
-                        label = { Text("Start date*") },
+                        label = { Text(stringResource(R.string.start_date)) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.CalendarToday,
@@ -235,7 +239,12 @@ fun AddReminderScreen(
                                 val dpd = DatePickerDialog(
                                     context,
                                     { _, year, month, dayOfMonth ->
-                                        val formatted = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                                        val formatted = String.format(
+                                            "%04d-%02d-%02d",
+                                            year,
+                                            month + 1,
+                                            dayOfMonth
+                                        )
                                         viewModel.updateStartDate(formatted)
                                     },
                                     cal.get(Calendar.YEAR),
@@ -260,7 +269,7 @@ fun AddReminderScreen(
                     OutlinedTextField(
                         value = endDate,
                         onValueChange = { },
-                        label = { Text("End date") },
+                        label = { Text(stringResource(R.string.end_date)) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Event,
@@ -275,7 +284,12 @@ fun AddReminderScreen(
                                 val dpd = DatePickerDialog(
                                     context,
                                     { _, year, month, dayOfMonth ->
-                                        val formatted = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                                        val formatted = String.format(
+                                            "%04d-%02d-%02d",
+                                            year,
+                                            month + 1,
+                                            dayOfMonth
+                                        )
                                         viewModel.updateEndDate(formatted)
                                     },
                                     cal.get(Calendar.YEAR),
@@ -300,7 +314,7 @@ fun AddReminderScreen(
                     OutlinedTextField(
                         value = reminderTime,
                         onValueChange = { },
-                        label = { Text("Reminder time*") },
+                        label = { Text(stringResource(R.string.reminder_time)) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Schedule,
@@ -317,7 +331,8 @@ fun AddReminderScreen(
                                 val tpd = TimePickerDialog(
                                     context,
                                     { _, selectedHour, selectedMinute ->
-                                        val formatted = String.format("%02d:%02d", selectedHour, selectedMinute)
+                                        val formatted =
+                                            String.format("%02d:%02d", selectedHour, selectedMinute)
                                         viewModel.updateReminderTime(formatted)
                                     },
                                     hour,
@@ -362,7 +377,7 @@ fun AddReminderScreen(
                     ),
                     enabled = !isLoading
                 ) {
-                    Text("CANCEL",
+                    Text(stringResource(R.string.cancel_capitals),
                         fontSize = 16.sp,
                         modifier = Modifier.padding(vertical = 6.dp)
                     )
@@ -371,10 +386,7 @@ fun AddReminderScreen(
                     Button(
                     onClick = {
                         viewModel.addReminder(
-                            onSuccess = onSuccess,
-                            onError = { errorMsg ->
-                                Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
-                            }
+                            onSuccess = onSuccess
                         )
                     },
                     modifier = Modifier.weight(1f),
@@ -392,7 +404,7 @@ fun AddReminderScreen(
                         )
                     }
                     Text(
-                        text = if (isLoading) "ADDING..." else "ADD",
+                        text = if (isLoading) stringResource(R.string.adding) else stringResource(R.string.add),
                         fontSize = 16.sp,
                         modifier = Modifier.padding(vertical = 6.dp)
                     )
@@ -400,6 +412,7 @@ fun AddReminderScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
         }
     }
 }

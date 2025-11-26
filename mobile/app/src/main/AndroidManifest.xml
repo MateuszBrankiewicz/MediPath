@@ -36,8 +36,7 @@
             android:exported="false" />
         <activity android:name=".modules.patient.home.ui.HomeActivity"
             android:exported="false" />
-        <activity
-            android:name=".modules.patient.codes.ui.CodesActivity"
+        <activity android:name=".modules.patient.codes.ui.CodesActivity"
             android:exported="false" />
         <activity android:name=".modules.patient.search.ui.SearchResultsActivity"
             android:exported="false" />
@@ -83,6 +82,17 @@
             android:exported="false" />
         <activity android:name=".modules.doctor.visit.ui.DoctorVisitDetailsActivity"
             android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.medipath.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
     </application>
 
 </manifest>

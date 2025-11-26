@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +30,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
@@ -82,7 +84,7 @@ fun ReviewDetailsScreen(
                 java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
             )
             parsedDateTime.format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm"))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             dateString
         }
     }
@@ -110,7 +112,7 @@ fun ReviewDetailsScreen(
 
     if (shouldRedirectToLogin) {
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.error_session), Toast.LENGTH_LONG).show()
             val sessionManager = RetrofitInstance.getSessionManager()
             sessionManager.deleteSessionId()
             context.startActivity(
@@ -130,12 +132,12 @@ fun ReviewDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Review", color = Color.White) },
+                title = { Text(stringResource(R.string.review), color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Return",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color.White
                         )
                     }
@@ -159,7 +161,7 @@ fun ReviewDetailsScreen(
 
                 error != null -> {
                     Text(
-                        text = error ?: "Unknown error",
+                        text = error ?: stringResource(R.string.unknown_error),
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -189,7 +191,7 @@ fun ReviewDetailsScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Outlined.Person,
-                                        contentDescription = "Author",
+                                        contentDescription = stringResource(R.string.author),
                                         tint = colors.blue900,
                                         modifier = Modifier.size(40.dp)
                                     )
@@ -207,7 +209,7 @@ fun ReviewDetailsScreen(
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Outlined.CalendarToday,
-                                                contentDescription = "Date",
+                                                contentDescription = stringResource(R.string.date),
                                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                                 modifier = Modifier.size(16.dp)
                                             )
@@ -230,7 +232,7 @@ fun ReviewDetailsScreen(
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "Visit Details",
+                                        text = stringResource(R.string.visit_details),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -242,7 +244,7 @@ fun ReviewDetailsScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "Doctor:",
+                                            text = stringResource(R.string.doctor_title),
                                             fontSize = 14.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                             modifier = Modifier.weight(0.4f)
@@ -264,7 +266,7 @@ fun ReviewDetailsScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "Institution:",
+                                            text = stringResource(R.string.institution_title),
                                             fontSize = 14.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                             modifier = Modifier.weight(0.4f)
@@ -287,7 +289,7 @@ fun ReviewDetailsScreen(
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "Ratings",
+                                        text = stringResource(R.string.ratings),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -300,14 +302,14 @@ fun ReviewDetailsScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Text(
-                                            text = "Doctor",
+                                            text = stringResource(R.string.doctor),
                                             fontSize = 14.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                         )
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Icon(
                                                 Icons.Default.Star,
-                                                contentDescription = "Rating",
+                                                contentDescription = stringResource(R.string.rating),
                                                 tint = LocalCustomColors.current.yellow,
                                                 modifier = Modifier.size(20.dp)
                                             )
@@ -334,14 +336,14 @@ fun ReviewDetailsScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Text(
-                                            text = "Institution",
+                                            text = stringResource(R.string.institution),
                                             fontSize = 14.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                         )
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Icon(
                                                 Icons.Default.Star,
-                                                contentDescription = "Rating",
+                                                contentDescription = stringResource(R.string.rating),
                                                 tint = LocalCustomColors.current.yellow,
                                                 modifier = Modifier.size(20.dp)
                                             )
@@ -368,14 +370,14 @@ fun ReviewDetailsScreen(
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "Review",
+                                        text = stringResource(R.string.review),
                                         fontSize = 16.sp,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.height(12.dp))
                                     Text(
-                                        text = comment!!.content.ifEmpty { "No additional comments" },
+                                        text = comment!!.content.ifEmpty { stringResource(R.string.no_additional_comments) },
                                         fontSize = 14.sp,
                                         color = if (comment!!.content.isEmpty()) 
                                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -435,7 +437,7 @@ fun ReviewDetailsScreen(
                                     contentPadding = PaddingValues(vertical = 14.dp)
                                 ) {
                                     Text(
-                                        text = "EDIT",
+                                        text = stringResource(R.string.edit),
                                         fontSize = 16.sp
                                     )
                                 }
@@ -458,7 +460,7 @@ fun ReviewDetailsScreen(
                                         )
                                     } else {
                                         Text(
-                                            text = "DELETE",
+                                            text = stringResource(R.string.delete),
                                             fontSize = 16.sp
                                         )
                                     }

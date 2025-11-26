@@ -2,7 +2,6 @@ package com.medipath.modules.patient.medical_history.ui
 
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,10 +21,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.models.UserMedicalHistory
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
@@ -76,7 +77,7 @@ fun MedicalHistoryDetailsScreen(
 
     LaunchedEffect(historyId) {
         if (historyId != null) {
-            var history = viewModel.getMedicalHistoryById(historyId)
+            val history = viewModel.getMedicalHistoryById(historyId)
             
             if (history == null) {
                 viewModel.fetchMedicalHistories()
@@ -99,9 +100,9 @@ fun MedicalHistoryDetailsScreen(
     LaunchedEffect(addUpdateSuccess) {
         if (addUpdateSuccess) {
             val message = if (historyId == null) {
-                "Medical history added successfully"
+                context.getString(R.string.medical_history_added_successfully)
             } else {
-                "Medical history updated successfully"
+                context.getString(R.string.medical_history_updated_successfully)
             }
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             onBack()
@@ -120,9 +121,9 @@ fun MedicalHistoryDetailsScreen(
                 title = {
                     Text(
                         when {
-                            historyId == null -> "Add Medical History"
-                            isReadOnly -> "View Medical History"
-                            else -> "Edit Medical History"
+                            historyId == null -> stringResource(R.string.add_medical_history)
+                            isReadOnly -> stringResource(R.string.view_medical_history)
+                            else -> stringResource(R.string.edit_medical_history)
                         },
                         color = Color.White
                     )
@@ -131,7 +132,7 @@ fun MedicalHistoryDetailsScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Return",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color.White
                         )
                     }
@@ -177,7 +178,7 @@ fun MedicalHistoryDetailsScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Created by Doctor",
+                                    text = stringResource(R.string.created_by_doctor),
                                     fontSize = 17.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = colors.blue900
@@ -212,7 +213,7 @@ fun MedicalHistoryDetailsScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Title",
+                                text = stringResource(R.string.title),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
                                 color = MaterialTheme.colorScheme.primary
@@ -222,7 +223,7 @@ fun MedicalHistoryDetailsScreen(
                                 onValueChange = { title = it },
                                 modifier = Modifier.fillMaxWidth(),
                                 enabled = !isReadOnly,
-                                placeholder = { Text("Enter title...") },
+                                placeholder = { Text(stringResource(R.string.enter_title)) },
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = colors.blue900,
                                     unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(0.3f),
@@ -252,7 +253,7 @@ fun MedicalHistoryDetailsScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Date of Visit",
+                                text = stringResource(R.string.date_of_visit),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
                                 color = MaterialTheme.colorScheme.primary
@@ -260,7 +261,7 @@ fun MedicalHistoryDetailsScreen(
                             OutlinedTextField(
                                 value = try {
                                     LocalDate.parse(date).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-                                } catch (e: Exception) {
+                                } catch (_: Exception) {
                                     date
                                 },
                                 onValueChange = {},
@@ -269,17 +270,26 @@ fun MedicalHistoryDetailsScreen(
                                     .clickable(enabled = !isReadOnly) {
                                         val currentDate = try {
                                             LocalDate.parse(date)
-                                        } catch (e: Exception) {
+                                        } catch (_: Exception) {
                                             LocalDate.now()
                                         }
-                                        
+
                                         val cal = Calendar.getInstance()
-                                        cal.set(currentDate.year, currentDate.monthValue - 1, currentDate.dayOfMonth)
-                                        
+                                        cal.set(
+                                            currentDate.year,
+                                            currentDate.monthValue - 1,
+                                            currentDate.dayOfMonth
+                                        )
+
                                         val dpd = DatePickerDialog(
                                             context,
                                             { _, year, month, dayOfMonth ->
-                                                val formatted = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                                                val formatted = String.format(
+                                                    "%04d-%02d-%02d",
+                                                    year,
+                                                    month + 1,
+                                                    dayOfMonth
+                                                )
                                                 date = formatted
                                             },
                                             cal.get(Calendar.YEAR),
@@ -301,7 +311,7 @@ fun MedicalHistoryDetailsScreen(
                                 trailingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.DateRange,
-                                        contentDescription = "Select date",
+                                        contentDescription = stringResource(R.string.select_date),
                                         tint = if (!isReadOnly) colors.blue900 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -324,7 +334,7 @@ fun MedicalHistoryDetailsScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Notes",
+                                text = stringResource(R.string.notes),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
                                 color = MaterialTheme.colorScheme.primary
@@ -336,7 +346,7 @@ fun MedicalHistoryDetailsScreen(
                                     .fillMaxWidth()
                                     .height(150.dp),
                                 enabled = !isReadOnly,
-                                placeholder = { Text("Enter your notes...") },
+                                placeholder = { Text(stringResource(R.string.enter_your_notes)) },
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = colors.blue900,
                                     unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(0.3f),
@@ -361,7 +371,7 @@ fun MedicalHistoryDetailsScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Text(
-                                text = error ?: "Unknown error",
+                                text = error ?: stringResource(R.string.unknown_error),
                                 color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(16.dp)
                             )
@@ -397,7 +407,9 @@ fun MedicalHistoryDetailsScreen(
                                 )
                             } else {
                                 Text(
-                                    text = if (historyId == null) "SAVE" else "UPDATE",
+                                    text = if (historyId == null) stringResource(R.string.save) else stringResource(
+                                        R.string.update
+                                    ),
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
@@ -415,7 +427,7 @@ fun MedicalHistoryDetailsScreen(
                             shape = RoundedCornerShape(30.dp)
                         ) {
                             Text(
-                                text = "CLOSE",
+                                text = stringResource(R.string.close_capitals),
                                 fontSize = 16.sp,
                                 modifier = Modifier.padding(vertical = 8.dp)
                             )

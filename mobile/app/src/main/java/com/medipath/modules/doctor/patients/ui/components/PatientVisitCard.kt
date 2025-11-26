@@ -25,21 +25,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.PatientVisit
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.core.utils.LocaleHelper
+import com.medipath.modules.shared.components.getTranslatedStatus
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @Composable
 fun PatientVisitCard(visit: PatientVisit) {
+    val context = LocalContext.current
+    val locale = LocaleHelper.getLocale(context)
     val colors = LocalCustomColors.current
 
     val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault())
+    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", locale)
     val outputTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     val startDateTime = try {
@@ -52,20 +58,24 @@ fun PatientVisitCard(visit: PatientVisit) {
         }
     }
 
-    val dateFormatted = startDateTime?.format(outputDateFormatter) ?: "Invalid Date"
+    val dateFormatted = startDateTime?.format(outputDateFormatter) ?: stringResource(R.string.unknown_date)
     val timeFormatted = startDateTime?.format(outputTimeFormatter) ?: "--:--"
 
-    val statusColor = when (visit.status) {
-        "Upcoming" -> colors.orange800
-        "Completed" -> colors.green800
-        "Cancelled" -> colors.red800
+    val statusText = getTranslatedStatus(visit.status)
+
+    val rawStatus = visit.status.lowercase()
+
+    val statusColor = when (rawStatus) {
+        "upcoming", "scheduled" -> colors.orange800
+        "completed" -> colors.green800
+        "cancelled" -> colors.red800
         else -> MaterialTheme.colorScheme.onSurface
     }
 
-    val statusBackgroundColor = when (visit.status) {
-        "Upcoming" -> MaterialTheme.colorScheme.background
-        "Completed" -> colors.green800.copy(alpha = 0.1f)
-        "Cancelled" -> MaterialTheme.colorScheme.background.copy(alpha = 0.4f)
+    val statusBackgroundColor = when (rawStatus) {
+        "upcoming", "scheduled" -> MaterialTheme.colorScheme.background
+        "completed" -> colors.green800.copy(alpha = 0.1f)
+        "cancelled" -> MaterialTheme.colorScheme.background.copy(alpha = 0.4f)
         else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
     }
 
@@ -95,7 +105,7 @@ fun PatientVisitCard(visit: PatientVisit) {
                     )
                 }
                 Text(
-                    text = visit.status,
+                    text = statusText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = statusColor,
@@ -146,7 +156,7 @@ fun PatientVisitCard(visit: PatientVisit) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Column {
                     Text(
-                        text = "Note",
+                        text = stringResource(R.string.note),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary
@@ -167,7 +177,7 @@ fun PatientVisitCard(visit: PatientVisit) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Column {
                     Text(
-                        text = "Patient remarks",
+                        text = stringResource(R.string.patient_remarks),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary
@@ -188,7 +198,7 @@ fun PatientVisitCard(visit: PatientVisit) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Column {
                     Text(
-                        text = "Codes",
+                        text = stringResource(R.string.codes),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary
@@ -199,6 +209,11 @@ fun PatientVisitCard(visit: PatientVisit) {
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(visit.codes) { code ->
+                            val codeTypeTranslated = when (code.codeType.uppercase()) {
+                                "PRESCRIPTION" -> stringResource(R.string.prescription)
+                                "REFERRAL" -> stringResource(R.string.referral)
+                                else -> code.codeType
+                            }
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
@@ -209,7 +224,7 @@ fun PatientVisitCard(visit: PatientVisit) {
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    text = code.codeType,
+                                    text = codeTypeTranslated,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = colors.blue800

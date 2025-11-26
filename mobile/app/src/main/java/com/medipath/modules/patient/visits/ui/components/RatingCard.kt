@@ -23,9 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import kotlin.math.round
 
 @Composable
@@ -83,7 +85,7 @@ fun RatingCard(
                             rating >= halfStar -> Icons.AutoMirrored.Filled.StarHalf
                             else -> Icons.Default.StarBorder
                         },
-                        contentDescription = "Star ${index + 1}",
+                        contentDescription = null,
                         tint = if (rating >= halfStar) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                         modifier = Modifier.size(36.dp)
                     )
@@ -113,11 +115,11 @@ fun RatingCard(
                 if (rating > 0) {
                     Text(
                         text = when {
-                            rating <= 1.0 -> "Very poor"
-                            rating <= 2.0 -> "Poor"
-                            rating <= 3.0 -> "Fair"
-                            rating <= 4.0 -> "Good"
-                            else -> "Excellent"
+                            rating <= 1.0 -> stringResource(R.string.very_poor)
+                            rating <= 2.0 -> stringResource(R.string.poor)
+                            rating <= 3.0 -> stringResource(R.string.fair)
+                            rating <= 4.0 -> stringResource(R.string.good)
+                            else -> stringResource(R.string.excellent)
                         } + " (${"%.1f".format(rating)}/5.0)",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,

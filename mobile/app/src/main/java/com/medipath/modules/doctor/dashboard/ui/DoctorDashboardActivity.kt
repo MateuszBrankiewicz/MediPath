@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.medipath.core.network.RetrofitInstance
@@ -45,10 +44,13 @@ import com.medipath.modules.shared.settings.ui.SettingsActivity
 import com.medipath.modules.doctor.visit.ui.DoctorVisitDetailsActivity
 import com.medipath.MediPathApplication
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.core.utils.LocaleHelper
 import com.medipath.modules.doctor.dashboard.ui.components.CalendarGrid
 import com.google.gson.Gson
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import com.medipath.R
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
@@ -62,9 +64,11 @@ class DoctorDashboardActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,
+                getString(R.string.notification_permission_granted), Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,
+                getString(R.string.notification_permission_denied), Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -73,6 +77,11 @@ class DoctorDashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val sessionManager = RetrofitInstance.getSessionManager()
+        if (sessionManager.isLoggedIn()) {
+            (application as MediPathApplication).initializeWebSocket()
+        }
+        
         checkNotificationPermission()
         
         setContent {
@@ -107,6 +116,11 @@ class DoctorDashboardActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         shouldRefreshOnResume = true
+        
+        val sessionManager = RetrofitInstance.getSessionManager()
+        if (sessionManager.isLoggedIn()) {
+            (application as MediPathApplication).reconnectWebSocketIfNeeded()
+        }
     }
 
     private fun checkNotificationPermission() {
@@ -115,7 +129,6 @@ class DoctorDashboardActivity : ComponentActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
-            app.markPermissionRequested()
         }
     }
 }
@@ -124,11 +137,13 @@ class DoctorDashboardActivity : ComponentActivity() {
 fun DoctorDashboardScreen(
     shouldRefresh: Boolean = false,
     onRefreshHandled: () -> Unit = {},
-    viewModel: ProfileViewModel = viewModel(),
     dashboardViewModel: DoctorDashboardViewModel = viewModel(),
     notificationsViewModel: NotificationsViewModel = viewModel(),
     onLogoutClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val viewModel: ProfileViewModel = viewModel()
+
     val name by viewModel.name.collectAsState()
     val surname by viewModel.surname.collectAsState()
     val rating by viewModel.rating.collectAsState()
@@ -138,8 +153,6 @@ fun DoctorDashboardScreen(
     val selectedDateVisits by dashboardViewModel.selectedDateVisits.collectAsState()
     val currentVisit by dashboardViewModel.currentVisit.collectAsState()
     val patientCount by dashboardViewModel.selectedDatePatientCount.collectAsState()
-    
-    val context = LocalContext.current
     
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
@@ -222,16 +235,16 @@ fun DoctorDashboardScreen(
                                 }
                                 Text(
                                     text = if (numOfRatings > 0) 
-                                        "$numOfRatings satisfied patients"
+                                        stringResource(R.string.satisfied_patients, numOfRatings)
                                     else 
-                                        "No ratings yet",
+                                        stringResource(R.string.no_ratings_yet),
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                             Icon(
                                 imageVector = Icons.Outlined.Star,
-                                contentDescription = "Rating",
+                                contentDescription = stringResource(R.string.rating),
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(40.dp)
                             )
@@ -265,16 +278,16 @@ fun DoctorDashboardScreen(
                                 )
                                 Text(
                                     text = if (selectedDate.isEqual(LocalDate.now())) 
-                                        "patients for today"
+                                        stringResource(R.string.patients_for_today)
                                     else 
-                                        "patients (${selectedDate.format(DateTimeFormatter.ofPattern("dd.MM"))})",
+                                        stringResource(R.string.patients_for_date, selectedDate.format(DateTimeFormatter.ofPattern("dd.MM"))),
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                             Icon(
                                 imageVector = Icons.Outlined.Person,
-                                contentDescription = "Patients",
+                                contentDescription = stringResource(R.string.patients),
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(40.dp)
                             )
@@ -301,7 +314,7 @@ fun DoctorDashboardScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Select a date",
+                                    text = stringResource(R.string.select_date),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
@@ -310,7 +323,7 @@ fun DoctorDashboardScreen(
                                     selectedDate = LocalDate.now()
                                     currentMonth = YearMonth.now()
                                 }) {
-                                    Text("Today")
+                                    Text(stringResource(R.string.today))
                                 }
                             }
                             
@@ -324,13 +337,14 @@ fun DoctorDashboardScreen(
                                 }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
-                                        contentDescription = "Previous month"
+                                        contentDescription = stringResource(R.string.previous_month)
                                     )
                                 }
                                 
+                                val locale = LocaleHelper.getLocale(context)
                                 Text(
                                     text = currentMonth.format(
-                                        DateTimeFormatter.ofPattern("LLLL yyyy", Locale("en"))
+                                        DateTimeFormatter.ofPattern("LLLL yyyy", locale)
                                     ).replaceFirstChar { it.uppercase() },
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
@@ -342,7 +356,7 @@ fun DoctorDashboardScreen(
                                 }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                                        contentDescription = "Next month"
+                                        contentDescription = stringResource(R.string.next_month)
                                     )
                                 }
                             }
@@ -374,7 +388,7 @@ fun DoctorDashboardScreen(
                             modifier = Modifier.padding(20.dp)
                         ) {
                             Text(
-                                text = "Current visit",
+                                text = stringResource(R.string.current_visit),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -386,8 +400,14 @@ fun DoctorDashboardScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            val intent = Intent(context, DoctorVisitDetailsActivity::class.java)
-                                            intent.putExtra("VISIT_JSON", Gson().toJson(currentVisit))
+                                            val intent = Intent(
+                                                context,
+                                                DoctorVisitDetailsActivity::class.java
+                                            )
+                                            intent.putExtra(
+                                                "VISIT_JSON",
+                                                Gson().toJson(currentVisit)
+                                            )
                                             intent.putExtra("IS_CURRENT", true)
                                             context.startActivity(intent)
                                         }
@@ -419,7 +439,7 @@ fun DoctorDashboardScreen(
                                 }
                             } else {
                                 Text(
-                                    text = "No appointment scheduled",
+                                    text = stringResource(R.string.no_appointment_scheduled),
                                     fontSize = 14.sp,
                                     fontStyle = FontStyle.Italic,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -444,9 +464,9 @@ fun DoctorDashboardScreen(
                         ) {
                             Text(
                                 text = if (selectedDate.isEqual(LocalDate.now())) 
-                                    "Visits for today"
+                                    stringResource(R.string.visits_for_today)
                                 else 
-                                    "Visits (${selectedDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))})",
+                                    "${stringResource(R.string.visits)} (${selectedDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))})",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
@@ -455,7 +475,7 @@ fun DoctorDashboardScreen(
                             
                             if (selectedDateVisits.isEmpty()) {
                                 Text(
-                                    text = "No appointments scheduled",
+                                    text = stringResource(R.string.no_appointments_scheduled),
                                     fontSize = 14.sp,
                                     fontStyle = FontStyle.Italic,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -474,7 +494,10 @@ fun DoctorDashboardScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                val intent = Intent(context, DoctorVisitDetailsActivity::class.java)
+                                                val intent = Intent(
+                                                    context,
+                                                    DoctorVisitDetailsActivity::class.java
+                                                )
                                                 intent.putExtra("VISIT_JSON", Gson().toJson(visit))
                                                 intent.putExtra("IS_CURRENT", false)
                                                 context.startActivity(intent)
@@ -503,7 +526,7 @@ fun DoctorDashboardScreen(
                                             if (!visit.patientRemarks.isNullOrEmpty()) {
                                                 Spacer(modifier = Modifier.height(4.dp))
                                                 Text(
-                                                    text = visit.patientRemarks!!,
+                                                    text = visit.patientRemarks,
                                                     fontSize = 13.sp,
                                                     fontStyle = FontStyle.Italic,
                                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -542,7 +565,7 @@ fun DoctorDashboardScreen(
         onLogoutClick = onLogoutClick,
         firstName = name,
         lastName = surname,
-        currentTab = "Dashboard",
+        currentTab = stringResource(R.string.dashboard),
         isDoctor = true,
         canSwitchRole = canSwitchRole
     )

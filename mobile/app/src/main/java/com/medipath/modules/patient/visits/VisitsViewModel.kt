@@ -1,19 +1,23 @@
 package com.medipath.modules.patient.visits
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.Visit
 import com.medipath.core.network.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class VisitsViewModel : ViewModel() {
+class VisitsViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val visitsService = RetrofitInstance.visitsService
     
     private val apiDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -63,6 +67,8 @@ class VisitsViewModel : ViewModel() {
     private val _cancelSuccess = MutableStateFlow(false)
     val cancelSuccess: StateFlow<Boolean> = _cancelSuccess.asStateFlow()
 
+    private val context = getApplication<Application>()
+
     fun fetchVisits(upcoming: Boolean = false) {
         viewModelScope.launch {
             try {
@@ -70,7 +76,11 @@ class VisitsViewModel : ViewModel() {
                 _error.value = null
                 _shouldRedirectToLogin.value = false
 
-                val response = visitsService.getAllVisits()
+                val response = if (upcoming) {
+                    visitsService.getUpcomingVisits("true")
+                } else {
+                    visitsService.getAllVisits()
+                }
 
                 if (response.isSuccessful) {
                     _visits.value = response.body()?.visits ?: emptyList()
@@ -79,11 +89,12 @@ class VisitsViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to load visits: ${response.code()}"
+                    _error.value = context.getString(R.string.error_load_visits)
                 }
-            } catch (e: Exception) {
-                Log.e("VisitsViewModel", "Error fetching visits", e)
-                _error.value = "Failed to load visits: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -112,10 +123,18 @@ class VisitsViewModel : ViewModel() {
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Failed to cancel visit: ${response.code()}"
+                    val errorResId = when (response.code()) {
+                        400 -> R.string.visit_already_completed
+                        403 -> R.string.no_permission_visit
+                        404 -> R.string.no_visits_found
+                        else -> R.string.failed_to_cancel_visit
+                    }
+                    _error.value = context.getString(errorResId)
                 }
-            } catch (e: Exception) {
-                _error.value = "Failed to cancel visit: ${e.message}"
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             }
         }
     }
@@ -189,13 +208,15 @@ class VisitsViewModel : ViewModel() {
                             apiDateTimeFormatter
                         ).toLocalDate()
                         !visitDate.isBefore(fromDate)
-                    } catch (e: Exception) {
-                        Log.e("VisitsViewModel", "Error parsing date: ${visit.time.startTime}", e)
+                    } catch (_: Exception) {
+                        _error.value = context.getString(R.string.failed_to_parse_date)
                         true
                     }
                 }
-            } catch (e: Exception) {
-                Log.e("VisitsViewModel", "Error parsing filter date from: ${_dateFromFilter.value}", e)
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             }
         }
 
@@ -209,13 +230,15 @@ class VisitsViewModel : ViewModel() {
                             apiDateTimeFormatter
                         ).toLocalDate()
                         !visitDate.isAfter(toDate)
-                    } catch (e: Exception) {
-                        Log.e("VisitsViewModel", "Error parsing date: ${visit.time.startTime}", e)
+                    } catch (_: Exception) {
+                        _error.value = context.getString(R.string.failed_to_parse_date)
                         true
                     }
                 }
-            } catch (e: Exception) {
-                Log.e("VisitsViewModel", "Error parsing filter date to: ${_dateToFilter.value}", e)
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             }
         }
 

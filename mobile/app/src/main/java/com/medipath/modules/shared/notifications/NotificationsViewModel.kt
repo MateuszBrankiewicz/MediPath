@@ -1,19 +1,22 @@
 package com.medipath.modules.shared.notifications
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import com.medipath.R
 import com.medipath.core.models.Notification
-import com.medipath.core.services.NotificationsService
 import com.medipath.core.network.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import okio.IOException
 
 class NotificationsViewModel(
-    private val notificationsService: NotificationsService = RetrofitInstance.notificationsService
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
+    private val notificationsService = RetrofitInstance.notificationsService
+
 
     private val _notifications = MutableStateFlow<List<Notification>>(emptyList())
     val notifications: StateFlow<List<Notification>> = _notifications.asStateFlow()
@@ -26,6 +29,8 @@ class NotificationsViewModel(
 
     private val _shouldRedirectToLogin = MutableStateFlow(false)
     val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
+    
+    private val context = getApplication<Application>()
 
 
     fun fetchNotifications() {
@@ -42,12 +47,13 @@ class NotificationsViewModel(
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    _error.value = "Error fetching notifications (${response.code()})"
+                    _error.value = context.getString(R.string.error_fetching_notifications)
                 }
 
-            } catch (e: Exception) {
-                _error.value = "Error fetching notifications: ${e.message}"
-                Log.e("NotificationsViewModel", "Error fetching notifications", e)
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -64,10 +70,12 @@ class NotificationsViewModel(
                 } else if (response.code() == 401) {
                     _shouldRedirectToLogin.value = true
                 } else {
-                    Log.e("NotificationsViewModel", "Failed to mark all as read: ${response.code()}")
+                    _error.value = context.getString(R.string.error_mark_all_as_read)
                 }
-            } catch (e: Exception) {
-                Log.e("NotificationsViewModel", "Error marking all as read", e)
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             }
         }
     }

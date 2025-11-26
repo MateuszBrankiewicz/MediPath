@@ -15,11 +15,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.DoctorScheduleItem
+import com.medipath.core.theme.LocalCustomColors
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -44,8 +47,8 @@ fun TimeSlotCard(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = when {
-                isBooked -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                isSelected -> MaterialTheme.colorScheme.primaryContainer
+                isBooked -> MaterialTheme.colorScheme.surface
+                isSelected -> LocalCustomColors.current.blue300
                 else -> MaterialTheme.colorScheme.background
             }
         ),
@@ -73,7 +76,7 @@ fun TimeSlotCard(
                 )
                 if (isBooked) {
                     Text(
-                        text = "Booked",
+                        text = stringResource(R.string.booked),
                         fontSize = 10.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                     )

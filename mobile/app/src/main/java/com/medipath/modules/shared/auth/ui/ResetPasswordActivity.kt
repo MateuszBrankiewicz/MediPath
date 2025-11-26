@@ -23,13 +23,14 @@ import android.content.Intent
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.shared.components.AuthTextField
 import androidx.compose.runtime.getValue
-import com.medipath.core.utils.ValidationUtils
 import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
 import com.medipath.modules.shared.auth.ResetPasswordViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 
@@ -48,7 +49,8 @@ class ResetPasswordActivity : ComponentActivity() {
                     finish()
                 },
                 onResetSuccess = {
-                    Toast.makeText(this, "Success! If an account exists, we've sent password reset instructions.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this,
+                        getString(R.string.reset_password_message), Toast.LENGTH_LONG).show()
                     finish()
                 }
             ) }
@@ -60,16 +62,22 @@ class ResetPasswordActivity : ComponentActivity() {
 
 @Composable
 fun ResetPasswordScreen(
-    viewModel: ResetPasswordViewModel = viewModel(),
     onSignUpClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
-    onResetSuccess: () -> Unit = {}
+    onResetSuccess: () -> Unit = {},
+    viewModel: ResetPasswordViewModel = viewModel()
 ) {
-    val resetError by viewModel.resetError
-    val resetSuccess by viewModel.resetSuccess
-    val email by viewModel.email
-    val emailError by viewModel.emailError
-    val isFormValid by viewModel.isFormValid
+
+    val resetError by viewModel.resetError.collectAsState()
+    val resetSuccess by viewModel.resetSuccess.collectAsState()
+    val email by viewModel.email.collectAsState()
+    val emailError by viewModel.emailError.collectAsState()
+
+    val isFormValid by remember(email, emailError) {
+        derivedStateOf {
+            email.isNotBlank() && emailError == null
+        }
+    }
 
     LaunchedEffect(resetSuccess) {
         if (resetSuccess) {
@@ -78,11 +86,16 @@ fun ResetPasswordScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 30.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 40.dp),
             horizontalArrangement = Arrangement.Start
         ) {
             IconButton(
@@ -91,7 +104,7 @@ fun ResetPasswordScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBackIosNew,
-                    contentDescription = "Back to login",
+                    contentDescription = stringResource(R.string.back_to_login),
                     tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(50.dp)
                 )
@@ -100,12 +113,14 @@ fun ResetPasswordScreen(
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Logo", modifier = Modifier.size(110.dp))
+        Image(painter = painterResource(id = R.drawable.logo), contentDescription = stringResource(R.string.logo), modifier = Modifier.size(110.dp))
         Spacer(modifier = Modifier.height(60.dp))
 
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
-            Text("Forgot password?", fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(250.dp).padding(vertical = 10.dp))
-            Text("Enter your email address, and we will send you a message with instructions to reset your password.", fontSize = 16.sp, fontWeight = FontWeight.W500, color = MaterialTheme.colorScheme.onBackground)
+            Text(stringResource(R.string.forgot_password), fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier
+                .width(250.dp)
+                .padding(vertical = 10.dp))
+            Text(stringResource(R.string.reset_password_confirmation), fontSize = 16.sp, fontWeight = FontWeight.W500, color = MaterialTheme.colorScheme.onBackground)
         }
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -113,11 +128,13 @@ fun ResetPasswordScreen(
         AuthTextField(
             value = email,
             onValueChange = { viewModel.onEmailChanged(it) },
-            fieldText = "Email Address",
-            hintText = "Enter your email address",
+            fieldText = stringResource(R.string.email_address),
+            hintText = stringResource(R.string.enter_your_email_address),
             keyboardType = KeyboardType.Email,
             errorMessage = emailError ?: "",
-            modifier = Modifier.testTag("email_field").fillMaxWidth(),
+            modifier = Modifier
+                .testTag("email_field")
+                .fillMaxWidth(),
             leadingIcon = R.drawable.user,
             onFocusLost = { viewModel.validateEmail() }
         )
@@ -147,10 +164,12 @@ fun ResetPasswordScreen(
                 disabledContentColor = MaterialTheme.colorScheme.background
             ),
             shape = RoundedCornerShape(30.dp),
-            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 14.dp)
         ) {
             Text(
-                text = "RESET PASSWORD",
+                text = stringResource(R.string.reset_password_capitals),
                 fontSize = 14.sp,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
@@ -159,8 +178,8 @@ fun ResetPasswordScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Row {
-            Text("Don’t have an account? ", fontWeight = FontWeight.W400, fontSize = 14.sp)
-            Text("Sign up", fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.clickable {
+            Text(stringResource(R.string.don_t_have_an_account), fontWeight = FontWeight.W400, fontSize = 14.sp)
+            Text(stringResource(R.string.sign_up), fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.clickable {
                 onSignUpClick()
             })
         }

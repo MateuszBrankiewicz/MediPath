@@ -31,14 +31,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.Visit
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.core.utils.LocaleHelper
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @Composable
 fun VisitItem(
@@ -48,10 +51,12 @@ fun VisitItem(
     onReschedule: ((String) -> Unit)? = null,
     elevation: CardElevation = CardDefaults.cardElevation()
 ) {
+    val context = LocalContext.current
+    val locale = LocaleHelper.getLocale(context)
     val colors = LocalCustomColors.current
 
     val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault())
+    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", locale)
     val outputTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     val startDateTime = try {
@@ -64,32 +69,25 @@ fun VisitItem(
         }
     }
 
-    val dateFormatted = startDateTime?.format(outputDateFormatter) ?: "Invalid Date"
+    val dateFormatted = startDateTime?.format(outputDateFormatter) ?: stringResource(R.string.unknown_date)
     val timeFormatted = startDateTime?.format(outputTimeFormatter) ?: "--:--"
-
-    val status = visit.status.lowercase()
 
     var showCancelDialog by remember { mutableStateOf(false) }
 
-    val isScheduled = status == "upcoming"
-    val isCancelled = status == "cancelled"
-    val isCompleted = status == "completed"
+    val rawStatus = visit.status.lowercase()
+
+    val isScheduled = rawStatus == "upcoming" || rawStatus == "scheduled"
+    val isCancelled = rawStatus == "cancelled"
+    val isCompleted = rawStatus == "completed"
 
     val canReschedule = isScheduled
     val canViewDetails = isCompleted
 
-    val statusText = when {
-        isScheduled -> "Upcoming"
-        isCancelled -> "Cancelled"
-        isCompleted -> "Completed"
-        else -> visit.status
-    }
-    
-    val statusColor = when {
-        isScheduled -> colors.orange800
-        isCancelled -> colors.red800
-        isCompleted -> colors.green800
-        else -> MaterialTheme.colorScheme.primary.copy(0.03f)
+    val (statusText, statusColor) = when {
+        isScheduled -> stringResource(R.string.upcoming) to colors.orange800
+        isCancelled -> stringResource(R.string.cancelled) to colors.red800
+        isCompleted -> stringResource(R.string.completed) to colors.green800
+        else -> visit.status to MaterialTheme.colorScheme.onSurface
     }
 
     Card(
@@ -194,7 +192,7 @@ fun VisitItem(
             if (visit.note.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Note: ${visit.note}",
+                    text = stringResource(R.string.note_title, visit.note),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -216,7 +214,7 @@ fun VisitItem(
                         contentColor = MaterialTheme.colorScheme.background
                     )
                 ) {
-                    Text("DETAILS", fontSize = 12.sp)
+                    Text(stringResource(R.string.details), fontSize = 12.sp)
                 }
                 Button(
                     onClick = { onReschedule?.invoke(visit.id) },
@@ -227,7 +225,7 @@ fun VisitItem(
                         contentColor = MaterialTheme.colorScheme.background
                     )
                 ) {
-                    Text("RESCHEDULE", fontSize = 12.sp)
+                    Text(stringResource(R.string.reschedule_capitals), fontSize = 12.sp)
                 }
                 if (isScheduled) {
                     Button(
@@ -238,7 +236,7 @@ fun VisitItem(
                             contentColor = MaterialTheme.colorScheme.background
                         )
                     ) {
-                        Text("CANCEL", fontSize = 12.sp)
+                        Text(stringResource(R.string.cancel_capitals), fontSize = 12.sp)
                     }
                 }
             }
@@ -248,8 +246,13 @@ fun VisitItem(
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
-            title = { Text("Confirm Cancellation") },
-            text = { Text("Are you sure you want to cancel the appointment with Dr. ${visit.doctor.doctorName} ${visit.doctor.doctorSurname}?") },
+            title = { Text(stringResource(R.string.confirm_cancellation)) },
+            text = { Text(
+                stringResource(
+                    R.string.confirm_cancellation_visit,
+                    visit.doctor.doctorName,
+                    visit.doctor.doctorSurname
+                )) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -257,12 +260,12 @@ fun VisitItem(
                         onCancelVisit(visit.id)
                     }
                 ) {
-                    Text("Confirm")
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showCancelDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background

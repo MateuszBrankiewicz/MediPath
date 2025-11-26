@@ -1,23 +1,23 @@
 package com.medipath.modules.patient.home
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import com.medipath.R
 import com.medipath.core.models.Visit
-import com.medipath.core.services.UserService
-import com.medipath.core.services.VisitsService
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.utils.RoleManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import okio.IOException
 
 class HomeViewModel(
-    private val userService: UserService = RetrofitInstance.userService,
-    private val visitsService: VisitsService = RetrofitInstance.visitsService
-) : ViewModel() {
-
+    application: Application
+) : AndroidViewModel(application) {
+    private val userService = RetrofitInstance.userService
+    private val visitsService = RetrofitInstance.visitsService
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -48,15 +48,15 @@ class HomeViewModel(
     private val _shouldRedirectToLogin = MutableStateFlow(false)
     val shouldRedirectToLogin: StateFlow<Boolean> = _shouldRedirectToLogin.asStateFlow()
 
-    private fun handleAuthError(error: Exception) {
-        if (error is retrofit2.HttpException && error.code() == 401) {
-            _shouldRedirectToLogin.value = true
-        }
-    }
+    private val context = getApplication<Application>()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
     fun fetchUserProfile() {
         viewModelScope.launch {
             _isLoading.value = true
+            _shouldRedirectToLogin.value = false
             try {
                 val userResponse = userService.getUserProfile()
                 if (userResponse.isSuccessful) {
@@ -70,9 +70,13 @@ class HomeViewModel(
                     fetchActiveCodes()
                 } else if (userResponse.code() == 401) {
                     _shouldRedirectToLogin.value = true
+                } else {
+                    _error.value = context.getString(R.string.error_load_profile)
                 }
-            } catch (e: Exception) {
-                handleAuthError(e)
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -84,11 +88,13 @@ class HomeViewModel(
             val visitsResponse = visitsService.getUpcomingVisits("true")
             if(visitsResponse.isSuccessful) {
                 _upcomingVisits.value = visitsResponse.body()?.visits ?: emptyList()
+            } else {
+                _error.value = context.getString(R.string.error_load_upcoming_visits)
             }
-        } catch (e: retrofit2.HttpException) {
-            Log.e("HomeViewModel", "HTTP Error ${e.code()}: ${e.message()}")
-        } catch (e: Exception) {
-            Log.e("HomeViewModel", "Error fetching visits: $e")
+        } catch (_: IOException) {
+            _error.value = context.getString(R.string.error_connection)
+        } catch (_: Exception) {
+            _error.value = context.getString(R.string.unknown_error)
         }
     }
 
@@ -102,9 +108,17 @@ class HomeViewModel(
 
                 _prescriptionCode.value = prescriptions.lastOrNull()?.codes?.code ?: ""
                 _referralCode.value = referrals.lastOrNull()?.codes?.code ?: ""
+            } else {
+                _error.value = context.getString(R.string.error_load_codes)
             }
-        } catch (e: Exception) {
-            Log.e("HomeViewModel", "Error fetching codes: $e")
+        } catch (_: IOException) {
+            _error.value = context.getString(R.string.error_connection)
+        } catch (_: Exception) {
+            _error.value = context.getString(R.string.unknown_error)
         }
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 }

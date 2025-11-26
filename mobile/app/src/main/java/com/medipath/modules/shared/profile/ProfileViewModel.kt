@@ -1,8 +1,9 @@
 package com.medipath.modules.shared.profile
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.medipath.R
 import com.medipath.core.models.ResetPasswordRequest
 import com.medipath.core.models.UserUpdateRequest
 import com.medipath.core.models.UserProfileResponse
@@ -13,8 +14,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.IOException
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel(
+    application: Application
+) : AndroidViewModel(application) {
     private val userService = RetrofitInstance.userService
 
     private val _name = MutableStateFlow("")
@@ -104,6 +108,13 @@ class ProfileViewModel : ViewModel() {
     private val _newPasswordError = MutableStateFlow<String?>(null)
     val newPasswordError: StateFlow<String?> = _newPasswordError.asStateFlow()
 
+    private val context = getApplication<Application>()
+
+    private fun validateAndGetString(validationFunc: () -> Int?): String? {
+        return validationFunc()?.let { resId ->
+            context.getString(resId)
+        }
+    }
     fun fetchProfile() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -132,11 +143,12 @@ class ProfileViewModel : ViewModel() {
                 } else if (resp.code() == 401) {
                     _error.value = "401"
                 } else {
-                    _error.value = "Failed to load profile: ${resp.code()}"
+                    _error.value = context.getString(R.string.error_load_profile)
                 }
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error fetching profile", e)
-                _error.value = e.message
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -144,28 +156,19 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun updateProfile() {
-        val nameValidation = ValidationUtils.validateName(_name.value)
-        val surnameValidation = ValidationUtils.validateSurname(_surname.value)
-        val phoneValidation = ValidationUtils.validatePhoneNumber(_phoneNumber.value)
-        val cityValidation = ValidationUtils.validateCity(_city.value)
-        val provinceValidation = ValidationUtils.validateProvince(_province.value)
-        val streetValidation = ValidationUtils.validateStreet(_street.value)
-        val numberValidation = ValidationUtils.validateNumber(_number.value)
-        val postalCodeValidation = ValidationUtils.validatePostalCode(_postalCode.value)
+        _nameError.value = validateAndGetString { ValidationUtils.validateName(_name.value) }
+        _surnameError.value = validateAndGetString { ValidationUtils.validateSurname(_surname.value) }
+        _phoneError.value = validateAndGetString { ValidationUtils.validatePhoneNumber(_phoneNumber.value) }
+        _cityError.value = validateAndGetString { ValidationUtils.validateCity(_city.value) }
+        _provinceError.value = validateAndGetString { ValidationUtils.validateProvince(_province.value) }
+        _streetError.value = validateAndGetString { ValidationUtils.validateStreet(_street.value) }
+        _numberError.value = validateAndGetString { ValidationUtils.validateNumber(_number.value) }
+        _postalCodeError.value = validateAndGetString { ValidationUtils.validatePostalCode(_postalCode.value) }
 
-        _nameError.value = nameValidation.ifEmpty { null }
-        _surnameError.value = surnameValidation.ifEmpty { null }
-        _phoneError.value = phoneValidation.ifEmpty { null }
-        _cityError.value = cityValidation.ifEmpty { null }
-        _provinceError.value = provinceValidation.ifEmpty { null }
-        _streetError.value = streetValidation.ifEmpty { null }
-        _numberError.value = numberValidation.ifEmpty { null }
-        _postalCodeError.value = postalCodeValidation.ifEmpty { null }
-
-        if (listOf(nameValidation, surnameValidation, phoneValidation, cityValidation,
-                provinceValidation, streetValidation, numberValidation, postalCodeValidation)
-                .any { it.isNotEmpty() }) {
-            _error.value = "Please fix validation errors"
+        if (listOf(_nameError.value, _surnameError.value, _phoneError.value, _cityError.value,
+                _provinceError.value, _streetError.value, _numberError.value, _postalCodeError.value)
+                .any { it != null }) {
+            _error.value = context.getString(R.string.please_fix_validation_errors)
             return
         }
 
@@ -191,11 +194,12 @@ class ProfileViewModel : ViewModel() {
                 } else if (resp.code() == 401) {
                     _error.value = "401"
                 } else {
-                    _error.value = "Failed to update profile: ${resp.code()}"
+                    _error.value = context.getString(R.string.error_update_profile)
                 }
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error updating profile", e)
-                _error.value = e.message
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -203,14 +207,11 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun resetPassword(currentPassword: String, newPassword: String) {
-        val currentPasswordValidation = ValidationUtils.validatePassword(currentPassword)
-        val newPasswordValidation = ValidationUtils.validatePassword(newPassword)
+        _currentPasswordError.value = validateAndGetString { ValidationUtils.validatePassword(currentPassword) }
+        _newPasswordError.value = validateAndGetString { ValidationUtils.validatePassword(newPassword) }
 
-        _currentPasswordError.value = currentPasswordValidation.ifEmpty { null }
-        _newPasswordError.value = newPasswordValidation.ifEmpty { null }
-
-        if (currentPasswordValidation.isNotEmpty() || newPasswordValidation.isNotEmpty()) {
-            _error.value = "Please fix password validation errors"
+        if (_currentPasswordError.value != null || _newPasswordError.value != null) {
+            _error.value = context.getString(R.string.please_fix_password_validation_errors)
             return
         }
 
@@ -226,15 +227,16 @@ class ProfileViewModel : ViewModel() {
                 if (resp.isSuccessful) {
                     _resetSuccess.value = true
                 } else if (resp.code() == 401) {
-                    _error.value = "Current password is incorrect"
+                    _error.value = context.getString(R.string.current_password_is_incorrect)
                 } else if (resp.code() == 503) {
-                    _error.value = "Mail service error"
+                    _error.value = context.getString(R.string.mail_service_error)
                 } else {
-                    _error.value = "Failed to reset password: ${resp.code()}"
+                    _error.value = context.getString(R.string.error_reset_password)
                 }
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error resetting password", e)
-                _error.value = e.message
+            } catch (_: IOException) {
+                _error.value = context.getString(R.string.error_connection)
+            } catch (_: Exception) {
+                _error.value = context.getString(R.string.unknown_error)
             } finally {
                 _isLoading.value = false
             }
@@ -243,46 +245,60 @@ class ProfileViewModel : ViewModel() {
 
     fun setName(v: String) {
         _name.value = v
-        _nameError.value = ValidationUtils.validateName(v).ifEmpty { null }
+        if (_nameError.value != null) validateName()
     }
-    fun setSurname(v: String) { 
+    fun validateName() { _nameError.value = validateAndGetString { ValidationUtils.validateName(_name.value) } }
+
+    fun setSurname(v: String) {
         _surname.value = v
-        _surnameError.value = ValidationUtils.validateSurname(v).ifEmpty { null }
+        if (_surnameError.value != null) validateSurname()
     }
-    fun setPhoneNumber(v: String) { 
+    fun validateSurname() { _surnameError.value = validateAndGetString { ValidationUtils.validateSurname(_surname.value) } }
+
+    fun setPhoneNumber(v: String) {
         _phoneNumber.value = v
-        _phoneError.value = ValidationUtils.validatePhoneNumber(v).ifEmpty { null }
+        if (_phoneError.value != null) validatePhoneNumber()
     }
-    fun setCity(v: String) { 
+    fun validatePhoneNumber() { _phoneError.value = validateAndGetString { ValidationUtils.validatePhoneNumber(_phoneNumber.value) } }
+
+    fun setCity(v: String) {
         _city.value = v
-        _cityError.value = ValidationUtils.validateCity(v).ifEmpty { null }
+        if (_cityError.value != null) validateCity()
     }
-    fun setProvince(v: String) { 
+    fun validateCity() { _cityError.value = validateAndGetString { ValidationUtils.validateCity(_city.value) } }
+
+    fun setProvince(v: String) {
         _province.value = v
-        _provinceError.value = ValidationUtils.validateProvince(v).ifEmpty { null }
+        if (_provinceError.value != null) validateProvince()
     }
-    fun setStreet(v: String) { 
+    fun validateProvince() { _provinceError.value = validateAndGetString { ValidationUtils.validateProvince(_province.value) } }
+
+    fun setStreet(v: String) {
         _street.value = v
-        _streetError.value = ValidationUtils.validateStreet(v).ifEmpty { null }
+        if (_streetError.value != null) validateStreet()
     }
-    fun setNumber(v: String) { 
+    fun validateStreet() { _streetError.value = validateAndGetString { ValidationUtils.validateStreet(_street.value) } }
+    fun setNumber(v: String) {
         _number.value = v
-        _numberError.value = ValidationUtils.validateNumber(v).ifEmpty { null }
+        if (_numberError.value != null) validateNumber()
     }
-    fun setPostalCode(v: String) { 
+    fun validateNumber() { _numberError.value = validateAndGetString { ValidationUtils.validateNumber(_number.value) } }
+
+    fun setPostalCode(v: String) {
         _postalCode.value = v
-        _postalCodeError.value = ValidationUtils.validatePostalCode(v).ifEmpty { null }
+        if (_postalCodeError.value != null) validatePostalCode()
     }
-    
+    fun validatePostalCode() { _postalCodeError.value = validateAndGetString { ValidationUtils.validatePostalCode(_postalCode.value) } }
+
     fun setPfpImage(v: String) {
         _pfpImage.value = v
     }
-    
+
     fun validateCurrentPassword(password: String) {
-        _currentPasswordError.value = ValidationUtils.validatePassword(password).ifEmpty { null }
+        _currentPasswordError.value = validateAndGetString { ValidationUtils.validatePassword(password) }
     }
-    
+
     fun validateNewPassword(password: String) {
-        _newPasswordError.value = ValidationUtils.validatePassword(password).ifEmpty { null }
+        _newPasswordError.value = validateAndGetString { ValidationUtils.validatePassword(password) }
     }
 }

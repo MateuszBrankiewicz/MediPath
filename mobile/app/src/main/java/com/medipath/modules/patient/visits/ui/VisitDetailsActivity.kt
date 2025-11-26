@@ -16,12 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
@@ -81,7 +83,7 @@ fun VisitDetailsScreen(
 
     if (shouldRedirectToLogin) {
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.error_session), Toast.LENGTH_LONG).show()
             val sessionManager = RetrofitInstance.getSessionManager()
             sessionManager.deleteSessionId()
             context.startActivity(
@@ -95,12 +97,12 @@ fun VisitDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Visit Details", color = Color.White) },
+                title = { Text(stringResource(R.string.visit_details), color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Return",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color.White
                         )
                     }
@@ -133,7 +135,7 @@ fun VisitDetailsScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = error ?: "Unknown error",
+                            text = error ?: stringResource(R.string.unknown_error),
                             color = MaterialTheme.colorScheme.error,
                             fontSize = 16.sp
                         )

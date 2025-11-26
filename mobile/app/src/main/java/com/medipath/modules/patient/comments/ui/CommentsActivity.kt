@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -23,8 +24,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
-import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.modules.patient.comments.CommentsViewModel
 import com.medipath.modules.patient.comments.ui.components.CommentCard
@@ -34,6 +35,7 @@ import com.medipath.modules.shared.notifications.ui.NotificationsActivity
 import com.medipath.modules.patient.visits.ui.ReviewDetailsActivity
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.FilterChipsConfig
+import com.medipath.modules.shared.components.FilterOption
 import com.medipath.modules.shared.components.GenericFilterChipsSection
 import com.medipath.modules.shared.components.GenericFilterToggleRow
 import com.medipath.modules.shared.components.GenericSearchBar
@@ -86,12 +88,11 @@ fun CommentsScreen(
     onLogoutClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val colors = LocalCustomColors.current
-    
+
     val firstName by viewModel.firstName.collectAsState()
     val lastName by viewModel.lastName.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val shouldRedirectToLogin by viewModel.shouldRedirectToLogin.collectAsState()
+    val canBeDoctor by viewModel.canBeDoctor.collectAsState()
 
     val comments by commentsViewModel.filteredComments.collectAsState()
     val commentsLoading by commentsViewModel.isLoading.collectAsState()
@@ -101,12 +102,24 @@ fun CommentsScreen(
     val sortBy by commentsViewModel.sortBy.collectAsState()
     val sortOrder by commentsViewModel.sortOrder.collectAsState()
     val totalComments by commentsViewModel.totalComments.collectAsState()
-    val commentsRedirect by commentsViewModel.shouldRedirectToLogin.collectAsState()
 
     var showFilters by remember { mutableStateOf(false) }
 
     val notificationsViewModel: NotificationsViewModel = viewModel()
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    val sortByOptions = listOf(
+        FilterOption("Date", stringResource(R.string.date)),
+        FilterOption("Doctor Rating", stringResource(R.string.doctor_rating)),
+        FilterOption("Institution Rating", stringResource(R.string.institution_rating)),
+        FilterOption("Doctor Name", stringResource(R.string.doctor_name)),
+        FilterOption("Institution Name", stringResource(R.string.institution_name))
+    )
+
+    val sortOrderOptions = listOf(
+        FilterOption("Ascending", stringResource(R.string.ascending)),
+        FilterOption("Descending", stringResource(R.string.descending))
+    )
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -130,29 +143,12 @@ fun CommentsScreen(
 
     LaunchedEffect(deleteSuccess) {
         if (deleteSuccess) {
-            Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,
+                context.getString(R.string.comment_deleted_successfully), Toast.LENGTH_SHORT).show()
         }
     }
 
-    if (shouldRedirectToLogin || commentsRedirect) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-
-        LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
-            val sessionManager = RetrofitInstance.getSessionManager()
-            sessionManager.deleteSessionId()
-            context.startActivity(
-                Intent(context, LoginActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
-            (context as? ComponentActivity)?.finish()
-        }
-    } else if (isLoading) {
+    if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -162,7 +158,8 @@ fun CommentsScreen(
     } else {
         Navigation(
             notificationsViewModel = notificationsViewModel,
-            screenTitle = "My Comments",
+            screenTitle = stringResource(R.string.my_comments),
+            canSwitchRole = canBeDoctor,
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
             },
@@ -183,7 +180,7 @@ fun CommentsScreen(
                         GenericSearchBar(
                             searchQuery = searchQuery,
                             onSearchQueryChange = { commentsViewModel.updateSearchQuery(it) },
-                            placeholder = "Search by doctor, institution or comment...",
+                            placeholder = stringResource(R.string.search_by_doctor_institution_or_comment),
                             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
                         )
                     }
@@ -206,13 +203,8 @@ fun CommentsScreen(
                                 onSortOrderChange = { commentsViewModel.updateSortOrder(it) },
                                 onClearFilters = { commentsViewModel.clearFilters() },
                                 config = FilterChipsConfig(
-                                    sortByOptions = listOf(
-                                        "Date",
-                                        "Doctor Rating",
-                                        "Institution Rating",
-                                        "Doctor Name",
-                                        "Institution Name"
-                                    )
+                                    sortByOptions = sortByOptions,
+                                    sortOrderOptions = sortOrderOptions
                                 )
                             )
                         }
@@ -233,7 +225,9 @@ fun CommentsScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = if (totalComments == 0) "No comments yet" else "No comments match your filters",
+                                    text = if (totalComments == 0) stringResource(R.string.no_comments_yet) else stringResource(
+                                        R.string.no_match_comment
+                                    ),
                                     fontSize = 16.sp,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )

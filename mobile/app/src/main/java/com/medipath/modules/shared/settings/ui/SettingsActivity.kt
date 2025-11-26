@@ -17,10 +17,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.modules.shared.settings.SettingsViewModel
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.MediPathTheme
@@ -43,6 +45,7 @@ class SettingsActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
@@ -60,6 +63,12 @@ fun SettingsScreen(
     val error by settingsViewModel.error.collectAsState()
     val updateSuccess by settingsViewModel.updateSuccess.collectAsState()
 
+    val deactivateSuccess by settingsViewModel.deactivateSuccess.collectAsState()
+    val deactivateError by settingsViewModel.error.collectAsState()
+    val isDeactivating by settingsViewModel.isLoading.collectAsState()
+
+    var showDeactivateDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         viewModel.fetchUserProfile()
         settingsViewModel.fetchSettings()
@@ -67,7 +76,7 @@ fun SettingsScreen(
 
     if (shouldRedirectToLogin) {
         LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.error_session), Toast.LENGTH_LONG).show()
             val sessionManager = RetrofitInstance.getSessionManager()
             sessionManager.deleteSessionId()
             context.startActivity(
@@ -84,41 +93,64 @@ fun SettingsScreen(
         }
     }
 
-    LaunchedEffect(updateSuccess) {
-        if (updateSuccess) {
-            Toast.makeText(context, "Settings saved", Toast.LENGTH_SHORT).show()
+    LaunchedEffect(deactivateError) {
+        if (deactivateError != null) {
+            Toast.makeText(context, deactivateError, Toast.LENGTH_LONG).show()
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(LocalCustomColors.current.blue900)
-                .padding(top = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Return",
-                    tint = MaterialTheme.colorScheme.background
+    LaunchedEffect(updateSuccess) {
+        if (updateSuccess) {
+            Toast.makeText(context, context.getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(deactivateSuccess) {
+        if (deactivateSuccess) {
+            Toast.makeText(context,
+                context.getString(R.string.account_deactivated_successfully), Toast.LENGTH_LONG).show()
+            val sessionManager = RetrofitInstance.getSessionManager()
+            sessionManager.deleteSessionId()
+            context.startActivity(
+                Intent(context, LoginActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
+            (context as? ComponentActivity)?.finish()
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.settings),
+                        color = MaterialTheme.colorScheme.background,
+                        fontSize = 23.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = MaterialTheme.colorScheme.background
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = LocalCustomColors.current.blue900
                 )
-            }
-            Text(
-                text = "Settings",
-                fontSize = 23.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.background,
-                modifier = Modifier.padding(start = 8.dp).padding(vertical = 24.dp)
             )
         }
-
-        if (!shouldRedirectToLogin) {
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.secondary)
+        ) {
+            if (!shouldRedirectToLogin) {
             when {
                 isLoading || isLoadingAuth -> {
                     Box(
@@ -150,7 +182,7 @@ fun SettingsScreen(
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "Language",
+                                        text = stringResource(R.string.language),
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -185,7 +217,7 @@ fun SettingsScreen(
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "Notifications",
+                                        text = stringResource(R.string.notifications),
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -200,7 +232,7 @@ fun SettingsScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "System notifications",
+                                            text = stringResource(R.string.system_notifications),
                                             fontSize = 16.sp,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
@@ -221,7 +253,7 @@ fun SettingsScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "User notifications",
+                                            text = stringResource(R.string.user_notifications),
                                             fontSize = 16.sp,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
@@ -250,7 +282,7 @@ fun SettingsScreen(
                                 if (isLoading) {
                                     CircularProgressIndicator(modifier = Modifier.size(20.dp))
                                 } else {
-                                    Text(text = "SAVE SETTINGS")
+                                    Text(text = stringResource(R.string.save_settings))
                                 }
                             }
                         }
@@ -268,20 +300,28 @@ fun SettingsScreen(
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "Account",
+                                        text = stringResource(R.string.account),
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Button(
-                                        onClick = { Toast.makeText(context, "Account deactivated", Toast.LENGTH_SHORT).show() },
+                                        onClick = { showDeactivateDialog = true },
                                         modifier = Modifier.fillMaxWidth(),
+                                        enabled = !isDeactivating,
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = LocalCustomColors.current.red800
                                         )
                                     ) {
-                                        Text("DEACTIVATE ACCOUNT", color = MaterialTheme.colorScheme.background)
+                                        if (isDeactivating) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(20.dp),
+                                                color = MaterialTheme.colorScheme.background
+                                            )
+                                        } else {
+                                            Text(stringResource(R.string.deactivate_account), color = MaterialTheme.colorScheme.background)
+                                        }
                                     }
                                 }
                             }
@@ -289,6 +329,36 @@ fun SettingsScreen(
                     }
                 }
             }
+        }
+
+        if (showDeactivateDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeactivateDialog = false },
+                title = { Text("Deactivate Account") },
+                text = { 
+                    Text(stringResource(R.string.confirm_deactivation))
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showDeactivateDialog = false
+                            settingsViewModel.deactivateAccount()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = LocalCustomColors.current.red800
+                        )
+                    ) {
+                        Text(stringResource(R.string.deactivate))
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { showDeactivateDialog = false }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.background
+            )
+        }
         }
     }
 }

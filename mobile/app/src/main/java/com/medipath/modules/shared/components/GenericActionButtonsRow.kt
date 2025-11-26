@@ -80,7 +80,7 @@ fun GenericActionButtonsRow(
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(button.label, fontSize = 12.sp)
+                            Text(button.label, fontSize = 11.sp)
                         }
                     }
                 }

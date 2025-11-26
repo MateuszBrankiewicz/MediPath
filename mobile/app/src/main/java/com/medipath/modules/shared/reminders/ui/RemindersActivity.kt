@@ -3,7 +3,6 @@ package com.medipath.modules.shared.reminders.ui
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -33,6 +33,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.network.RetrofitInstance
 import com.medipath.core.theme.LocalCustomColors
 import com.medipath.core.theme.MediPathTheme
@@ -45,6 +46,7 @@ import com.medipath.modules.shared.reminders.ui.components.TabSelector
 import com.medipath.modules.shared.auth.ui.LoginActivity
 import com.medipath.modules.shared.components.ActionButton
 import com.medipath.modules.shared.components.FilterConfig
+import com.medipath.modules.shared.components.FilterOption
 import com.medipath.modules.shared.components.GenericActionButtonsRow
 import com.medipath.modules.shared.components.GenericFiltersSection
 import com.medipath.modules.shared.components.GenericSearchBar
@@ -97,7 +99,6 @@ class RemindersActivity : ComponentActivity() {
 
 @Composable
 fun RemindersScreen(
-    refreshTrigger: Int = 0,
     profileViewModel: HomeViewModel = viewModel(),
     remindersViewModel: RemindersViewModel = viewModel(),
     isDoctor: Boolean = false,
@@ -107,14 +108,11 @@ fun RemindersScreen(
     val firstName by profileViewModel.firstName.collectAsState()
     val lastName by profileViewModel.lastName.collectAsState()
     val isProfileLoading by profileViewModel.isLoading.collectAsState()
-    val profileShouldRedirect by profileViewModel.shouldRedirectToLogin.collectAsState()
-    val roleCode by profileViewModel.roleCode.collectAsState()
     val canBeDoctor by profileViewModel.canBeDoctor.collectAsState()
     val colors = LocalCustomColors.current
 
     val reminders by remindersViewModel.filteredReminders.collectAsState()
     val isLoading by remindersViewModel.isLoading.collectAsState()
-    val remindersShouldRedirect by remindersViewModel.shouldRedirectToLogin.collectAsState()
     val totalReminders by remindersViewModel.totalReminders.collectAsState()
     val unreadReminders by remindersViewModel.unreadReminders.collectAsState()
     val todayReminders by remindersViewModel.todayReminders.collectAsState()
@@ -131,26 +129,45 @@ fun RemindersScreen(
 
     val notificationsViewModel: NotificationsViewModel = viewModel()
 
+    val remindersFilterConfig = remember {
+        FilterConfig(
+            statusOptions = listOf(
+                FilterOption("All", context.getString(R.string.all)),
+                FilterOption("Read", context.getString(R.string.read_capital)),
+                FilterOption("Unread", context.getString(R.string.unread_capital))
+            ),
+            sortByOptions = listOf(
+                FilterOption("Date", context.getString(R.string.date)),
+                FilterOption("Title", context.getString(R.string.title))
+            ),
+            sortOrderOptions = listOf(
+                FilterOption("Ascending", context.getString(R.string.ascending)),
+                FilterOption("Descending", context.getString(R.string.descending))
+            ),
+            showSortOrder = true
+        )
+    }
+
     val statisticsItems = remember(totalReminders, unreadReminders, todayReminders) {
         listOf(
             StatisticItem(
                 icon = Icons.Default.Notifications,
                 iconTint = colors.blue800,
-                label = "Total\nnotifications",
+                label = context.getString(R.string.total_notifications),
                 value = totalReminders.toString(),
                 valueTint = colors.blue800
             ),
             StatisticItem(
                 icon = Icons.Outlined.MailOutline,
                 iconTint = colors.orange800,
-                label = "Unread\nnotifications",
+                label = context.getString(R.string.unread_notifications),
                 value = unreadReminders.toString(),
                 valueTint = colors.orange800
             ),
             StatisticItem(
                 icon = Icons.Default.Today,
                 iconTint = colors.green800,
-                label = "Today's\nnotifications",
+                label = context.getString(R.string.today_s_notifications),
                 value = todayReminders.toString(),
                 valueTint = colors.green800
             )
@@ -168,14 +185,14 @@ fun RemindersScreen(
     val actionButtons = mutableListOf(
         ActionButton(
             icon = Icons.Default.Add,
-            label = "ADD",
+            label = stringResource(R.string.add),
             onClick = { context.startActivity(Intent(context, AddReminderActivity::class.java)) },
             color = colors.green800,
             isOutlined = false
         ),
         ActionButton(
             icon = Icons.Default.Refresh,
-            label = "REFRESH",
+            label = stringResource(R.string.refresh),
             onClick = {
                 val filter = when (selectedTab) {
                     "Received" -> "received"
@@ -194,7 +211,7 @@ fun RemindersScreen(
         actionButtons.add(
             ActionButton(
                 icon = Icons.Default.DoneAll,
-                label = "MARK ALL",
+                label = stringResource(R.string.mark_all),
                 onClick = {
                     remindersViewModel.markAllAsRead(onSuccess = {
                         notificationsViewModel.fetchNotifications()
@@ -208,7 +225,7 @@ fun RemindersScreen(
     actionButtons.add(
         ActionButton(
             icon = Icons.Default.FilterList,
-            label = "FILTERS",
+            label = stringResource(R.string.filters_capitals),
             onClick = { showFilters = !showFilters },
             color = colors.blue800,
             isOutlined = true
@@ -218,21 +235,12 @@ fun RemindersScreen(
     actionButtons.add(
         ActionButton(
             icon = Icons.Default.Clear,
-            label = "CLEAR FILTERS",
+            label = stringResource(R.string.clear_filters),
             onClick = { remindersViewModel.clearFilters() },
             color = colors.error,
             isOutlined = true
         )
     )
-
-    val remindersFilterConfig = remember {
-        FilterConfig(
-            statusOptions = listOf("All", "Read", "Unread"),
-            sortByOptions = listOf("Date", "Title"),
-            sortOrderOptions = listOf("Ascending", "Descending"),
-            showSortOrder = true
-        )
-    }
 
     fun tabToFilter(tab: String): String? {
         return when (tab) {
@@ -264,19 +272,7 @@ fun RemindersScreen(
         remindersViewModel.fetchReminders()
     }
 
-    val shouldRedirect = profileShouldRedirect || remindersShouldRedirect
-    if (shouldRedirect) {
-        LaunchedEffect(Unit) {
-            Toast.makeText(context, "Session expired. Please log in again.", Toast.LENGTH_LONG).show()
-            val sessionManager = RetrofitInstance.getSessionManager()
-            sessionManager.deleteSessionId()
-            context.startActivity(
-                Intent(context, LoginActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            )
-            (context as? ComponentActivity)?.finish()
-        }
-    } else if (isProfileLoading) {
+    if (isProfileLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -286,7 +282,7 @@ fun RemindersScreen(
     } else {
         Navigation(
             notificationsViewModel = notificationsViewModel,
-            screenTitle = "Reminders",
+            screenTitle = stringResource(R.string.reminders),
             onNotificationsClick = {
                 context.startActivity(Intent(context, NotificationsActivity::class.java))
             },
@@ -321,7 +317,7 @@ fun RemindersScreen(
                     GenericSearchBar(
                         searchQuery = searchQuery,
                         onSearchQueryChange = { remindersViewModel.updateSearchQuery(it) },
-                        placeholder = "Search"
+                        placeholder = stringResource(R.string.search)
                     )
 
                     if (showFilters) {
@@ -353,7 +349,7 @@ fun RemindersScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No reminders",
+                                text = stringResource(R.string.no_reminders),
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

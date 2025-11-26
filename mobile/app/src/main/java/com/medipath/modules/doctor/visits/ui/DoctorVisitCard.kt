@@ -11,14 +11,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.core.models.Visit
 import com.medipath.core.theme.LocalCustomColors
+import com.medipath.core.utils.LocaleHelper
+import com.medipath.modules.shared.components.getTranslatedStatus
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @Composable
 fun DoctorVisitCard(
@@ -27,11 +31,13 @@ fun DoctorVisitCard(
     onCancel: (String) -> Unit,
     onViewPatientDetails: () -> Unit
 ) {
+    val context = LocalContext.current
+    val locale = LocaleHelper.getLocale(context)
     val colors = LocalCustomColors.current
     var showCancelDialog by remember { mutableStateOf(false) }
 
     val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.getDefault())
+    val outputDateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy", locale)
     val outputTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     val startDateTime = try {
@@ -44,7 +50,7 @@ fun DoctorVisitCard(
         }
     }
 
-    val dateFormatted = startDateTime?.format(outputDateFormatter) ?: "Invalid Date"
+    val dateFormatted = startDateTime?.format(outputDateFormatter) ?: stringResource(R.string.unknown_date)
     val timeFormatted = startDateTime?.format(outputTimeFormatter) ?: "--:--"
 
     val isUpcoming = visit.status == "Upcoming"
@@ -82,13 +88,13 @@ fun DoctorVisitCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "GovID: ${visit.patient.govID}",
+                        text = stringResource(R.string.gov_id) + visit.patient.govID,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
                 Text(
-                    text = visit.status,
+                    text = getTranslatedStatus(visit.status),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = statusColor,
@@ -169,7 +175,7 @@ fun DoctorVisitCard(
                         contentColor = MaterialTheme.colorScheme.background
                     )
                 ) {
-                    Text("DETAILS", fontSize = 12.sp)
+                    Text(stringResource(R.string.details), fontSize = 12.sp)
                 }
 
                 Button(
@@ -180,7 +186,7 @@ fun DoctorVisitCard(
                         contentColor = MaterialTheme.colorScheme.background
                     )
                 ) {
-                    Text("PATIENT", fontSize = 12.sp)
+                    Text(stringResource(R.string.patient), fontSize = 12.sp)
                 }
                 
                 if (isUpcoming) {
@@ -192,7 +198,7 @@ fun DoctorVisitCard(
                             contentColor = MaterialTheme.colorScheme.background
                         )
                     ) {
-                        Text("CANCEL", fontSize = 12.sp)
+                        Text(stringResource(R.string.cancel_capitals), fontSize = 12.sp)
                     }
                 }
             }
@@ -202,8 +208,8 @@ fun DoctorVisitCard(
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
-            title = { Text("Confirm Cancellation") },
-            text = { Text("Are you sure you want to cancel this visit with ${visit.patient.name} ${visit.patient.surname}?") },
+            title = { Text(stringResource(R.string.confirm_cancellation)) },
+            text = { Text(stringResource(R.string.cancellation_message_visit) +"${visit.patient.name} ${visit.patient.surname}?") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -211,12 +217,12 @@ fun DoctorVisitCard(
                         onCancel(visit.id)
                     }
                 ) {
-                    Text("Confirm")
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showCancelDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.background

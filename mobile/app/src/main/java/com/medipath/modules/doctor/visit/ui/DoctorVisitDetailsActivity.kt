@@ -17,11 +17,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.medipath.R
 import com.medipath.core.models.Visit
 import com.medipath.core.theme.MediPathTheme
 import com.medipath.core.theme.LocalCustomColors
@@ -37,7 +39,7 @@ class DoctorVisitDetailsActivity : ComponentActivity() {
         val isCurrent = intent.getBooleanExtra("IS_CURRENT", false)
         
         if (visitJson == null) {
-            Toast.makeText(this, "Error loading visit data", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_loading_visit), Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -87,7 +89,7 @@ fun DoctorVisitDetailsScreen(
     
     LaunchedEffect(visitCompleted) {
         if (visitCompleted) {
-            Toast.makeText(context, "Visit completed successfully", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.visit_completed_success), Toast.LENGTH_SHORT).show()
             onFinishVisit()
         }
     }
@@ -109,7 +111,7 @@ fun DoctorVisitDetailsScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "GovId: ${visit.patient.govID}",
+                            text = stringResource(R.string.gov_id) + visit.patient.govID,
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                         )
@@ -153,7 +155,7 @@ fun DoctorVisitDetailsScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = "Visit completed",
+                            text = stringResource(R.string.visit_completed),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary,
@@ -175,7 +177,7 @@ fun DoctorVisitDetailsScreen(
                         modifier = Modifier.padding(20.dp)
                     ) {
                         Text(
-                            text = "Medical history:",
+                            text = stringResource(R.string.medical_history_title),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -196,7 +198,7 @@ fun DoctorVisitDetailsScreen(
                             }
                         } else if (medicalHistory.isEmpty()) {
                             Text(
-                                text = "No medical history available",
+                                text = stringResource(R.string.no_medical_history_available),
                                 fontSize = 14.sp,
                                 fontStyle = FontStyle.Italic,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -243,7 +245,7 @@ fun DoctorVisitDetailsScreen(
                                         if (history.doctor != null) {
                                             Spacer(modifier = Modifier.height(4.dp))
                                             Text(
-                                                text = "Dr. ${history.doctor!!.doctorName} ${history.doctor!!.doctorSurname}",
+                                                text = "Dr. ${history.doctor.doctorName} ${history.doctor.doctorSurname}",
                                                 fontSize = 13.sp,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(
                                                     alpha = 0.7f
@@ -282,7 +284,7 @@ fun DoctorVisitDetailsScreen(
                         modifier = Modifier.padding(20.dp)
                     ) {
                         Text(
-                            text = "Prescriptions:",
+                            text = stringResource(R.string.prescriptions_title),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -290,7 +292,7 @@ fun DoctorVisitDetailsScreen(
                         )
                         
                         Text(
-                            text = "Enter prescription codes (separated by comma, space or new line)",
+                            text = stringResource(R.string.prescriptions_hint),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -303,7 +305,7 @@ fun DoctorVisitDetailsScreen(
                                 .fillMaxWidth()
                                 .height(120.dp),
                             enabled = isEditable,
-                            placeholder = { Text("e.g. PRE001, PRE002, PRE003") },
+                            placeholder = { Text(stringResource(R.string.prescriptions_placeholder)) },
                             shape = RoundedCornerShape(12.dp),
                             readOnly = !isEditable
                         )
@@ -325,7 +327,7 @@ fun DoctorVisitDetailsScreen(
                         modifier = Modifier.padding(20.dp)
                     ) {
                         Text(
-                            text = "Referrals:",
+                            text = stringResource(R.string.referrals_title),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -333,7 +335,7 @@ fun DoctorVisitDetailsScreen(
                         )
                         
                         Text(
-                            text = "Enter referral codes (separated by comma, space or new line)",
+                            text = stringResource(R.string.referrals_hint),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -346,7 +348,7 @@ fun DoctorVisitDetailsScreen(
                                 .fillMaxWidth()
                                 .height(120.dp),
                             enabled = isEditable,
-                            placeholder = { Text("e.g. REF001, REF002, REF003") },
+                            placeholder = { Text(stringResource(R.string.referrals_placeholder)) },
                             shape = RoundedCornerShape(12.dp),
                             readOnly = !isEditable
                         )
@@ -368,7 +370,7 @@ fun DoctorVisitDetailsScreen(
                         modifier = Modifier.padding(20.dp)
                     ) {
                         Text(
-                            text = "Notes:",
+                            text = stringResource(R.string.notes_title),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -382,7 +384,7 @@ fun DoctorVisitDetailsScreen(
                                 .fillMaxWidth()
                                 .height(150.dp),
                             enabled = isEditable,
-                            placeholder = { Text("Enter visit notes...") },
+                            placeholder = { Text(stringResource(R.string.notes_placeholder)) },
                             shape = RoundedCornerShape(12.dp),
                             readOnly = !isEditable
                         )
@@ -413,7 +415,7 @@ fun DoctorVisitDetailsScreen(
                             )
                         } else {
                             Text(
-                                text = "FINISH VISIT",
+                                text = stringResource(R.string.finish_visit),
                                 fontSize = 16.sp,
                             )
                         }

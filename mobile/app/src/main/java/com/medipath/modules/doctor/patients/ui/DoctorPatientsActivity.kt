@@ -34,6 +34,8 @@ import com.medipath.modules.shared.settings.ui.SettingsActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.res.stringResource
+import com.medipath.R
 
 class DoctorPatientsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,7 +97,7 @@ fun DoctorPatientsScreen(
 
     Navigation(
         notificationsViewModel = notificationsViewModel,
-        screenTitle = "Recent Patients",
+        screenTitle = stringResource(R.string.recent_patients),
         onNotificationsClick = {
             val intent = Intent(context, NotificationsActivity::class.java)
             intent.putExtra("isDoctor", true)
@@ -129,7 +131,7 @@ fun DoctorPatientsScreen(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "No patients found",
+                                text = stringResource(R.string.no_patients_found),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),

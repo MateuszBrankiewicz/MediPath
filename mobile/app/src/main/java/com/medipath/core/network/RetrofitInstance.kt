@@ -20,7 +20,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
-    private const val BASE_URL = "https://genitourinary-sunday-superplausibly.ngrok-free.dev"
+     private const val BASE_URL = "https://genitourinary-sunday-superplausibly.ngrok-free.dev"
+   private const val WEBSOCKET_URL = "http://192.168.8.100:8080"
 //    private const val BASE_URL = "http://10.0.2.2:8080/"
     private lateinit var sessionManager: SharedPreferencesSessionManager
     private lateinit var sessionCookieJar: SessionCookieJar
@@ -34,9 +35,10 @@ object RetrofitInstance {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    public fun getBaseUrl(): String {
-        return BASE_URL;
+    fun getWebsocketUrl(): String {
+        return WEBSOCKET_URL
     }
+
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()

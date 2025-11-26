@@ -9,11 +9,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.R
 import com.medipath.modules.shared.auth.RegisterViewModel
 
 @Composable
@@ -23,12 +24,14 @@ fun SearchableProvinceDropdown(
     onProvinceSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
     errorMessage: String = "",
-    onFocusLost: () -> Unit = {}
+    onFocusLost: () -> Unit = {},
+    shape : RoundedCornerShape = RoundedCornerShape(20.dp),
+    isEdit: Boolean = false
 ) {
     var hadFocus by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-    val provinces by viewModel.provinces
+    val provinces by viewModel.provinces.collectAsState()
 
     val filteredProvinces = remember(provinces, query) {
         if (query.isEmpty()) {
@@ -49,10 +52,15 @@ fun SearchableProvinceDropdown(
                         onProvinceSelected("")
                     }
                 },
-                label = { Text("Province", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp) },
+                label = {
+                    if (isEdit)
+                        Text(stringResource(R.string.province))
+                    else
+                        Text(stringResource(R.string.province), color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
+                },
                 placeholder = {
                     Text(
-                        "Select province or type to search",
+                        stringResource(R.string.select_province_or_type_to_search),
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp
                     )
@@ -76,7 +84,7 @@ fun SearchableProvinceDropdown(
                         if (focusState.isFocused) {
                             hadFocus = true
                             expanded = true
-                        } else if (hadFocus){
+                        } else if (hadFocus) {
                             onFocusLost()
                         }
                     },
@@ -86,7 +94,7 @@ fun SearchableProvinceDropdown(
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surface
                 ),
-                shape = RoundedCornerShape(20.dp),
+                shape = shape,
                 isError = errorMessage.isNotEmpty()
             )
             if (expanded && filteredProvinces.isNotEmpty()) {

@@ -19,12 +19,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medipath.core.utils.LocaleHelper
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.format.TextStyle
 import kotlin.collections.forEach
 
 @Composable
@@ -61,13 +66,26 @@ fun CalendarGrid(
     }
 
     Column {
+        val context = LocalContext.current
+        val locale = LocaleHelper.getLocale(context)
+        
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            listOf("Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd").forEach { day ->
+            val daysOfWeek = listOf(
+                DayOfWeek.MONDAY,
+                DayOfWeek.TUESDAY,
+                DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY,
+                DayOfWeek.FRIDAY,
+                DayOfWeek.SATURDAY,
+                DayOfWeek.SUNDAY
+            )
+            
+            daysOfWeek.forEach { dayOfWeek ->
                 Text(
-                    text = day,
+                    text = dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp,
@@ -104,7 +122,7 @@ fun CalendarGrid(
                                         when {
                                             isSelected -> MaterialTheme.colorScheme.primary
                                             isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                            else -> androidx.compose.ui.graphics.Color.Transparent
+                                            else -> Color.Transparent
                                         }
                                     )
                                     .clickable { onDateSelected(date) },
