@@ -1,53 +1,51 @@
 package com.adam.medipathbackend;
 
-import com.adam.medipathbackend.config.CORSConfig;
-import com.adam.medipathbackend.config.HttpSessionConfig;
-import com.adam.medipathbackend.config.MailConfig;
-import com.adam.medipathbackend.controllers.CityController;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.CityRepository;
 import com.adam.medipathbackend.repository.PasswordResetEntryRepository;
+import com.adam.medipathbackend.repository.ScheduleRepository;
 import com.adam.medipathbackend.repository.UserRepository;
+import com.adam.medipathbackend.services.ScheduleService;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
-import com.icegreen.greenmail.util.GreenMailUtil;
+
 import com.icegreen.greenmail.util.ServerSetupTest;
 import jakarta.mail.internet.MimeMessage;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.test.context.*;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
+
 @SpringBootTest
+@AutoConfigureMockMvc
 class MedipathbackendApplicationTests {
 
     @RegisterExtension
@@ -61,19 +59,31 @@ class MedipathbackendApplicationTests {
         registry.add("spring.mail.port", () -> greenMail.getSmtp().getPort());
     }
 
+    @DynamicPropertySource
+    static void mongoDbProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", () -> "mongodb://localhost:27017/test");
+    }
+
     @Autowired
     private MockMvc mvc;
 
-    @MockitoBean
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @Autowired
     private CityRepository cityRepository;
 
-    @MockitoBean
+    @Autowired
     private UserRepository userRepository;
 
-    @MockitoBean
+    @Autowired
     private PasswordResetEntryRepository preRepository;
 
-    private List<City> cityList;
+    @Autowired
+    private ScheduleRepository scheduleRepository;
+
+    @Autowired
+    private ScheduleService scheduleService;
 
     private final String EXAMPLE_MAIL = "test@mail.com";
 
@@ -81,17 +91,31 @@ class MedipathbackendApplicationTests {
 
     private final User exampleValidUser = new User(EXAMPLE_MAIL, "Name", "Surname", "1234567890", LocalDate.of(1900, 12, 12), new Address("Province", "City", "Street", "Number", "PostalCode"), "123456789", "$argon2id$v=19$m=60000,t=10,p=1$MOrLn9JdvWpJyJDMZ4Z9qg$zgHTASZaQH9zoTUO0bd0re+6G523ZUreKFmWQSu+f24", new UserSettings("PL", true, true, 1));
 
-    @BeforeEach
-    public void createTestData() {
-        this.cityList = new ArrayList<>();
-        this.cityList.add(new City( "Lublin"));
-        this.cityList.add(new City( "Lubin"));
-        this.cityList.add(new City( "Warszawa"));
-    }
-    @Test
-    public void getAllCities() throws Exception {
+    private Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
 
-        when(cityRepository.findAll()).thenReturn(cityList);
+    private final String TEST_PASSWORD = "passwordpassword";
+
+    @BeforeEach
+    void setUp() {
+        mongoTemplate.getCollectionNames().stream()
+                .filter(name -> !name.startsWith("system."))
+                .forEach(name -> mongoTemplate.dropCollection(name));
+    }
+
+    @Test
+    void contextLoads() {
+    }
+
+    @Test
+    public void givenCities_whenGetAllCities_ReturnAll() throws Exception {
+
+
+        cityRepository.saveAll(List.of(
+                new City("Lublin"),
+                new City("Lubin"),
+                new City("Warszawa")
+        ));
+
 
         mvc.perform(get("/api/cities").contentType("application/json"))
                 .andExpect(status().isOk())
@@ -102,9 +126,15 @@ class MedipathbackendApplicationTests {
 
     }
     @Test
-    public void getRegexCities() throws Exception {
+    public void givenCities_whenGetRegex_ReturnFittingRegex() throws Exception {
 
-        when(cityRepository.findAll("Lub")).thenReturn(cityList.subList(0, 2));
+
+        cityRepository.saveAll(List.of(
+                new City("Lublin"),
+                new City("Lubin"),
+                new City("Warszawa")
+        ));
+
 
         mvc.perform(get("/api/cities/Lub").contentType("application/json"))
                 .andExpect(status().isOk())
@@ -114,19 +144,25 @@ class MedipathbackendApplicationTests {
 
     }
     @Test
-    public void getInvalidCity() throws Exception {
+    public void givenCities_WhenGetInvalid_ReturnNone() throws Exception {
 
-        when(cityRepository.findAll("Abcd")).thenReturn(new ArrayList<>());
+        cityRepository.saveAll(List.of(
+                new City("Lublin"),
+                new City("Lubin"),
+                new City("Warszawa")
+        ));
+
 
         mvc.perform(get("/api/cities/Abcd").contentType("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(0));
     }
 
-    @Test
-    public void tryRegisterUser() throws Exception {
 
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.empty());
+
+
+    @Test
+    public void whenRegisterUser_ThenCreated() throws Exception {
 
         String exampleUser = "{" +
                 "\"name\": \"TestName\"," +
@@ -140,7 +176,7 @@ class MedipathbackendApplicationTests {
                 "\"phoneNumber\": \"123456789\"," +
                 "\"street\": \"aaa st.\"," +
                 "\"number\": \"5a\"," +
-                "\"password\": \"passwordpassword\"" +
+                "\"password\": \"" + TEST_PASSWORD + "\"" +
                 "}";
 
         mvc.perform(post("/api/users/register").contentType("application/json").content(exampleUser))
@@ -148,9 +184,15 @@ class MedipathbackendApplicationTests {
     }
 
     @Test
-    public void tryRegisterUserDuplicateEmail() throws Exception {
+    public void givenExistingUser_WhenRegisterDuplicateMail_ThenConflict() throws Exception {
 
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
+        User duplicate = new User(EXAMPLE_MAIL, "Example", "Example", "123",
+                LocalDate.of(2000, 1, 1),
+                new Address("Province", "City", "Street", "Number", "00-000"),
+                "123456789", "hash",
+                new UserSettings("PL", false, false, 1));
+        userRepository.save(duplicate);
+
         String exampleUser = "{" +
                 "\"name\": \"TestName\"," +
                 "\"surname\": \"TestSurname\"," +
@@ -163,17 +205,17 @@ class MedipathbackendApplicationTests {
                 "\"phoneNumber\": \"123456789\"," +
                 "\"street\": \"aaa st.\"," +
                 "\"number\": \"5a\"," +
-                "\"password\": \"passwordpassword\"" +
+                "\"password\": \"" + TEST_PASSWORD + "\"" +
                 "}";
 
-        mvc.perform(post("/api/users/register").contentType("application/json").content(exampleUser))
+        mvc.perform(post("/api/users/register")
+                        .contentType("application/json").content(exampleUser))
                 .andExpect(status().isConflict());
     }
 
     @Test
     public void tryRegisterUserMissingName() throws Exception {
 
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.empty());
         String exampleUser = "{" +
                 "\"name\": \"TestName\"," +
                 "\"email\": \"" + EXAMPLE_MAIL + "\"," +
@@ -185,40 +227,33 @@ class MedipathbackendApplicationTests {
                 "\"postalCode\": \"01-001\"," +
                 "\"phoneNumber\": \"123456789\"," +
                 "\"number\": \"5a\"," +
-                "\"password\": \"passwordpassword\"" +
+                "\"password\": \"" + TEST_PASSWORD + "\"" +
                 "}";
 
         mvc.perform(post("/api/users/register").contentType("application/json").content(exampleUser))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("missing fields in request body"))
-                .andExpect(jsonPath("$.fields[0]").value("surname"));
+                .andExpect(jsonPath("$.message").value("missing fields in request body: [surname]"));
     }
     @Test
     public void tryRegisterUserMissingData() throws Exception {
 
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.empty());
         String exampleUser = "{}";
 
         mvc.perform(post("/api/users/register").contentType("application/json").content(exampleUser))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("missing fields in request body"))
-                .andExpect(jsonPath("$.fields[0]").value("name"))
-                .andExpect(jsonPath("$.fields[1]").value("surname"))
-                .andExpect(jsonPath("$.fields[2]").value("email"))
-                .andExpect(jsonPath("$.fields[3]").value("city"))
-                .andExpect(jsonPath("$.fields[4]").value("province"))
-                .andExpect(jsonPath("$.fields[5]").value("number"))
-                .andExpect(jsonPath("$.fields[6]").value("postalCode"))
-                .andExpect(jsonPath("$.fields[7]").value("birthDate"))
-                .andExpect(jsonPath("$.fields[8]").value("govID"))
-                .andExpect(jsonPath("$.fields[9]").value("phoneNumber"))
-                .andExpect(jsonPath("$.fields[10]").value("password"));
+                .andExpect(jsonPath("$.message")
+                        .value("missing fields in request body: [name, surname, email, city, " +
+                                "province, number, postalCode, birthDate, govID, phoneNumber, password]"));
     }
     @Test
     public void tryRegisterUserWithDuplicateGovID() throws Exception {
 
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.empty());
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
+        User duplicate = new User("mail@mail.co.uk", "Example", "Example", "1234567890",
+                LocalDate.of(2000, 1, 1),
+                new Address("Province", "City", "Street", "Number", "00-000"),
+                "123456789", "hash",
+                new UserSettings("PL", false, false, 1));
+        userRepository.save(duplicate);
 
         String exampleUser = "{" +
                 "\"name\": \"TestName\"," +
@@ -232,7 +267,7 @@ class MedipathbackendApplicationTests {
                 "\"street\": \"aaa st.\"," +
                 "\"phoneNumber\": \"1234567890\"," +
                 "\"number\": \"5a\"," +
-                "\"password\": \"passwordpassword\"" +
+                "\"password\": \"" + TEST_PASSWORD + "\"" +
                 "}";
 
         mvc.perform(post("/api/users/register").contentType("application/json").content(exampleUser))
@@ -240,11 +275,20 @@ class MedipathbackendApplicationTests {
     }
     @Test
     public void tryLogInSuccess() throws Exception {
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
+
+        String passwordHash = argon2PasswordEncoder.encode(TEST_PASSWORD);
+        User validUser = new User(EXAMPLE_MAIL, "Example", "Example", "1234567890",
+                LocalDate.of(2000, 1, 1),
+                new Address("Province", "City", "Street", "Number", "00-000"),
+                "123456789", passwordHash,
+                new UserSettings("PL", false, false, 1));
+        userRepository.save(validUser);
+
+
 
         String exampleLogin = "{" +
                 "\"email\": \"" + EXAMPLE_MAIL + "\"," +
-                "\"password\": \"passwordpassword\"" +
+                "\"password\": \"" + TEST_PASSWORD + "\"" +
                 "}";
 
         mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
@@ -254,11 +298,10 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryLogInInvalidEmail() throws Exception {
 
-        when(userRepository.findByEmail("badtest@mail.com")).thenReturn(Optional.empty());
 
         String exampleLogin = "{" +
                 "\"email\": \"badtest@mail.com\"," +
-                "\"password\": \"passwordpassword\"" +
+                "\"password\": \"" + TEST_PASSWORD + "\"" +
                 "}";
 
         mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
@@ -268,7 +311,13 @@ class MedipathbackendApplicationTests {
     @Test
     public void tryLogInValidEmailInvalidPassword() throws Exception {
 
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
+        String passwordHash = argon2PasswordEncoder.encode(TEST_PASSWORD);
+        User validUser = new User(EXAMPLE_MAIL, "Example", "Example", "1234567890",
+                LocalDate.of(2000, 1, 1),
+                new Address("Province", "City", "Street", "Number", "00-000"),
+                "123456789", passwordHash,
+                new UserSettings("PL", false, false, 1));
+        userRepository.save(validUser);
 
         String exampleLogin = "{" +
                 "\"email\": \"" + EXAMPLE_MAIL + "\"," +
@@ -288,8 +337,7 @@ class MedipathbackendApplicationTests {
 
         mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("missing fields in request body"))
-                .andExpect(jsonPath("$.fields[0]").value("password"));
+                .andExpect(jsonPath("$.message").value("missing fields in request body: [password]"));
     }
 
     @Test
@@ -299,9 +347,7 @@ class MedipathbackendApplicationTests {
 
         mvc.perform(post("/api/users/login").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("missing fields in request body"))
-                .andExpect(jsonPath("$.fields[0]").value("email"))
-                .andExpect(jsonPath("$.fields[1]").value("password"));
+                .andExpect(jsonPath("$.message").value("missing fields in request body: [email, password]"));
     }
 
 
@@ -311,17 +357,23 @@ class MedipathbackendApplicationTests {
 
         mvc.perform(get("/api/users/resetpassword"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("missing email in request parameters"));
+                .andExpect(jsonPath("$.message").value("missing address in request parameters"));
 
     }
 
     @Test
     public void tryResetMailValid() throws Exception {
 
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
+        //when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
 
+        User validUser = new User(EXAMPLE_MAIL, "Example", "Example", "1234567890",
+                LocalDate.of(2000, 1, 1),
+                new Address("Province", "City", "Street", "Number", "00-000"),
+                "123456789", "password",
+                new UserSettings("PL", false, false, 1));
+        userRepository.save(validUser);
 
-        mvc.perform(get("/api/users/resetpassword?address=test@mail.com"))
+        mvc.perform(get("/api/users/resetpassword?address=" + EXAMPLE_MAIL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("password reset mail has been sent, if the account exists"));
 
@@ -331,7 +383,7 @@ class MedipathbackendApplicationTests {
             assertEquals(1, receivedMessage.getAllRecipients().length);
             assertEquals(EXAMPLE_MAIL, receivedMessage.getAllRecipients()[0].toString());
             assertEquals("MediPath <service@medipath.com>", receivedMessage.getFrom()[0].toString());
-            assertEquals("Password reset request", receivedMessage.getSubject());
+            assertEquals("Prośba o zmianę hasła Medipath", receivedMessage.getSubject());
         });
 
     }
@@ -344,18 +396,22 @@ class MedipathbackendApplicationTests {
 
         mvc.perform(post("/api/users/resetpassword").contentType(MediaType.APPLICATION_JSON).content(exampleLogin))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("missing fields in request body"))
-                .andExpect(jsonPath("$.fields[0]").value("token"))
-                .andExpect(jsonPath("$.fields[1]").value("password"));
+                .andExpect(jsonPath("$.message").value("missing fields in request body token password "));
     }
 
     @Test
     public void tryResetMailSecondaryValidToken() throws Exception {
 
+        String passwordHash = argon2PasswordEncoder.encode(TEST_PASSWORD);
+        User validUser = new User(EXAMPLE_MAIL, "Example", "Example", "1234567890",
+                LocalDate.of(2000, 1, 1),
+                new Address("Province", "City", "Street", "Number", "00-000"),
+                "123456789", passwordHash,
+                new UserSettings("PL", false, false, 1));
+        userRepository.save(validUser);
 
-        when(preRepository.findValidToken(EXAMPLE_TOKEN)).thenReturn(Optional.of(new PasswordResetEntry(EXAMPLE_MAIL, EXAMPLE_TOKEN)));
-        when(userRepository.findByEmail(EXAMPLE_MAIL)).thenReturn(Optional.of(exampleValidUser));
-
+        PasswordResetEntry passwordResetEntry = new PasswordResetEntry(EXAMPLE_MAIL, EXAMPLE_TOKEN);
+        preRepository.save(passwordResetEntry);
 
         String exampleLogin = "{" +
                 "\"token\": \"" + EXAMPLE_TOKEN +"\"," +
@@ -368,8 +424,6 @@ class MedipathbackendApplicationTests {
     }
     @Test
     public void tryResetMailSecondaryInvalidToken() throws Exception {
-
-        when(preRepository.findValidToken(EXAMPLE_TOKEN)).thenReturn(Optional.empty());
 
         String exampleLogin = "{" +
                 "\"token\": \""+ EXAMPLE_TOKEN +"\"," +
