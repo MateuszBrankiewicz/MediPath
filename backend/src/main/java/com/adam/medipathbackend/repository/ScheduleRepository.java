@@ -31,4 +31,7 @@ public interface ScheduleRepository extends MongoRepository<Schedule, String> {
     @Update("{'$set': { booked: true }}")
     void deleteAllFutureSchedulesForDoctor(String doctorid);
 
+    @DeleteQuery("{ startHour: { $lt: ?0 }}")
+    void deleteOldSchedules(LocalDateTime date);
+
 }
