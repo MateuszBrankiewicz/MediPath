@@ -64,53 +64,6 @@ export class InstitutionPage implements OnInit {
     this.rows.set(event.rows ?? 5);
   }
 
-  protected readonly exampleDoctor = signal({
-    name: 'John',
-    surname: 'Doe',
-    photoUrl: 'assets/footer-landing.png',
-    pwz: '4175000',
-    rating: {
-      stars: 4.7,
-      opinions: 120,
-    },
-    institutions: ['City Hospital', 'Health Clinic'],
-    specialisation: ['Cardiology', 'Internal Medicine'],
-    comments: [
-      {
-        id: 1,
-        userName: 'Alice Smith',
-        visitedInstitution: 'City Hospital',
-        content: 'Very professional and caring.',
-        dateOfVisit: new Date('2024-03-15'),
-        numberOfStars: 5,
-      },
-      {
-        id: 2,
-        userName: 'Bob Johnson',
-        visitedInstitution: 'Health Clinic',
-        content: 'Helpful and knowledgeable.',
-        dateOfVisit: new Date('2024-02-10'),
-        numberOfStars: 4,
-      },
-      {
-        id: 1,
-        userName: 'Alice Smith',
-        visitedInstitution: 'City Hospital',
-        content: 'Very professional and caring.',
-        dateOfVisit: new Date('2024-03-15'),
-        numberOfStars: 5,
-      },
-      {
-        id: 2,
-        userName: 'Bob Johnson',
-        visitedInstitution: 'Health Clinic',
-        content: 'Helpful and knowledgeable.',
-        dateOfVisit: new Date('2024-02-10'),
-        numberOfStars: 4,
-      },
-    ],
-  });
-
   ngOnInit(): void {
     this.activatedRoue.paramMap.subscribe((params) => {
       const id = params.get('id');

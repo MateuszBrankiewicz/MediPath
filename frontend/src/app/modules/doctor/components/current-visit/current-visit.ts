@@ -183,6 +183,7 @@ export class CurrentVisit implements OnInit {
             ? visit.visit.codes.filter((code) => code.codeType === 'REFERRAL')
             : [],
         );
+        console.log(visit);
         this.isLoading.set(false);
         this.loadMedicalHistory(visit.visit.patient.userId);
       },

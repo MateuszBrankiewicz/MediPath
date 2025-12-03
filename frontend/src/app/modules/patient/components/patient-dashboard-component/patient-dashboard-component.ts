@@ -22,10 +22,11 @@ import { CodesService } from '../../../../core/services/codes/codes.service';
 import { TranslationService } from '../../../../core/services/translation/translation.service';
 import { VisitsService } from '../../../../core/services/visits/visits.service';
 import { DashboardConfig } from '../../../shared/components/layout/dashboard-layout-component/dashboard-layout-component';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-patient-dashboard-component',
-  imports: [InputTextModule, ButtonModule, CardModule, ProgressSpinnerModule],
+  imports: [InputTextModule, ButtonModule, CardModule, ProgressSpinnerModule, DatePipe],
   templateUrl: './patient-dashboard-component.html',
   styleUrl: './patient-dashboard-component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,13 +64,15 @@ export class PatientDashboardComponent implements OnInit {
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         map((visits: VisitResponse[]) => {
-          return visits.map((visit: VisitResponse): VisitBasicInfo => {
-            return {
-              id: visit.id,
-              doctorName: `${visit.doctor.doctorName} ${visit.doctor.doctorSurname}`,
-              date: visit.time.startTime,
-            };
-          });
+          return visits
+            .map((visit: VisitResponse): VisitBasicInfo => {
+              return {
+                id: visit.id,
+                doctorName: `${visit.doctor.doctorName} ${visit.doctor.doctorSurname}`,
+                date: visit.time.startTime,
+              };
+            })
+            .slice(0, 5);
         }),
       )
       .subscribe({
@@ -89,12 +92,12 @@ export class PatientDashboardComponent implements OnInit {
       map((results: Refferal[]) => {
         this.isCodesLoading.set(false);
         return {
-          prescriptions: results.filter(
-            (code) => code.codeType?.toLowerCase() === 'prescription',
-          ),
-          referrals: results.filter(
-            (code) => code.codeType?.toLowerCase() === 'referral',
-          ),
+          prescriptions: results
+            .filter((code) => code.codeType?.toLowerCase() === 'prescription')
+            .slice(0, 5),
+          referrals: results
+            .filter((code) => code.codeType?.toLowerCase() === 'referral')
+            .slice(0, 5),
         };
       }),
       catchError(() => {

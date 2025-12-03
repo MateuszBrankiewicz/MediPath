@@ -101,7 +101,7 @@
                         <p-tag
                           [value]="
                             record.date
-                              ? (record.date | date: 'dd.MM.yyyy') || undefined
+                              ? (record.date | date: 'shortDate') || undefined
                               : undefined
                           "
                           severity="info"

@@ -1,0 +1,14 @@
+{
+  "name": "medipath-data-generator",
+  "version": "1.0.0",
+  "description": "Data generator for MediPath application",
+  "main": "generate-data.js",
+  "scripts": {
+    "generate": "node generate-data.js"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "mongodb": "^6.5.0",
+    "argon2": "^0.40.1"
+  }
+}

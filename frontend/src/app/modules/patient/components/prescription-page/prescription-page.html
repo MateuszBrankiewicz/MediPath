@@ -53,7 +53,7 @@
               </div>
               <div class="meta-item">
                 <i class="pi pi-calendar"></i>
-                <span>{{ prescription.date | date: "dd.MM.yyyy HH:mm" }}</span>
+                <span>{{ prescription.date | date: "short" }}</span>
               </div>
               <div class="meta-item">
                 <i class="pi pi-clock"></i>
@@ -64,7 +64,7 @@
                     )
                   }}
                   {{
-                    getValidityDate(prescription.date) | date: "dd.MM.yyyy"
+                    getValidityDate(prescription.date) | date: "shortDate"
                   }}</span
                 >
               </div>

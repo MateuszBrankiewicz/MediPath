@@ -56,7 +56,7 @@ export class InstitutionService {
             },
             employees: inst.employees.map((emp) => ({
               name: emp.name,
-              pfpImage: emp.pfpImage,
+              pfpImage: emp.pfpimage,
               roleCode: emp.roleCode,
               specialisation: emp.specialisations,
               surname: emp.surname,

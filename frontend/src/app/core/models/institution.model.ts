@@ -9,7 +9,7 @@ export interface InstitutionResponse {
     };
     employees: {
       name: string;
-      pfpImage: Base64URLString;
+      pfpimage: Base64URLString;
       roleCode: number;
       specialisations: string[];
       surname: string;
@@ -33,7 +33,7 @@ export interface Institution {
   };
   employees: {
     name: string;
-    pfpImage: Base64URLString;
+    pfpImage: Base64URLString | string;
     roleCode: number;
     specialisation: string[];
     surname: string;

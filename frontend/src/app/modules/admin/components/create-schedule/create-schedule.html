@@ -145,7 +145,7 @@
           translationService.translate("admin.createSchedule.summary.date")
         }}</span>
         <span class="value">{{
-          (dateTimeSelected()?.date | date: "yyyy-MM-dd") || "-"
+          (dateTimeSelected()?.date | date: "shortDate") || "-"
         }}</span>
       </div>
       <div class="summary-row">

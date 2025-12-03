@@ -19,23 +19,7 @@
               <p class="doctor-name">
                 Dr. {{ doctor.name }} {{ doctor.surname }}
               </p>
-              <div class="doctor-rating">
-                <div class="stars">
-                  <p-rating
-                    [(ngModel)]="exampleDoctor().rating.stars"
-                    [readonly]="true"
-                    [stars]="5"
-                    styleClass="doctor-rating-stars"
-                  ></p-rating>
-                </div>
-                <span class="reviews-count">
-                  ({{ exampleDoctor().rating.opinions }} opinions)
-                </span>
-              </div>
-              <span class="pwz-info"
-                >{{ translationService.translate("patient.institution.pwz") }}
-                {{ exampleDoctor().pwz }}</span
-              >
+
             </div>
           </div>
         </p-card>

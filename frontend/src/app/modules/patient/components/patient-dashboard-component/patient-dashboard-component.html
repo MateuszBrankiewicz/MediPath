@@ -105,7 +105,7 @@
         } @else {
           @for (visit of upcomingVisits(); track visit.id) {
             <div class="visit-item">
-              <span class="visit-time">{{ visit.date }}</span>
+              <span class="visit-time">{{ visit.date | date: 'short' }}</span>
               <span class="visit-doctor">{{ visit.doctorName }}</span>
               <p-button
                 [label]="

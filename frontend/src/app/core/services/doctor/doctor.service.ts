@@ -82,11 +82,11 @@ export class DoctorService {
     return {
       name: response.doctor.name,
       surname: response.doctor.surname,
-      photoUrl: 'assets/footer-landing.png',
+      photoUrl: response.doctor.image,
       pwz: response.doctor.licence_number,
       rating: {
-        stars: 4.5,
-        opinions: 20,
+        stars: response.doctor.rating,
+        opinions: response.doctor.numofratings,
       },
       institutions: response.doctor.employers,
       specialisation: response.doctor.specialisations,
