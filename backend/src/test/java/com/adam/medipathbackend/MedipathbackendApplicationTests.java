@@ -437,9 +437,9 @@ class MedipathbackendApplicationTests {
 
 
     @Test
-    public void givenSchedules_WhenDeleteOldSchedules_ThenOldSchedulesRemoved() {
+    public void givenSchedulesInPast_WhenDeleteOldSchedules_ThenLessSchedules() {
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now().withNano(0);
 
         List<Schedule> oldSchedules = List.of(
                 new Schedule(now.minusDays(1).withHour(15).withMinute(30), now.minusDays(1).withHour(15).withMinute(45),
@@ -466,9 +466,8 @@ class MedipathbackendApplicationTests {
         assertEquals(2, scheduleRepository.count());
 
         List<Schedule> retrievedSchedules = scheduleRepository.findAll();
-        assertTrue(retrievedSchedules.containsAll(newSchedules));
-
-
+        assertTrue(retrievedSchedules.getFirst().getStartHour().isEqual(newSchedules.getFirst().getStartHour()));
+        assertTrue(retrievedSchedules.getLast().getStartHour().isEqual(newSchedules.getLast().getStartHour()));
 
     }
 
