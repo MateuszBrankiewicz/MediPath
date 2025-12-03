@@ -384,7 +384,7 @@ export class VisitPage
           const visitList: VisitPageModel[] = visits.map((visit) => ({
             id: visit.id,
             date: new Date(visit.time.startTime),
-            doctorName: visit.doctor.doctorName,
+            doctorName: `${visit.doctor.doctorName} ${visit.doctor.doctorSurname}`,
             institution: visit.institution.institutionName,
             status: this.parseVisitStatus(visit.status),
           }));

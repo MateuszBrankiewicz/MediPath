@@ -19,13 +19,11 @@ export class TranslationService {
   constructor() {
     this.applyLanguage(DEFAULT_LANGUAGE, true);
 
-    // Only load user settings if user is authenticated
-    if (this.authService.isAuthenticated()) {
-      this.userSettingsService.ensureSettingsLoaded().subscribe({
-        next: (settings) => this.applyLanguage(settings.language),
-        error: () => this.applyLanguage(DEFAULT_LANGUAGE),
-      });
-    }
+    effect(() => {
+      if (this.authService.isAuthenticated()) {
+        this.userSettingsService.ensureSettingsLoaded().subscribe();
+      }
+    });
 
     effect(() => {
       const language = this.userSettingsService.language();
@@ -40,10 +38,12 @@ export class TranslationService {
   async setLanguage(lang: SupportedLanguage) {
     const currentSettings = this.userSettingsService.settings();
     if (currentSettings) {
-      this.userSettingsService.setLocalSettings({
+      const newSettings = {
         ...currentSettings,
         language: lang,
-      });
+      };
+      this.userSettingsService.setLocalSettings(newSettings);
+      this.userSettingsService.updateSettings(newSettings).subscribe();
     }
     await this.setLanguageAndLoad(lang, true);
   }
@@ -86,6 +86,7 @@ export class TranslationService {
   }
 
   private async setLanguageAndLoad(language: SupportedLanguage, force = false) {
+    console.log('Setting language to', language);
     if (
       !force &&
       language === this.currentLanguage() &&
@@ -99,6 +100,7 @@ export class TranslationService {
   }
 
   private applyLanguage(language: SupportedLanguage, force = false) {
+    console.log('Applying language', language);
     void this.setLanguageAndLoad(language, force);
   }
 }

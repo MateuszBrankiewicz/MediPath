@@ -34,6 +34,9 @@ export interface DoctorDetailsApiResponse {
     name: string;
     surname: string;
     specialisations: string[];
+    image: string;
+    rating: number;
+    numofratings: number;
   };
 }
 

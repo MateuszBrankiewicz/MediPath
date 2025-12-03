@@ -50,7 +50,7 @@
               </div>
               <div class="meta-item">
                 <i class="pi pi-calendar"></i>
-                <span>{{ referral.date | date: "dd.MM.yyyy HH:mm" }}</span>
+                <span>{{ referral.date | date: "short" }}</span>
               </div>
               <div class="meta-item">
                 <i class="pi pi-clock"></i>
@@ -59,7 +59,7 @@
                     translationService.translate("patient.referrals.validUntil")
                   }}
                   {{
-                    getValidityDate(referral.date) | date: "dd.MM.yyyy"
+                    getValidityDate(referral.date) | date: "shortDate"
                   }}</span
                 >
               </div>

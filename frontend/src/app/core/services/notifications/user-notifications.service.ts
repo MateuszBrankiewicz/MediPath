@@ -11,7 +11,7 @@ import {
 } from './user-notifications.model';
 
 export type ListenerCallBack = (data: unknown) => void;
-
+const WS_URL = 'http://localhost:8080/ws';
 @Injectable({
   providedIn: 'root',
 })
@@ -28,7 +28,7 @@ export class UserNotificationsService implements OnDestroy {
 
   constructor() {
     this.client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(WS_URL),
       reconnectDelay: 5000,
     });
 

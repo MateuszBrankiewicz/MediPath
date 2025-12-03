@@ -53,7 +53,7 @@
               (click)="changeSelectedAppointment(appointment)"
             >
               <div class="slot-info">
-                <span class="appointment-time">{{ appointment.time }}</span>
+                <span class="appointment-time">{{ appointment.time | date: "short" }}</span>
                 @if (appointment.status === "available") {
                   <div class="available-badge">
                     <i class="pi pi-check-circle"></i>
@@ -82,7 +82,7 @@
     <div class="appointment-card-content">
       <div class="appointment-details">
         <div class="time-patient">
-          {{ selectedAppointment()?.time }} -
+          {{ selectedAppointment()?.time |date: "short"}} -
           {{ selectedAppointment()?.patientName }}
         </div>
         <div class="patient-remarks">

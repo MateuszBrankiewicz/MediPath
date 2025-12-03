@@ -803,5 +803,8 @@
   "institution.disabledSuccessfully": "Instytucja została wyłączona pomyślnie",
   "institution.disableError": "Nie udało się wyłączyć instytucji. Spróbuj ponownie.",
     "patient.appointment.bookSuccess": "Wizyta została pomyślnie zarezerwowana",
-  "patient.appointment.bookError": "Wystąpił błąd podczas rezerwacji wizyty."
+  "patient.appointment.bookError": "Wystąpił błąd podczas rezerwacji wizyty.",
+    "errors.notAdminin": "Nie masz uprawnień administratora.",
+  "errors.missingFields": "Niektóre wymagane pola zostały nieuzupełnione.",
+  "errors.institutionDuplicate": "Instytucja o takiej nazwie i bardzo zbliżonym adresie już istnieje."
 }

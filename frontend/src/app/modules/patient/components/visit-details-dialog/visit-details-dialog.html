@@ -11,7 +11,7 @@
         <span class="date-label">{{
           translationService.translate("patient.visitDetails.dateOfVisit")
         }}</span>
-        <span class="date-value">{{ visit()!.date | date: "dd-MM-yyyy" }}</span>
+        <span class="date-value">{{ visit()!.date | date: "shortDate" }}</span>
       </div>
 
       <div class="content-row">

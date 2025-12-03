@@ -18,6 +18,7 @@ import { groupSchedulesByDate } from '../../../../../utils/scheduleMapper';
 import { ScheduleVisitDialog } from '../../../../patient/components/schedule-visit-dialog/schedule-visit-dialog';
 
 import { HttpErrorResponse } from '@angular/common/http';
+import { PaginatorModule } from 'primeng/paginator';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {
   ScheduleByInstitutionResponse,
@@ -25,6 +26,7 @@ import {
 } from '../../../../../core/models/schedule.model';
 import { InstitutionObject } from '../../../../../core/models/visit.model';
 import { VisitsService } from '../../../../../core/services/visits/visits.service';
+import { PaginatedComponentBase } from '../../base/paginated-component.base';
 import { DoctorCardComponent } from './components/doctor-card.component/doctor-card.component';
 import {
   Hospital,
@@ -45,12 +47,16 @@ import {
     HospitalCardComponent,
     DoctorCardComponent,
     ProgressSpinnerModule,
+    PaginatorModule,
   ],
   providers: [DialogService],
   templateUrl: './search-result.component.html',
   styleUrl: './search-result.component.scss',
 })
-export class SearchResultComponent implements OnInit {
+export class SearchResultComponent
+  extends PaginatedComponentBase<Doctor | Hospital>
+  implements OnInit
+{
   private searchService = inject(SearchService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -67,18 +73,22 @@ export class SearchResultComponent implements OnInit {
 
   protected readonly values = signal<SearchResponse | null>(null);
 
-  protected readonly hospitals = computed(() => {
+  protected override get sourceData(): (Doctor | Hospital)[] {
     const results = this.values();
-    if (this.category() === 'institution' && results?.result) {
-      return results.result as Hospital[];
+    if (!results?.result) return [];
+    return results.result;
+  }
+
+  protected readonly hospitals = computed(() => {
+    if (this.category() === 'institution') {
+      return this.paginatedData() as Hospital[];
     }
     return [];
   });
 
   protected readonly doctors = computed(() => {
-    const results = this.values();
-    if (this.category() === 'doctor' && results?.result) {
-      return results.result as Doctor[];
+    if (this.category() === 'doctor') {
+      return this.paginatedData() as Doctor[];
     }
     return [];
   });
@@ -94,6 +104,7 @@ export class SearchResultComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((results) => {
         this.values.set(results);
+        this.first.set(0);
         this.isLoading.set(false);
       });
   }
