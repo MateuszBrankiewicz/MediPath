@@ -435,4 +435,41 @@ class MedipathbackendApplicationTests {
                 .andExpect(jsonPath("$.message").value("token invalid or expired"));
     }
 
+
+    @Test
+    public void givenSchedules_WhenDeleteOldSchedules_ThenOldSchedulesRemoved() {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Schedule> oldSchedules = List.of(
+                new Schedule(now.minusDays(1).withHour(15).withMinute(30), now.minusDays(1).withHour(15).withMinute(45),
+                        new DoctorDigest("d1", "Example", "Doctor", new ArrayList<>()),
+                        new InstitutionDigest("i1", "ExampleInstitution")),
+                new Schedule(now.minusDays(2).withHour(18).withMinute(0), now.minusDays(2).withHour(18).withMinute(30),
+                        new DoctorDigest("d2", "Doctor", "Second", new ArrayList<>()),
+                        new InstitutionDigest("i2", "AnotherInstitution"))
+        );
+        List<Schedule> newSchedules = List.of(
+                new Schedule(now.plusDays(1).withHour(15).withMinute(30), now.plusDays(1).withHour(15).withMinute(45),
+                        new DoctorDigest("d1", "Example", "Doctor", new ArrayList<>()),
+                        new InstitutionDigest("i1", "ExampleInstitution")),
+                new Schedule(now.plusDays(2).withHour(18).withMinute(0), now.plusDays(2).withHour(18).withMinute(30),
+                        new DoctorDigest("d2", "Doctor", "Second", new ArrayList<>()),
+                        new InstitutionDigest("i2", "AnotherInstitution"))
+        );
+        scheduleRepository.saveAll(oldSchedules);
+        scheduleRepository.saveAll(newSchedules);
+        assertEquals(4, scheduleRepository.count());
+
+        scheduleService.pruneOldSchedules();
+
+        assertEquals(2, scheduleRepository.count());
+
+        List<Schedule> retrievedSchedules = scheduleRepository.findAll();
+        assertTrue(retrievedSchedules.containsAll(newSchedules));
+
+
+
+    }
+
 }

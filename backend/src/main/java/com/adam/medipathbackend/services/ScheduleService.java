@@ -227,4 +227,10 @@ public class ScheduleService {
     public void deleteUpcomingSchedulesForDoctor(String doctorid) {
         scheduleRepository.deleteAllFutureSchedulesForDoctor(doctorid);
     }
+
+
+
+    public void pruneOldSchedules() {
+        //TODO implement schedule deletion
+    }
 }
