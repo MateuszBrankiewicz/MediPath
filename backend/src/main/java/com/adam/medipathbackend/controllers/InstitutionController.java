@@ -215,7 +215,8 @@ public class InstitutionController {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
     try {
-      authorizationService.startAuthChain(loggedUserID, institutionid).employeeOfInstitution().check();
+      authorizationService.startAuthChain(loggedUserID, institutionid).matchAnyPermission().adminOfInstitution()
+              .employeeOfInstitution().check();
     } catch (IllegalAccessException e) {
       return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
