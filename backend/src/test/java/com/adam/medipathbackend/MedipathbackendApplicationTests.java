@@ -441,7 +441,7 @@ class MedipathbackendApplicationTests {
 
         LocalDateTime now = LocalDateTime.now().withNano(0);
 
-        List<Schedule> oldSchedules = List.of(
+        List<Schedule> oldSchedulesToDelete = List.of(
                 new Schedule(now.minusDays(1).withHour(15).withMinute(30), now.minusDays(1).withHour(15).withMinute(45),
                         new DoctorDigest("d1", "Example", "Doctor", new ArrayList<>()),
                         new InstitutionDigest("i1", "ExampleInstitution")),
@@ -449,6 +449,12 @@ class MedipathbackendApplicationTests {
                         new DoctorDigest("d2", "Doctor", "Second", new ArrayList<>()),
                         new InstitutionDigest("i2", "AnotherInstitution"))
         );
+        Schedule oldBookedSchedule = new Schedule(now.minusDays(1).withHour(15).withMinute(30), now.minusDays(1).withHour(15).withMinute(45),
+                new DoctorDigest("d3", "Another", "Doctor", new ArrayList<>()),
+                new InstitutionDigest("i1", "ExampleInstitution"));
+        oldBookedSchedule.setBooked(true);
+        oldBookedSchedule.setVisitId("visit1");
+
         List<Schedule> newSchedules = List.of(
                 new Schedule(now.plusDays(1).withHour(15).withMinute(30), now.plusDays(1).withHour(15).withMinute(45),
                         new DoctorDigest("d1", "Example", "Doctor", new ArrayList<>()),
@@ -457,17 +463,19 @@ class MedipathbackendApplicationTests {
                         new DoctorDigest("d2", "Doctor", "Second", new ArrayList<>()),
                         new InstitutionDigest("i2", "AnotherInstitution"))
         );
-        scheduleRepository.saveAll(oldSchedules);
+        scheduleRepository.saveAll(oldSchedulesToDelete);
+        scheduleRepository.save(oldBookedSchedule);
         scheduleRepository.saveAll(newSchedules);
-        assertEquals(4, scheduleRepository.count());
+        assertEquals(5, scheduleRepository.count());
 
         scheduleService.pruneOldSchedules();
 
-        assertEquals(2, scheduleRepository.count());
+        assertEquals(3, scheduleRepository.count());
 
         List<Schedule> retrievedSchedules = scheduleRepository.findAll();
-        assertTrue(retrievedSchedules.getFirst().getStartHour().isEqual(newSchedules.getFirst().getStartHour()));
-        assertTrue(retrievedSchedules.getLast().getStartHour().isEqual(newSchedules.getLast().getStartHour()));
+        assertEquals(retrievedSchedules.getFirst().getId(), oldBookedSchedule.getId());
+        assertEquals(retrievedSchedules.get(1).getId(), newSchedules.getFirst().getId());
+        assertEquals(retrievedSchedules.getLast().getId(), newSchedules.getLast().getId());
 
     }
 
