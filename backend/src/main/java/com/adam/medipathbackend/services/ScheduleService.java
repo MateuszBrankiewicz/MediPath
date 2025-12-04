@@ -5,6 +5,7 @@ import com.adam.medipathbackend.forms.ManySchedulesUpdateForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -226,5 +227,11 @@ public class ScheduleService {
 
     public void deleteUpcomingSchedulesForDoctor(String doctorid) {
         scheduleRepository.deleteAllFutureSchedulesForDoctor(doctorid);
+    }
+
+
+    @Scheduled(cron = "@daily")
+    public void pruneOldSchedules() {
+        scheduleRepository.deleteOldSchedules(LocalDateTime.now());
     }
 }
