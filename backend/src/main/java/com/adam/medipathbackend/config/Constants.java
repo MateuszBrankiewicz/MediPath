@@ -17,8 +17,8 @@ public class Constants {
 
     public static final String EMPLOYEE_REGISTRATION_MAIL_FORMAT_EN = "<p>An administrator for <strong>%s</strong>" +
             " has created an account for you in the Medipath system. Use the link below to set a new password.</p>\n" +
-            "    <a href=\"http://localhost:4200/auth/resetpassword/%s" +
-            "\">http://localhost:4200/auth/resetpassword/%s</a>\n" +
+            "    <a href=\"http://localhost:4200/auth/forgot-password/%s" +
+            "\">http://localhost:4200/auth/forgot-password/%s</a>\n" +
             "    <br>\n" +
             "    <p>The link will expire within 24 hours</p>\n" +
             "    <p>If you have not sent a password reset request, ignore this email.</p>";
@@ -33,8 +33,8 @@ public class Constants {
 
     public static final String PASSWORD_RESET_MAIL_FORMAT_EN = "<p>We have received a password reset request for your account." +
             " Use the link below to set a new password.</p>\n" +
-            "    <a href=\"http://localhost:4200/auth/resetpassword/%s" +
-            "\">http://localhost:4200/auth/resetpassword/%s</a>\n" +
+            "    <a href=\"http://localhost:4200/auth/forgot-password/%s" +
+            "\">http://localhost:4200/auth/forgot-password/%s</a>\n" +
             "    <br>\n" +
             "    <p>The link will expire within 24 hours</p>";
 
@@ -44,8 +44,8 @@ public class Constants {
 
     public static final String EMPLOYEE_REGISTRATION_MAIL_FORMAT_PL = "<p>Administrator placówki <strong>%s</strong>" +
             " utworzył dla ciebie konto w systemie Medipath. Użyj odnośnika poniżej żeby ustawić nowe hasło.</p>\n" +
-            "    <a href=\"http://localhost:4200/auth/resetpassword/%s" +
-            "\">http://localhost:4200/auth/resetpassword/%s</a>\n" +
+            "    <a href=\"http://localhost:4200/auth/forgot-password/%s" +
+            "\">http://localhost:4200/auth/forgot-password/%s</a>\n" +
             "    <br>\n" +
             "    <p>Powyższy link straci ważność za 24 godziny</p>\n" +
             "    <p>Jeśli nie wysyłałeś prośby o reset hasła, zignoruj ten mail lub ustaw nowe hasło.</p>";
@@ -60,8 +60,8 @@ public class Constants {
 
     public static final String PASSWORD_RESET_MAIL_FORMAT_PL = "<p>Otrzymaliśmy prośbę o zmianę hasła do twojego konta Medipath." +
             " Użyj odnośnika poniżej żeby zmienić hasło.</p>\n" +
-            "    <a href=\"http://localhost:4200/auth/resetpassword/%s" +
-            "\">http://localhost:4200/auth/resetpassword/%s</a>\n" +
+            "    <a href=\"http://localhost:4200/auth/forgot-password/%s" +
+            "\">http://localhost:4200/auth/forgot-password/%s</a>\n" +
             "    <br>\n" +
             "    <p>Powyższy link straci ważność za 10 minut.</p>\n" +
             "    <p>Jeśli nie wysyłałeś prośby o reset hasła, zignoruj ten mail lub ustaw nowe hasło..</p>";
