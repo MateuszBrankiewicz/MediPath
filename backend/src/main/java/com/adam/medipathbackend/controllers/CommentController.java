@@ -2,19 +2,13 @@ package com.adam.medipathbackend.controllers;
 
 
 import com.adam.medipathbackend.forms.AddCommentForm;
-// ...existing code...
 import com.adam.medipathbackend.services.CommentService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-// ...existing code...
-// ...existing code...
 import java.util.Map;
-// ...existing code...
-// ...existing code...
 
 @RestController
 @RequestMapping("/api/comments")
@@ -24,7 +18,8 @@ public class CommentController {
     CommentService commentService;
 
     @PostMapping(value = {"/add", "/add/"})
-    public ResponseEntity<Map<String, Object>> add(@RequestBody AddCommentForm commentForm, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> add(@RequestBody AddCommentForm commentForm, 
+                                                    HttpSession session) {
 
         String loggedUserID = (String) session.getAttribute("id");
         if (loggedUserID == null) {
@@ -33,7 +28,9 @@ public class CommentController {
 
         try {
             commentService.addComment(commentForm, loggedUserID);
-            return new ResponseEntity<>(Map.of("message", "Comment added successfully"), HttpStatus.CREATED);
+            return new ResponseEntity<>(Map.of("message", "Comment added successfully"), 
+                                        HttpStatus.CREATED);
+        
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (IllegalAccessException e) {
