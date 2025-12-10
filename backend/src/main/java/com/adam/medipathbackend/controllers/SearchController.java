@@ -1,17 +1,11 @@
 package com.adam.medipathbackend.controllers;
 
 import com.adam.medipathbackend.models.*;
-import com.adam.medipathbackend.repository.InstitutionRepository;
-import com.adam.medipathbackend.repository.ScheduleRepository;
-import com.adam.medipathbackend.repository.UserRepository;
 import com.adam.medipathbackend.services.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.Serializable;
 import java.util.*;
 
 @RestController

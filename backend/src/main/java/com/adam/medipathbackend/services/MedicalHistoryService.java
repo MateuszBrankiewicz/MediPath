@@ -1,6 +1,5 @@
 package com.adam.medipathbackend.services;
 
-import com.adam.medipathbackend.models.DoctorDigest;
 import com.adam.medipathbackend.models.MedicalHistory;
 import com.adam.medipathbackend.models.User;
 import com.adam.medipathbackend.repository.MedicalHistoryRepository;

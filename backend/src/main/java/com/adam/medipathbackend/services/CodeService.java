@@ -6,7 +6,6 @@ import com.adam.medipathbackend.models.Visit;
 import com.adam.medipathbackend.repository.VisitRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 

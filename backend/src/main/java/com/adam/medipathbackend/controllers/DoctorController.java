@@ -1,6 +1,5 @@
 package com.adam.medipathbackend.controllers;
 
-import com.adam.medipathbackend.config.Utils;
 import com.adam.medipathbackend.forms.DoctorUpdateForm;
 import com.adam.medipathbackend.models.*;
 import com.adam.medipathbackend.services.DoctorService;
@@ -9,9 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @RestController

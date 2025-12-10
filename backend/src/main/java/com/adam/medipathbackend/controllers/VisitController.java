@@ -10,20 +10,11 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
-import java.io.UnsupportedEncodingException;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.zone.ZoneRulesProvider;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/visits")
